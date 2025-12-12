@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Post from "@/pages/Post";
 import Profile from "@/pages/Profile";
+import { FontSwitcher } from "@/components/FontSwitcher";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
+        <FontSwitcher />
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
