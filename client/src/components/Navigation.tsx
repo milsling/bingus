@@ -24,13 +24,13 @@ export default function Navigation() {
         <div className="flex items-center gap-8">
           {navItems.map((item) => (
             <Link key={item.path} href={item.path}>
-              <a className={cn(
-                "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
+              <div className={cn(
+                "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary cursor-pointer",
                 location === item.path ? "text-primary" : "text-muted-foreground"
               )}>
                 <item.icon className="h-4 w-4" />
                 {item.label}
-              </a>
+              </div>
             </Link>
           ))}
         </div>
@@ -40,13 +40,13 @@ export default function Navigation() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-border bg-background/90 backdrop-blur-lg z-50 flex items-center justify-around px-2 pb-safe">
         {navItems.map((item) => (
           <Link key={item.path} href={item.path}>
-            <a className={cn(
-              "flex flex-col items-center gap-1 p-2 transition-colors",
+            <div className={cn(
+              "flex flex-col items-center gap-1 p-2 transition-colors cursor-pointer",
               location === item.path ? "text-primary" : "text-muted-foreground"
             )}>
               <item.icon className={cn("h-6 w-6", location === item.path && "fill-current/20")} />
               <span className="text-[10px] font-medium">{item.label}</span>
-            </a>
+            </div>
           </Link>
         ))}
       </nav>
