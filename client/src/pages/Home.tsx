@@ -3,6 +3,7 @@ import Navigation from "@/components/Navigation";
 import BarCard from "@/components/BarCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import { BookOpen, Flame, Trophy, Grid3X3 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useBars } from "@/context/BarContext";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -45,6 +46,7 @@ export default function Home() {
           <BookOpen className="text-primary h-6 w-6" />
           <span className="font-display font-black text-xl tracking-tighter">ORPHAN BARS</span>
         </div>
+        <ThemeToggle />
       </header>
 
       <main>

@@ -76,10 +76,6 @@ export default function Navigation() {
           </Link>
         ))}
         
-        <div className="flex flex-col items-center gap-1 p-2">
-          <ThemeToggle />
-        </div>
-        
         {!currentUser && (
           <Link href="/auth">
             <div className={cn(
