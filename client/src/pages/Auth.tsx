@@ -290,7 +290,7 @@ export default function Auth() {
       <div className="mb-8 text-center space-y-2">
         <div className="flex items-center justify-center gap-2 mb-4">
           <BookOpen className="text-primary h-10 w-10" />
-          <span className="font-display font-bold text-3xl tracking-tighter">ORPHAN BARS</span>
+          <span className="font-display font-black text-3xl tracking-tighter">ORPHAN BARS</span>
         </div>
         <p className="text-muted-foreground max-w-sm mx-auto">
           Join the community of lyricists. Share your bars, get feedback, and build your catalog.

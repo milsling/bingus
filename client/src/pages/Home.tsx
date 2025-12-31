@@ -23,7 +23,7 @@ export default function Home() {
       <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <BookOpen className="text-primary h-6 w-6" />
-          <span className="font-display font-bold text-xl tracking-tighter">ORPHAN BARS</span>
+          <span className="font-display font-black text-xl tracking-tighter">ORPHAN BARS</span>
         </div>
       </header>
 

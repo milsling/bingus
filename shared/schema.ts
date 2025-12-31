@@ -40,11 +40,38 @@ export const bars = pgTable("bars", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const barsRelations = relations(bars, ({ one }) => ({
+export const barsRelations = relations(bars, ({ one, many }) => ({
   user: one(users, {
     fields: [bars.userId],
     references: [users.id],
   }),
+  likes: many(likes),
+  comments: many(comments),
+}));
+
+export const likes = pgTable("likes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const likesRelations = relations(likes, ({ one }) => ({
+  user: one(users, { fields: [likes.userId], references: [users.id] }),
+  bar: one(bars, { fields: [likes.barId], references: [bars.id] }),
+}));
+
+export const comments = pgTable("comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  user: one(users, { fields: [comments.userId], references: [users.id] }),
+  bar: one(bars, { fields: [comments.barId], references: [bars.id] }),
 }));
 
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -65,10 +92,18 @@ export const updateBarSchema = z.object({
   tags: z.array(z.string()).optional(),
 });
 
+export const insertCommentSchema = createInsertSchema(comments).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertBar = z.infer<typeof insertBarSchema>;
 export type Bar = typeof bars.$inferSelect;
+export type Like = typeof likes.$inferSelect;
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
 
 export type BarWithUser = Bar & {
   user: {

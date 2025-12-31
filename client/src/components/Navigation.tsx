@@ -31,7 +31,7 @@ export default function Navigation() {
         <Link href="/">
           <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
             <BookOpen className="text-primary h-6 w-6" />
-            <span className="font-display font-bold text-xl tracking-tighter">ORPHAN BARS</span>
+            <span className="font-display font-black text-xl tracking-tighter">ORPHAN BARS</span>
           </div>
         </Link>
         
