@@ -9,6 +9,7 @@ import Post from "@/pages/Post";
 import Profile from "@/pages/Profile";
 import EditProfile from "@/pages/EditProfile";
 import Auth from "@/pages/Auth";
+import Admin from "@/pages/Admin";
 import { FontSwitcher } from "@/components/FontSwitcher";
 import { BarProvider } from "@/context/BarContext";
 
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/post" component={Post} />
       <Route path="/profile" component={Profile} />
       <Route path="/profile/edit" component={EditProfile} />
+      <Route path="/admin" component={Admin} />
       <Route path="/discover" component={Home} />
       <Route component={NotFound} />
     </Switch>

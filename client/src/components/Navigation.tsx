@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, User, PlusSquare, Search, BookOpen, LogIn } from "lucide-react";
+import { Home, User, PlusSquare, Search, BookOpen, LogIn, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,11 @@ export default function Navigation() {
     { icon: User, label: "Profile", path: "/profile" },
   ];
 
-  const allItems = currentUser ? [...navItems, ...authenticatedItems] : navItems;
+  const adminItems = currentUser?.isAdmin ? [
+    { icon: Shield, label: "Admin", path: "/admin" },
+  ] : [];
+
+  const allItems = currentUser ? [...navItems, ...authenticatedItems, ...adminItems] : navItems;
 
   return (
     <>

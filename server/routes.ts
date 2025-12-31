@@ -265,5 +265,50 @@ export async function registerRoutes(
     }
   });
 
+  // Admin routes
+  const isAdmin: typeof isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated() && req.user?.isAdmin) {
+      return next();
+    }
+    return res.status(403).json({ message: "Admin access required" });
+  };
+
+  app.get("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      const usersWithoutPasswords = allUsers.map(({ password: _, ...user }) => user);
+      res.json(usersWithoutPasswords);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/bars/:id", isAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteBarAdmin(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+      res.json({ message: "Bar deleted by admin" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      if (req.params.id === req.user!.id) {
+        return res.status(400).json({ message: "Cannot delete yourself" });
+      }
+      const success = await storage.deleteUser(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ message: "User deleted" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   return httpServer;
 }

@@ -127,4 +127,24 @@ export const api = {
     });
     return handleResponse<{ uploadURL: string; objectPath: string }>(response);
   },
+
+  // Admin
+  getAllUsers: async (): Promise<User[]> => {
+    const response = await fetch('/api/admin/users');
+    return handleResponse<User[]>(response);
+  },
+
+  adminDeleteBar: async (barId: string): Promise<{ message: string }> => {
+    const response = await fetch(`/api/admin/bars/${barId}`, {
+      method: 'DELETE',
+    });
+    return handleResponse<{ message: string }>(response);
+  },
+
+  adminDeleteUser: async (userId: string): Promise<{ message: string }> => {
+    const response = await fetch(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+    });
+    return handleResponse<{ message: string }>(response);
+  },
 };

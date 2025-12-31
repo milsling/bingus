@@ -20,6 +20,11 @@ export interface IStorage {
   createVerificationCode(email: string, code: string): Promise<void>;
   verifyCode(email: string, code: string): Promise<boolean>;
   deleteVerificationCodes(email: string): Promise<void>;
+
+  // Admin methods
+  getAllUsers(): Promise<User[]>;
+  deleteBarAdmin(barId: string): Promise<boolean>;
+  deleteUser(userId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -75,6 +80,7 @@ export class DatabaseStorage implements IStorage {
           avatarUrl: users.avatarUrl,
           membershipTier: users.membershipTier,
           membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
         }
       })
       .from(bars)
@@ -126,6 +132,20 @@ export class DatabaseStorage implements IStorage {
 
   async deleteVerificationCodes(email: string): Promise<void> {
     await db.delete(verificationCodes).where(eq(verificationCodes.email, email));
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return db.select().from(users).orderBy(desc(users.id));
+  }
+
+  async deleteBarAdmin(barId: string): Promise<boolean> {
+    const result = await db.delete(bars).where(eq(bars.id, barId)).returning();
+    return result.length > 0;
+  }
+
+  async deleteUser(userId: string): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, userId)).returning();
+    return result.length > 0;
   }
 }
 

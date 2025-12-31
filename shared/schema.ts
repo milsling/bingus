@@ -15,6 +15,7 @@ export const users = pgTable("users", {
   avatarUrl: text("avatar_url"),
   membershipTier: text("membership_tier").notNull().default("free"),
   membershipExpiresAt: timestamp("membership_expires_at"),
+  isAdmin: boolean("is_admin").notNull().default(false),
 });
 
 export const verificationCodes = pgTable("verification_codes", {
