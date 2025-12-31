@@ -53,7 +53,7 @@ export function setupAuth(app: Express) {
       saveUninitialized: false,
       cookie: {
         secure: process.env.NODE_ENV === "production",
-        maxAge: 86400000, // 24 hours
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       },
       store: new MemoryStore({
         checkPeriod: 86400000, // prune expired entries every 24h
