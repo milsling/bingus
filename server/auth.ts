@@ -36,9 +36,13 @@ declare global {
       id: string;
       username: string;
       bio: string | null;
+      location: string | null;
       avatarUrl: string | null;
       membershipTier: string;
       membershipExpiresAt: Date | null;
+      isAdmin: boolean;
+      emailVerified: boolean;
+      usernameChangedAt: Date | null;
     }
   }
 }
@@ -53,6 +57,7 @@ export function setupAuth(app: Express) {
       saveUninitialized: false,
       cookie: {
         secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       },
       store: new MemoryStore({
