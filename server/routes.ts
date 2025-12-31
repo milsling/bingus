@@ -8,6 +8,37 @@ import { fromError } from "zod-validation-error";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { sendVerificationEmail, generateVerificationCode } from "./email";
 
+const verificationAttempts = new Map<string, { count: number; lastAttempt: number }>();
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS = 15 * 60 * 1000;
+
+function checkRateLimit(email: string): boolean {
+  const now = Date.now();
+  const attempts = verificationAttempts.get(email);
+  
+  if (!attempts) {
+    verificationAttempts.set(email, { count: 1, lastAttempt: now });
+    return true;
+  }
+  
+  if (now - attempts.lastAttempt > LOCKOUT_MS) {
+    verificationAttempts.set(email, { count: 1, lastAttempt: now });
+    return true;
+  }
+  
+  if (attempts.count >= MAX_ATTEMPTS) {
+    return false;
+  }
+  
+  attempts.count++;
+  attempts.lastAttempt = now;
+  return true;
+}
+
+function clearRateLimit(email: string): void {
+  verificationAttempts.delete(email);
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -51,11 +82,16 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Email and code are required" });
       }
 
+      if (!checkRateLimit(email)) {
+        return res.status(429).json({ message: "Too many attempts. Please try again later." });
+      }
+
       const isValid = await storage.verifyCode(email, code);
       if (!isValid) {
         return res.status(400).json({ message: "Invalid or expired code" });
       }
 
+      clearRateLimit(email);
       res.json({ verified: true });
     } catch (error: any) {
       res.status(500).json({ message: error.message });

@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { randomInt } from 'crypto';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -40,5 +41,5 @@ export async function sendVerificationEmail(email: string, code: string): Promis
 }
 
 export function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return randomInt(100000, 999999).toString();
 }
