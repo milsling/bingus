@@ -19,43 +19,30 @@ export default function Post() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  // Redirect if not logged in
   if (!currentUser) {
     setLocation("/auth");
     return null;
   }
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
-  const [content, setContent] = useState("");
   const [explanation, setExplanation] = useState("");
   const [category, setCategory] = useState<Category>("Freestyle");
   const [tags, setTags] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const insertFormat = (tag: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  const applyFormat = (command: string) => {
+    document.execCommand(command, false);
+    editorRef.current?.focus();
+  };
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const selectedText = text.substring(start, end);
-    
-    const newText = text.substring(0, start) + `<${tag}>` + selectedText + `</${tag}>` + text.substring(end);
-    
-    // Update React state
-    setContent(newText);
-    
-    // Restore focus and cursor (requires timeout due to state update)
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + tag.length + 2, end + tag.length + 2);
-    }, 0);
+  const getContent = () => {
+    return editorRef.current?.innerHTML || "";
   };
 
   const handleSubmit = async () => {
-    if (!content.trim()) {
+    const content = getContent();
+    if (!content.trim() || content === "<br>") {
       toast({
         title: "Empty bars?",
         description: "You gotta spit something before you drop it.",
@@ -74,7 +61,7 @@ export default function Post() {
       });
 
       toast({
-        title: "Bars Dropped! 🔥",
+        title: "Bars Dropped!",
         description: "Your lyric is now live on the feed.",
       });
 
@@ -108,14 +95,15 @@ export default function Post() {
           <CardContent className="p-6 space-y-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="content" className="text-lg">The Bars</Label>
+                <Label className="text-lg">The Bars</Label>
                 <div className="flex gap-1">
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     className="h-8 w-8 hover:bg-primary/20 hover:text-primary"
-                    onClick={() => insertFormat('b')}
+                    onClick={() => applyFormat('bold')}
                     title="Bold"
+                    type="button"
                   >
                     <Bold className="h-4 w-4" />
                   </Button>
@@ -123,8 +111,9 @@ export default function Post() {
                     variant="ghost" 
                     size="icon" 
                     className="h-8 w-8 hover:bg-primary/20 hover:text-primary"
-                    onClick={() => insertFormat('i')}
+                    onClick={() => applyFormat('italic')}
                     title="Italic"
+                    type="button"
                   >
                     <Italic className="h-4 w-4" />
                   </Button>
@@ -132,20 +121,20 @@ export default function Post() {
                     variant="ghost" 
                     size="icon" 
                     className="h-8 w-8 hover:bg-primary/20 hover:text-primary"
-                    onClick={() => insertFormat('u')}
+                    onClick={() => applyFormat('underline')}
                     title="Underline"
+                    type="button"
                   >
                     <Underline className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <Textarea 
-                ref={textareaRef}
-                id="content" 
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Type your lyrics here... Use line breaks for flow." 
-                className="min-h-[150px] bg-secondary/50 border-border/50 font-mono text-lg focus:border-primary resize-none"
+              <div
+                ref={editorRef}
+                contentEditable
+                className="min-h-[150px] p-3 bg-secondary/50 border border-border/50 rounded-md font-display text-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary whitespace-pre-wrap"
+                data-placeholder="Type your lyrics here... Use line breaks for flow."
+                data-testid="input-content"
               />
               <p className="text-xs text-muted-foreground">
                 Tip: Highlight text and click formatting buttons to style your bars.
@@ -153,7 +142,7 @@ export default function Post() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="explanation">Explanation / Context (Optional)</Label>
+              <Label htmlFor="explanation">Breakdown (Optional)</Label>
               <Textarea 
                 id="explanation" 
                 value={explanation}
