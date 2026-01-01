@@ -304,6 +304,44 @@ export class DatabaseStorage implements IStorage {
     const [result] = await db.select({ count: count() }).from(bars).where(eq(bars.userId, userId));
     return result?.count || 0;
   }
+
+  async getFollowers(userId: string): Promise<string[]> {
+    const result = await db.select({ followerId: follows.followerId }).from(follows).where(eq(follows.followingId, userId));
+    return result.map(r => r.followerId);
+  }
+
+  async createNotification(data: { userId: string; type: string; actorId?: string; barId?: string; message: string }): Promise<Notification> {
+    const [notification] = await db.insert(notifications).values(data).returning();
+    return notification;
+  }
+
+  async getNotifications(userId: string, limit = 50): Promise<Array<Notification & { actor?: Pick<User, 'id' | 'username' | 'avatarUrl'> }>> {
+    const result = await db
+      .select({
+        notification: notifications,
+        actor: { id: users.id, username: users.username, avatarUrl: users.avatarUrl }
+      })
+      .from(notifications)
+      .leftJoin(users, eq(notifications.actorId, users.id))
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit);
+    return result.map(r => ({ ...r.notification, actor: r.actor || undefined }));
+  }
+
+  async getUnreadCount(userId: string): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(notifications).where(and(eq(notifications.userId, userId), eq(notifications.read, false)));
+    return result?.count || 0;
+  }
+
+  async markNotificationRead(id: string, userId: string): Promise<boolean> {
+    const result = await db.update(notifications).set({ read: true }).where(and(eq(notifications.id, id), eq(notifications.userId, userId))).returning();
+    return result.length > 0;
+  }
+
+  async markAllNotificationsRead(userId: string): Promise<void> {
+    await db.update(notifications).set({ read: true }).where(eq(notifications.userId, userId));
+  }
 }
 
 export const storage = new DatabaseStorage();
