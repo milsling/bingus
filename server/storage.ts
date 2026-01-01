@@ -103,7 +103,7 @@ export class DatabaseStorage implements IStorage {
     return newBar;
   }
 
-  async getBars(limit: number = 50): Promise<Array<Bar & { user: User }>> {
+  async getBars(limit: number = 50): Promise<Array<Bar & { user: User; commentCount: number }>> {
     const result = await db
       .select({
         bar: bars,
@@ -116,7 +116,8 @@ export class DatabaseStorage implements IStorage {
           membershipTier: users.membershipTier,
           membershipExpiresAt: users.membershipExpiresAt,
           isAdmin: users.isAdmin,
-        }
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
@@ -126,6 +127,7 @@ export class DatabaseStorage implements IStorage {
     return result.map(row => ({
       ...row.bar,
       user: row.user as any,
+      commentCount: Number(row.commentCount) || 0,
     }));
   }
 

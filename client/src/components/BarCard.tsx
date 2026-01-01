@@ -265,7 +265,7 @@ export default function BarCard({ bar }: BarCardProps) {
                 data-testid={`button-comment-${bar.id}`}
               >
                 <MessageCircle className="h-4 w-4" />
-                <span className="text-xs">{commentsData.length || 0}</span>
+                <span className="text-xs">{showComments ? commentsData.length : (bar as any).commentCount || 0}</span>
               </Button>
               
               <Button 
