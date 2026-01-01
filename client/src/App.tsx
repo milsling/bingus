@@ -10,6 +10,8 @@ import Profile from "@/pages/Profile";
 import EditProfile from "@/pages/EditProfile";
 import Auth from "@/pages/Auth";
 import Admin from "@/pages/Admin";
+import BarDetail from "@/pages/BarDetail";
+import UserProfile from "@/pages/UserProfile";
 import { BarProvider } from "@/context/BarContext";
 
 function Router() {
@@ -22,6 +24,8 @@ function Router() {
       <Route path="/profile/edit" component={EditProfile} />
       <Route path="/admin" component={Admin} />
       <Route path="/discover" component={Home} />
+      <Route path="/bars/:id" component={BarDetail} />
+      <Route path="/u/:username" component={UserProfile} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -371,6 +371,19 @@ export async function registerRoutes(
     }
   });
 
+  // Get single bar by ID
+  app.get("/api/bars/:id", async (req, res) => {
+    try {
+      const bar = await storage.getBarById(req.params.id);
+      if (!bar) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+      res.json(bar);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.patch("/api/bars/:id", isAuthenticated, async (req, res) => {
     try {
       const result = updateBarSchema.safeParse(req.body);

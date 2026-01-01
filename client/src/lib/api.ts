@@ -97,6 +97,11 @@ export const api = {
     return handleResponse<BarWithUser[]>(response);
   },
 
+  getBar: async (id: string): Promise<BarWithUser> => {
+    const response = await fetch(`/api/bars/${id}`);
+    return handleResponse<BarWithUser>(response);
+  },
+
   getBarsByUser: async (userId: string): Promise<BarWithUser[]> => {
     const response = await fetch(`/api/bars/user/${userId}`);
     return handleResponse<BarWithUser[]>(response);
@@ -198,6 +203,28 @@ export const api = {
   deleteComment: async (commentId: string): Promise<{ message: string }> => {
     const response = await fetch(`/api/comments/${commentId}`, { method: 'DELETE' });
     return handleResponse<{ message: string }>(response);
+  },
+
+  // Follow
+  followUser: async (userId: string): Promise<{ followed: boolean }> => {
+    const response = await fetch(`/api/users/${userId}/follow`, { method: 'POST' });
+    return handleResponse<{ followed: boolean }>(response);
+  },
+
+  unfollowUser: async (userId: string): Promise<{ unfollowed: boolean }> => {
+    const response = await fetch(`/api/users/${userId}/unfollow`, { method: 'POST' });
+    return handleResponse<{ unfollowed: boolean }>(response);
+  },
+
+  isFollowing: async (userId: string): Promise<boolean> => {
+    const response = await fetch(`/api/users/${userId}/follow-status`);
+    const data = await handleResponse<{ isFollowing: boolean }>(response);
+    return data.isFollowing;
+  },
+
+  getUserStats: async (userId: string): Promise<{ barsCount: number; followersCount: number; followingCount: number }> => {
+    const response = await fetch(`/api/users/${userId}/stats`);
+    return handleResponse<{ barsCount: number; followersCount: number; followingCount: number }>(response);
   },
 
   // Username

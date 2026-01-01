@@ -8,19 +8,32 @@ import { useBars } from "@/context/BarContext";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { shareContent, getProfileShareData } from "@/lib/share";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Profile() {
   const { bars, currentUser, logout } = useBars();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   const { data: stats } = useQuery({
     queryKey: ["user-stats", currentUser?.id],
-    queryFn: async () => {
-      const res = await api.get(`/api/users/${currentUser!.id}/stats`);
-      return res.json();
-    },
+    queryFn: () => api.getUserStats(currentUser!.id),
     enabled: !!currentUser,
   });
+
+  const handleShare = async () => {
+    if (!currentUser) return;
+    const result = await shareContent(getProfileShareData(currentUser.username));
+    if (result.success) {
+      toast({
+        title: result.method === "clipboard" ? "Link copied!" : "Shared!",
+        description: result.method === "clipboard" 
+          ? "Profile link copied to clipboard" 
+          : "Profile shared successfully",
+      });
+    }
+  };
 
   // Redirect if not logged in
   if (!currentUser) {
@@ -76,7 +89,7 @@ export default function Profile() {
                 <Settings className="h-4 w-4" />
                 Logout
               </Button>
-              <Button className="gap-2" data-testid="button-share">
+              <Button className="gap-2" onClick={handleShare} data-testid="button-share">
                 <Share2 className="h-4 w-4" />
                 Share
               </Button>

@@ -2,6 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { storage } from "./storage";
+import fs from "fs";
+import path from "path";
 
 const app = express();
 const httpServer = createServer(app);
@@ -59,6 +62,69 @@ app.use((req, res, next) => {
   next();
 });
 
+// OG meta tag middleware for social media previews
+async function ogMiddleware(req: Request, res: Response, next: NextFunction) {
+  // Only intercept HTML requests for bar and profile pages
+  if (!req.accepts('html') || req.path.startsWith('/api')) {
+    return next();
+  }
+
+  const barMatch = req.path.match(/^\/bars\/([^/]+)$/);
+  const profileMatch = req.path.match(/^\/u\/([^/]+)$/);
+
+  if (!barMatch && !profileMatch) {
+    return next();
+  }
+
+  try {
+    let title = "Orphan Bars";
+    let description = "Share your bars, one-liners, punchlines, and entendres";
+    let url = `https://orphanbars.com${req.path}`;
+
+    if (barMatch) {
+      const barId = barMatch[1];
+      const bar = await storage.getBarById(barId);
+      if (bar) {
+        const truncatedContent = bar.content.length > 150 
+          ? bar.content.substring(0, 150) + "..." 
+          : bar.content;
+        title = `Bar by @${bar.user.username} - Orphan Bars`;
+        description = truncatedContent.replace(/<[^>]*>/g, ''); // Strip HTML tags
+      }
+    } else if (profileMatch) {
+      const username = profileMatch[1];
+      const user = await storage.getUserByUsername(username);
+      if (user) {
+        title = `@${user.username} on Orphan Bars`;
+        description = user.bio || `Check out @${user.username}'s bars on Orphan Bars`;
+      }
+    }
+
+    // Read the HTML template and inject OG tags
+    const htmlPath = process.env.NODE_ENV === "production" 
+      ? path.join(process.cwd(), "dist", "public", "index.html")
+      : path.join(process.cwd(), "client", "index.html");
+    
+    if (fs.existsSync(htmlPath)) {
+      let html = fs.readFileSync(htmlPath, "utf-8");
+      
+      // Replace existing OG tags with dynamic ones
+      html = html.replace(/<meta property="og:title" content="[^"]*"/, `<meta property="og:title" content="${title}"`);
+      html = html.replace(/<meta property="og:description" content="[^"]*"/, `<meta property="og:description" content="${description}"`);
+      html = html.replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${url}"`);
+      html = html.replace(/<meta name="twitter:title" content="[^"]*"/, `<meta name="twitter:title" content="${title}"`);
+      html = html.replace(/<meta name="twitter:description" content="[^"]*"/, `<meta name="twitter:description" content="${description}"`);
+      html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+      
+      return res.send(html);
+    }
+  } catch (error) {
+    log(`OG middleware error: ${error}`);
+  }
+  
+  next();
+}
+
 async function startServer() {
   try {
     log("Starting server initialization...");
@@ -72,6 +138,9 @@ async function startServer() {
       log(`Error: ${message}`);
       res.status(status).json({ message });
     });
+
+    // Add OG middleware before static file serving
+    app.use(ogMiddleware);
 
     if (process.env.NODE_ENV === "production") {
       log("Setting up static file serving for production...");

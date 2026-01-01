@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X } from "lucide-react";
+import { shareContent, getBarShareData } from "@/lib/share";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -133,6 +134,18 @@ export default function BarCard({ bar }: BarCardProps) {
     }
   };
 
+  const handleShare = async () => {
+    const result = await shareContent(getBarShareData(bar));
+    if (result.success) {
+      toast({
+        title: result.method === "clipboard" ? "Link copied!" : "Shared!",
+        description: result.method === "clipboard" 
+          ? "Bar link copied to clipboard" 
+          : "Bar shared successfully",
+      });
+    }
+  };
+
   return (
     <>
       <motion.div
@@ -244,7 +257,13 @@ export default function BarCard({ bar }: BarCardProps) {
                 <span className="text-xs">{commentsData.length || 0}</span>
               </Button>
               
-              <Button variant="ghost" size="sm" className="gap-2 hover:text-primary hover:bg-primary/10 transition-colors" data-testid={`button-share-${bar.id}`}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 hover:text-primary hover:bg-primary/10 transition-colors" 
+                onClick={handleShare}
+                data-testid={`button-share-${bar.id}`}
+              >
                 <Share2 className="h-4 w-4" />
                 <span className="text-xs">Share</span>
               </Button>
