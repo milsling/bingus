@@ -1,10 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Home, User, PlusSquare, BookOpen, LogIn, Shield, Bell } from "lucide-react";
+import { Home, User, PlusSquare, LogIn, Shield, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationBell } from "@/components/NotificationBell";
+import logoUrl from "@/assets/logo.png";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -30,9 +31,8 @@ export default function Navigation() {
       {/* Desktop Navigation */}
       <nav className="hidden md:flex fixed top-0 left-0 right-0 h-16 border-b border-border bg-background/80 backdrop-blur-md z-50 items-center px-6 justify-between">
         <Link href="/">
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-            <BookOpen className="text-primary h-6 w-6" />
-            <span className="font-logo text-xl">ORPHAN BARS</span>
+          <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+            <img src={logoUrl} alt="Orphan Bars" className="h-10" />
           </div>
         </Link>
         
