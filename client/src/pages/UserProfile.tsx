@@ -82,7 +82,7 @@ export default function UserProfile() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-20 md:pb-0 md:pt-16">
         <Navigation />
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -93,7 +93,7 @@ export default function UserProfile() {
 
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-20 md:pb-0 md:pt-16">
         <Navigation />
         <main className="container max-w-2xl mx-auto px-4 py-6">
           <Button
@@ -113,7 +113,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 md:pt-16">
       <Navigation />
       <main className="container max-w-2xl mx-auto px-4 py-6">
         <Button
