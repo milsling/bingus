@@ -6,10 +6,21 @@ import { Settings, Share2, MapPin, Edit } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBars } from "@/context/BarContext";
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 export default function Profile() {
   const { bars, currentUser, logout } = useBars();
   const [, setLocation] = useLocation();
+
+  const { data: stats } = useQuery({
+    queryKey: ["user-stats", currentUser?.id],
+    queryFn: async () => {
+      const res = await api.get(`/api/users/${currentUser!.id}/stats`);
+      return res.json();
+    },
+    enabled: !!currentUser,
+  });
 
   // Redirect if not logged in
   if (!currentUser) {
@@ -76,16 +87,16 @@ export default function Profile() {
         {/* Stats & Bio */}
         <div className="px-4 md:px-8 py-6 space-y-4">
           <div className="flex gap-6 text-sm">
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-foreground">24</span>
+            <div className="flex items-center gap-1" data-testid="stat-bars">
+              <span className="font-bold text-foreground">{stats?.barsCount ?? 0}</span>
               <span className="text-muted-foreground">Bars</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-foreground">1.2k</span>
+            <div className="flex items-center gap-1" data-testid="stat-followers">
+              <span className="font-bold text-foreground">{stats?.followersCount ?? 0}</span>
               <span className="text-muted-foreground">Followers</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-foreground">450</span>
+            <div className="flex items-center gap-1" data-testid="stat-following">
+              <span className="font-bold text-foreground">{stats?.followingCount ?? 0}</span>
               <span className="text-muted-foreground">Following</span>
             </div>
           </div>

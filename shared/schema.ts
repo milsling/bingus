@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -88,7 +88,9 @@ export const follows = pgTable("follows", {
   followerId: varchar("follower_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   followingId: varchar("following_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  unique("follows_unique").on(table.followerId, table.followingId)
+]);
 
 export const followsRelations = relations(follows, ({ one }) => ({
   follower: one(users, { fields: [follows.followerId], references: [users.id] }),

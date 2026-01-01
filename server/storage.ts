@@ -263,10 +263,13 @@ export class DatabaseStorage implements IStorage {
 
   async followUser(followerId: string, followingId: string): Promise<boolean> {
     if (followerId === followingId) return false;
-    const [existing] = await db.select().from(follows).where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)));
-    if (existing) return false;
-    await db.insert(follows).values({ followerId, followingId });
-    return true;
+    try {
+      await db.insert(follows).values({ followerId, followingId }).onConflictDoNothing();
+      const [existing] = await db.select().from(follows).where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)));
+      return !!existing;
+    } catch {
+      return false;
+    }
   }
 
   async unfollowUser(followerId: string, followingId: string): Promise<boolean> {
