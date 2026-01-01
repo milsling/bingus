@@ -132,6 +132,12 @@ export async function registerRoutes(
       await storage.deleteVerificationCodes(email);
       const updatedUser = await storage.updateUser(user.id, { emailVerified: true });
 
+      // Auto-follow Milsling (creator)
+      const milsling = await storage.getUserByUsername("Milsling");
+      if (milsling && milsling.id !== user.id) {
+        await storage.followUser(user.id, milsling.id);
+      }
+
       const { password: _, ...userWithoutPassword } = updatedUser!;
       req.login(userWithoutPassword, (err) => {
         if (err) {
@@ -168,6 +174,12 @@ export async function registerRoutes(
         email: `${username.toLowerCase()}@placeholder.orphanbars.local`,
         password: hashedPassword,
       });
+
+      // Auto-follow Milsling (creator)
+      const milsling = await storage.getUserByUsername("Milsling");
+      if (milsling && milsling.id !== user.id) {
+        await storage.followUser(user.id, milsling.id);
+      }
 
       const { password: _, ...userWithoutPassword } = user;
       req.login(userWithoutPassword, (err) => {
@@ -411,6 +423,49 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Comment not found" });
       }
       res.json({ message: "Comment deleted" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Follow routes
+  app.post("/api/users/:userId/follow", isAuthenticated, async (req, res) => {
+    try {
+      const followed = await storage.followUser(req.user!.id, req.params.userId);
+      res.json({ followed });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/users/:userId/unfollow", isAuthenticated, async (req, res) => {
+    try {
+      const unfollowed = await storage.unfollowUser(req.user!.id, req.params.userId);
+      res.json({ unfollowed });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/users/:userId/follow-status", async (req, res) => {
+    try {
+      const isFollowing = req.isAuthenticated() 
+        ? await storage.isFollowing(req.user!.id, req.params.userId)
+        : false;
+      res.json({ isFollowing });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/users/:userId/stats", async (req, res) => {
+    try {
+      const [barsCount, followersCount, followingCount] = await Promise.all([
+        storage.getBarsCount(req.params.userId),
+        storage.getFollowersCount(req.params.userId),
+        storage.getFollowingCount(req.params.userId)
+      ]);
+      res.json({ barsCount, followersCount, followingCount });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
