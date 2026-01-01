@@ -97,6 +97,23 @@ export const followsRelations = relations(follows, ({ one }) => ({
   following: one(users, { fields: [follows.followingId], references: [users.id] }),
 }));
 
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  actorId: varchar("actor_id").references(() => users.id, { onDelete: "cascade" }),
+  barId: varchar("bar_id").references(() => bars.id, { onDelete: "cascade" }),
+  message: text("message").notNull(),
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, { fields: [notifications.userId], references: [users.id] }),
+  actor: one(users, { fields: [notifications.actorId], references: [users.id] }),
+  bar: one(bars, { fields: [notifications.barId], references: [bars.id] }),
+}));
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   membershipTier: true,
@@ -128,6 +145,7 @@ export type Like = typeof likes.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type Follow = typeof follows.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
 
 export type BarWithUser = Bar & {
   user: {
