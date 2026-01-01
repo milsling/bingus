@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, likes, comments, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type InsertComment } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type InsertComment } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql } from "drizzle-orm";
 
@@ -21,6 +21,11 @@ export interface IStorage {
   createVerificationCode(email: string, code: string): Promise<void>;
   verifyCode(email: string, code: string): Promise<boolean>;
   deleteVerificationCodes(email: string): Promise<void>;
+
+  // Password reset methods
+  createPasswordResetCode(email: string, code: string): Promise<void>;
+  verifyPasswordResetCode(email: string, code: string): Promise<boolean>;
+  deletePasswordResetCodes(email: string): Promise<void>;
 
   // Admin methods
   getAllUsers(): Promise<User[]>;
@@ -154,6 +159,30 @@ export class DatabaseStorage implements IStorage {
 
   async deleteVerificationCodes(email: string): Promise<void> {
     await db.delete(verificationCodes).where(eq(verificationCodes.email, email));
+  }
+
+  async createPasswordResetCode(email: string, code: string): Promise<void> {
+    await db.delete(passwordResetCodes).where(eq(passwordResetCodes.email, email));
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await db.insert(passwordResetCodes).values({ email, code, expiresAt });
+  }
+
+  async verifyPasswordResetCode(email: string, code: string): Promise<boolean> {
+    const [result] = await db
+      .select()
+      .from(passwordResetCodes)
+      .where(
+        and(
+          eq(passwordResetCodes.email, email),
+          eq(passwordResetCodes.code, code),
+          gt(passwordResetCodes.expiresAt, new Date())
+        )
+      );
+    return !!result;
+  }
+
+  async deletePasswordResetCodes(email: string): Promise<void> {
+    await db.delete(passwordResetCodes).where(eq(passwordResetCodes.email, email));
   }
 
   async getAllUsers(): Promise<User[]> {
