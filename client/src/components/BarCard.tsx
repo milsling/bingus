@@ -143,6 +143,12 @@ export default function BarCard({ bar }: BarCardProps) {
           ? "Bar link copied to clipboard" 
           : "Bar shared successfully",
       });
+    } else {
+      toast({
+        title: "Share failed",
+        description: "Unable to share. Please try copying the link manually.",
+        variant: "destructive",
+      });
     }
   };
 

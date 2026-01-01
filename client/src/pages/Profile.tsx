@@ -32,6 +32,12 @@ export default function Profile() {
           ? "Profile link copied to clipboard" 
           : "Profile shared successfully",
       });
+    } else {
+      toast({
+        title: "Share failed",
+        description: "Unable to share. Please try copying the link manually.",
+        variant: "destructive",
+      });
     }
   };
 
