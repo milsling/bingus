@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, follows, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type InsertComment } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, follows, notifications, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type InsertComment, type Notification } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql } from "drizzle-orm";
 
@@ -51,6 +51,14 @@ export interface IStorage {
   getFollowersCount(userId: string): Promise<number>;
   getFollowingCount(userId: string): Promise<number>;
   getBarsCount(userId: string): Promise<number>;
+  getFollowers(userId: string): Promise<string[]>;
+
+  // Notification methods
+  createNotification(data: { userId: string; type: string; actorId?: string; barId?: string; message: string }): Promise<Notification>;
+  getNotifications(userId: string, limit?: number): Promise<Array<Notification & { actor?: Pick<User, 'id' | 'username' | 'avatarUrl'> }>>;
+  getUnreadCount(userId: string): Promise<number>;
+  markNotificationRead(id: string, userId: string): Promise<boolean>;
+  markAllNotificationsRead(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
