@@ -306,6 +306,19 @@ export async function registerRoutes(
       }
 
       const bar = await storage.createBar(result.data);
+      
+      // Notify followers about new bar
+      const followers = await storage.getFollowers(req.user!.id);
+      for (const followerId of followers) {
+        await storage.createNotification({
+          userId: followerId,
+          type: "new_bar",
+          actorId: req.user!.id,
+          barId: bar.id,
+          message: `@${req.user!.username} dropped a new bar`
+        });
+      }
+      
       res.json(bar);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -373,6 +386,22 @@ export async function registerRoutes(
     try {
       const liked = await storage.toggleLike(req.user!.id, req.params.id);
       const count = await storage.getLikeCount(req.params.id);
+      
+      // Send notification if liked (not unliked) and not own bar
+      if (liked) {
+        const allBars = await storage.getBars(1000);
+        const bar = allBars.find(b => b.id === req.params.id);
+        if (bar && bar.userId !== req.user!.id) {
+          await storage.createNotification({
+            userId: bar.userId,
+            type: "like",
+            actorId: req.user!.id,
+            barId: bar.id,
+            message: `@${req.user!.username} liked your bar`
+          });
+        }
+      }
+      
       res.json({ liked, count });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -410,6 +439,20 @@ export async function registerRoutes(
         barId: req.params.id,
         content: content.trim(),
       });
+      
+      // Send notification to bar owner (if not commenting on own bar)
+      const allBars = await storage.getBars(1000);
+      const bar = allBars.find(b => b.id === req.params.id);
+      if (bar && bar.userId !== req.user!.id) {
+        await storage.createNotification({
+          userId: bar.userId,
+          type: "comment",
+          actorId: req.user!.id,
+          barId: bar.id,
+          message: `@${req.user!.username} commented on your bar`
+        });
+      }
+      
       res.json(comment);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -466,6 +509,44 @@ export async function registerRoutes(
         storage.getFollowingCount(req.params.userId)
       ]);
       res.json({ barsCount, followersCount, followingCount });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Notification routes
+  app.get("/api/notifications", isAuthenticated, async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const notifs = await storage.getNotifications(req.user!.id, limit);
+      res.json(notifs);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/notifications/unread-count", isAuthenticated, async (req, res) => {
+    try {
+      const count = await storage.getUnreadCount(req.user!.id);
+      res.json({ count });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/notifications/:id/read", isAuthenticated, async (req, res) => {
+    try {
+      const success = await storage.markNotificationRead(req.params.id, req.user!.id);
+      res.json({ success });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/notifications/read-all", isAuthenticated, async (req, res) => {
+    try {
+      await storage.markAllNotificationsRead(req.user!.id);
+      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
