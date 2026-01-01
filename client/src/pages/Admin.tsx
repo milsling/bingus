@@ -37,6 +37,17 @@ export default function Admin() {
     },
   });
 
+  const deleteAllBarsMutation = useMutation({
+    mutationFn: () => api.adminDeleteAllBars(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      toast({ title: "All bars deleted" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const deleteUserMutation = useMutation({
     mutationFn: (userId: string) => api.adminDeleteUser(userId),
     onSuccess: () => {
@@ -185,8 +196,35 @@ export default function Admin() {
 
           <TabsContent value="bars">
             <Card className="border-border bg-card/50">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>All Bars</CardTitle>
+                {bars.length > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" data-testid="button-delete-all-bars">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete All Bars
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete All Bars</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete ALL {bars.length} bars? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteAllBarsMutation.mutate()}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete All
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">

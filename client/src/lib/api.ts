@@ -215,6 +215,13 @@ export const api = {
     return handleResponse<{ message: string }>(response);
   },
 
+  adminDeleteAllBars: async (): Promise<{ message: string }> => {
+    const response = await fetch('/api/admin/bars', {
+      method: 'DELETE',
+    });
+    return handleResponse<{ message: string }>(response);
+  },
+
   adminDeleteUser: async (userId: string): Promise<{ message: string }> => {
     const response = await fetch(`/api/admin/users/${userId}`, {
       method: 'DELETE',

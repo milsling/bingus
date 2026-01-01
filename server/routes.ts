@@ -498,6 +498,15 @@ export async function registerRoutes(
     }
   });
 
+  app.delete("/api/admin/bars", isAdmin, async (req, res) => {
+    try {
+      await storage.deleteAllBars();
+      res.json({ message: "All bars deleted" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.delete("/api/admin/bars/:id", isAdmin, async (req, res) => {
     try {
       const success = await storage.deleteBarAdmin(req.params.id);

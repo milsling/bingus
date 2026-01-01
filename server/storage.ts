@@ -25,6 +25,7 @@ export interface IStorage {
   // Admin methods
   getAllUsers(): Promise<User[]>;
   deleteBarAdmin(barId: string): Promise<boolean>;
+  deleteAllBars(): Promise<void>;
   deleteUser(userId: string): Promise<boolean>;
 
   // Like methods
@@ -162,6 +163,10 @@ export class DatabaseStorage implements IStorage {
   async deleteBarAdmin(barId: string): Promise<boolean> {
     const result = await db.delete(bars).where(eq(bars.id, barId)).returning();
     return result.length > 0;
+  }
+
+  async deleteAllBars(): Promise<void> {
+    await db.delete(bars);
   }
 
   async deleteUser(userId: string): Promise<boolean> {
