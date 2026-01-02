@@ -230,7 +230,7 @@ export default function Admin() {
                               <p className="text-xs text-muted-foreground">{user.email || "No email"}</p>
                             </div>
                           </div>
-                          {user.id !== currentUser.id && (
+                          {user.id !== currentUser.id && !user.isOwner && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" data-testid={`button-delete-user-${user.id}`}>
@@ -258,7 +258,7 @@ export default function Admin() {
                           )}
                         </div>
                         
-                        {user.id !== currentUser.id && (
+                        {user.id !== currentUser.id && !user.isOwner && (
                           <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-border/50">
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-muted-foreground">Admin</span>
@@ -356,44 +356,46 @@ export default function Admin() {
                         <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{bar.content}</p>
                         <Badge variant="outline" className="mt-2 text-xs">{bar.category}</Badge>
                       </div>
-                      <div className="flex items-center gap-1 ml-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="text-orange-500 hover:bg-orange-500/10"
-                          onClick={() => {
-                            setModerateBarId(bar.id);
-                            setModerateReason("");
-                          }}
-                          data-testid={`button-moderate-bar-${bar.id}`}
-                        >
-                          <Ban className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" data-testid={`button-delete-bar-${bar.id}`}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Bar</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this bar? This action cannot be undone. The user will NOT be notified.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteBarMutation.mutate(bar.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
+                      {!bar.user?.isOwner && (
+                        <div className="flex items-center gap-1 ml-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-orange-500 hover:bg-orange-500/10"
+                            onClick={() => {
+                              setModerateBarId(bar.id);
+                              setModerateReason("");
+                            }}
+                            data-testid={`button-moderate-bar-${bar.id}`}
+                          >
+                            <Ban className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" data-testid={`button-delete-bar-${bar.id}`}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Bar</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this bar? This action cannot be undone. The user will NOT be notified.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteBarMutation.mutate(bar.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      )}
                     </div>
                   ))}
                   {bars.length === 0 && (

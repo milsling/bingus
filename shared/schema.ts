@@ -196,6 +196,7 @@ export type BarWithUser = Bar & {
     username: string;
     avatarUrl: string | null;
     membershipTier: string;
+    isOwner?: boolean;
   };
 };
 

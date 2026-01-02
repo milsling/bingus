@@ -1,6 +1,6 @@
 import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, follows, notifications, bookmarks, pushSubscriptions, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gt, count, sql, or, ilike } from "drizzle-orm";
+import { eq, desc, and, gt, count, sql, or, ilike, notInArray } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -136,6 +136,7 @@ export class DatabaseStorage implements IStorage {
           membershipTier: users.membershipTier,
           membershipExpiresAt: users.membershipExpiresAt,
           isAdmin: users.isAdmin,
+          isOwner: users.isOwner,
         },
         commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
       })
@@ -248,10 +249,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteAllBars(): Promise<void> {
-    await db.delete(bars);
+    const ownerUsers = await db.select({ id: users.id }).from(users).where(eq(users.isOwner, true));
+    const ownerIds = ownerUsers.map(u => u.id);
+    if (ownerIds.length > 0) {
+      await db.delete(bars).where(notInArray(bars.userId, ownerIds));
+    } else {
+      await db.delete(bars);
+    }
   }
 
   async deleteUser(userId: string): Promise<boolean> {
+    const user = await this.getUser(userId);
+    if (user?.isOwner) {
+      return false;
+    }
     await db.delete(bars).where(eq(bars.userId, userId));
     const result = await db.delete(users).where(eq(users.id, userId)).returning();
     return result.length > 0;
@@ -421,6 +432,7 @@ export class DatabaseStorage implements IStorage {
           membershipTier: users.membershipTier,
           membershipExpiresAt: users.membershipExpiresAt,
           isAdmin: users.isAdmin,
+          isOwner: users.isOwner,
         },
         commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
       })
@@ -492,6 +504,7 @@ export class DatabaseStorage implements IStorage {
           membershipTier: users.membershipTier,
           membershipExpiresAt: users.membershipExpiresAt,
           isAdmin: users.isAdmin,
+          isOwner: users.isOwner,
         },
         commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
         bookmarkCreatedAt: bookmarks.createdAt,
