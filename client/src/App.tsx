@@ -14,6 +14,8 @@ import Admin from "@/pages/Admin";
 import BarDetail from "@/pages/BarDetail";
 import UserProfile from "@/pages/UserProfile";
 import Saved from "@/pages/Saved";
+import Friends from "@/pages/Friends";
+import Messages from "@/pages/Messages";
 import { BarProvider } from "@/context/BarContext";
 
 function Router() {
@@ -36,6 +38,9 @@ function Router() {
           <Route path="/profile/edit" component={EditProfile} />
           <Route path="/admin" component={Admin} />
           <Route path="/saved" component={Saved} />
+          <Route path="/friends" component={Friends} />
+          <Route path="/messages" component={Messages} />
+          <Route path="/messages/:id" component={Messages} />
           <Route path="/discover" component={Home} />
           <Route path="/bars/:id" component={BarDetail} />
           <Route path="/u/:username" component={UserProfile} />

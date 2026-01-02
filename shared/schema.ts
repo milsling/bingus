@@ -18,6 +18,8 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").notNull().default(false),
   isOwner: boolean("is_owner").notNull().default(false),
   usernameChangedAt: timestamp("username_changed_at"),
+  onlineStatus: text("online_status").notNull().default("offline"),
+  lastSeenAt: timestamp("last_seen_at"),
 });
 
 export const verificationCodes = pgTable("verification_codes", {
@@ -149,6 +151,35 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const friendships = pgTable("friendships", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requesterId: varchar("requester_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  receiverId: varchar("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  unique("friendships_unique").on(table.requesterId, table.receiverId)
+]);
+
+export const friendshipsRelations = relations(friendships, ({ one }) => ({
+  requester: one(users, { fields: [friendships.requesterId], references: [users.id] }),
+  receiver: one(users, { fields: [friendships.receiverId], references: [users.id] }),
+}));
+
+export const directMessages = pgTable("direct_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  senderId: varchar("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  receiverId: varchar("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const directMessagesRelations = relations(directMessages, ({ one }) => ({
+  sender: one(users, { fields: [directMessages.senderId], references: [users.id] }),
+  receiver: one(users, { fields: [directMessages.receiverId], references: [users.id] }),
+}));
+
 export const notificationsRelations = relations(notifications, ({ one }) => ({
   user: one(users, { fields: [notifications.userId], references: [users.id] }),
   actor: one(users, { fields: [notifications.actorId], references: [users.id] }),
@@ -191,6 +222,10 @@ export type Follow = typeof follows.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type Friendship = typeof friendships.$inferSelect;
+export type DirectMessage = typeof directMessages.$inferSelect;
+
+export const onlineStatusOptions = ["online", "offline", "busy"] as const;
 
 export type BarWithUser = Bar & {
   user: {

@@ -1050,5 +1050,169 @@ export async function registerRoutes(
     }
   });
 
+  // Online status routes
+  app.get("/api/online/count", async (req, res) => {
+    try {
+      const count = await storage.getOnlineUsersCount();
+      res.json({ count });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/online/status", isAuthenticated, async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!["online", "offline", "busy"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      await storage.updateOnlineStatus(req.user!.id, status);
+      res.json({ status });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Friendship routes
+  app.post("/api/friends/request/:userId", isAuthenticated, async (req, res) => {
+    try {
+      if (req.user!.id === req.params.userId) {
+        return res.status(400).json({ message: "Cannot send friend request to yourself" });
+      }
+      const friendship = await storage.sendFriendRequest(req.user!.id, req.params.userId);
+      await storage.createNotification({
+        userId: req.params.userId,
+        type: "friend_request",
+        actorId: req.user!.id,
+        message: `@${req.user!.username} sent you a friend request`,
+      });
+      res.json(friendship);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/friends/accept/:friendshipId", isAuthenticated, async (req, res) => {
+    try {
+      const friendship = await storage.acceptFriendRequest(req.params.friendshipId, req.user!.id);
+      if (!friendship) {
+        return res.status(404).json({ message: "Friend request not found" });
+      }
+      await storage.createNotification({
+        userId: friendship.requesterId,
+        type: "friend_accepted",
+        actorId: req.user!.id,
+        message: `@${req.user!.username} accepted your friend request`,
+      });
+      res.json(friendship);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/friends/decline/:friendshipId", isAuthenticated, async (req, res) => {
+    try {
+      const success = await storage.declineFriendRequest(req.params.friendshipId, req.user!.id);
+      if (!success) {
+        return res.status(404).json({ message: "Friend request not found" });
+      }
+      res.json({ message: "Friend request declined" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/friends/:friendId", isAuthenticated, async (req, res) => {
+    try {
+      const success = await storage.removeFriend(req.user!.id, req.params.friendId);
+      if (!success) {
+        return res.status(404).json({ message: "Friendship not found" });
+      }
+      res.json({ message: "Friend removed" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/friends", isAuthenticated, async (req, res) => {
+    try {
+      const friends = await storage.getFriends(req.user!.id);
+      res.json(friends.map(({ password: _, ...f }) => f));
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/friends/requests", isAuthenticated, async (req, res) => {
+    try {
+      const requests = await storage.getPendingRequests(req.user!.id);
+      res.json(requests);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/friends/status/:userId", isAuthenticated, async (req, res) => {
+    try {
+      const status = await storage.getFriendshipStatus(req.user!.id, req.params.userId);
+      res.json(status || { status: "none" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Direct message routes
+  app.post("/api/messages/:receiverId", isAuthenticated, async (req, res) => {
+    try {
+      const { content } = req.body;
+      if (!content || typeof content !== "string" || content.trim().length === 0) {
+        return res.status(400).json({ message: "Message content required" });
+      }
+      const friendshipStatus = await storage.getFriendshipStatus(req.user!.id, req.params.receiverId);
+      if (!friendshipStatus || friendshipStatus.status !== "accepted") {
+        return res.status(403).json({ message: "You can only message friends" });
+      }
+      const message = await storage.sendMessage(req.user!.id, req.params.receiverId, content.trim());
+      await storage.createNotification({
+        userId: req.params.receiverId,
+        type: "message",
+        actorId: req.user!.id,
+        message: `@${req.user!.username} sent you a message`,
+      });
+      res.json(message);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/messages/:userId", isAuthenticated, async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const messages = await storage.getConversation(req.user!.id, req.params.userId, limit);
+      await storage.markMessagesRead(req.user!.id, req.params.userId);
+      res.json(messages);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/messages", isAuthenticated, async (req, res) => {
+    try {
+      const conversations = await storage.getConversations(req.user!.id);
+      res.json(conversations);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/messages/unread/count", isAuthenticated, async (req, res) => {
+    try {
+      const count = await storage.getUnreadMessageCount(req.user!.id);
+      res.json({ count });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   return httpServer;
 }

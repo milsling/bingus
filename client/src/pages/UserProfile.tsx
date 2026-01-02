@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { api } from "@/lib/api";
 import Navigation from "@/components/Navigation";
@@ -6,9 +6,8 @@ import BarCard from "@/components/BarCard";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, MapPin, Share2, UserPlus, UserMinus } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin, Share2, UserPlus, UserMinus, Users, MessageCircle, Clock } from "lucide-react";
 import { useBars } from "@/context/BarContext";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { shareContent, getProfileShareData } from "@/lib/share";
 
@@ -56,6 +55,36 @@ export default function UserProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["isFollowing", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["userStats", user?.id] });
+    },
+  });
+
+  const { data: friendshipStatus } = useQuery({
+    queryKey: ["friendshipStatus", user?.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/friends/status/${user!.id}`, { credentials: 'include' });
+      return res.json();
+    },
+    enabled: !!user?.id && !!currentUser,
+  });
+
+  const sendFriendRequestMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/friends/request/${user!.id}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friendshipStatus", user?.id] });
+      toast({ title: "Friend request sent!" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -169,27 +198,56 @@ export default function UserProfile() {
                   <span className="text-muted-foreground ml-1">Following</span>
                 </div>
               </div>
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-4 flex-wrap">
                 {!isOwnProfile && currentUser && (
-                  <Button
-                    variant={isFollowing ? "outline" : "default"}
-                    size="sm"
-                    onClick={() => isFollowing ? unfollowMutation.mutate() : followMutation.mutate()}
-                    disabled={followMutation.isPending || unfollowMutation.isPending}
-                    data-testid="button-follow-toggle"
-                  >
-                    {isFollowing ? (
-                      <>
-                        <UserMinus className="h-4 w-4 mr-1" />
-                        Unfollow
-                      </>
+                  <>
+                    <Button
+                      variant={isFollowing ? "outline" : "default"}
+                      size="sm"
+                      onClick={() => isFollowing ? unfollowMutation.mutate() : followMutation.mutate()}
+                      disabled={followMutation.isPending || unfollowMutation.isPending}
+                      data-testid="button-follow-toggle"
+                    >
+                      {isFollowing ? (
+                        <>
+                          <UserMinus className="h-4 w-4 mr-1" />
+                          Unfollow
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="h-4 w-4 mr-1" />
+                          Follow
+                        </>
+                      )}
+                    </Button>
+                    {friendshipStatus?.status === "accepted" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setLocation(`/messages/${user.id}`)}
+                        data-testid="button-message"
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        Message
+                      </Button>
+                    ) : friendshipStatus?.status === "pending" ? (
+                      <Button variant="outline" size="sm" disabled data-testid="button-friend-pending">
+                        <Clock className="h-4 w-4 mr-1" />
+                        Pending
+                      </Button>
                     ) : (
-                      <>
-                        <UserPlus className="h-4 w-4 mr-1" />
-                        Follow
-                      </>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => sendFriendRequestMutation.mutate()}
+                        disabled={sendFriendRequestMutation.isPending}
+                        data-testid="button-friend-request"
+                      >
+                        <Users className="h-4 w-4 mr-1" />
+                        Add Friend
+                      </Button>
                     )}
-                  </Button>
+                  </>
                 )}
                 <Button
                   variant="outline"

@@ -34,10 +34,12 @@ Preferred communication style: Simple, everyday language.
 - **Schema Location**: `shared/schema.ts` - shared between client and server
 - **Migrations**: Drizzle Kit with `db:push` command
 - **Tables**:
-  - `users`: User accounts with membership tiers
+  - `users`: User accounts with membership tiers, online status, last seen
   - `bars`: Lyric posts with categories, tags, and explanations
   - `bookmarks`: Saved bars for users
   - `push_subscriptions`: Browser push notification subscriptions
+  - `friendships`: Friend connections between users (pending/accepted)
+  - `direct_messages`: Private messages between friends
 
 ### File Storage
 - **Service**: Google Cloud Storage via Replit Object Storage integration
@@ -101,3 +103,24 @@ Preferred communication style: Simple, everyday language.
 - Location: `client/public/sw.js`
 - Caching strategy: Stale-while-revalidate for static assets, network-first for API calls
 - Registered in `client/src/main.tsx`
+
+## Social Features
+
+### Online Presence
+- **Status Options**: online, busy, offline (appear offline)
+- **Visibility**: Status indicator in navigation header with dropdown selector
+- **Automatic Updates**: Status changes based on browser visibility events
+- **Online Count**: Public count of currently online users
+
+### Friends System
+- **Friend Requests**: Send requests from user profile pages
+- **Request Management**: Accept/decline pending requests on Friends page
+- **Friends Page**: `/friends` - View friends list with online status, send messages, remove friends
+- **Friendship Status**: Displayed on profile (Add Friend / Pending / Message buttons)
+
+### Direct Messaging
+- **Messages Page**: `/messages` - Conversation list with unread counts
+- **Chat Interface**: Real-time messaging with message history
+- **Friends Only**: Can only message accepted friends
+- **Read Receipts**: Messages marked as read when conversation opened
+- **Notifications**: New message notifications

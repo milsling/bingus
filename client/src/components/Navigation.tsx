@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Home, User, PlusSquare, LogIn, Shield, Bookmark } from "lucide-react";
+import { Home, User, PlusSquare, LogIn, Shield, Bookmark, Users, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchBar } from "@/components/SearchBar";
+import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -17,6 +18,8 @@ export default function Navigation() {
 
   const authenticatedItems = [
     { icon: PlusSquare, label: "Drop Bar", path: "/post" },
+    { icon: Users, label: "Friends", path: "/friends" },
+    { icon: MessageCircle, label: "Messages", path: "/messages" },
     { icon: Bookmark, label: "Saved", path: "/saved" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
@@ -55,6 +58,8 @@ export default function Navigation() {
           ))}
           
           {currentUser && <NotificationBell />}
+          
+          <OnlineStatusIndicator />
           
           <ThemeToggle />
           

@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, follows, notifications, bookmarks, pushSubscriptions, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray } from "drizzle-orm";
 
@@ -82,6 +82,27 @@ export interface IStorage {
   savePushSubscription(userId: string, subscription: { endpoint: string; p256dh: string; auth: string }): Promise<PushSubscription>;
   deletePushSubscription(userId: string, endpoint: string): Promise<boolean>;
   getPushSubscriptions(userId: string): Promise<PushSubscription[]>;
+
+  // Friendship methods
+  sendFriendRequest(requesterId: string, receiverId: string): Promise<Friendship>;
+  acceptFriendRequest(friendshipId: string, userId: string): Promise<Friendship | undefined>;
+  declineFriendRequest(friendshipId: string, userId: string): Promise<boolean>;
+  removeFriend(userId: string, friendId: string): Promise<boolean>;
+  getFriends(userId: string): Promise<Array<User & { friendshipId: string }>>;
+  getPendingRequests(userId: string): Promise<Array<Friendship & { requester: Pick<User, 'id' | 'username' | 'avatarUrl'> }>>;
+  getFriendshipStatus(userId: string, otherId: string): Promise<{ status: string; friendshipId?: string } | null>;
+
+  // Direct message methods
+  sendMessage(senderId: string, receiverId: string, content: string): Promise<DirectMessage>;
+  getConversation(userId: string, otherId: string, limit?: number): Promise<DirectMessage[]>;
+  getConversations(userId: string): Promise<Array<{ user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'onlineStatus'>; lastMessage: DirectMessage; unreadCount: number }>>;
+  markMessagesRead(userId: string, senderId: string): Promise<void>;
+  getUnreadMessageCount(userId: string): Promise<number>;
+
+  // Online status methods
+  updateOnlineStatus(userId: string, status: string): Promise<void>;
+  getOnlineUsersCount(): Promise<number>;
+  updateLastSeen(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -591,6 +612,160 @@ export class DatabaseStorage implements IStorage {
 
   async getPushSubscriptions(userId: string): Promise<PushSubscription[]> {
     return db.select().from(pushSubscriptions).where(eq(pushSubscriptions.userId, userId));
+  }
+
+  async sendFriendRequest(requesterId: string, receiverId: string): Promise<Friendship> {
+    const [existing] = await db.select().from(friendships).where(
+      or(
+        and(eq(friendships.requesterId, requesterId), eq(friendships.receiverId, receiverId)),
+        and(eq(friendships.requesterId, receiverId), eq(friendships.receiverId, requesterId))
+      )
+    );
+    if (existing) {
+      throw new Error("Friendship already exists or pending");
+    }
+    const [friendship] = await db.insert(friendships).values({
+      requesterId,
+      receiverId,
+      status: "pending",
+    }).returning();
+    return friendship;
+  }
+
+  async acceptFriendRequest(friendshipId: string, userId: string): Promise<Friendship | undefined> {
+    const [result] = await db
+      .update(friendships)
+      .set({ status: "accepted" })
+      .where(and(eq(friendships.id, friendshipId), eq(friendships.receiverId, userId), eq(friendships.status, "pending")))
+      .returning();
+    return result;
+  }
+
+  async declineFriendRequest(friendshipId: string, userId: string): Promise<boolean> {
+    const result = await db.delete(friendships)
+      .where(and(eq(friendships.id, friendshipId), eq(friendships.receiverId, userId), eq(friendships.status, "pending")))
+      .returning();
+    return result.length > 0;
+  }
+
+  async removeFriend(userId: string, friendId: string): Promise<boolean> {
+    const result = await db.delete(friendships)
+      .where(
+        and(
+          eq(friendships.status, "accepted"),
+          or(
+            and(eq(friendships.requesterId, userId), eq(friendships.receiverId, friendId)),
+            and(eq(friendships.requesterId, friendId), eq(friendships.receiverId, userId))
+          )
+        )
+      )
+      .returning();
+    return result.length > 0;
+  }
+
+  async getFriends(userId: string): Promise<Array<User & { friendshipId: string }>> {
+    const result = await db
+      .select({ friendship: friendships, user: users })
+      .from(friendships)
+      .leftJoin(users, or(
+        and(eq(friendships.requesterId, userId), eq(users.id, friendships.receiverId)),
+        and(eq(friendships.receiverId, userId), eq(users.id, friendships.requesterId))
+      ))
+      .where(and(
+        eq(friendships.status, "accepted"),
+        or(eq(friendships.requesterId, userId), eq(friendships.receiverId, userId))
+      ));
+    return result.filter(r => r.user).map(r => ({ ...r.user!, friendshipId: r.friendship.id }));
+  }
+
+  async getPendingRequests(userId: string): Promise<Array<Friendship & { requester: Pick<User, 'id' | 'username' | 'avatarUrl'> }>> {
+    const result = await db
+      .select({
+        friendship: friendships,
+        requester: { id: users.id, username: users.username, avatarUrl: users.avatarUrl },
+      })
+      .from(friendships)
+      .leftJoin(users, eq(friendships.requesterId, users.id))
+      .where(and(eq(friendships.receiverId, userId), eq(friendships.status, "pending")));
+    return result.map(r => ({ ...r.friendship, requester: r.requester as any }));
+  }
+
+  async getFriendshipStatus(userId: string, otherId: string): Promise<{ status: string; friendshipId?: string } | null> {
+    const [friendship] = await db.select().from(friendships).where(
+      or(
+        and(eq(friendships.requesterId, userId), eq(friendships.receiverId, otherId)),
+        and(eq(friendships.requesterId, otherId), eq(friendships.receiverId, userId))
+      )
+    );
+    if (!friendship) return null;
+    return { status: friendship.status, friendshipId: friendship.id };
+  }
+
+  async sendMessage(senderId: string, receiverId: string, content: string): Promise<DirectMessage> {
+    const [message] = await db.insert(directMessages).values({
+      senderId,
+      receiverId,
+      content,
+    }).returning();
+    return message;
+  }
+
+  async getConversation(userId: string, otherId: string, limit = 50): Promise<DirectMessage[]> {
+    return db.select().from(directMessages).where(
+      or(
+        and(eq(directMessages.senderId, userId), eq(directMessages.receiverId, otherId)),
+        and(eq(directMessages.senderId, otherId), eq(directMessages.receiverId, userId))
+      )
+    ).orderBy(desc(directMessages.createdAt)).limit(limit);
+  }
+
+  async getConversations(userId: string): Promise<Array<{ user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'onlineStatus'>; lastMessage: DirectMessage; unreadCount: number }>> {
+    const messages = await db.select().from(directMessages).where(
+      or(eq(directMessages.senderId, userId), eq(directMessages.receiverId, userId))
+    ).orderBy(desc(directMessages.createdAt));
+
+    const conversationsMap = new Map<string, { lastMessage: DirectMessage; unreadCount: number }>();
+    for (const msg of messages) {
+      const otherId = msg.senderId === userId ? msg.receiverId : msg.senderId;
+      if (!conversationsMap.has(otherId)) {
+        const unread = messages.filter(m => m.senderId === otherId && m.receiverId === userId && !m.readAt).length;
+        conversationsMap.set(otherId, { lastMessage: msg, unreadCount: unread });
+      }
+    }
+
+    const result: Array<{ user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'onlineStatus'>; lastMessage: DirectMessage; unreadCount: number }> = [];
+    for (const [otherId, data] of conversationsMap) {
+      const [user] = await db.select({ id: users.id, username: users.username, avatarUrl: users.avatarUrl, onlineStatus: users.onlineStatus }).from(users).where(eq(users.id, otherId));
+      if (user) {
+        result.push({ user, ...data });
+      }
+    }
+    return result;
+  }
+
+  async markMessagesRead(userId: string, senderId: string): Promise<void> {
+    await db.update(directMessages)
+      .set({ readAt: new Date() })
+      .where(and(eq(directMessages.receiverId, userId), eq(directMessages.senderId, senderId), sql`${directMessages.readAt} IS NULL`));
+  }
+
+  async getUnreadMessageCount(userId: string): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(directMessages)
+      .where(and(eq(directMessages.receiverId, userId), sql`${directMessages.readAt} IS NULL`));
+    return result?.count || 0;
+  }
+
+  async updateOnlineStatus(userId: string, status: string): Promise<void> {
+    await db.update(users).set({ onlineStatus: status, lastSeenAt: new Date() }).where(eq(users.id, userId));
+  }
+
+  async getOnlineUsersCount(): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(users).where(eq(users.onlineStatus, "online"));
+    return result?.count || 0;
+  }
+
+  async updateLastSeen(userId: string): Promise<void> {
+    await db.update(users).set({ lastSeenAt: new Date() }).where(eq(users.id, userId));
   }
 }
 
