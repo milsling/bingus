@@ -143,7 +143,7 @@ export default function UserProfile() {
                   <Badge variant="secondary">{user.membershipTier}</Badge>
                 )}
                 {user.isAdmin && (
-                  <Badge variant="default" className="bg-purple-600">Admin</Badge>
+                  <Badge variant="default" className="bg-purple-600">{user.username === "Milsling" ? "Owner" : "Admin"}</Badge>
                 )}
               </div>
               {user.location && (
