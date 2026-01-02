@@ -20,30 +20,58 @@ export default function UserProfile() {
 
   const { data: user, isLoading: userLoading, error } = useQuery({
     queryKey: ["user", username],
-    queryFn: () => api.getUser(username!),
+    queryFn: async () => {
+      if (!username) throw new Error("Username required");
+      return api.getUser(username);
+    },
     enabled: !!username,
+    retry: 2,
   });
 
   const { data: bars = [], isLoading: barsLoading } = useQuery({
     queryKey: ["userBars", user?.id],
-    queryFn: () => api.getBarsByUser(user!.id),
+    queryFn: async () => {
+      if (!user?.id) return [];
+      try {
+        return await api.getBarsByUser(user.id);
+      } catch {
+        return [];
+      }
+    },
     enabled: !!user?.id,
   });
 
   const { data: stats } = useQuery({
     queryKey: ["userStats", user?.id],
-    queryFn: () => api.getUserStats(user!.id),
+    queryFn: async () => {
+      if (!user?.id) return { barsCount: 0, followersCount: 0, followingCount: 0 };
+      try {
+        return await api.getUserStats(user.id);
+      } catch {
+        return { barsCount: 0, followersCount: 0, followingCount: 0 };
+      }
+    },
     enabled: !!user?.id,
   });
 
   const { data: isFollowing = false } = useQuery({
     queryKey: ["isFollowing", user?.id],
-    queryFn: () => api.isFollowing(user!.id),
+    queryFn: async () => {
+      if (!user?.id || !currentUser) return false;
+      try {
+        return await api.isFollowing(user.id);
+      } catch {
+        return false;
+      }
+    },
     enabled: !!user?.id && !!currentUser,
   });
 
   const followMutation = useMutation({
-    mutationFn: () => api.followUser(user!.id),
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("User not found");
+      return api.followUser(user.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["isFollowing", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["userStats", user?.id] });
@@ -51,7 +79,10 @@ export default function UserProfile() {
   });
 
   const unfollowMutation = useMutation({
-    mutationFn: () => api.unfollowUser(user!.id),
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("User not found");
+      return api.unfollowUser(user.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["isFollowing", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["userStats", user?.id] });
@@ -61,8 +92,9 @@ export default function UserProfile() {
   const { data: friendshipStatus } = useQuery({
     queryKey: ["friendshipStatus", user?.id],
     queryFn: async () => {
+      if (!user?.id) return { status: "none" };
       try {
-        const res = await fetch(`/api/friends/status/${user!.id}`, { credentials: 'include' });
+        const res = await fetch(`/api/friends/status/${user.id}`, { credentials: 'include' });
         if (!res.ok) return { status: "none" };
         return res.json();
       } catch {
@@ -74,7 +106,8 @@ export default function UserProfile() {
 
   const sendFriendRequestMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/friends/request/${user!.id}`, {
+      if (!user?.id) throw new Error("User not found");
+      const res = await fetch(`/api/friends/request/${user.id}`, {
         method: 'POST',
         credentials: 'include',
       });
