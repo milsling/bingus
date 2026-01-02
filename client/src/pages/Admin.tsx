@@ -216,7 +216,7 @@ export default function Admin() {
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="font-medium">{user.username}</span>
-                                {user.isAdmin && <Badge variant="secondary">Admin</Badge>}
+                                {user.isAdmin && <Badge variant="secondary">{user.username === "Milsling" ? "Owner" : "Admin"}</Badge>}
                                 {user.emailVerified ? (
                                   <Badge className="bg-green-500/20 text-green-500 gap-1">
                                     <CheckCircle className="h-3 w-3" /> Verified
