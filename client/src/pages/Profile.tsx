@@ -169,6 +169,10 @@ export default function Profile() {
             <TabsContent value="likes" className="py-12 text-center text-muted-foreground">
               No liked bars yet.
             </TabsContent>
+
+            <TabsContent value="saved" className="py-12 text-center text-muted-foreground">
+              No saved bars yet.
+            </TabsContent>
           </Tabs>
         </div>
       </main>
