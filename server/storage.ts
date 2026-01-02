@@ -1,6 +1,6 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, follows, notifications, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type InsertComment, type Notification } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, follows, notifications, bookmarks, pushSubscriptions, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type InsertComment, type Notification, type Bookmark, type PushSubscription } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gt, count, sql } from "drizzle-orm";
+import { eq, desc, and, gt, count, sql, or, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -60,6 +60,20 @@ export interface IStorage {
   getUnreadCount(userId: string): Promise<number>;
   markNotificationRead(id: string, userId: string): Promise<boolean>;
   markAllNotificationsRead(userId: string): Promise<void>;
+
+  // Search methods
+  searchBars(query: string, limit?: number): Promise<Array<Bar & { user: User; commentCount: number }>>;
+  searchUsers(query: string, limit?: number): Promise<Array<Pick<User, 'id' | 'username' | 'avatarUrl' | 'bio' | 'membershipTier'>>>;
+
+  // Bookmark methods
+  toggleBookmark(userId: string, barId: string): Promise<boolean>;
+  hasUserBookmarked(userId: string, barId: string): Promise<boolean>;
+  getUserBookmarks(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
+
+  // Push subscription methods
+  savePushSubscription(userId: string, subscription: { endpoint: string; p256dh: string; auth: string }): Promise<PushSubscription>;
+  deletePushSubscription(userId: string, endpoint: string): Promise<boolean>;
+  getPushSubscriptions(userId: string): Promise<PushSubscription[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -358,6 +372,128 @@ export class DatabaseStorage implements IStorage {
 
   async markAllNotificationsRead(userId: string): Promise<void> {
     await db.update(notifications).set({ read: true }).where(eq(notifications.userId, userId));
+  }
+
+  async searchBars(query: string, limit = 50): Promise<Array<Bar & { user: User; commentCount: number }>> {
+    const searchPattern = `%${query}%`;
+    const result = await db
+      .select({
+        bar: bars,
+        user: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          location: users.location,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+          membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+      })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(
+        or(
+          ilike(bars.content, searchPattern),
+          ilike(users.username, searchPattern),
+          sql`${bars.tags}::text ILIKE ${searchPattern}`
+        )
+      )
+      .orderBy(desc(bars.createdAt))
+      .limit(limit);
+    
+    return result.map(row => ({
+      ...row.bar,
+      user: row.user as any,
+      commentCount: Number(row.commentCount) || 0,
+    }));
+  }
+
+  async searchUsers(query: string, limit = 20): Promise<Array<Pick<User, 'id' | 'username' | 'avatarUrl' | 'bio' | 'membershipTier'>>> {
+    const searchPattern = `%${query}%`;
+    return db
+      .select({
+        id: users.id,
+        username: users.username,
+        avatarUrl: users.avatarUrl,
+        bio: users.bio,
+        membershipTier: users.membershipTier,
+      })
+      .from(users)
+      .where(
+        or(
+          ilike(users.username, searchPattern),
+          ilike(users.bio, searchPattern)
+        )
+      )
+      .limit(limit);
+  }
+
+  async toggleBookmark(userId: string, barId: string): Promise<boolean> {
+    const [existing] = await db.select().from(bookmarks).where(and(eq(bookmarks.userId, userId), eq(bookmarks.barId, barId)));
+    if (existing) {
+      await db.delete(bookmarks).where(eq(bookmarks.id, existing.id));
+      return false;
+    } else {
+      await db.insert(bookmarks).values({ userId, barId });
+      return true;
+    }
+  }
+
+  async hasUserBookmarked(userId: string, barId: string): Promise<boolean> {
+    const [existing] = await db.select().from(bookmarks).where(and(eq(bookmarks.userId, userId), eq(bookmarks.barId, barId)));
+    return !!existing;
+  }
+
+  async getUserBookmarks(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>> {
+    const result = await db
+      .select({
+        bar: bars,
+        user: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          location: users.location,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+          membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+        bookmarkCreatedAt: bookmarks.createdAt,
+      })
+      .from(bookmarks)
+      .innerJoin(bars, eq(bookmarks.barId, bars.id))
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(eq(bookmarks.userId, userId))
+      .orderBy(desc(bookmarks.createdAt));
+    
+    return result.map(row => ({
+      ...row.bar,
+      user: row.user as any,
+      commentCount: Number(row.commentCount) || 0,
+    }));
+  }
+
+  async savePushSubscription(userId: string, subscription: { endpoint: string; p256dh: string; auth: string }): Promise<PushSubscription> {
+    await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, subscription.endpoint));
+    const [sub] = await db.insert(pushSubscriptions).values({
+      userId,
+      endpoint: subscription.endpoint,
+      p256dh: subscription.p256dh,
+      auth: subscription.auth,
+    }).returning();
+    return sub;
+  }
+
+  async deletePushSubscription(userId: string, endpoint: string): Promise<boolean> {
+    const result = await db.delete(pushSubscriptions).where(and(eq(pushSubscriptions.userId, userId), eq(pushSubscriptions.endpoint, endpoint))).returning();
+    return result.length > 0;
+  }
+
+  async getPushSubscriptions(userId: string): Promise<PushSubscription[]> {
+    return db.select().from(pushSubscriptions).where(eq(pushSubscriptions.userId, userId));
   }
 }
 

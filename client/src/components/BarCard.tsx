@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark } from "lucide-react";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { shareContent, getBarShareData } from "@/lib/share";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
@@ -46,6 +47,15 @@ export default function BarCard({ bar }: BarCardProps) {
   const { data: likesData } = useQuery({
     queryKey: ['likes', bar.id],
     queryFn: () => api.getLikes(bar.id),
+  });
+
+  const { data: bookmarkData } = useQuery({
+    queryKey: ['bookmark', bar.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/bars/${bar.id}/bookmark`, { credentials: 'include' });
+      return res.json();
+    },
+    enabled: !!currentUser,
   });
 
   const { data: commentsData = [], refetch: refetchComments } = useQuery({
@@ -113,6 +123,47 @@ export default function BarCard({ bar }: BarCardProps) {
     },
   });
 
+  const bookmarkMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/bars/${bar.id}/bookmark`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['bookmark', bar.id] });
+      queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
+      toast({ title: data.bookmarked ? "Saved!" : "Removed from saved" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to bookmark", variant: "destructive" });
+    },
+  });
+
+  const { offset, handlers: swipeHandlers } = useSwipeGesture({
+    onSwipeRight: () => {
+      if (currentUser && !likesData?.liked) {
+        likeMutation.mutate();
+      }
+    },
+    onSwipeLeft: () => {
+      if (currentUser) {
+        bookmarkMutation.mutate();
+      }
+    },
+    threshold: 80,
+    enabled: !!currentUser,
+  });
+
+  const handleBookmark = () => {
+    if (!currentUser) {
+      toast({ title: "Login required", description: "You need to be logged in to save bars", variant: "destructive" });
+      return;
+    }
+    bookmarkMutation.mutate();
+  };
+
   const createMarkup = (html: string) => {
     return { __html: html };
   };
@@ -159,7 +210,23 @@ export default function BarCard({ bar }: BarCardProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
+        {...swipeHandlers}
+        style={{ 
+          transform: `translateX(${offset}px)`,
+          transition: offset === 0 ? 'transform 0.2s ease-out' : 'none',
+        }}
+        className="relative"
       >
+        {offset > 40 && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 text-red-500">
+            <Heart className="h-8 w-8 fill-current" />
+          </div>
+        )}
+        {offset < -40 && (
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 text-primary">
+            <Bookmark className="h-8 w-8 fill-current" />
+          </div>
+        )}
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden hover:border-primary/30 transition-colors duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-3">
@@ -277,6 +344,18 @@ export default function BarCard({ bar }: BarCardProps) {
               >
                 <Share2 className="h-4 w-4" />
                 <span className="text-xs">Share</span>
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`gap-2 transition-colors ${bookmarkData?.bookmarked ? 'text-primary' : 'hover:text-primary hover:bg-primary/10'}`}
+                onClick={handleBookmark}
+                disabled={bookmarkMutation.isPending}
+                data-testid={`button-bookmark-${bar.id}`}
+              >
+                <Bookmark className={`h-4 w-4 ${bookmarkData?.bookmarked ? 'fill-current' : ''}`} />
+                <span className="text-xs">Save</span>
               </Button>
             </div>
 

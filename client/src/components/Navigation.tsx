@@ -1,10 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Home, User, PlusSquare, LogIn, Shield, Bell } from "lucide-react";
+import { Home, User, PlusSquare, LogIn, Shield, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationBell } from "@/components/NotificationBell";
+import { SearchBar } from "@/components/SearchBar";
 import iconUrl from "@/assets/icon.png";
 
 export default function Navigation() {
@@ -17,6 +18,7 @@ export default function Navigation() {
 
   const authenticatedItems = [
     { icon: PlusSquare, label: "Drop Bar", path: "/post" },
+    { icon: Bookmark, label: "Saved", path: "/saved" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
 
@@ -30,14 +32,17 @@ export default function Navigation() {
     <>
       {/* Desktop Navigation */}
       <nav className="hidden md:flex fixed top-0 left-0 right-0 h-16 border-b border-border bg-background/80 backdrop-blur-md z-50 items-center px-6 justify-between">
-        <Link href="/">
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-            <img src={iconUrl} alt="" className="h-8 w-8" />
-            <span className="font-logo text-xl">ORPHAN BARS</span>
-          </div>
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/">
+            <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+              <img src={iconUrl} alt="" className="h-8 w-8" />
+              <span className="font-logo text-xl">ORPHAN BARS</span>
+            </div>
+          </Link>
+          <SearchBar className="w-64" />
+        </div>
         
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6">
           {allItems.map((item) => (
             <Link key={item.path} href={item.path}>
               <div className={cn(

@@ -6,6 +6,7 @@ import type { User, BarWithUser } from "@shared/schema";
 interface BarContextType {
   bars: BarWithUser[];
   isLoadingBars: boolean;
+  refetchBars: () => Promise<void>;
   addBar: (bar: {
     content: string;
     explanation?: string;
@@ -39,10 +40,14 @@ export function BarProvider({ children }: { children: ReactNode }) {
   });
 
   // Fetch all bars
-  const { data: bars = [], isLoading: isLoadingBars } = useQuery<BarWithUser[]>({
+  const { data: bars = [], isLoading: isLoadingBars, refetch: refetchBarsQuery } = useQuery<BarWithUser[]>({
     queryKey: ['bars'],
     queryFn: () => api.getBars(),
   });
+
+  const refetchBars = async () => {
+    await refetchBarsQuery();
+  };
 
   // Login mutation
   const loginMutation = useMutation({
@@ -121,6 +126,7 @@ export function BarProvider({ children }: { children: ReactNode }) {
       value={{
         bars,
         isLoadingBars,
+        refetchBars,
         addBar,
         currentUser,
         isLoadingUser,

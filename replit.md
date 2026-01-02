@@ -36,6 +36,8 @@ Preferred communication style: Simple, everyday language.
 - **Tables**:
   - `users`: User accounts with membership tiers
   - `bars`: Lyric posts with categories, tags, and explanations
+  - `bookmarks`: Saved bars for users
+  - `push_subscriptions`: Browser push notification subscriptions
 
 ### File Storage
 - **Service**: Google Cloud Storage via Replit Object Storage integration
@@ -81,3 +83,21 @@ Preferred communication style: Simple, everyday language.
 
 ### Fonts (Google Fonts)
 - Syne, UnifrakturMaguntia, Anton, Oswald, JetBrains Mono - user-switchable display fonts
+
+## Progressive Web App Features
+
+### App-Like Experience
+- **Search**: Full-text search for bars by content, users, and tags
+- **Bookmarks**: Users can save bars to a "Saved" collection
+- **Skeleton Loading**: Smooth loading states with skeleton placeholders
+- **Page Transitions**: Animated fade transitions between pages via Framer Motion
+- **Pull-to-Refresh**: Touch gesture to refresh the feed on mobile
+- **Swipe Gestures**: Swipe right to like, swipe left to bookmark bars
+- **Offline Mode**: Service worker caches static assets and API responses
+- **Push Notifications**: Infrastructure for browser push notifications (VAPID keys required)
+- **Home Screen Icon**: Apple touch icon and web manifest for add-to-home-screen
+
+### Service Worker
+- Location: `client/public/sw.js`
+- Caching strategy: Stale-while-revalidate for static assets, network-first for API calls
+- Registered in `client/src/main.tsx`

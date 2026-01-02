@@ -590,6 +590,96 @@ export async function registerRoutes(
     }
   });
 
+  // Search routes
+  app.get("/api/search/bars", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length < 2) {
+        return res.json([]);
+      }
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const results = await storage.searchBars(query.trim(), limit);
+      res.json(results);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/search/users", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length < 2) {
+        return res.json([]);
+      }
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const results = await storage.searchUsers(query.trim(), limit);
+      res.json(results);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Bookmark routes
+  app.post("/api/bars/:id/bookmark", isAuthenticated, async (req, res) => {
+    try {
+      const bookmarked = await storage.toggleBookmark(req.user!.id, req.params.id);
+      res.json({ bookmarked });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bars/:id/bookmark", async (req, res) => {
+    try {
+      const bookmarked = req.isAuthenticated() && req.user?.id
+        ? await storage.hasUserBookmarked(req.user.id, req.params.id)
+        : false;
+      res.json({ bookmarked });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bookmarks", isAuthenticated, async (req, res) => {
+    try {
+      const bookmarks = await storage.getUserBookmarks(req.user!.id);
+      res.json(bookmarks);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Push notification subscription routes
+  app.post("/api/push/subscribe", isAuthenticated, async (req, res) => {
+    try {
+      const { endpoint, keys } = req.body;
+      if (!endpoint || !keys?.p256dh || !keys?.auth) {
+        return res.status(400).json({ message: "Invalid subscription data" });
+      }
+      await storage.savePushSubscription(req.user!.id, {
+        endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
+      });
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/push/unsubscribe", isAuthenticated, async (req, res) => {
+    try {
+      const { endpoint } = req.body;
+      if (!endpoint) {
+        return res.status(400).json({ message: "Endpoint is required" });
+      }
+      await storage.deletePushSubscription(req.user!.id, endpoint);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Profile routes
   app.get("/api/users/:username", async (req, res) => {
     try {

@@ -1,20 +1,30 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Navigation from "@/components/Navigation";
 import BarCard from "@/components/BarCard";
 import CategoryFilter from "@/components/CategoryFilter";
+import { BarSkeletonList } from "@/components/BarSkeleton";
+import { SearchBar } from "@/components/SearchBar";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { Clock, Flame, Trophy, Grid3X3 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import iconUrl from "@/assets/icon.png";
 import { useBars } from "@/context/BarContext";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Category = "Funny" | "Serious" | "Wordplay" | "Storytelling" | "Battle" | "Freestyle";
 type FeedTab = "latest" | "top" | "trending" | "categories";
 
 export default function Home() {
-  const { bars, isLoadingBars } = useBars();
+  const { bars, isLoadingBars, refetchBars } = useBars();
   const [selectedCategory, setSelectedCategory] = useState<Category | "All">("All");
   const [activeTab, setActiveTab] = useState<FeedTab>("latest");
+  const queryClient = useQueryClient();
+
+  const handleRefresh = useCallback(async () => {
+    await refetchBars();
+    queryClient.invalidateQueries({ queryKey: ['likes'] });
+  }, [refetchBars, queryClient]);
 
   const filteredBars = useMemo(() => {
     let result = [...bars];
@@ -42,12 +52,15 @@ export default function Home() {
       <Navigation />
       
       {/* Mobile Header */}
-      <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <img src={iconUrl} alt="" className="h-7 w-7" />
-          <span className="font-logo text-xl">ORPHAN BARS</span>
+      <header className="md:hidden flex flex-col gap-3 p-4 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src={iconUrl} alt="" className="h-7 w-7" />
+            <span className="font-logo text-xl">ORPHAN BARS</span>
+          </div>
+          <ThemeToggle />
         </div>
-        <ThemeToggle />
+        <SearchBar />
       </header>
 
       <main>
@@ -91,21 +104,21 @@ export default function Home() {
               <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
             )}
 
-            <div className="px-4 py-6 space-y-6">
-              {isLoadingBars ? (
-                <div className="text-center py-20 text-muted-foreground">
-                  <p>Loading bars...</p>
-                </div>
-              ) : filteredBars.length === 0 ? (
-                <div className="text-center py-20 text-muted-foreground">
-                  <p>No bars found{activeTab === "trending" ? " in the last 24 hours" : activeTab === "categories" ? " in this category" : ""}.</p>
-                </div>
-              ) : (
-                filteredBars.map((bar) => (
-                  <BarCard key={bar.id} bar={bar} />
-                ))
-              )}
-            </div>
+            <PullToRefresh onRefresh={handleRefresh}>
+              <div className="px-4 py-6 space-y-6">
+                {isLoadingBars ? (
+                  <BarSkeletonList count={5} />
+                ) : filteredBars.length === 0 ? (
+                  <div className="text-center py-20 text-muted-foreground">
+                    <p>No bars found{activeTab === "trending" ? " in the last 24 hours" : activeTab === "categories" ? " in this category" : ""}.</p>
+                  </div>
+                ) : (
+                  filteredBars.map((bar) => (
+                    <BarCard key={bar.id} bar={bar} />
+                  ))
+                )}
+              </div>
+            </PullToRefresh>
           </div>
         </div>
       </main>
