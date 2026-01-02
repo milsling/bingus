@@ -70,6 +70,8 @@ export interface IStorage {
   // Search methods
   searchBars(query: string, limit?: number): Promise<Array<Bar & { user: User; commentCount: number }>>;
   searchUsers(query: string, limit?: number): Promise<Array<Pick<User, 'id' | 'username' | 'avatarUrl' | 'bio' | 'membershipTier'>>>;
+  searchTags(query: string, limit?: number): Promise<string[]>;
+  getBarsByTag(tag: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
 
   // Bookmark methods
   toggleBookmark(userId: string, barId: string): Promise<boolean>;
@@ -473,6 +475,49 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .limit(limit);
+  }
+
+  async searchTags(query: string, limit = 10): Promise<string[]> {
+    const allBars = await db.select({ tags: bars.tags }).from(bars).where(sql`${bars.tags} IS NOT NULL`);
+    const tagSet = new Set<string>();
+    for (const bar of allBars) {
+      if (bar.tags) {
+        for (const tag of bar.tags) {
+          if (tag.toLowerCase().includes(query)) {
+            tagSet.add(tag.toLowerCase());
+          }
+        }
+      }
+    }
+    return Array.from(tagSet).slice(0, limit);
+  }
+
+  async getBarsByTag(tag: string): Promise<Array<Bar & { user: User; commentCount: number }>> {
+    const result = await db
+      .select({
+        bar: bars,
+        user: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          location: users.location,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+          membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
+          isOwner: users.isOwner,
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+      })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(sql`${tag} = ANY(${bars.tags})`)
+      .orderBy(desc(bars.createdAt));
+    return result.map(r => ({
+      ...r.bar,
+      user: r.user as User,
+      commentCount: Number(r.commentCount) || 0,
+    }));
   }
 
   async toggleBookmark(userId: string, barId: string): Promise<boolean> {

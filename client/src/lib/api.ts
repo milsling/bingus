@@ -120,6 +120,7 @@ export const api = {
     explanation?: string;
     category: string;
     tags: string[];
+    feedbackWanted?: boolean;
   }): Promise<BarWithUser> => {
     const response = await apiFetch('/api/bars', {
       method: 'POST',
@@ -141,6 +142,7 @@ export const api = {
     explanation?: string;
     category?: string;
     tags?: string[];
+    feedbackWanted?: boolean;
   }): Promise<BarWithUser> => {
     const response = await apiFetch(`/api/bars/${barId}`, {
       method: 'PATCH',

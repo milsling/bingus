@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Bold, Italic, Underline } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Bold, Italic, Underline, MessageSquare } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ export default function Post() {
   const [explanation, setExplanation] = useState("");
   const [category, setCategory] = useState<Category>("Freestyle");
   const [tags, setTags] = useState("");
+  const [feedbackWanted, setFeedbackWanted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const applyFormat = (command: string) => {
@@ -58,6 +60,7 @@ export default function Post() {
         explanation: explanation.trim() || undefined,
         category,
         tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+        feedbackWanted,
       });
 
       toast({
@@ -177,6 +180,22 @@ export default function Post() {
                   className="bg-secondary/30 border-border/50"
                 />
               </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/50">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-primary" />
+                <div>
+                  <Label htmlFor="feedback" className="cursor-pointer">Breakdown Requested</Label>
+                  <p className="text-xs text-muted-foreground">Let the community know you want feedback or critique</p>
+                </div>
+              </div>
+              <Switch
+                id="feedback"
+                checked={feedbackWanted}
+                onCheckedChange={setFeedbackWanted}
+                data-testid="switch-feedback"
+              />
             </div>
 
             <Button 

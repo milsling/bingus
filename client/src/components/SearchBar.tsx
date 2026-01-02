@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, X, User, FileText } from "lucide-react";
+import { Search, X, User, FileText, Hash, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 
 interface SearchResult {
-  type: "bar" | "user";
+  type: "bar" | "user" | "tag";
   id: string;
   title: string;
   subtitle: string;
   avatarUrl?: string | null;
 }
+
+const TRENDING_TAGS = ["wordplay", "punchline", "metaphor", "freestyle", "storytelling"];
 
 export function SearchBar({ className }: { className?: string }) {
   const [query, setQuery] = useState("");
@@ -40,15 +43,23 @@ export function SearchBar({ className }: { className?: string }) {
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const [barsRes, usersRes] = await Promise.all([
+        const [barsRes, usersRes, tagsRes] = await Promise.all([
           fetch(`/api/search/bars?q=${encodeURIComponent(query)}&limit=5`, { credentials: "include" }),
           fetch(`/api/search/users?q=${encodeURIComponent(query)}&limit=5`, { credentials: "include" }),
+          fetch(`/api/search/tags?q=${encodeURIComponent(query)}&limit=5`, { credentials: "include" }),
         ]);
         
         const barsData = await barsRes.json();
         const usersData = await usersRes.json();
+        const tagsData = await tagsRes.json().catch(() => []);
 
         const combined: SearchResult[] = [
+          ...tagsData.map((tag: string) => ({
+            type: "tag" as const,
+            id: tag,
+            title: `#${tag}`,
+            subtitle: "Search by tag",
+          })),
           ...usersData.map((u: any) => ({
             type: "user" as const,
             id: u.username,
@@ -76,10 +87,17 @@ export function SearchBar({ className }: { className?: string }) {
   const handleSelect = (result: SearchResult) => {
     if (result.type === "user") {
       setLocation(`/u/${result.id}`);
+    } else if (result.type === "tag") {
+      setLocation(`/?tag=${encodeURIComponent(result.id)}`);
     } else {
       setLocation(`/bars/${result.id}`);
     }
     setQuery("");
+    setIsOpen(false);
+  };
+
+  const handleTagClick = (tag: string) => {
+    setLocation(`/?tag=${encodeURIComponent(tag)}`);
     setIsOpen(false);
   };
 
@@ -89,7 +107,7 @@ export function SearchBar({ className }: { className?: string }) {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="Search bars or users..."
+          placeholder="Search schemes, bars, or users..."
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -115,9 +133,29 @@ export function SearchBar({ className }: { className?: string }) {
         )}
       </div>
 
-      {isOpen && (query.length >= 2 || results.length > 0) && (
+      {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 overflow-hidden">
-          {isLoading ? (
+          {query.length < 2 ? (
+            <div className="p-3">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                <TrendingUp className="h-3 w-3" />
+                <span>Trending Tags</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {TRENDING_TAGS.map(tag => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-primary/20 hover:text-primary transition-colors text-xs"
+                    onClick={() => handleTagClick(tag)}
+                    data-testid={`trending-tag-${tag}`}
+                  >
+                    #{tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          ) : isLoading ? (
             <div className="p-4 text-center text-sm text-muted-foreground">Searching...</div>
           ) : results.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">No results found</div>
@@ -131,7 +169,11 @@ export function SearchBar({ className }: { className?: string }) {
                   data-testid={`search-result-${index}`}
                 >
                   <div className="flex-shrink-0">
-                    {result.type === "user" ? (
+                    {result.type === "tag" ? (
+                      <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Hash className="h-4 w-4 text-primary" />
+                      </div>
+                    ) : result.type === "user" ? (
                       result.avatarUrl ? (
                         <img src={result.avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
                       ) : (

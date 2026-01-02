@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus } from "lucide-react";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { shareContent, getBarShareData } from "@/lib/share";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -371,13 +371,21 @@ export default function BarCard({ bar }: BarCardProps) {
             )}
 
             <div className="flex flex-wrap gap-2 pt-2">
+              {bar.feedbackWanted && (
+                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs gap-1" data-testid={`badge-feedback-${bar.id}`}>
+                  <MessageSquarePlus className="h-3 w-3" />
+                  Breakdown Requested
+                </Badge>
+              )}
               <Badge variant="outline" className="border-primary/20 text-primary/80 hover:bg-primary/10" data-testid={`badge-category-${bar.id}`}>
                 {bar.category}
               </Badge>
               {bar.tags && bar.tags.map(tag => (
-                <Badge key={tag} variant="secondary" className="text-xs text-muted-foreground" data-testid={`badge-tag-${tag}-${bar.id}`}>
-                  #{tag}
-                </Badge>
+                <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}>
+                  <Badge variant="secondary" className="text-xs text-muted-foreground hover:bg-primary/20 hover:text-primary cursor-pointer transition-colors" data-testid={`badge-tag-${tag}-${bar.id}`}>
+                    #{tag}
+                  </Badge>
+                </Link>
               ))}
             </div>
           </CardContent>

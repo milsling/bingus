@@ -658,6 +658,30 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/search/tags", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length < 1) {
+        return res.json([]);
+      }
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const results = await storage.searchTags(query.trim().toLowerCase(), limit);
+      res.json(results);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bars/by-tag/:tag", async (req, res) => {
+    try {
+      const tag = req.params.tag;
+      const results = await storage.getBarsByTag(tag.toLowerCase());
+      res.json(results);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Bookmark routes
   app.post("/api/bars/:id/bookmark", isAuthenticated, async (req, res) => {
     try {

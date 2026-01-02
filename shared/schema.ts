@@ -47,6 +47,7 @@ export const bars = pgTable("bars", {
   explanation: text("explanation"),
   category: text("category").notNull(),
   tags: text("tags").array(),
+  feedbackWanted: boolean("feedback_wanted").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -170,6 +171,7 @@ export const updateBarSchema = z.object({
   explanation: z.string().max(500).optional().nullable(),
   category: z.enum(["Funny", "Serious", "Wordplay", "Storytelling", "Battle", "Freestyle"]).optional(),
   tags: z.array(z.string()).optional(),
+  feedbackWanted: z.boolean().optional(),
 });
 
 export const insertCommentSchema = createInsertSchema(comments).omit({
