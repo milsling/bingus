@@ -16,6 +16,7 @@ export const users = pgTable("users", {
   membershipTier: text("membership_tier").notNull().default("free"),
   membershipExpiresAt: timestamp("membership_expires_at"),
   isAdmin: boolean("is_admin").notNull().default(false),
+  isOwner: boolean("is_owner").notNull().default(false),
   usernameChangedAt: timestamp("username_changed_at"),
 });
 

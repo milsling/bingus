@@ -856,6 +856,12 @@ export async function registerRoutes(
     return res.status(403).json({ message: "Admin access required" });
   };
 
+  // Helper to check if a user is the protected owner
+  const isProtectedOwner = async (userId: string): Promise<boolean> => {
+    const user = await storage.getUser(userId);
+    return user?.isOwner === true;
+  };
+
   app.get("/api/admin/users", isAdmin, async (req, res) => {
     try {
       const allUsers = await storage.getAllUsers();
@@ -877,6 +883,13 @@ export async function registerRoutes(
 
   app.delete("/api/admin/bars/:id", isAdmin, async (req, res) => {
     try {
+      const bar = await storage.getBarById(req.params.id);
+      if (!bar) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+      if (await isProtectedOwner(bar.userId)) {
+        return res.status(403).json({ message: "Cannot moderate owner's content" });
+      }
       const success = await storage.deleteBarAdmin(req.params.id);
       if (!success) {
         return res.status(404).json({ message: "Bar not found" });
@@ -899,6 +912,10 @@ export async function registerRoutes(
       const bar = await storage.getBarById(req.params.id);
       if (!bar) {
         return res.status(404).json({ message: "Bar not found" });
+      }
+
+      if (await isProtectedOwner(bar.userId)) {
+        return res.status(403).json({ message: "Cannot moderate owner's content" });
       }
 
       const userId = bar.userId;
@@ -929,6 +946,9 @@ export async function registerRoutes(
       if (req.params.id === req.user!.id) {
         return res.status(400).json({ message: "Cannot delete yourself" });
       }
+      if (await isProtectedOwner(req.params.id)) {
+        return res.status(403).json({ message: "Cannot delete owner account" });
+      }
       const success = await storage.deleteUser(req.params.id);
       if (!success) {
         return res.status(404).json({ message: "User not found" });
@@ -944,6 +964,9 @@ export async function registerRoutes(
     try {
       if (req.params.id === req.user!.id) {
         return res.status(400).json({ message: "Cannot change your own admin status" });
+      }
+      if (await isProtectedOwner(req.params.id)) {
+        return res.status(403).json({ message: "Cannot modify owner's privileges" });
       }
       const { isAdmin: newAdminStatus } = req.body;
       if (typeof newAdminStatus !== "boolean") {
@@ -963,6 +986,9 @@ export async function registerRoutes(
   // Toggle email verified status
   app.patch("/api/admin/users/:id/verify", isAdmin, async (req, res) => {
     try {
+      if (await isProtectedOwner(req.params.id)) {
+        return res.status(403).json({ message: "Cannot modify owner's privileges" });
+      }
       const { emailVerified } = req.body;
       if (typeof emailVerified !== "boolean") {
         return res.status(400).json({ message: "emailVerified must be a boolean" });
@@ -981,6 +1007,9 @@ export async function registerRoutes(
   // Change membership tier
   app.patch("/api/admin/users/:id/membership", isAdmin, async (req, res) => {
     try {
+      if (await isProtectedOwner(req.params.id)) {
+        return res.status(403).json({ message: "Cannot modify owner's privileges" });
+      }
       const { membershipTier } = req.body;
       const validTiers = ["free", "basic", "premium"];
       if (!validTiers.includes(membershipTier)) {
