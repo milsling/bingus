@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, ArrowLeft, Mail, CheckCircle, KeyRound } from "lucide-react";
+import { ArrowLeft, Mail, CheckCircle, KeyRound } from "lucide-react";
 import { Link } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -521,7 +521,7 @@ export default function Auth() {
         <div className="mb-8 text-center space-y-2">
           <Link href="/">
             <div className="flex items-center justify-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
-              <BookOpen className="text-primary h-10 w-10" />
+              <img src="/logo.png" alt="Orphan Bars" className="h-10 w-10" />
               <span className="font-logo text-3xl">ORPHAN BARS</span>
             </div>
           </Link>
