@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image } from "lucide-react";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { shareContent, getBarShareData } from "@/lib/share";
+import ProofScreenshot from "@/components/ProofScreenshot";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
@@ -121,6 +122,7 @@ export default function BarCard({ bar }: BarCardProps) {
   const [editExplanation, setEditExplanation] = useState(bar.explanation || "");
   const [editCategory, setEditCategory] = useState(bar.category);
   const [editTags, setEditTags] = useState(bar.tags?.join(", ") || "");
+  const [showProofScreenshot, setShowProofScreenshot] = useState(false);
 
   const isOwner = currentUser?.id === bar.user.id;
 
@@ -429,6 +431,14 @@ export default function BarCard({ bar }: BarCardProps) {
                     SHA256: {bar.proofHash.substring(0, 16)}...{bar.proofHash.substring(bar.proofHash.length - 8)}
                   </div>
                 )}
+                <button
+                  onClick={() => setShowProofScreenshot(true)}
+                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors mt-2"
+                  data-testid={`button-proof-screenshot-${bar.id}`}
+                >
+                  <Image className="h-3 w-3" />
+                  <span>Generate Proof Screenshot</span>
+                </button>
               </div>
             )}
 
@@ -637,6 +647,12 @@ export default function BarCard({ bar }: BarCardProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ProofScreenshot
+        bar={bar}
+        open={showProofScreenshot}
+        onOpenChange={setShowProofScreenshot}
+      />
     </>
   );
 }
