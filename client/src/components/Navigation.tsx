@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchBar } from "@/components/SearchBar";
 import { OnlineStatusIndicator } from "@/components/OnlineStatus";
+import iconUrl from "@/assets/icon.png";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -78,8 +79,8 @@ export default function Navigation() {
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border bg-background/90 backdrop-blur-lg z-50 flex items-center justify-between px-4">
         <Link href="/">
           <div className="flex items-center gap-1.5 cursor-pointer">
-            <img src="/favicon.png" alt="" className="h-6 w-6" />
-            <span className="font-logo text-base leading-none">ORPHAN BARS</span>
+            <img src={iconUrl} alt="" className="h-6 w-6" />
+            <span className="font-logo text-sm whitespace-nowrap">ORPHAN BARS</span>
           </div>
         </Link>
         <div className="flex items-center gap-2">
