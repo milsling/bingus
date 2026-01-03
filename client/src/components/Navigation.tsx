@@ -37,7 +37,7 @@ export default function Navigation() {
         <div className="flex items-center gap-6">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <img src="/icon.png" alt="" className="h-8 w-8" />
+              <img src="/logo.png" alt="" className="h-8 w-8" />
               <span className="font-logo text-xl">ORPHAN BARS</span>
             </div>
           </Link>
@@ -78,7 +78,7 @@ export default function Navigation() {
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border bg-background/90 backdrop-blur-lg z-50 flex items-center justify-between px-4">
         <Link href="/">
           <div className="flex items-center gap-1.5 cursor-pointer">
-            <img src="/icon.png" alt="" className="h-6 w-6" />
+            <img src="/favicon.png" alt="" className="h-6 w-6" />
             <span className="font-logo text-base leading-none">ORPHAN BARS</span>
           </div>
         </Link>
