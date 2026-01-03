@@ -781,7 +781,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOnlineUsersCount(): Promise<number> {
-    const [result] = await db.select({ count: count() }).from(users).where(eq(users.onlineStatus, "online"));
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+    const [result] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(
+        and(
+          or(eq(users.onlineStatus, "online"), eq(users.onlineStatus, "busy")),
+          gt(users.lastSeenAt, twoMinutesAgo)
+        )
+      );
     return result?.count || 0;
   }
 

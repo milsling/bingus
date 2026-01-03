@@ -50,26 +50,48 @@ export function OnlineStatusIndicator() {
   });
 
   useEffect(() => {
-    if (currentUser && currentUser.onlineStatus !== 'online') {
+    if (!currentUser) return;
+
+    if (currentUser.onlineStatus !== 'online' && currentUser.onlineStatus !== 'busy') {
       statusMutation.mutate('online');
     }
 
+    const sendHeartbeat = () => {
+      fetch('/api/online/heartbeat', {
+        method: 'POST',
+        credentials: 'include',
+      }).catch(() => {});
+    };
+
+    sendHeartbeat();
+    const heartbeatInterval = setInterval(sendHeartbeat, 30000);
+
     const handleVisibility = () => {
-      if (currentUser) {
-        if (document.hidden) {
-          if (currentUser.onlineStatus === 'online') {
-            statusMutation.mutate('offline');
-          }
-        } else {
-          if (currentUser.onlineStatus === 'offline') {
-            statusMutation.mutate('online');
-          }
+      if (document.hidden) {
+        if (currentUser.onlineStatus === 'online') {
+          statusMutation.mutate('offline');
+        }
+      } else {
+        sendHeartbeat();
+        if (currentUser.onlineStatus === 'offline') {
+          statusMutation.mutate('online');
         }
       }
     };
 
+    const handleBeforeUnload = () => {
+      const blob = new Blob([JSON.stringify({ status: 'offline' })], { type: 'application/json' });
+      navigator.sendBeacon('/api/online/status', blob);
+    };
+
     document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      clearInterval(heartbeatInterval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, [currentUser]);
 
   const getStatusColor = (status?: string) => {

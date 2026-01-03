@@ -1103,6 +1103,15 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/online/heartbeat", isAuthenticated, async (req, res) => {
+    try {
+      await storage.updateLastSeen(req.user!.id);
+      res.json({ ok: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Friendship routes
   app.post("/api/friends/request/:userId", isAuthenticated, async (req, res) => {
     try {
