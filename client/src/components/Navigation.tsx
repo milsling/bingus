@@ -7,11 +7,13 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchBar } from "@/components/SearchBar";
 import { OnlineStatusIndicator } from "@/components/OnlineStatus";
+import { useUnreadMessagesCount } from "@/components/UnreadMessagesBadge";
 import iconUrl from "@/assets/icon.png";
 
 export default function Navigation() {
   const [location] = useLocation();
   const { currentUser } = useBars();
+  const unreadCount = useUnreadMessagesCount();
 
   const desktopNavItems = [
     { icon: Home, label: "Feed", path: "/" },
@@ -72,10 +74,18 @@ export default function Navigation() {
             <>
               <Link href="/messages">
                 <div className={cn(
-                  "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary cursor-pointer",
-                  location === "/messages" ? "text-primary" : "text-muted-foreground"
+                  "relative flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary cursor-pointer",
+                  location === "/messages" ? "text-primary" : "text-muted-foreground",
+                  unreadCount > 0 && location !== "/messages" && "text-primary"
                 )}>
-                  <MessageCircle className="h-4 w-4" />
+                  <div className="relative">
+                    <MessageCircle className="h-4 w-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </div>
                   Messages
                 </div>
               </Link>
@@ -166,9 +176,17 @@ export default function Navigation() {
               <Link key={item.path} href={item.path}>
                 <div className={cn(
                   "flex flex-col items-center gap-0.5 transition-colors cursor-pointer",
-                  location === item.path ? "text-primary" : "text-muted-foreground"
+                  location === item.path ? "text-primary" : "text-muted-foreground",
+                  item.path === "/messages" && unreadCount > 0 && location !== "/messages" && "text-primary"
                 )}>
-                  <item.icon className="h-5 w-5" />
+                  <div className="relative">
+                    <item.icon className="h-5 w-5" />
+                    {item.path === "/messages" && unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1.5 min-w-[12px] h-3 px-0.5 rounded-full bg-primary text-primary-foreground text-[8px] font-bold flex items-center justify-center">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[9px] font-medium">{item.label}</span>
                 </div>
               </Link>
