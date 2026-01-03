@@ -116,9 +116,9 @@ export interface IStorage {
   getBarByProofId(proofBarId: string): Promise<(Bar & { user: User }) | undefined>;
 
   // Feed ranking methods
-  getTopBars(limit?: number): Promise<Array<Bar & { user: User; score: number }>>;
-  getTrendingBars(limit?: number): Promise<Array<Bar & { user: User; velocity: number }>>;
-  getFeaturedBars(limit?: number): Promise<Array<Bar & { user: User }>>;
+  getTopBars(limit?: number): Promise<Array<Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'>; score: number }>>;
+  getTrendingBars(limit?: number): Promise<Array<Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'>; velocity: number }>>;
+  getFeaturedBars(limit?: number): Promise<Array<Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'> }>>;
   setBarFeatured(barId: string, featured: boolean): Promise<Bar | undefined>;
 }
 
@@ -886,9 +886,17 @@ export class DatabaseStorage implements IStorage {
     return { ...result.bar, user: result.user as User };
   }
 
-  async getTopBars(limit: number = 50): Promise<Array<Bar & { user: User; score: number }>> {
+  async getTopBars(limit: number = 50): Promise<Array<Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'>; score: number }>> {
     const allBars = await db
-      .select({ bar: bars, user: users })
+      .select({ 
+        bar: bars, 
+        user: {
+          id: users.id,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+        }
+      })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
       .where(ne(bars.permissionStatus, "private"));
@@ -901,7 +909,7 @@ export class DatabaseStorage implements IStorage {
         const score = (likeCount * 3) + (commentCount * 2) + (bookmarkCount[0]?.count || 0);
         return {
           ...result.bar,
-          user: result.user as User,
+          user: result.user as Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'>,
           score,
         };
       })
@@ -912,13 +920,21 @@ export class DatabaseStorage implements IStorage {
       .slice(0, limit);
   }
 
-  async getTrendingBars(limit: number = 50): Promise<Array<Bar & { user: User; velocity: number }>> {
+  async getTrendingBars(limit: number = 50): Promise<Array<Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'>; velocity: number }>> {
     const now = new Date();
     const hoursAgo72 = new Date(now.getTime() - 72 * 60 * 60 * 1000);
     const hoursAgo24 = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     
     const recentBars = await db
-      .select({ bar: bars, user: users })
+      .select({ 
+        bar: bars, 
+        user: {
+          id: users.id,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+        }
+      })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
       .where(and(
@@ -944,7 +960,7 @@ export class DatabaseStorage implements IStorage {
         
         return {
           ...result.bar,
-          user: result.user as User,
+          user: result.user as Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'>,
           velocity,
         };
       })
@@ -956,9 +972,17 @@ export class DatabaseStorage implements IStorage {
       .slice(0, limit);
   }
 
-  async getFeaturedBars(limit: number = 20): Promise<Array<Bar & { user: User }>> {
+  async getFeaturedBars(limit: number = 20): Promise<Array<Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'> }>> {
     const featuredResults = await db
-      .select({ bar: bars, user: users })
+      .select({ 
+        bar: bars, 
+        user: {
+          id: users.id,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+        }
+      })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
       .where(eq(bars.isFeatured, true))
@@ -972,7 +996,7 @@ export class DatabaseStorage implements IStorage {
     
     return featuredResults.map(result => ({
       ...result.bar,
-      user: result.user as User,
+      user: result.user as Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'>,
     }));
   }
 
