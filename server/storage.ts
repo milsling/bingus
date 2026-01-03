@@ -14,7 +14,7 @@ export interface IStorage {
   createBar(bar: InsertBar): Promise<Bar>;
   getBars(limit?: number): Promise<Array<Bar & { user: User }>>;
   getBarById(id: string): Promise<(Bar & { user: User }) | undefined>;
-  getBarsByUser(userId: string): Promise<Bar[]>;
+  getBarsByUser(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
   updateBar(id: string, userId: string, updates: Partial<Pick<Bar, 'content' | 'explanation' | 'category' | 'tags'>>): Promise<Bar | undefined>;
   deleteBar(id: string, userId: string): Promise<boolean>;
 
@@ -189,12 +189,33 @@ export class DatabaseStorage implements IStorage {
     return { ...result.bar, user: result.user as User };
   }
 
-  async getBarsByUser(userId: string): Promise<Bar[]> {
-    return db
-      .select()
+  async getBarsByUser(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>> {
+    const result = await db
+      .select({
+        bar: bars,
+        user: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          location: users.location,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+          membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
+          isOwner: users.isOwner,
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+      })
       .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
       .where(eq(bars.userId, userId))
       .orderBy(desc(bars.createdAt));
+    
+    return result.map(row => ({
+      ...row.bar,
+      user: row.user as any,
+      commentCount: Number(row.commentCount) || 0,
+    }));
   }
 
   async updateBar(id: string, userId: string, updates: Partial<Pick<Bar, 'content' | 'explanation' | 'category' | 'tags'>>): Promise<Bar | undefined> {
