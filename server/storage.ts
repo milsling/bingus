@@ -1,6 +1,7 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray } from "drizzle-orm";
+import { createHash } from "crypto";
 
 export interface IStorage {
   // User methods
@@ -103,6 +104,16 @@ export interface IStorage {
   updateOnlineStatus(userId: string, status: string): Promise<void>;
   getOnlineUsersCount(): Promise<number>;
   updateLastSeen(userId: string): Promise<void>;
+
+  // Proof-of-origin methods
+  getNextBarSequence(): Promise<number>;
+  findSimilarBars(content: string, threshold?: number): Promise<Array<{ bar: Bar; similarity: number }>>;
+  
+  // Adoption methods
+  createAdoption(originalBarId: string, adoptedByBarId: string, adoptedByUserId: string): Promise<Adoption>;
+  getAdoptionsByOriginal(barId: string): Promise<Adoption[]>;
+  getAdoptedFromBar(barId: string): Promise<Adoption | undefined>;
+  getBarByProofId(proofBarId: string): Promise<(Bar & { user: User }) | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -797,6 +808,80 @@ export class DatabaseStorage implements IStorage {
   async updateLastSeen(userId: string): Promise<void> {
     await db.update(users).set({ lastSeenAt: new Date() }).where(eq(users.id, userId));
   }
+
+  async getNextBarSequence(): Promise<number> {
+    const [existing] = await db.select().from(barSequence).where(eq(barSequence.id, "singleton"));
+    if (!existing) {
+      await db.insert(barSequence).values({ id: "singleton", currentValue: 1 });
+      return 1;
+    }
+    const nextValue = existing.currentValue + 1;
+    await db.update(barSequence).set({ currentValue: nextValue }).where(eq(barSequence.id, "singleton"));
+    return nextValue;
+  }
+
+  async findSimilarBars(content: string, threshold = 0.8): Promise<Array<{ bar: Bar; similarity: number }>> {
+    const allBars = await db.select().from(bars);
+    const normalizedContent = this.normalizeText(content);
+    const results: Array<{ bar: Bar; similarity: number }> = [];
+    
+    for (const bar of allBars) {
+      const normalizedBar = this.normalizeText(bar.content);
+      const similarity = this.calculateSimilarity(normalizedContent, normalizedBar);
+      if (similarity >= threshold) {
+        results.push({ bar, similarity });
+      }
+    }
+    return results.sort((a, b) => b.similarity - a.similarity);
+  }
+
+  private normalizeText(text: string): string {
+    const doc = text.replace(/<[^>]*>/g, '');
+    return doc.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  private calculateSimilarity(a: string, b: string): number {
+    if (a === b) return 1;
+    if (!a || !b) return 0;
+    const wordsA = new Set(a.split(' '));
+    const wordsB = new Set(b.split(' '));
+    const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
+    const union = new Set([...wordsA, ...wordsB]);
+    return intersection.size / union.size;
+  }
+
+  async createAdoption(originalBarId: string, adoptedByBarId: string, adoptedByUserId: string): Promise<Adoption> {
+    const [adoption] = await db.insert(adoptions).values({
+      originalBarId,
+      adoptedByBarId,
+      adoptedByUserId,
+    }).returning();
+    return adoption;
+  }
+
+  async getAdoptionsByOriginal(barId: string): Promise<Adoption[]> {
+    return db.select().from(adoptions).where(eq(adoptions.originalBarId, barId)).orderBy(desc(adoptions.createdAt));
+  }
+
+  async getAdoptedFromBar(barId: string): Promise<Adoption | undefined> {
+    const [adoption] = await db.select().from(adoptions).where(eq(adoptions.adoptedByBarId, barId));
+    return adoption || undefined;
+  }
+
+  async getBarByProofId(proofBarId: string): Promise<(Bar & { user: User }) | undefined> {
+    const [result] = await db
+      .select({ bar: bars, user: users })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(eq(bars.proofBarId, proofBarId));
+    if (!result) return undefined;
+    return { ...result.bar, user: result.user as User };
+  }
 }
 
 export const storage = new DatabaseStorage();
+
+export function generateProofHash(content: string, createdAt: Date, userId: string, proofBarId: string): string {
+  const data = `${content}|${createdAt.toISOString()}|${userId}|${proofBarId}`;
+  return createHash('sha256').update(data).digest('hex');
+}
