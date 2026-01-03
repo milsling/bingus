@@ -11,6 +11,7 @@ import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { api } from "@/lib/api";
+import iconUrl from "@/assets/icon.png";
 
 type SignupStep = "email" | "verify" | "details";
 type ResetStep = "email" | "code" | "password";
@@ -521,7 +522,7 @@ export default function Auth() {
         <div className="mb-8 text-center space-y-2">
           <Link href="/">
             <div className="flex items-center justify-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
-              <img src="/logo.png" alt="Orphan Bars" className="h-10 w-10" />
+              <img src={iconUrl} alt="Orphan Bars" className="h-10 w-10" />
               <span className="font-logo text-3xl">ORPHAN BARS</span>
             </div>
           </Link>
