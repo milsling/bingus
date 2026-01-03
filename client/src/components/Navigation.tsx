@@ -74,7 +74,22 @@ export default function Navigation() {
         </div>
       </nav>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border bg-background/90 backdrop-blur-lg z-50 flex items-center justify-between px-4">
+        <Link href="/">
+          <div className="flex items-center gap-2 cursor-pointer">
+            <img src="/logo.png" alt="" className="h-7 w-7" />
+            <span className="font-logo text-lg">ORPHAN BARS</span>
+          </div>
+        </Link>
+        <div className="flex items-center gap-2">
+          {currentUser && <NotificationBell />}
+          <OnlineStatusIndicator />
+          <ThemeToggle />
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-border bg-background/90 backdrop-blur-lg z-50 flex items-center justify-around px-2 pb-safe">
         {allItems.map((item) => (
           <Link key={item.path} href={item.path}>

@@ -100,19 +100,12 @@ export default function Home() {
   const isLoading = tagFilter ? isLoadingTagBars : isLoadingBars;
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0 md:pt-16">
+    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-0 md:pt-16">
       <Navigation />
       
-      <header className="md:hidden flex flex-col gap-3 p-4 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src={iconUrl} alt="" className="h-7 w-7" />
-            <span className="font-logo text-xl">ORPHAN BARS</span>
-          </div>
-          <ThemeToggle />
-        </div>
+      <div className="md:hidden sticky top-14 z-40 p-3 bg-background/90 backdrop-blur-md border-b border-border">
         <SearchBar />
-      </header>
+      </div>
 
       <main>
         <div className="relative">
