@@ -34,7 +34,7 @@ export default function Navigation() {
   // Mobile nav: 4 items around the edges, center button for Drop Bar
   const mobileLeftItems = [
     { icon: Home, label: "Feed", path: "/" },
-    { icon: MessageCircle, label: "Messages", path: "/messages" },
+    ...(currentUser ? [{ icon: MessageCircle, label: "Messages", path: "/messages" }] : []),
   ];
   
   const mobileRightItems = [
