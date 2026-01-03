@@ -52,6 +52,7 @@ export const bars = pgTable("bars", {
   category: text("category").notNull(),
   tags: text("tags").array(),
   feedbackWanted: boolean("feedback_wanted").notNull().default(false),
+  isOriginal: boolean("is_original").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   proofBarId: text("proof_bar_id"),
   permissionStatus: text("permission_status").notNull().default("share_only"),
