@@ -58,13 +58,18 @@ export default function Auth() {
   const [newPassword, setNewPassword] = useState("");
   const [resetStep, setResetStep] = useState<ResetStep>("email");
   
-  // Cycling placeholder
+  // Cycling placeholder with animation
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   
   useEffect(() => {
     const interval = setInterval(() => {
-      setPlaceholderIndex((prev) => (prev + 1) % RAP_USERNAMES.length);
-    }, 2000);
+      setIsAnimating(true);
+      setTimeout(() => {
+        setPlaceholderIndex((prev) => (prev + 1) % RAP_USERNAMES.length);
+        setIsAnimating(false);
+      }, 300);
+    }, 3500);
     return () => clearInterval(interval);
   }, []);
 
@@ -500,15 +505,25 @@ export default function Auth() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signup-username">Username</Label>
-                <Input 
-                  id="signup-username" 
-                  data-testid="input-signup-username"
-                  placeholder={RAP_USERNAMES[placeholderIndex]} 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  className="bg-secondary/30 border-border/50"
-                />
+                <div className="relative">
+                  <Input 
+                    id="signup-username" 
+                    data-testid="input-signup-username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    className="bg-secondary/30 border-border/50"
+                  />
+                  {!username && (
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden h-5">
+                      <span 
+                        className={`block text-muted-foreground/60 text-sm transition-all duration-300 ease-out ${isAnimating ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
+                      >
+                        {RAP_USERNAMES[placeholderIndex]}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
@@ -593,15 +608,25 @@ export default function Auth() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-username">Username</Label>
-                    <Input 
-                      id="login-username" 
-                      data-testid="input-login-username"
-                      placeholder={RAP_USERNAMES[placeholderIndex]}
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required 
-                      className="bg-secondary/30 border-border/50"
-                    />
+                    <div className="relative">
+                      <Input 
+                        id="login-username" 
+                        data-testid="input-login-username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required 
+                        className="bg-secondary/30 border-border/50"
+                      />
+                      {!username && (
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden h-5">
+                          <span 
+                            className={`block text-muted-foreground/60 text-sm transition-all duration-300 ease-out ${isAnimating ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
+                          >
+                            {RAP_USERNAMES[placeholderIndex]}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
