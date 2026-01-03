@@ -51,9 +51,22 @@ export default function Messages() {
     refetchOnWindowFocus: false,
   });
 
-  const selectedUser = selectedUserId
+  const conversationUser = selectedUserId
     ? conversations.find((c: any) => c.user.id === selectedUserId)?.user
     : null;
+
+  const { data: fetchedUser } = useQuery({
+    queryKey: ['user', selectedUserId],
+    queryFn: async () => {
+      const res = await fetch(`/api/users/${selectedUserId}`, { credentials: 'include' });
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!selectedUserId && !conversationUser,
+    staleTime: 60000,
+  });
+
+  const selectedUser = conversationUser || fetchedUser;
 
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
