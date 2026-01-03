@@ -34,6 +34,8 @@ export default function Messages() {
       const res = await fetch('/api/messages', { credentials: 'include' });
       return res.json();
     },
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: chatMessages = [], isLoading: loadingMessages, refetch: refetchMessages } = useQuery({
@@ -45,6 +47,8 @@ export default function Messages() {
     },
     enabled: !!selectedUserId,
     refetchInterval: selectedUserId ? 5000 : false,
+    staleTime: 5000,
+    refetchOnWindowFocus: false,
   });
 
   const selectedUser = selectedUserId

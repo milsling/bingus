@@ -44,6 +44,8 @@ function CommentItem({ comment, currentUserId, onDelete }: CommentItemProps) {
       return res.json();
     },
     initialData: { count: comment.likeCount || 0, liked: false },
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
   
   const likeMutation = useMutation({
@@ -125,6 +127,8 @@ export default function BarCard({ bar }: BarCardProps) {
   const { data: likesData } = useQuery({
     queryKey: ['likes', bar.id],
     queryFn: () => api.getLikes(bar.id),
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: bookmarkData } = useQuery({
@@ -134,12 +138,16 @@ export default function BarCard({ bar }: BarCardProps) {
       return res.json();
     },
     enabled: !!currentUser,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: commentsData = [], refetch: refetchComments } = useQuery({
     queryKey: ['comments', bar.id],
     queryFn: () => api.getComments(bar.id),
     enabled: showComments,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const likeMutation = useMutation({

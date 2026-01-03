@@ -42,12 +42,16 @@ export function NotificationBell() {
       return data.count;
     },
     refetchInterval: 30000,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["notifications"],
     queryFn: () => api.getNotifications(20),
     enabled: open,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const markAllRead = useMutation({

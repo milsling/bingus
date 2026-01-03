@@ -14,6 +14,8 @@ export default function BarDetail() {
     queryKey: ["bar", id],
     queryFn: () => api.getBar(id!),
     enabled: !!id,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   return (

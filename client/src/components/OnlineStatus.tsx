@@ -29,6 +29,8 @@ export function OnlineStatusIndicator() {
       }
     },
     refetchInterval: 30000,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const statusMutation = useMutation({

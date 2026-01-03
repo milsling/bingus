@@ -38,6 +38,8 @@ export default function Home() {
       return res.json();
     },
     enabled: !!tagFilter,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const handleRefresh = useCallback(async () => {

@@ -20,6 +20,8 @@ export default function Profile() {
     queryKey: ["user-stats", currentUser?.id],
     queryFn: () => api.getUserStats(currentUser!.id),
     enabled: !!currentUser,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const handleShare = async () => {

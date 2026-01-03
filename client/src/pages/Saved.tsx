@@ -24,6 +24,8 @@ export default function Saved() {
       return res.json();
     },
     enabled: !!currentUser,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   if (isLoadingUser) {
