@@ -39,6 +39,7 @@ export default function Post() {
   const [tags, setTags] = useState("");
   const [feedbackWanted, setFeedbackWanted] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>("share_only");
+  const [isOriginal, setIsOriginal] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const applyFormat = (command: string) => {
@@ -70,6 +71,7 @@ export default function Post() {
         tags: tags.split(",").map(t => t.trim()).filter(Boolean),
         feedbackWanted,
         permissionStatus,
+        isOriginal,
       });
 
       toast({
@@ -214,6 +216,22 @@ export default function Post() {
               <p className="text-xs text-muted-foreground">
                 {PERMISSIONS.find(p => p.value === permissionStatus)?.description}
               </p>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/50">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-primary bg-primary/20 px-1.5 py-0.5 rounded">OC</span>
+                <div>
+                  <Label htmlFor="original" className="cursor-pointer">Original Content</Label>
+                  <p className="text-xs text-muted-foreground">This is my own work, not someone else's bars</p>
+                </div>
+              </div>
+              <Switch
+                id="original"
+                checked={isOriginal}
+                onCheckedChange={setIsOriginal}
+                data-testid="switch-original"
+              />
             </div>
 
             <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/50">

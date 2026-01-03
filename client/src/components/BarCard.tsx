@@ -532,6 +532,11 @@ export default function BarCard({ bar }: BarCardProps) {
             )}
 
             <div className="flex flex-wrap gap-2 pt-2">
+              {bar.isOriginal && (
+                <Badge className="bg-primary/20 text-primary text-xs font-bold" data-testid={`badge-original-${bar.id}`}>
+                  OC
+                </Badge>
+              )}
               {bar.feedbackWanted && (
                 <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs gap-1" data-testid={`badge-feedback-${bar.id}`}>
                   <MessageSquarePlus className="h-3 w-3" />
