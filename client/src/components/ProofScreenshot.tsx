@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Download, Image, Share2 } from "lucide-react";
 import type { BarWithUser } from "@shared/schema";
-import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProofScreenshotProps {
@@ -144,7 +143,7 @@ export default function ProofScreenshot({ bar, open, onOpenChange }: ProofScreen
               <div className="flex justify-between text-xs">
                 <span className="text-gray-500">Created</span>
                 <span className="text-gray-300 font-mono">
-                  {format(new Date(bar.createdAt), "yyyy-MM-dd HH:mm:ss 'UTC'")}
+                  {new Date(bar.createdAt).toISOString().replace('T', ' ').substring(0, 19)} UTC
                 </span>
               </div>
               <div className="flex justify-between text-xs">
