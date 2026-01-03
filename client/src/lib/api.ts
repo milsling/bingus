@@ -196,6 +196,17 @@ export const api = {
     return handleResponse<{ count: number; liked: boolean }>(response);
   },
 
+  // Dislikes
+  toggleDislike: async (barId: string): Promise<{ disliked: boolean; count: number; likeCount: number; liked: boolean }> => {
+    const response = await apiFetch(`/api/bars/${barId}/dislike`, { method: 'POST' });
+    return handleResponse<{ disliked: boolean; count: number; likeCount: number; liked: boolean }>(response);
+  },
+
+  getDislikes: async (barId: string): Promise<{ count: number; disliked: boolean }> => {
+    const response = await apiFetch(`/api/bars/${barId}/dislikes`);
+    return handleResponse<{ count: number; disliked: boolean }>(response);
+  },
+
   // Comments
   getComments: async (barId: string): Promise<any[]> => {
     const response = await apiFetch(`/api/bars/${barId}/comments`);

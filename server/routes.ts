@@ -398,17 +398,19 @@ export async function registerRoutes(
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const bars = await storage.getBars(limit);
       
-      // Include like counts and user's liked status for each bar
+      // Include like/dislike counts and user's liked/disliked status for each bar
       const userId = req.isAuthenticated() ? req.user!.id : null;
-      const barsWithLikes = await Promise.all(
+      const barsWithEngagement = await Promise.all(
         bars.map(async (bar) => {
           const likeCount = await storage.getLikeCount(bar.id);
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked };
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
+          return { ...bar, likeCount, liked, dislikeCount, disliked };
         })
       );
       
-      res.json(barsWithLikes);
+      res.json(barsWithEngagement);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -420,15 +422,17 @@ export async function registerRoutes(
       const bars = await storage.getFeaturedBars(limit);
       
       const userId = req.isAuthenticated() ? req.user!.id : null;
-      const barsWithLikes = await Promise.all(
+      const barsWithEngagement = await Promise.all(
         bars.map(async (bar) => {
           const likeCount = await storage.getLikeCount(bar.id);
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked };
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
+          return { ...bar, likeCount, liked, dislikeCount, disliked };
         })
       );
       
-      res.json(barsWithLikes);
+      res.json(barsWithEngagement);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -440,15 +444,17 @@ export async function registerRoutes(
       const bars = await storage.getTopBars(limit);
       
       const userId = req.isAuthenticated() ? req.user!.id : null;
-      const barsWithLikes = await Promise.all(
+      const barsWithEngagement = await Promise.all(
         bars.map(async (bar) => {
           const likeCount = await storage.getLikeCount(bar.id);
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked };
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
+          return { ...bar, likeCount, liked, dislikeCount, disliked };
         })
       );
       
-      res.json(barsWithLikes);
+      res.json(barsWithEngagement);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -460,15 +466,17 @@ export async function registerRoutes(
       const bars = await storage.getTrendingBars(limit);
       
       const userId = req.isAuthenticated() ? req.user!.id : null;
-      const barsWithLikes = await Promise.all(
+      const barsWithEngagement = await Promise.all(
         bars.map(async (bar) => {
           const likeCount = await storage.getLikeCount(bar.id);
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked };
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
+          return { ...bar, likeCount, liked, dislikeCount, disliked };
         })
       );
       
-      res.json(barsWithLikes);
+      res.json(barsWithEngagement);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -631,6 +639,44 @@ export async function registerRoutes(
     }
   });
 
+  // Dislike routes
+  app.post("/api/bars/:id/dislike", isAuthenticated, async (req, res) => {
+    try {
+      const disliked = await storage.toggleDislike(req.user!.id, req.params.id);
+      const count = await storage.getDislikeCount(req.params.id);
+      const likeCount = await storage.getLikeCount(req.params.id);
+      const liked = await storage.hasUserLiked(req.user!.id, req.params.id);
+      
+      // Send notification if disliked (not undisliked) and not own bar
+      if (disliked) {
+        const bar = await storage.getBarById(req.params.id);
+        if (bar && bar.userId !== req.user!.id) {
+          await storage.createNotification({
+            userId: bar.userId,
+            type: "dislike",
+            actorId: req.user!.id,
+            barId: bar.id,
+            message: `@${req.user!.username} disliked your bar`
+          });
+        }
+      }
+      
+      res.json({ disliked, count, likeCount, liked });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bars/:id/dislikes", async (req, res) => {
+    try {
+      const count = await storage.getDislikeCount(req.params.id);
+      const disliked = req.isAuthenticated() ? await storage.hasUserDisliked(req.user!.id, req.params.id) : false;
+      res.json({ count, disliked });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Comment routes
   app.get("/api/bars/:id/comments", async (req, res) => {
     try {
@@ -717,6 +763,47 @@ export async function registerRoutes(
         ? await storage.hasUserLikedComment(req.user.id, req.params.id)
         : false;
       res.json({ count, liked });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Comment dislike routes
+  app.post("/api/comments/:id/dislike", isAuthenticated, async (req, res) => {
+    try {
+      const disliked = await storage.toggleCommentDislike(req.user!.id, req.params.id);
+      const count = await storage.getCommentDislikeCount(req.params.id);
+      const likeCount = await storage.getCommentLikeCount(req.params.id);
+      const liked = await storage.hasUserLikedComment(req.user!.id, req.params.id);
+      
+      // Send notification if disliked (not undisliked) and not own comment
+      if (disliked) {
+        const comment = await storage.getCommentById(req.params.id);
+        if (comment && comment.userId !== req.user!.id) {
+          await storage.createNotification({
+            userId: comment.userId,
+            type: "comment_dislike",
+            actorId: req.user!.id,
+            barId: comment.barId,
+            commentId: comment.id,
+            message: `@${req.user!.username} disliked your comment`
+          });
+        }
+      }
+      
+      res.json({ disliked, count, likeCount, liked });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/comments/:id/dislikes", async (req, res) => {
+    try {
+      const count = await storage.getCommentDislikeCount(req.params.id);
+      const disliked = req.isAuthenticated() && req.user?.id
+        ? await storage.hasUserDislikedComment(req.user.id, req.params.id)
+        : false;
+      res.json({ count, disliked });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

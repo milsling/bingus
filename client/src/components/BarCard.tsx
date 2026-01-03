@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown } from "lucide-react";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { shareContent, getBarShareData } from "@/lib/share";
 import ProofScreenshot from "@/components/ProofScreenshot";
@@ -48,6 +48,17 @@ function CommentItem({ comment, currentUserId, onDelete }: CommentItemProps) {
     staleTime: 30000,
     refetchOnWindowFocus: false,
   });
+
+  const { data: dislikeData } = useQuery({
+    queryKey: ['commentDislikes', comment.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/comments/${comment.id}/dislikes`, { credentials: 'include' });
+      return res.json();
+    },
+    initialData: { count: 0, disliked: false },
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
+  });
   
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -60,9 +71,28 @@ function CommentItem({ comment, currentUserId, onDelete }: CommentItemProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commentLikes', comment.id] });
+      queryClient.invalidateQueries({ queryKey: ['commentDislikes', comment.id] });
     },
     onError: () => {
       toast({ title: "Login required", description: "You need to be logged in to like comments", variant: "destructive" });
+    },
+  });
+
+  const dislikeMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/comments/${comment.id}/dislike`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to dislike comment');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['commentDislikes', comment.id] });
+      queryClient.invalidateQueries({ queryKey: ['commentLikes', comment.id] });
+    },
+    onError: () => {
+      toast({ title: "Login required", description: "You need to be logged in to dislike comments", variant: "destructive" });
     },
   });
   
@@ -78,15 +108,26 @@ function CommentItem({ comment, currentUserId, onDelete }: CommentItemProps) {
           <span className="text-[10px] text-muted-foreground">{formatTimestamp(comment.createdAt)}</span>
         </div>
         <p className="text-sm text-foreground/80">{comment.content}</p>
-        <button
-          onClick={() => currentUserId ? likeMutation.mutate() : toast({ title: "Login required", description: "You need to be logged in to like comments", variant: "destructive" })}
-          className={`flex items-center gap-1 mt-1 text-[10px] transition-colors ${likeData?.liked ? 'text-red-400' : 'text-muted-foreground hover:text-red-400'}`}
-          disabled={likeMutation.isPending}
-          data-testid={`button-like-comment-${comment.id}`}
-        >
-          <Heart className={`h-3 w-3 ${likeData?.liked ? 'fill-current' : ''}`} />
-          <span>{likeData?.count || 0}</span>
-        </button>
+        <div className="flex items-center gap-3 mt-1">
+          <button
+            onClick={() => currentUserId ? likeMutation.mutate() : toast({ title: "Login required", description: "You need to be logged in to like comments", variant: "destructive" })}
+            className={`flex items-center gap-1 text-[10px] transition-colors ${likeData?.liked ? 'text-red-400' : 'text-muted-foreground hover:text-red-400'}`}
+            disabled={likeMutation.isPending}
+            data-testid={`button-like-comment-${comment.id}`}
+          >
+            <Heart className={`h-3 w-3 ${likeData?.liked ? 'fill-current' : ''}`} />
+            <span>{likeData?.count || 0}</span>
+          </button>
+          <button
+            onClick={() => currentUserId ? dislikeMutation.mutate() : toast({ title: "Login required", description: "You need to be logged in to dislike comments", variant: "destructive" })}
+            className={`flex items-center gap-1 text-[10px] transition-colors ${dislikeData?.disliked ? 'text-orange-400' : 'text-muted-foreground hover:text-orange-400'}`}
+            disabled={dislikeMutation.isPending}
+            data-testid={`button-dislike-comment-${comment.id}`}
+          >
+            <ThumbsDown className={`h-3 w-3 ${dislikeData?.disliked ? 'fill-current' : ''}`} />
+            {dislikeData?.disliked && <span>{dislikeData?.count || 0}</span>}
+          </button>
+        </div>
       </div>
       {currentUserId === comment.userId && (
         <Button 
@@ -161,7 +202,7 @@ export default function BarCard({ bar }: BarCardProps) {
     mutationFn: () => api.toggleLike(bar.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['likes', bar.id] });
-      // Also invalidate the bars list to update pre-fetched like data
+      queryClient.invalidateQueries({ queryKey: ['dislikes', bar.id] });
       queryClient.invalidateQueries({ queryKey: ['bars'] });
       queryClient.invalidateQueries({ queryKey: ['bars-featured'] });
       queryClient.invalidateQueries({ queryKey: ['bars-top'] });
@@ -170,6 +211,35 @@ export default function BarCard({ bar }: BarCardProps) {
     onError: (error: any) => {
       if (error.message.includes("Not authenticated")) {
         toast({ title: "Login required", description: "You need to be logged in to like posts", variant: "destructive" });
+      }
+    },
+  });
+
+  // Use pre-fetched dislike data from bar if available, otherwise fetch
+  const hasPreFetchedDislikes = 'disliked' in bar && 'dislikeCount' in bar;
+  
+  const { data: dislikesData } = useQuery({
+    queryKey: ['dislikes', bar.id],
+    queryFn: () => api.getDislikes(bar.id),
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
+    enabled: !hasPreFetchedDislikes,
+    initialData: hasPreFetchedDislikes ? { count: (bar as any).dislikeCount, disliked: (bar as any).disliked } : undefined,
+  });
+
+  const dislikeMutation = useMutation({
+    mutationFn: () => api.toggleDislike(bar.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dislikes', bar.id] });
+      queryClient.invalidateQueries({ queryKey: ['likes', bar.id] });
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-featured'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-top'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-trending'] });
+    },
+    onError: (error: any) => {
+      if (error.message.includes("Not authenticated")) {
+        toast({ title: "Login required", description: "You need to be logged in to dislike posts", variant: "destructive" });
       }
     },
   });
@@ -272,6 +342,14 @@ export default function BarCard({ bar }: BarCardProps) {
       return;
     }
     likeMutation.mutate();
+  };
+
+  const handleDislike = () => {
+    if (!currentUser) {
+      toast({ title: "Login required", description: "You need to be logged in to dislike posts", variant: "destructive" });
+      return;
+    }
+    dislikeMutation.mutate();
   };
 
   const handleComment = () => {
@@ -484,6 +562,18 @@ export default function BarCard({ bar }: BarCardProps) {
               >
                 <Heart className={`h-4 w-4 ${likesData?.liked ? 'fill-current' : ''}`} />
                 <span className="text-xs">{likesData?.count || 0}</span>
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`gap-1 transition-colors ${dislikesData?.disliked ? 'text-orange-500' : 'hover:text-orange-500 hover:bg-orange-500/10'}`}
+                onClick={handleDislike}
+                disabled={dislikeMutation.isPending}
+                data-testid={`button-dislike-${bar.id}`}
+              >
+                <ThumbsDown className={`h-4 w-4 ${dislikesData?.disliked ? 'fill-current' : ''}`} />
+                {dislikesData?.disliked && <span className="text-xs">{dislikesData?.count || 0}</span>}
               </Button>
               
               <Button 

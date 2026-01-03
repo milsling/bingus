@@ -109,6 +109,34 @@ export const commentLikesRelations = relations(commentLikes, ({ one }) => ({
   comment: one(comments, { fields: [commentLikes.commentId], references: [comments.id] }),
 }));
 
+export const dislikes = pgTable("dislikes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  unique("dislikes_unique").on(table.userId, table.barId)
+]);
+
+export const dislikesRelations = relations(dislikes, ({ one }) => ({
+  user: one(users, { fields: [dislikes.userId], references: [users.id] }),
+  bar: one(bars, { fields: [dislikes.barId], references: [bars.id] }),
+}));
+
+export const commentDislikes = pgTable("comment_dislikes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  commentId: varchar("comment_id").notNull().references(() => comments.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  unique("comment_dislikes_unique").on(table.userId, table.commentId)
+]);
+
+export const commentDislikesRelations = relations(commentDislikes, ({ one }) => ({
+  user: one(users, { fields: [commentDislikes.userId], references: [users.id] }),
+  comment: one(comments, { fields: [commentDislikes.commentId], references: [comments.id] }),
+}));
+
 export const follows = pgTable("follows", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   followerId: varchar("follower_id").notNull().references(() => users.id, { onDelete: "cascade" }),

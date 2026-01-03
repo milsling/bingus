@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -39,6 +39,11 @@ export interface IStorage {
   toggleLike(userId: string, barId: string): Promise<boolean>;
   getLikeCount(barId: string): Promise<number>;
   hasUserLiked(userId: string, barId: string): Promise<boolean>;
+  
+  // Dislike methods
+  toggleDislike(userId: string, barId: string): Promise<boolean>;
+  getDislikeCount(barId: string): Promise<number>;
+  hasUserDisliked(userId: string, barId: string): Promise<boolean>;
 
   // Comment methods
   createComment(comment: InsertComment): Promise<Comment>;
@@ -51,6 +56,11 @@ export interface IStorage {
   getCommentLikeCount(commentId: string): Promise<number>;
   hasUserLikedComment(userId: string, commentId: string): Promise<boolean>;
   getCommentById(commentId: string): Promise<Comment | undefined>;
+  
+  // Comment dislike methods
+  toggleCommentDislike(userId: string, commentId: string): Promise<boolean>;
+  getCommentDislikeCount(commentId: string): Promise<number>;
+  hasUserDislikedComment(userId: string, commentId: string): Promise<boolean>;
 
   // Follow methods
   followUser(followerId: string, followingId: string): Promise<boolean>;
@@ -335,6 +345,8 @@ export class DatabaseStorage implements IStorage {
       await db.delete(likes).where(eq(likes.id, existing.id));
       return false;
     } else {
+      // Remove dislike if exists (mutual exclusivity)
+      await db.delete(dislikes).where(and(eq(dislikes.userId, userId), eq(dislikes.barId, barId)));
       await db.insert(likes).values({ userId, barId });
       return true;
     }
@@ -347,6 +359,29 @@ export class DatabaseStorage implements IStorage {
 
   async hasUserLiked(userId: string, barId: string): Promise<boolean> {
     const [existing] = await db.select().from(likes).where(and(eq(likes.userId, userId), eq(likes.barId, barId)));
+    return !!existing;
+  }
+
+  async toggleDislike(userId: string, barId: string): Promise<boolean> {
+    const [existing] = await db.select().from(dislikes).where(and(eq(dislikes.userId, userId), eq(dislikes.barId, barId)));
+    if (existing) {
+      await db.delete(dislikes).where(eq(dislikes.id, existing.id));
+      return false;
+    } else {
+      // Remove like if exists (mutual exclusivity)
+      await db.delete(likes).where(and(eq(likes.userId, userId), eq(likes.barId, barId)));
+      await db.insert(dislikes).values({ userId, barId });
+      return true;
+    }
+  }
+
+  async getDislikeCount(barId: string): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(dislikes).where(eq(dislikes.barId, barId));
+    return result?.count || 0;
+  }
+
+  async hasUserDisliked(userId: string, barId: string): Promise<boolean> {
+    const [existing] = await db.select().from(dislikes).where(and(eq(dislikes.userId, userId), eq(dislikes.barId, barId)));
     return !!existing;
   }
 
@@ -385,6 +420,8 @@ export class DatabaseStorage implements IStorage {
       await db.delete(commentLikes).where(eq(commentLikes.id, existing.id));
       return false;
     } else {
+      // Remove dislike if exists (mutual exclusivity)
+      await db.delete(commentDislikes).where(and(eq(commentDislikes.userId, userId), eq(commentDislikes.commentId, commentId)));
       await db.insert(commentLikes).values({ userId, commentId });
       return true;
     }
@@ -397,6 +434,29 @@ export class DatabaseStorage implements IStorage {
 
   async hasUserLikedComment(userId: string, commentId: string): Promise<boolean> {
     const [existing] = await db.select().from(commentLikes).where(and(eq(commentLikes.userId, userId), eq(commentLikes.commentId, commentId)));
+    return !!existing;
+  }
+
+  async toggleCommentDislike(userId: string, commentId: string): Promise<boolean> {
+    const [existing] = await db.select().from(commentDislikes).where(and(eq(commentDislikes.userId, userId), eq(commentDislikes.commentId, commentId)));
+    if (existing) {
+      await db.delete(commentDislikes).where(eq(commentDislikes.id, existing.id));
+      return false;
+    } else {
+      // Remove like if exists (mutual exclusivity)
+      await db.delete(commentLikes).where(and(eq(commentLikes.userId, userId), eq(commentLikes.commentId, commentId)));
+      await db.insert(commentDislikes).values({ userId, commentId });
+      return true;
+    }
+  }
+
+  async getCommentDislikeCount(commentId: string): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(commentDislikes).where(eq(commentDislikes.commentId, commentId));
+    return result?.count || 0;
+  }
+
+  async hasUserDislikedComment(userId: string, commentId: string): Promise<boolean> {
+    const [existing] = await db.select().from(commentDislikes).where(and(eq(commentDislikes.userId, userId), eq(commentDislikes.commentId, commentId)));
     return !!existing;
   }
 
