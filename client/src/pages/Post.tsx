@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,14 +36,7 @@ export default function Post() {
   const { addBar, currentUser } = useBars();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-
-  if (!currentUser) {
-    setLocation("/auth");
-    return null;
-  }
-
   const editorRef = useRef<HTMLDivElement>(null);
-
   const [explanation, setExplanation] = useState("");
   const [category, setCategory] = useState<Category>("Freestyle");
   const [tags, setTags] = useState("");
@@ -56,6 +49,16 @@ export default function Post() {
   const [isChecking, setIsChecking] = useState(false);
   const [showOriginalityReport, setShowOriginalityReport] = useState(false);
   const [originalityChecked, setOriginalityChecked] = useState(false);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setLocation("/auth");
+    }
+  }, [currentUser, setLocation]);
+
+  if (!currentUser) {
+    return null;
+  }
 
   const applyFormat = (command: string) => {
     document.execCommand(command, false);
