@@ -398,10 +398,13 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Post not found" });
       }
       
-      console.log(`[EDIT] User ${req.user!.id} (${req.user!.username}) attempting to edit bar ${req.params.id} owned by ${existingBar.userId}`);
+      const sessionUserId = String(req.user!.id);
+      const barOwnerId = String(existingBar.userId);
+      console.log(`[EDIT] User ${sessionUserId} (${req.user!.username}) attempting to edit bar ${req.params.id}`);
+      console.log(`[EDIT] Comparing: session="${sessionUserId}" vs owner="${barOwnerId}" match=${sessionUserId === barOwnerId}`);
       
-      if (existingBar.userId !== req.user!.id) {
-        console.log(`[EDIT] DENIED: User ${req.user!.id} does not own bar ${req.params.id} (owner: ${existingBar.userId})`);
+      if (barOwnerId !== sessionUserId) {
+        console.log(`[EDIT] DENIED: User ${sessionUserId} does not own bar ${req.params.id} (owner: ${barOwnerId})`);
         return res.status(403).json({ message: "You can only edit your own posts" });
       }
 
@@ -428,10 +431,13 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Post not found" });
       }
       
-      console.log(`[DELETE] User ${req.user!.id} (${req.user!.username}) attempting to delete bar ${req.params.id} owned by ${existingBar.userId}`);
+      const sessionUserId = String(req.user!.id);
+      const barOwnerId = String(existingBar.userId);
+      console.log(`[DELETE] User ${sessionUserId} (${req.user!.username}) attempting to delete bar ${req.params.id}`);
+      console.log(`[DELETE] Comparing: session="${sessionUserId}" vs owner="${barOwnerId}" match=${sessionUserId === barOwnerId}`);
       
-      if (existingBar.userId !== req.user!.id) {
-        console.log(`[DELETE] DENIED: User ${req.user!.id} does not own bar ${req.params.id} (owner: ${existingBar.userId})`);
+      if (barOwnerId !== sessionUserId) {
+        console.log(`[DELETE] DENIED: User ${sessionUserId} does not own bar ${req.params.id} (owner: ${barOwnerId})`);
         return res.status(403).json({ message: "You can only delete your own posts" });
       }
       
