@@ -168,7 +168,8 @@ export default function Home() {
               <div className="flex items-start gap-2">
                 <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">How it works:</span> Drop your best bars, tag them with style (wordplay, punchline, metaphor), and add a breakdown to explain the entendre. Explore, like, and save your favorites from the community.
+                  <span className="font-semibold text-foreground">How it works:</span> Drop your best bars, tag them with style (wordplay, punchline, metaphor), and add a breakdown to explain the entendre. Explore, like, and save your favorites from the community.{" "}
+                  <a href="/guidelines" className="text-primary hover:underline font-medium">Read the rules</a>
                 </p>
               </div>
             </div>
