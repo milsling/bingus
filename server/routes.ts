@@ -393,6 +393,18 @@ export async function registerRoutes(
         });
       }
 
+      const existingBar = await storage.getBarById(req.params.id);
+      if (!existingBar) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+      
+      console.log(`[EDIT] User ${req.user!.id} (${req.user!.username}) attempting to edit bar ${req.params.id} owned by ${existingBar.userId}`);
+      
+      if (existingBar.userId !== req.user!.id) {
+        console.log(`[EDIT] DENIED: User ${req.user!.id} does not own bar ${req.params.id} (owner: ${existingBar.userId})`);
+        return res.status(403).json({ message: "You can only edit your own posts" });
+      }
+
       const updates: Record<string, any> = {};
       if (result.data.content !== undefined) updates.content = result.data.content;
       if (result.data.explanation !== undefined) updates.explanation = result.data.explanation;
@@ -401,7 +413,7 @@ export async function registerRoutes(
 
       const bar = await storage.updateBar(req.params.id, req.user!.id, updates);
       if (!bar) {
-        return res.status(404).json({ message: "Bar not found or you don't have permission" });
+        return res.status(500).json({ message: "Failed to update post" });
       }
       res.json(bar);
     } catch (error: any) {
@@ -411,9 +423,21 @@ export async function registerRoutes(
 
   app.delete("/api/bars/:id", isAuthenticated, async (req, res) => {
     try {
+      const existingBar = await storage.getBarById(req.params.id);
+      if (!existingBar) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+      
+      console.log(`[DELETE] User ${req.user!.id} (${req.user!.username}) attempting to delete bar ${req.params.id} owned by ${existingBar.userId}`);
+      
+      if (existingBar.userId !== req.user!.id) {
+        console.log(`[DELETE] DENIED: User ${req.user!.id} does not own bar ${req.params.id} (owner: ${existingBar.userId})`);
+        return res.status(403).json({ message: "You can only delete your own posts" });
+      }
+      
       const success = await storage.deleteBar(req.params.id, req.user!.id);
       if (!success) {
-        return res.status(404).json({ message: "Bar not found" });
+        return res.status(500).json({ message: "Failed to delete post" });
       }
       res.json({ message: "Bar deleted successfully" });
     } catch (error: any) {
