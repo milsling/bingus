@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, Circle, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ type OnlineStatusType = "online" | "offline" | "busy";
 export function OnlineStatusIndicator() {
   const { currentUser } = useBars();
   const queryClient = useQueryClient();
+  const manualStatusRef = useRef<OnlineStatusType | null>(null);
 
   const { data: onlineCount = 0 } = useQuery({
     queryKey: ['onlineCount'],
@@ -49,10 +50,15 @@ export function OnlineStatusIndicator() {
     },
   });
 
+  const setManualStatus = (status: OnlineStatusType) => {
+    manualStatusRef.current = status;
+    statusMutation.mutate(status);
+  };
+
   useEffect(() => {
     if (!currentUser) return;
 
-    if (currentUser.onlineStatus !== 'online' && currentUser.onlineStatus !== 'busy') {
+    if (currentUser.onlineStatus !== 'online' && currentUser.onlineStatus !== 'busy' && !manualStatusRef.current) {
       statusMutation.mutate('online');
     }
 
@@ -68,18 +74,14 @@ export function OnlineStatusIndicator() {
 
     const handleVisibility = () => {
       if (document.hidden) {
-        if (currentUser.onlineStatus === 'online') {
-          statusMutation.mutate('offline');
-        }
+        return;
       } else {
         sendHeartbeat();
-        if (currentUser.onlineStatus === 'offline') {
-          statusMutation.mutate('online');
-        }
       }
     };
 
     const handleBeforeUnload = () => {
+      manualStatusRef.current = null;
       const blob = new Blob([JSON.stringify({ status: 'offline' })], { type: 'application/json' });
       navigator.sendBeacon('/api/online/status', blob);
     };
@@ -132,7 +134,7 @@ export function OnlineStatusIndicator() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuItem
-          onClick={() => statusMutation.mutate('online')}
+          onClick={() => setManualStatus('online')}
           className="gap-2"
           data-testid="status-online"
         >
@@ -141,7 +143,7 @@ export function OnlineStatusIndicator() {
           {currentUser.onlineStatus === 'online' && <span className="ml-auto text-primary">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => statusMutation.mutate('busy')}
+          onClick={() => setManualStatus('busy')}
           className="gap-2"
           data-testid="status-busy"
         >
@@ -150,7 +152,7 @@ export function OnlineStatusIndicator() {
           {currentUser.onlineStatus === 'busy' && <span className="ml-auto text-primary">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => statusMutation.mutate('offline')}
+          onClick={() => setManualStatus('offline')}
           className="gap-2"
           data-testid="status-offline"
         >
