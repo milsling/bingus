@@ -160,7 +160,7 @@ export default function Home() {
                 Drop Your <span className="text-foreground font-black italic">Bars</span>
               </h1>
               <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto">
-                The definitive archive for lyricists, punchline kings, and freestyle poets.
+                No home for your fire bars? Orphan 'em, cuh.
               </p>
             </div>
 

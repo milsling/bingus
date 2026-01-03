@@ -527,7 +527,7 @@ export default function Auth() {
             </div>
           </Link>
           <p className="text-muted-foreground max-w-sm mx-auto">
-            Join the community of lyricists. Share your bars, get feedback, and build your catalog.
+            No home for your fire bars? Orphan 'em, cuh.
           </p>
         </div>
 
