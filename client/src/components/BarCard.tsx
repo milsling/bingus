@@ -101,6 +101,12 @@ function CommentItem({ comment, currentUserId, onDelete }: CommentItemProps) {
 
 const CATEGORIES = ["Funny", "Serious", "Wordplay", "Storytelling", "Battle", "Freestyle"];
 
+function stripHtml(html: string): string {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+}
+
 export default function BarCard({ bar }: BarCardProps) {
   const { currentUser } = useBars();
   const { toast } = useToast();
@@ -337,7 +343,7 @@ export default function BarCard({ bar }: BarCardProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setIsEditOpen(true)} data-testid={`button-edit-${bar.id}`}>
+                  <DropdownMenuItem onClick={() => { setEditContent(stripHtml(bar.content)); setIsEditOpen(true); }} data-testid={`button-edit-${bar.id}`}>
                     <Pencil className="h-4 w-4 mr-2" />
                     Edit
                   </DropdownMenuItem>
