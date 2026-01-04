@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye } from "lucide-react";
+import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench } from "lucide-react";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -255,6 +255,51 @@ export default function Admin() {
     },
   });
 
+  const [maintenanceMessage, setMaintenanceMessage] = useState("Heads up - server maintenance incoming. Save your work!");
+
+  const { data: maintenanceStatus } = useQuery<{ isActive: boolean; message?: string }>({
+    queryKey: ['/api/maintenance'],
+    enabled: !!currentUser?.isAdmin,
+  });
+
+  const activateMaintenanceMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const res = await fetch('/api/admin/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ message }),
+      });
+      if (!res.ok) throw new Error('Failed to activate maintenance');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/maintenance'] });
+      toast({ title: "Maintenance warning activated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const clearMaintenanceMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/admin/maintenance', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to clear maintenance');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/maintenance'] });
+      toast({ title: "Maintenance warning cleared" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const handleModerate = () => {
     if (moderateBarId && moderateReason.trim()) {
       moderateBarMutation.mutate({ barId: moderateBarId, reason: moderateReason.trim() });
@@ -318,7 +363,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="moderation" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6">
+          <TabsList className="grid w-full grid-cols-6 mb-6">
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
@@ -338,6 +383,15 @@ export default function Admin() {
               {reports.filter((r: any) => r.status === 'pending').length > 0 && (
                 <Badge variant="destructive" className="ml-1 text-xs">
                   {reports.filter((r: any) => r.status === 'pending').length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="maintenance" className="gap-1 text-xs px-2">
+              <Wrench className="h-4 w-4" />
+              <span className="hidden sm:inline">Maint.</span>
+              {maintenanceStatus?.isActive && (
+                <Badge variant="default" className="ml-1 text-xs bg-orange-500">
+                  ON
                 </Badge>
               )}
             </TabsTrigger>
@@ -575,6 +629,88 @@ export default function Admin() {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="maintenance">
+            <Card className="border-border bg-card/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wrench className="h-5 w-5 text-orange-500" />
+                  Maintenance Warning
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="p-4 rounded-lg bg-secondary/30 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Current Status</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {maintenanceStatus?.isActive 
+                          ? "Warning banner is currently active" 
+                          : "No active maintenance warning"}
+                      </p>
+                    </div>
+                    <Badge className={maintenanceStatus?.isActive ? "bg-orange-500" : "bg-green-500"}>
+                      {maintenanceStatus?.isActive ? "Active" : "Clear"}
+                    </Badge>
+                  </div>
+                  
+                  {maintenanceStatus?.isActive && maintenanceStatus.message && (
+                    <div className="p-3 rounded bg-orange-500/20 border border-orange-500/30">
+                      <p className="text-sm font-medium text-orange-400">Current message:</p>
+                      <p className="text-sm">{maintenanceStatus.message}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="maintenance-message">Warning Message</Label>
+                    <Textarea
+                      id="maintenance-message"
+                      placeholder="Heads up - server maintenance incoming. Save your work!"
+                      value={maintenanceMessage}
+                      onChange={(e) => setMaintenanceMessage(e.target.value)}
+                      className="min-h-[80px]"
+                      data-testid="input-maintenance-message"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This message will scroll across the top of every page.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={() => activateMaintenanceMutation.mutate(maintenanceMessage)}
+                      disabled={!maintenanceMessage.trim() || activateMaintenanceMutation.isPending}
+                      className="bg-orange-500 hover:bg-orange-600"
+                      data-testid="button-activate-maintenance"
+                    >
+                      {activateMaintenanceMutation.isPending ? "Activating..." : "Activate Warning"}
+                    </Button>
+                    {maintenanceStatus?.isActive && (
+                      <Button
+                        variant="outline"
+                        onClick={() => clearMaintenanceMutation.mutate()}
+                        disabled={clearMaintenanceMutation.isPending}
+                        data-testid="button-clear-maintenance"
+                      >
+                        {clearMaintenanceMutation.isPending ? "Clearing..." : "Clear Warning"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+                  <h4 className="font-medium text-sm">Preview</h4>
+                  <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-black p-2 rounded text-sm font-bold overflow-hidden">
+                    <div className="whitespace-nowrap">
+                      ⚠️ {maintenanceMessage || "Heads up - server maintenance incoming. Save your work!"}
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -19,19 +19,21 @@ export function MaintenanceBanner() {
     refetchInterval: 30000,
   });
 
+  const activatedAtKey = status?.activatedAt ? new Date(status.activatedAt).toISOString() : null;
+
   useEffect(() => {
-    if (status?.activatedAt && dismissedId !== status.activatedAt) {
+    if (activatedAtKey && dismissedId !== activatedAtKey) {
       setDismissed(false);
     }
-  }, [status?.activatedAt, dismissedId]);
+  }, [activatedAtKey, dismissedId]);
 
   if (!status?.isActive || dismissed) return null;
 
   const handleDismiss = () => {
     setDismissed(true);
-    if (status?.activatedAt) {
-      localStorage.setItem("maintenance_dismissed", status.activatedAt);
-      setDismissedId(status.activatedAt);
+    if (activatedAtKey) {
+      localStorage.setItem("maintenance_dismissed", activatedAtKey);
+      setDismissedId(activatedAtKey);
     }
   };
 

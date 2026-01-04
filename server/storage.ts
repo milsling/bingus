@@ -1354,21 +1354,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async activateMaintenance(message: string, userId: string): Promise<MaintenanceStatus> {
-    const existing = await db.select().from(maintenanceStatus).where(eq(maintenanceStatus.id, 'singleton'));
-    if (existing.length > 0) {
-      const [updated] = await db
-        .update(maintenanceStatus)
-        .set({ isActive: true, message, activatedAt: new Date(), activatedBy: userId })
-        .where(eq(maintenanceStatus.id, 'singleton'))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(maintenanceStatus)
-        .values({ id: 'singleton', isActive: true, message, activatedAt: new Date(), activatedBy: userId })
-        .returning();
-      return created;
-    }
+    const activatedAt = new Date();
+    const [result] = await db
+      .insert(maintenanceStatus)
+      .values({ id: 'singleton', isActive: true, message, activatedAt, activatedBy: userId })
+      .onConflictDoUpdate({
+        target: maintenanceStatus.id,
+        set: { isActive: true, message, activatedAt, activatedBy: userId }
+      })
+      .returning();
+    return result;
   }
 
   async clearMaintenance(): Promise<void> {
