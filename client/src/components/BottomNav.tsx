@@ -10,7 +10,6 @@ import {
   Bookmark, 
   Shield,
   LogIn,
-  PenLine,
   Flame,
   TrendingUp,
   Grid3X3,
@@ -35,7 +34,6 @@ export function BottomNav({ onNewMessage, activeFilter = "featured", onFilterCha
   const { currentUser } = useBars();
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
-  const isOnMessagesPage = location.startsWith("/messages");
 
   
   const getNavItems = () => {
@@ -70,11 +68,7 @@ export function BottomNav({ onNewMessage, activeFilter = "featured", onFilterCha
   };
 
   const handleCenterClick = () => {
-    if (isOnMessagesPage && onNewMessage) {
-      onNewMessage();
-    } else {
-      setIsOpen(!isOpen);
-    }
+    setIsOpen(!isOpen);
   };
 
   return (
@@ -210,8 +204,6 @@ export function BottomNav({ onNewMessage, activeFilter = "featured", onFilterCha
               >
                 {isOpen ? (
                   <X className="w-7 h-7 text-primary-foreground" />
-                ) : isOnMessagesPage ? (
-                  <PenLine className="w-7 h-7 text-primary-foreground" />
                 ) : (
                   <Grid3X3 className="w-7 h-7 text-primary-foreground" />
                 )}
