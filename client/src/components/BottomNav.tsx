@@ -12,13 +12,13 @@ import {
   LogIn,
   Grid3X3,
   X,
-  Search,
-  Heart
+  Search
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
+import orphanageIcon from "@/assets/orphanage-icon.png";
 
 interface BottomNavProps {
   onNewMessage?: () => void;
@@ -37,14 +37,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
     if (!currentUser) {
       return [
         { icon: Home, label: "Feed", path: "/" },
-        { icon: Heart, label: "Orphanage", path: "/orphanage" },
+        { icon: null, iconImage: orphanageIcon, label: "Orphanage", path: "/orphanage" },
         { icon: LogIn, label: "Login", path: "/auth" },
       ];
     }
 
     const items = [
       { icon: Home, label: "Feed", path: "/" },
-      { icon: Heart, label: "Orphanage", path: "/orphanage" },
+      { icon: null, iconImage: orphanageIcon, label: "Orphanage", path: "/orphanage" },
       { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount },
       { icon: Users, label: "Friends", path: "/friends", badge: pendingFriendRequests },
       { icon: Bookmark, label: "Saved", path: "/saved" },
@@ -127,10 +127,21 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                           ? "bg-primary border-primary" 
                           : "bg-muted/50 border-border hover:border-primary/50"
                       )}>
-                        <item.icon className={cn(
-                          "w-5 h-5",
-                          isActive ? "text-primary-foreground" : "text-foreground"
-                        )} />
+                        {item.iconImage ? (
+                          <img 
+                            src={item.iconImage} 
+                            alt={item.label} 
+                            className={cn(
+                              "w-6 h-6 object-contain",
+                              isActive ? "brightness-200" : "dark:invert dark:brightness-200"
+                            )}
+                          />
+                        ) : item.icon ? (
+                          <item.icon className={cn(
+                            "w-5 h-5",
+                            isActive ? "text-primary-foreground" : "text-foreground"
+                          )} />
+                        ) : null}
                         {item.badge && item.badge > 0 && (
                           <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
                             {item.badge > 99 ? '99+' : item.badge}
