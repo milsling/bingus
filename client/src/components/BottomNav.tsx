@@ -15,8 +15,9 @@ import {
   TrendingUp,
   Grid3X3,
   X,
-  Settings
+  Search
 } from "lucide-react";
+import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
@@ -29,19 +30,14 @@ interface BottomNavProps {
 
 export function BottomNav({ onNewMessage, activeFilter = "featured", onFilterChange }: BottomNavProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [, setLocation] = useLocation();
-  const [location] = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [location, setLocation] = useLocation();
   const { currentUser } = useBars();
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const isOnMessagesPage = location.startsWith("/messages");
 
-  const filterTabs = [
-    { id: "featured", icon: Flame, label: "Featured" },
-    { id: "top", icon: TrendingUp, label: "Top" },
-    { id: "categories", icon: Grid3X3, label: "Categories" },
-  ];
-
+  
   const getNavItems = () => {
     if (!currentUser) {
       return [
@@ -149,25 +145,57 @@ export function BottomNav({ onNewMessage, activeFilter = "featured", onFilterCha
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {searchOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              onClick={() => setSearchOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-20 left-4 right-4 z-50 bg-card border border-border rounded-2xl p-4 shadow-2xl"
+            >
+              <SearchBar className="w-full" />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
         <div className="bg-background/95 backdrop-blur-lg border-t border-border">
           <div className="flex items-center justify-between px-2 h-16">
-            {filterTabs.slice(0, 2).map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => onFilterChange?.(tab.id)}
-                className={cn(
-                  "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors flex-1",
-                  activeFilter === tab.id 
-                    ? "text-primary" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                data-testid={`filter-${tab.id}`}
-              >
-                <tab.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{tab.label}</span>
-              </button>
-            ))}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className={cn(
+                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors flex-1",
+                "text-muted-foreground hover:text-foreground"
+              )}
+              data-testid="button-search"
+            >
+              <Search className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Search</span>
+            </button>
+
+            <button
+              onClick={() => onFilterChange?.("featured")}
+              className={cn(
+                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors flex-1",
+                activeFilter === "featured" 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              data-testid="filter-featured"
+            >
+              <Flame className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Featured</span>
+            </button>
 
             <div className="relative -mt-6">
               <motion.button
@@ -196,22 +224,33 @@ export function BottomNav({ onNewMessage, activeFilter = "featured", onFilterCha
               )}
             </div>
 
-            {filterTabs.slice(2).map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => onFilterChange?.(tab.id)}
-                className={cn(
-                  "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors flex-1",
-                  activeFilter === tab.id 
-                    ? "text-primary" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                data-testid={`filter-${tab.id}`}
-              >
-                <tab.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{tab.label}</span>
-              </button>
-            ))}
+            <button
+              onClick={() => onFilterChange?.("top")}
+              className={cn(
+                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors flex-1",
+                activeFilter === "top" 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              data-testid="filter-top"
+            >
+              <TrendingUp className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Top</span>
+            </button>
+
+            <button
+              onClick={() => onFilterChange?.("categories")}
+              className={cn(
+                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors flex-1",
+                activeFilter === "categories" 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              data-testid="filter-categories"
+            >
+              <Bookmark className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Saved</span>
+            </button>
           </div>
         </div>
       </div>
