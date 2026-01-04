@@ -195,38 +195,33 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                           className="pointer-events-none"
                         >
                           <foreignObject 
-                            x={-30} 
-                            y={-20} 
-                            width={60} 
-                            height={40}
+                            x={-24} 
+                            y={-24} 
+                            width={48} 
+                            height={48}
                             style={{ overflow: 'visible' }}
                           >
-                            <div 
-                              xmlns="http://www.w3.org/1999/xhtml"
-                              className="flex flex-col items-center justify-center w-full h-full"
-                            >
+                            <div className="flex flex-col items-center justify-center w-full h-full">
                               <div className="relative flex items-center justify-center">
                                 <item.icon 
                                   className={cn(
                                     "transition-all duration-150",
-                                    isCenter ? "w-5 h-5" : "w-4 h-4",
+                                    isCenter ? "w-7 h-7" : "w-6 h-6",
                                     isActive || isCenter ? "text-primary" : isHovered ? "text-primary" : "text-foreground"
                                   )} 
                                 />
                                 {item.badge && item.badge > 0 && (
                                   <span className={cn(
-                                    "absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse",
+                                    "absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full animate-pulse",
                                     item.badgeColor || "bg-primary"
                                   )} />
                                 )}
                               </div>
-                              <span className={cn(
-                                "mt-0.5 font-logo whitespace-nowrap transition-colors duration-150 text-center",
-                                isCenter ? "text-[8px]" : "text-[7px]",
-                                isActive || isCenter ? "text-primary" : isHovered ? "text-primary" : "text-foreground/80"
-                              )}>
-                                {item.label}
-                              </span>
+                              {isHovered && (
+                                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-card/95 border border-primary/50 rounded text-[10px] font-logo text-primary whitespace-nowrap shadow-lg">
+                                  {item.label}
+                                </span>
+                              )}
                             </div>
                           </foreignObject>
                         </g>
