@@ -366,7 +366,8 @@ export async function registerRoutes(
         proofBarId, 
         proofHash,
         permissionStatus: req.body.permissionStatus || "share_only",
-        barType: req.body.barType || "single_bar"
+        barType: req.body.barType || "single_bar",
+        fullRapLink: req.body.fullRapLink || null
       }).where(eq(bars.id, bar.id));
       
       // Notify followers about new bar (only if not private)

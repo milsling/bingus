@@ -15,6 +15,7 @@ interface BarContextType {
     feedbackWanted?: boolean;
     permissionStatus?: string;
     barType?: string;
+    fullRapLink?: string;
     isOriginal?: boolean;
   }) => Promise<void>;
   currentUser: User | null;
@@ -92,6 +93,7 @@ export function BarProvider({ children }: { children: ReactNode }) {
       feedbackWanted?: boolean;
       permissionStatus?: string;
       barType?: string;
+      fullRapLink?: string;
       isOriginal?: boolean;
     }) => api.createBar(data),
     onSuccess: () => {
@@ -128,6 +130,7 @@ export function BarProvider({ children }: { children: ReactNode }) {
     feedbackWanted?: boolean;
     permissionStatus?: string;
     barType?: string;
+    fullRapLink?: string;
     isOriginal?: boolean;
   }) => {
     await createBarMutation.mutateAsync(newBarData);

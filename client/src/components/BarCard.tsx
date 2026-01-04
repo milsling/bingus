@@ -163,6 +163,8 @@ export default function BarCard({ bar }: BarCardProps) {
   const [editExplanation, setEditExplanation] = useState(bar.explanation || "");
   const [editCategory, setEditCategory] = useState(bar.category);
   const [editTags, setEditTags] = useState(bar.tags?.join(", ") || "");
+  const [editBarType, setEditBarType] = useState((bar as any).barType || "single_bar");
+  const [editFullRapLink, setEditFullRapLink] = useState((bar as any).fullRapLink || "");
   const [showProofScreenshot, setShowProofScreenshot] = useState(false);
   const [showOriginalityReport, setShowOriginalityReport] = useState(false);
   const [originalityData, setOriginalityData] = useState<Array<{ id: string; proofBarId: string; similarity: number; username?: string }>>([]);
@@ -289,6 +291,8 @@ export default function BarCard({ bar }: BarCardProps) {
       explanation: editExplanation || undefined,
       category: editCategory,
       tags: editTags.split(",").map(t => t.trim()).filter(Boolean),
+      barType: editBarType,
+      fullRapLink: editFullRapLink.trim() || undefined,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bars'] });
@@ -762,6 +766,40 @@ export default function BarCard({ bar }: BarCardProps) {
                 onChange={(e) => setEditTags(e.target.value)}
                 placeholder="hiphop, bars, fire"
                 data-testid="input-edit-tags"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Bar Type</Label>
+              <div className="flex gap-2">
+                {[
+                  { value: "single_bar", label: "Single" },
+                  { value: "snippet", label: "Snippet" },
+                ].map((type) => (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => setEditBarType(type.value)}
+                    className={`flex-1 py-2 px-3 rounded-md border text-sm transition-all ${
+                      editBarType === type.value 
+                        ? 'border-primary bg-primary/10 text-primary' 
+                        : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
+                    }`}
+                    data-testid={`button-edit-type-${type.value}`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-link">Full Rap Link (optional)</Label>
+              <Input
+                id="edit-link"
+                type="url"
+                value={editFullRapLink}
+                onChange={(e) => setEditFullRapLink(e.target.value)}
+                placeholder="https://soundcloud.com/..."
+                data-testid="input-edit-link"
               />
             </div>
           </div>

@@ -33,10 +33,10 @@ const PERMISSIONS: { value: PermissionStatus; label: string; icon: React.ReactNo
 ];
 
 type BarType = "single_bar" | "snippet" | "half_verse";
-const BAR_TYPES: { value: BarType; label: string; description: string }[] = [
+const BAR_TYPES: { value: BarType; label: string; description: string; disabled?: boolean; badge?: string }[] = [
   { value: "single_bar", label: "Single Bar", description: "One punchy line" },
   { value: "snippet", label: "Snippet", description: "About 4 bars" },
-  { value: "half_verse", label: "Half Verse", description: "8 bars max" },
+  { value: "half_verse", label: "Half Verse", description: "8 bars max", disabled: true, badge: "Paid" },
 ];
 
 export default function Post() {
@@ -50,6 +50,7 @@ export default function Post() {
   const [feedbackWanted, setFeedbackWanted] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>("share_only");
   const [barType, setBarType] = useState<BarType>("single_bar");
+  const [fullRapLink, setFullRapLink] = useState("");
   const [isOriginal, setIsOriginal] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [similarBars, setSimilarBars] = useState<SimilarBar[]>([]);
@@ -89,6 +90,7 @@ export default function Post() {
         feedbackWanted,
         permissionStatus,
         barType,
+        fullRapLink: fullRapLink.trim() || undefined,
         isOriginal,
       });
 
@@ -188,14 +190,22 @@ export default function Post() {
             <button
               key={type.value}
               type="button"
-              onClick={() => setBarType(type.value)}
-              className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${
-                barType === type.value 
-                  ? 'border-primary bg-primary/10 text-primary' 
-                  : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
+              onClick={() => !type.disabled && setBarType(type.value)}
+              disabled={type.disabled}
+              className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all relative ${
+                type.disabled 
+                  ? 'border-border/30 bg-secondary/10 text-muted-foreground/50 cursor-not-allowed' 
+                  : barType === type.value 
+                    ? 'border-primary bg-primary/10 text-primary' 
+                    : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
               }`}
               data-testid={`button-type-${type.value}`}
             >
+              {type.badge && (
+                <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {type.badge}
+                </span>
+              )}
               <div className="font-semibold text-sm">{type.label}</div>
               <div className="text-xs opacity-70">{type.description}</div>
             </button>
@@ -339,6 +349,22 @@ export default function Post() {
                   className="bg-secondary/30 border-border/50"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="fullRapLink">Full Rap Link (Optional)</Label>
+              <Input 
+                id="fullRapLink" 
+                type="url"
+                value={fullRapLink}
+                onChange={(e) => setFullRapLink(e.target.value)}
+                placeholder="https://soundcloud.com/... or YouTube link to full track" 
+                className="bg-secondary/30 border-border/50"
+                data-testid="input-full-rap-link"
+              />
+              <p className="text-xs text-muted-foreground">
+                Link to your full song if this bar is from a larger work
+              </p>
             </div>
 
             <div className="space-y-2">

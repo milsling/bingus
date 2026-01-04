@@ -63,6 +63,7 @@ export const bars = pgTable("bars", {
   isFeatured: boolean("is_featured").notNull().default(false),
   featuredAt: timestamp("featured_at"),
   barType: text("bar_type").notNull().default("single_bar"),
+  fullRapLink: text("full_rap_link"),
 });
 
 export const barsRelations = relations(bars, ({ one, many }) => ({
@@ -294,6 +295,8 @@ export const updateBarSchema = z.object({
   category: z.enum(["Funny", "Serious", "Wordplay", "Storytelling", "Battle", "Freestyle"]).optional(),
   tags: z.array(z.string()).optional(),
   feedbackWanted: z.boolean().optional(),
+  barType: z.enum(["single_bar", "snippet", "half_verse"]).optional(),
+  fullRapLink: z.string().url().optional().nullable().or(z.literal("")),
 });
 
 export const insertCommentSchema = createInsertSchema(comments).omit({

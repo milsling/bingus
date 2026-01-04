@@ -16,7 +16,7 @@ export interface IStorage {
   getBars(limit?: number): Promise<Array<Bar & { user: User }>>;
   getBarById(id: string): Promise<(Bar & { user: User }) | undefined>;
   getBarsByUser(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
-  updateBar(id: string, userId: string, updates: Partial<Pick<Bar, 'content' | 'explanation' | 'category' | 'tags'>>): Promise<Bar | undefined>;
+  updateBar(id: string, userId: string, updates: Partial<Pick<Bar, 'content' | 'explanation' | 'category' | 'tags' | 'barType' | 'fullRapLink'>>): Promise<Bar | undefined>;
   deleteBar(id: string, userId: string): Promise<boolean>;
 
   // Verification methods
@@ -251,7 +251,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async updateBar(id: string, userId: string, updates: Partial<Pick<Bar, 'content' | 'explanation' | 'category' | 'tags'>>): Promise<Bar | undefined> {
+  async updateBar(id: string, userId: string, updates: Partial<Pick<Bar, 'content' | 'explanation' | 'category' | 'tags' | 'barType' | 'fullRapLink'>>): Promise<Bar | undefined> {
     const [bar] = await db
       .update(bars)
       .set(updates)
