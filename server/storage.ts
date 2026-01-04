@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type UserAchievement, type AchievementId } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -130,6 +130,12 @@ export interface IStorage {
   getTrendingBars(limit?: number): Promise<Array<Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'>; velocity: number }>>;
   getFeaturedBars(limit?: number): Promise<Array<Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'membershipTier'> }>>;
   setBarFeatured(barId: string, featured: boolean): Promise<Bar | undefined>;
+
+  // Achievement methods
+  getUserStats(userId: string): Promise<{ barsMinted: number; likesReceived: number; followers: number; topBarLikes: number }>;
+  getUserAchievements(userId: string): Promise<UserAchievement[]>;
+  unlockAchievement(userId: string, achievementId: AchievementId): Promise<UserAchievement | null>;
+  checkAndUnlockAchievements(userId: string): Promise<AchievementId[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1073,6 +1079,105 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bars.id, barId))
       .returning();
     return updatedBar || undefined;
+  }
+
+  async getUserStats(userId: string): Promise<{ barsMinted: number; likesReceived: number; followers: number; topBarLikes: number }> {
+    const [barsCount] = await db
+      .select({ count: count() })
+      .from(bars)
+      .where(eq(bars.userId, userId));
+    
+    const [followersCount] = await db
+      .select({ count: count() })
+      .from(follows)
+      .where(eq(follows.followingId, userId));
+    
+    const userBars = await db
+      .select({ id: bars.id })
+      .from(bars)
+      .where(eq(bars.userId, userId));
+    
+    const barIds = userBars.map(b => b.id);
+    
+    let likesReceived = 0;
+    let topBarLikes = 0;
+    
+    if (barIds.length > 0) {
+      const likeCounts = await db
+        .select({ barId: likes.barId, count: count() })
+        .from(likes)
+        .where(sql`${likes.barId} IN (${sql.join(barIds.map(id => sql`${id}`), sql`, `)})`)
+        .groupBy(likes.barId);
+      
+      for (const lc of likeCounts) {
+        likesReceived += lc.count;
+        if (lc.count > topBarLikes) {
+          topBarLikes = lc.count;
+        }
+      }
+    }
+    
+    return {
+      barsMinted: barsCount?.count || 0,
+      likesReceived,
+      followers: followersCount?.count || 0,
+      topBarLikes,
+    };
+  }
+
+  async getUserAchievements(userId: string): Promise<UserAchievement[]> {
+    return db
+      .select()
+      .from(userAchievements)
+      .where(eq(userAchievements.userId, userId))
+      .orderBy(desc(userAchievements.unlockedAt));
+  }
+
+  async unlockAchievement(userId: string, achievementId: AchievementId): Promise<UserAchievement | null> {
+    try {
+      const [achievement] = await db
+        .insert(userAchievements)
+        .values({ userId, achievementId })
+        .onConflictDoNothing()
+        .returning();
+      return achievement || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async checkAndUnlockAchievements(userId: string): Promise<AchievementId[]> {
+    const stats = await this.getUserStats(userId);
+    const existingAchievements = await this.getUserAchievements(userId);
+    const existingIds = new Set(existingAchievements.map(a => a.achievementId));
+    
+    const newlyUnlocked: AchievementId[] = [];
+    
+    for (const [id, achievement] of Object.entries(ACHIEVEMENTS)) {
+      if (existingIds.has(id)) continue;
+      
+      const threshold = achievement.threshold;
+      let unlocked = false;
+      
+      if ('barsMinted' in threshold && stats.barsMinted >= threshold.barsMinted) {
+        unlocked = true;
+      } else if ('likesReceived' in threshold && stats.likesReceived >= threshold.likesReceived) {
+        unlocked = true;
+      } else if ('followers' in threshold && stats.followers >= threshold.followers) {
+        unlocked = true;
+      } else if ('topBarLikes' in threshold && stats.topBarLikes >= threshold.topBarLikes) {
+        unlocked = true;
+      }
+      
+      if (unlocked) {
+        const result = await this.unlockAchievement(userId, id as AchievementId);
+        if (result) {
+          newlyUnlocked.push(id as AchievementId);
+        }
+      }
+    }
+    
+    return newlyUnlocked;
   }
 }
 
