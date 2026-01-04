@@ -90,21 +90,18 @@ export function BottomNav({ onNewMessage, activeFilter = "featured", onFilterCha
               onClick={() => setIsOpen(false)}
             />
             <motion.div
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 100 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="fixed bottom-20 left-4 right-4 z-50 bg-card border border-border rounded-2xl p-6 shadow-2xl"
             >
               <div className="grid grid-cols-3 gap-4">
-                {navItems.map((item, index) => {
+                {navItems.map((item) => {
                   const isActive = item.path && location === item.path;
                   return (
-                    <motion.button
+                    <button
                       key={item.path}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.05 }}
                       onClick={() => handleNavClick(item.path)}
                       className={cn(
                         "flex flex-col items-center gap-2 p-4 rounded-xl transition-all",
@@ -136,7 +133,7 @@ export function BottomNav({ onNewMessage, activeFilter = "featured", onFilterCha
                       )}>
                         {item.label}
                       </span>
-                    </motion.button>
+                    </button>
                   );
                 })}
               </div>
