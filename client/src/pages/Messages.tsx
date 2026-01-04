@@ -38,11 +38,6 @@ export default function Messages() {
     onMessage: handleNewMessage,
   });
 
-  if (!currentUser) {
-    setLocation("/auth");
-    return null;
-  }
-
   const { data: conversations = [], isLoading: loadingConversations } = useQuery({
     queryKey: ['conversations'],
     queryFn: async () => {
@@ -63,8 +58,10 @@ export default function Messages() {
     refetchOnWindowFocus: false,
   });
 
-  const conversationUserIds = new Set(conversations.map((c: any) => c.user.id));
-  const friendsNotInConversation = friends.filter((f: any) => !conversationUserIds.has(f.id));
+  const safeConversations = Array.isArray(conversations) ? conversations : [];
+  const safeFriends = Array.isArray(friends) ? friends : [];
+  const conversationUserIds = new Set(safeConversations.map((c: any) => c.user?.id).filter(Boolean));
+  const friendsNotInConversation = safeFriends.filter((f: any) => !conversationUserIds.has(f.id));
 
   const { data: chatMessages = [], isLoading: loadingMessages, refetch: refetchMessages } = useQuery({
     queryKey: ['messages', selectedUserId],
@@ -80,7 +77,7 @@ export default function Messages() {
   });
 
   const conversationUser = selectedUserId
-    ? conversations.find((c: any) => c.user.id === selectedUserId)?.user
+    ? safeConversations.find((c: any) => c.user?.id === selectedUserId)?.user
     : null;
 
   const { data: fetchedUser } = useQuery({
@@ -140,6 +137,11 @@ export default function Messages() {
 
   const reversedMessages = [...chatMessages].reverse();
 
+  if (!currentUser) {
+    setLocation("/auth");
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-0 md:pt-16">
       <Navigation />
@@ -174,13 +176,13 @@ export default function Messages() {
                 <ScrollArea className="h-full">
                   {loadingConversations ? (
                     <p className="p-4 text-center text-muted-foreground">Loading...</p>
-                  ) : conversations.length === 0 ? (
+                  ) : safeConversations.length === 0 ? (
                     <div className="p-4 text-center text-muted-foreground">
                       <p className="text-sm">No conversations yet</p>
                       <p className="text-xs mt-1">Start chatting with a friend!</p>
                     </div>
                   ) : (
-                    conversations.map((conv: any) => (
+                    safeConversations.map((conv: any) => (
                       <button
                         key={conv.user.id}
                         className={`w-full p-3 flex items-center gap-3 hover:bg-accent transition-colors text-left border-b ${selectedUserId === conv.user.id ? 'bg-accent' : ''}`}
@@ -216,7 +218,7 @@ export default function Messages() {
                 <ScrollArea className="h-full">
                   {loadingFriends ? (
                     <p className="p-4 text-center text-muted-foreground">Loading...</p>
-                  ) : friends.length === 0 ? (
+                  ) : safeFriends.length === 0 ? (
                     <div className="p-4 text-center text-muted-foreground">
                       <p className="text-sm">No friends yet</p>
                       <Link href="/friends">
