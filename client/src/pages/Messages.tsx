@@ -111,8 +111,9 @@ export default function Messages() {
     onMutate: async (content: string) => {
       await queryClient.cancelQueries({ queryKey: ['messages', selectedUserId] });
       const previousMessages = queryClient.getQueryData(['messages', selectedUserId]);
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const optimisticMessage = {
-        id: `temp-${Date.now()}`,
+        id: tempId,
         senderId: currentUser?.id,
         receiverId: selectedUserId,
         content,
@@ -121,17 +122,20 @@ export default function Messages() {
       };
       queryClient.setQueryData(['messages', selectedUserId], (old: any[] = []) => [optimisticMessage, ...old]);
       setMessage("");
-      return { previousMessages };
+      return { previousMessages, tempId };
+    },
+    onSuccess: (newMessage: any, _content, context) => {
+      queryClient.setQueryData(['messages', selectedUserId], (old: any[] = []) => {
+        const filtered = old.filter(msg => msg.id !== context?.tempId);
+        return [newMessage, ...filtered];
+      });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
     onError: (error: any, _content, context) => {
       if (context?.previousMessages) {
         queryClient.setQueryData(['messages', selectedUserId], context.previousMessages);
       }
       toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', selectedUserId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 
@@ -324,25 +328,28 @@ export default function Messages() {
                     ) : reversedMessages.length === 0 ? (
                       <p className="text-center text-muted-foreground py-8">No messages yet. Say hi!</p>
                     ) : (
-                      reversedMessages.map((msg: any) => (
-                        <div
-                          key={msg.id}
-                          className={`flex ${msg.senderId === currentUser.id ? 'justify-end' : 'justify-start'}`}
-                        >
+                      reversedMessages.map((msg: any) => {
+                        const isSending = typeof msg.id === 'string' && msg.id.startsWith('temp-');
+                        return (
                           <div
-                            className={`max-w-[80%] p-3 rounded-lg ${
-                              msg.senderId === currentUser.id
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-secondary'
-                            }`}
+                            key={msg.id}
+                            className={`flex ${msg.senderId === currentUser.id ? 'justify-end' : 'justify-start'}`}
                           >
-                            <p className="text-sm">{msg.content}</p>
-                            <p className={`text-[10px] mt-1 ${msg.senderId === currentUser.id ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                              {formatTimestamp(msg.createdAt)}
-                            </p>
+                            <div
+                              className={`max-w-[80%] p-3 rounded-lg ${
+                                msg.senderId === currentUser.id
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-secondary'
+                              } ${isSending ? 'opacity-70' : ''}`}
+                            >
+                              <p className="text-sm">{msg.content}</p>
+                              <p className={`text-[10px] mt-1 ${msg.senderId === currentUser.id ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                {isSending ? 'Sending...' : formatTimestamp(msg.createdAt)}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        );
+                      })}
                     )}
                     <div ref={messagesEndRef} />
                   </div>

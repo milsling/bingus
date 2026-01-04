@@ -42,6 +42,48 @@ const BAR_TYPE_INFO: Record<BarType, { label: string; detail: string }> = {
   half_verse: { label: "Half Verse", detail: "A longer section of a verse. Up to 8 lines." },
 };
 
+function CollapsibleTags({ tags, barId }: { tags: string[]; barId: number | string }) {
+  const [expanded, setExpanded] = useState(false);
+  const MAX_VISIBLE = 2;
+  
+  if (tags.length <= MAX_VISIBLE) {
+    return (
+      <>
+        {tags.map(tag => (
+          <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}>
+            <Badge variant="secondary" className="text-xs text-muted-foreground hover:bg-primary/20 hover:text-primary cursor-pointer transition-colors" data-testid={`badge-tag-${tag}-${barId}`}>
+              #{tag}
+            </Badge>
+          </Link>
+        ))}
+      </>
+    );
+  }
+
+  const visibleTags = expanded ? tags : tags.slice(0, MAX_VISIBLE);
+  const hiddenCount = tags.length - MAX_VISIBLE;
+
+  return (
+    <>
+      {visibleTags.map(tag => (
+        <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}>
+          <Badge variant="secondary" className="text-xs text-muted-foreground hover:bg-primary/20 hover:text-primary cursor-pointer transition-colors" data-testid={`badge-tag-${tag}-${barId}`}>
+            #{tag}
+          </Badge>
+        </Link>
+      ))}
+      <Badge 
+        variant="outline" 
+        className="text-xs text-muted-foreground hover:bg-muted cursor-pointer transition-colors"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setExpanded(!expanded); }}
+        data-testid={`button-expand-tags-${barId}`}
+      >
+        {expanded ? "Show less" : `+${hiddenCount} more`}
+      </Badge>
+    </>
+  );
+}
+
 const countLineBreaks = (html: string): number => {
   let text = html
     .replace(/<br\s*\/?>/gi, '\n')
@@ -673,13 +715,9 @@ export default function BarCard({ bar }: BarCardProps) {
               <Badge variant="outline" className="border-primary/20 text-primary/80 hover:bg-primary/10" data-testid={`badge-category-${bar.id}`}>
                 {bar.category}
               </Badge>
-              {bar.tags && bar.tags.map(tag => (
-                <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}>
-                  <Badge variant="secondary" className="text-xs text-muted-foreground hover:bg-primary/20 hover:text-primary cursor-pointer transition-colors" data-testid={`badge-tag-${tag}-${bar.id}`}>
-                    #{tag}
-                  </Badge>
-                </Link>
-              ))}
+              {bar.tags && bar.tags.length > 0 && (
+                <CollapsibleTags tags={bar.tags} barId={bar.id} />
+              )}
             </div>
           </CardContent>
 
