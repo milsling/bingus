@@ -60,11 +60,11 @@ export const api = {
     return handleResponse<User>(response);
   },
 
-  login: async (username: string, password: string): Promise<User> => {
+  login: async (username: string, password: string, rememberMe?: boolean): Promise<User> => {
     const response = await apiFetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, rememberMe }),
     });
     return handleResponse<User>(response);
   },

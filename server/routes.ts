@@ -210,6 +210,9 @@ export async function registerRoutes(
         if (err) {
           return next(err);
         }
+        if (req.body.rememberMe && req.session) {
+          req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+        }
         res.json(user);
       });
     })(req, res, next);

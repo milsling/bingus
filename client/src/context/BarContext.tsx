@@ -20,7 +20,7 @@ interface BarContextType {
   }) => Promise<void>;
   currentUser: User | null;
   isLoadingUser: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, rememberMe?: boolean) => Promise<void>;
   signup: (username: string, password: string, email: string, code: string) => Promise<void>;
   sendVerificationCode: (email: string) => Promise<void>;
   verifyCode: (email: string, code: string) => Promise<boolean>;
@@ -56,8 +56,8 @@ export function BarProvider({ children }: { children: ReactNode }) {
 
   // Login mutation
   const loginMutation = useMutation({
-    mutationFn: ({ username, password }: { username: string; password: string }) =>
-      api.login(username, password),
+    mutationFn: ({ username, password, rememberMe }: { username: string; password: string; rememberMe?: boolean }) =>
+      api.login(username, password, rememberMe),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['bars'] });
@@ -101,8 +101,8 @@ export function BarProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const login = async (username: string, password: string) => {
-    await loginMutation.mutateAsync({ username, password });
+  const login = async (username: string, password: string, rememberMe?: boolean) => {
+    await loginMutation.mutateAsync({ username, password, rememberMe });
   };
 
   const signup = async (username: string, password: string, email: string, code: string) => {

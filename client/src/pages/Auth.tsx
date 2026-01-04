@@ -28,6 +28,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Mail, CheckCircle, KeyRound } from "lucide-react";
 import { Link } from "wouter";
 import { useBars } from "@/context/BarContext";
@@ -46,6 +47,7 @@ export default function Auth() {
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [signupStep, setSignupStep] = useState<SignupStep>("email");
@@ -78,7 +80,7 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      await login(username, password);
+      await login(username, password, rememberMe);
       toast({
         title: "Welcome back!",
         description: "You're now logged in.",
@@ -639,6 +641,17 @@ export default function Auth() {
                       required 
                       className="bg-secondary/30 border-border/50"
                     />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="remember-me"
+                      data-testid="checkbox-remember-me"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked === true)}
+                    />
+                    <Label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
+                      Remember me
+                    </Label>
                   </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
