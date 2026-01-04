@@ -29,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Mail, CheckCircle, KeyRound } from "lucide-react";
+import { ArrowLeft, Mail, CheckCircle, KeyRound, User, X } from "lucide-react";
 import { Link } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -64,6 +64,42 @@ export default function Auth() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   
+  // Saved accounts feature
+  const [savedAccounts, setSavedAccounts] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const saved = localStorage.getItem('orphanbars_saved_accounts');
+    if (saved) {
+      try {
+        setSavedAccounts(JSON.parse(saved));
+      } catch {
+        setSavedAccounts([]);
+      }
+    }
+  }, []);
+  
+  const saveAccountToStorage = (user: string) => {
+    const saved = localStorage.getItem('orphanbars_saved_accounts');
+    let accounts: string[] = [];
+    try {
+      accounts = saved ? JSON.parse(saved) : [];
+    } catch {
+      accounts = [];
+    }
+    if (!accounts.includes(user)) {
+      accounts.unshift(user);
+      if (accounts.length > 5) accounts = accounts.slice(0, 5);
+      localStorage.setItem('orphanbars_saved_accounts', JSON.stringify(accounts));
+      setSavedAccounts(accounts);
+    }
+  };
+  
+  const removeAccount = (user: string) => {
+    const updated = savedAccounts.filter(a => a !== user);
+    localStorage.setItem('orphanbars_saved_accounts', JSON.stringify(updated));
+    setSavedAccounts(updated);
+  };
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(true);
@@ -81,6 +117,7 @@ export default function Auth() {
     
     try {
       await login(username, password, rememberMe);
+      saveAccountToStorage(username);
       toast({
         title: "Welcome back!",
         description: "You're now logged in.",
@@ -608,6 +645,32 @@ export default function Auth() {
                   <CardDescription>Enter your credentials to access your rhyme book.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {savedAccounts.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground text-xs">Quick Login</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {savedAccounts.map((account) => (
+                          <div
+                            key={account}
+                            className="group relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 hover:border-primary/50 hover:bg-secondary transition-all cursor-pointer"
+                            onClick={() => setUsername(account)}
+                            data-testid={`quick-login-${account}`}
+                          >
+                            <User className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-sm font-medium">@{account}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); removeAccount(account); }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                              title="Remove account"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="login-username">Username</Label>
                     <div className="relative">
