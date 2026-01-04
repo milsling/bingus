@@ -69,6 +69,7 @@ export default function Post() {
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>("share_only");
   const [barType, setBarType] = useState<BarType>("single_bar");
   const [fullRapLink, setFullRapLink] = useState("");
+  const [isRecorded, setIsRecorded] = useState(false);
   const [isOriginal, setIsOriginal] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [similarBars, setSimilarBars] = useState<SimilarBar[]>([]);
@@ -109,6 +110,7 @@ export default function Post() {
         permissionStatus,
         barType,
         fullRapLink: fullRapLink.trim() || undefined,
+        isRecorded: fullRapLink.trim() ? isRecorded : false,
         isOriginal,
       });
 
@@ -400,6 +402,19 @@ export default function Post() {
               <p className="text-xs text-muted-foreground">
                 Link to your full song if this bar is from a larger work
               </p>
+              {fullRapLink.trim() && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Switch
+                    id="isRecorded"
+                    checked={isRecorded}
+                    onCheckedChange={setIsRecorded}
+                    data-testid="switch-is-recorded"
+                  />
+                  <Label htmlFor="isRecorded" className="text-sm cursor-pointer">
+                    This track is recorded
+                  </Label>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

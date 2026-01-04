@@ -124,6 +124,7 @@ export const api = {
     permissionStatus?: string;
     barType?: string;
     fullRapLink?: string;
+    isRecorded?: boolean;
     isOriginal?: boolean;
   }): Promise<BarWithUser> => {
     const response = await apiFetch('/api/bars', {
@@ -158,6 +159,7 @@ export const api = {
     feedbackWanted?: boolean;
     barType?: string;
     fullRapLink?: string;
+    isRecorded?: boolean;
   }): Promise<BarWithUser> => {
     const response = await apiFetch(`/api/bars/${barId}`, {
       method: 'PATCH',

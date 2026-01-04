@@ -591,7 +591,7 @@ export default function BarCard({ bar }: BarCardProps) {
               >
                 <Music className="h-4 w-4 text-purple-400" />
                 <span className="text-sm font-medium text-purple-300 group-hover:text-purple-200 transition-colors">
-                  Listen to full track
+                  {(bar as any).isRecorded ? "Listen to full track" : "Check out full rap"}
                 </span>
                 <ExternalLink className="h-3 w-3 text-purple-400/60 group-hover:text-purple-300 transition-colors ml-auto" />
               </a>

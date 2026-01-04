@@ -66,6 +66,7 @@ export const bars = pgTable("bars", {
   featuredAt: timestamp("featured_at"),
   barType: text("bar_type").notNull().default("single_bar"),
   fullRapLink: text("full_rap_link"),
+  isRecorded: boolean("is_recorded").notNull().default(false),
   moderationStatus: text("moderation_status").notNull().default("approved"),
   moderationScore: integer("moderation_score"),
   moderationPhraseId: varchar("moderation_phrase_id"),
