@@ -25,6 +25,7 @@ interface RadialMenuItem {
   action?: () => void;
   badge?: number;
   badgeColor?: string;
+  isCenter?: boolean;
 }
 
 interface RadialMenuProps {
@@ -33,6 +34,7 @@ interface RadialMenuProps {
 
 export function RadialMenu({ onNewMessage }: RadialMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [location, setLocation] = useLocation();
   const { currentUser } = useBars();
   const unreadCount = useUnreadMessagesCount();
@@ -58,16 +60,23 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
       ];
     }
 
+    const centerAction: RadialMenuItem = isOnMessagesPage && onNewMessage
+      ? { icon: PenLine, label: "New Message", action: onNewMessage, isCenter: true }
+      : { icon: Plus, label: "Drop Bar", path: "/post", isCenter: true };
+
     const baseItems: RadialMenuItem[] = [
       { icon: Home, label: "Feed", path: "/" },
       { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount, badgeColor: "bg-primary" },
+      centerAction,
       { icon: Users, label: "Friends", path: "/friends", badge: pendingFriendRequests, badgeColor: "bg-destructive" },
       { icon: Bookmark, label: "Saved", path: "/saved" },
-      { icon: User, label: "Profile", path: "/profile" },
     ];
 
     if (currentUser.isAdmin) {
       baseItems.push({ icon: Shield, label: "Admin", path: "/admin" });
+      baseItems.push({ icon: User, label: "Profile", path: "/profile" });
+    } else {
+      baseItems.push({ icon: User, label: "Profile", path: "/profile" });
     }
 
     return baseItems;
@@ -84,11 +93,39 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
     }
   };
 
-  const totalItems = menuItems.length;
-  const radius = 130;
-  const startAngle = -90;
-  const angleSpread = Math.min(200, totalItems * 32);
-  const angleStep = angleSpread / (totalItems - 1 || 1);
+  const totalSlices = menuItems.length;
+  const sliceAngle = 180 / totalSlices;
+  const radius = 140;
+  const innerRadius = 45;
+
+  const createSlicePath = (index: number) => {
+    const startAngle = 180 + (index * sliceAngle);
+    const endAngle = 180 + ((index + 1) * sliceAngle);
+    
+    const startRad = (startAngle * Math.PI) / 180;
+    const endRad = (endAngle * Math.PI) / 180;
+    
+    const x1 = Math.cos(startRad) * radius;
+    const y1 = Math.sin(startRad) * radius;
+    const x2 = Math.cos(endRad) * radius;
+    const y2 = Math.sin(endRad) * radius;
+    const x3 = Math.cos(endRad) * innerRadius;
+    const y3 = Math.sin(endRad) * innerRadius;
+    const x4 = Math.cos(startRad) * innerRadius;
+    const y4 = Math.sin(startRad) * innerRadius;
+    
+    return `M ${x4} ${y4} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 0 0 ${x4} ${y4} Z`;
+  };
+
+  const getIconPosition = (index: number) => {
+    const midAngle = 180 + (index * sliceAngle) + (sliceAngle / 2);
+    const midRad = (midAngle * Math.PI) / 180;
+    const iconRadius = (radius + innerRadius) / 2;
+    return {
+      x: Math.cos(midRad) * iconRadius,
+      y: Math.sin(midRad) * iconRadius,
+    };
+  };
 
   return (
     <>
@@ -106,103 +143,93 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
       </AnimatePresence>
 
       <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
-        <div className="relative h-32 flex items-end justify-center pb-4">
+        <div className="relative h-48 flex items-end justify-center pb-4">
           <AnimatePresence>
-            {isOpen && menuItems.map((item, index) => {
-              const angle = startAngle - angleSpread / 2 + index * angleStep;
-              const radian = (angle * Math.PI) / 180;
-              const x = Math.cos(radian) * radius;
-              const y = Math.sin(radian) * radius;
-
-              return (
-                <motion.button
-                  key={item.path || item.label}
-                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  animate={{ 
-                    opacity: 1, 
-                    scale: 1, 
-                    x: x, 
-                    y: y,
-                  }}
-                  exit={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  transition={{ 
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 25,
-                    delay: index * 0.03,
-                  }}
-                  onClick={() => handleItemClick(item)}
-                  className={cn(
-                    "absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto",
-                    "flex flex-col items-center gap-1",
-                    "transition-transform duration-150 ease-out",
-                    "hover:scale-110 active:scale-105"
-                  )}
-                  data-testid={`radial-item-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  <div className={cn(
-                    "w-14 h-14 rounded-full flex items-center justify-center",
-                    "bg-card border-2 border-primary/50 shadow-lg shadow-primary/20",
-                    "transition-all duration-150 ease-out",
-                    "hover:scale-125 hover:border-primary hover:bg-primary/20 hover:shadow-xl hover:shadow-primary/40",
-                    "active:scale-110 active:bg-primary active:border-primary",
-                    item.path && location === item.path && "bg-primary border-primary"
-                  )}>
-                    <div className="relative">
-                      <item.icon className={cn(
-                        "h-6 w-6",
-                        item.path && location === item.path ? "text-primary-foreground" : "text-foreground"
-                      )} />
-                      {item.badge && item.badge > 0 && (
-                        <span className={cn(
-                          "absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full animate-pulse",
-                          item.badgeColor || "bg-primary"
-                        )} />
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-logo text-foreground/90 whitespace-nowrap">
-                    {item.label}
-                  </span>
-                </motion.button>
-              );
-            })}
-
-            {/* Center action button - Drop Bar or New Message */}
-            {isOpen && currentUser && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0, y: 0 }}
-                animate={{ opacity: 1, scale: 1, y: -80 }}
-                exit={{ opacity: 0, scale: 0, y: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.05 }}
-                onClick={() => {
-                  setIsOpen(false);
-                  if (isOnMessagesPage && onNewMessage) {
-                    setTimeout(() => onNewMessage(), 150);
-                  } else {
-                    setTimeout(() => setLocation("/post"), 150);
-                  }
-                }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto flex flex-col items-center gap-1 transition-transform duration-150 ease-out hover:scale-110 active:scale-105"
-                data-testid="radial-item-center-action"
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="absolute bottom-8 pointer-events-auto"
               >
-                <div className={cn(
-                  "w-16 h-16 rounded-full flex items-center justify-center",
-                  "bg-card border-3 border-primary shadow-xl shadow-primary/30",
-                  "transition-all duration-150 ease-out",
-                  "hover:scale-115 hover:bg-primary/20 hover:shadow-2xl hover:shadow-primary/50",
-                  "active:scale-105 active:bg-primary"
-                )}>
-                  {isOnMessagesPage && onNewMessage ? (
-                    <PenLine className="h-7 w-7 text-foreground" />
-                  ) : (
-                    <Plus className="h-8 w-8 text-foreground" />
-                  )}
-                </div>
-                <span className="text-[12px] font-logo text-foreground/90 whitespace-nowrap">
-                  {isOnMessagesPage && onNewMessage ? "New Message" : "Drop Bar"}
-                </span>
-              </motion.button>
+                <svg 
+                  width={radius * 2 + 20} 
+                  height={radius + 20} 
+                  viewBox={`${-radius - 10} ${-radius - 10} ${radius * 2 + 20} ${radius + 20}`}
+                  className="overflow-visible"
+                >
+                  {menuItems.map((item, index) => {
+                    const iconPos = getIconPosition(index);
+                    const isHovered = hoveredIndex === index;
+                    const isActive = item.path && location === item.path;
+                    const isCenter = item.isCenter;
+                    
+                    return (
+                      <g key={item.path || item.label}>
+                        <motion.path
+                          d={createSlicePath(index)}
+                          initial={{ opacity: 0 }}
+                          animate={{ 
+                            opacity: 1,
+                            scale: isHovered ? 1.05 : 1,
+                          }}
+                          className={cn(
+                            "cursor-pointer transition-colors duration-150",
+                            isCenter 
+                              ? "fill-primary/30 stroke-primary stroke-2"
+                              : isActive 
+                                ? "fill-primary/40 stroke-primary stroke-2" 
+                                : isHovered 
+                                  ? "fill-primary/20 stroke-primary stroke-2"
+                                  : "fill-card/90 stroke-primary/50 stroke-1"
+                          )}
+                          onClick={() => handleItemClick(item)}
+                          onMouseEnter={() => setHoveredIndex(index)}
+                          onMouseLeave={() => setHoveredIndex(null)}
+                          onTouchStart={() => setHoveredIndex(index)}
+                          onTouchEnd={() => setHoveredIndex(null)}
+                        />
+                        <g 
+                          transform={`translate(${iconPos.x}, ${iconPos.y})`}
+                          className="pointer-events-none"
+                        >
+                          <foreignObject 
+                            x={-20} 
+                            y={-28} 
+                            width={40} 
+                            height={56}
+                            className="overflow-visible"
+                          >
+                            <div className="flex flex-col items-center justify-center h-full">
+                              <div className="relative">
+                                <item.icon className={cn(
+                                  "transition-all duration-150",
+                                  isCenter ? "h-7 w-7" : "h-5 w-5",
+                                  isActive || isCenter ? "text-primary" : isHovered ? "text-primary" : "text-foreground"
+                                )} />
+                                {item.badge && item.badge > 0 && (
+                                  <span className={cn(
+                                    "absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse",
+                                    item.badgeColor || "bg-primary"
+                                  )} />
+                                )}
+                              </div>
+                              <span className={cn(
+                                "mt-1 font-logo whitespace-nowrap transition-colors duration-150",
+                                isCenter ? "text-[10px]" : "text-[9px]",
+                                isActive || isCenter ? "text-primary" : isHovered ? "text-primary" : "text-foreground/80"
+                              )}>
+                                {item.label}
+                              </span>
+                            </div>
+                          </foreignObject>
+                        </g>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </motion.div>
             )}
           </AnimatePresence>
 
@@ -215,7 +242,7 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
               "flex items-center justify-center",
               "shadow-xl shadow-primary/40",
               "transition-all duration-200",
-              isOpen && "rotate-180 from-destructive to-destructive/80 shadow-destructive/40"
+              isOpen && "from-destructive to-destructive/80 shadow-destructive/40"
             )}
             whileTap={{ scale: 0.9 }}
             data-testid="button-radial-menu"
@@ -231,8 +258,6 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
           </motion.button>
         </div>
       </div>
-
-      {isOpen && <div className="fixed bottom-0 left-0 right-0 h-20 bg-background z-45 pointer-events-none" />}
     </>
   );
 }
