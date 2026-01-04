@@ -17,6 +17,7 @@ import Saved from "@/pages/Saved";
 import Friends from "@/pages/Friends";
 import Messages from "@/pages/Messages";
 import Guidelines from "@/pages/Guidelines";
+import Orphanage from "@/pages/Orphanage";
 import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
@@ -45,6 +46,7 @@ function Router() {
           <Route path="/messages" component={Messages} />
           <Route path="/messages/:id" component={Messages} />
           <Route path="/guidelines" component={Guidelines} />
+          <Route path="/orphanage" component={Orphanage} />
           <Route path="/discover" component={Home} />
           <Route path="/bars/:id" component={BarDetail} />
           <Route path="/u/:username">

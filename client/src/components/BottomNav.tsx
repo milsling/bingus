@@ -12,7 +12,8 @@ import {
   LogIn,
   Grid3X3,
   X,
-  Search
+  Search,
+  Heart
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
@@ -36,12 +37,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
     if (!currentUser) {
       return [
         { icon: Home, label: "Feed", path: "/" },
+        { icon: Heart, label: "Orphanage", path: "/orphanage" },
         { icon: LogIn, label: "Login", path: "/auth" },
       ];
     }
 
     const items = [
       { icon: Home, label: "Feed", path: "/" },
+      { icon: Heart, label: "Orphanage", path: "/orphanage" },
       { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount },
       { icon: Users, label: "Friends", path: "/friends", badge: pendingFriendRequests },
       { icon: Bookmark, label: "Saved", path: "/saved" },

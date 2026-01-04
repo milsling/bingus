@@ -531,6 +531,27 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/bars/adoptable", async (req, res) => {
+    try {
+      const adoptableBars = await storage.getAdoptableBars();
+      
+      const userId = req.isAuthenticated() ? req.user!.id : null;
+      const barsWithEngagement = await Promise.all(
+        adoptableBars.map(async (bar) => {
+          const likeCount = await storage.getLikeCount(bar.id);
+          const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
+          return { ...bar, likeCount, liked, dislikeCount, disliked };
+        })
+      );
+      
+      res.json(barsWithEngagement);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.get("/api/bars/feed/trending", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;

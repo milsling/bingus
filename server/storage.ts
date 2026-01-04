@@ -248,6 +248,39 @@ export class DatabaseStorage implements IStorage {
     return { ...result.bar, user: result.user as User };
   }
 
+  async getAdoptableBars(): Promise<Array<Bar & { user: User; commentCount: number }>> {
+    const result = await db
+      .select({
+        bar: bars,
+        user: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          location: users.location,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+          membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
+          isOwner: users.isOwner,
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+      })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(and(
+        eq(bars.permissionStatus, "open_adopt"),
+        sql`${bars.deletedAt} IS NULL`,
+        sql`${bars.moderationStatus} != 'removed'`
+      ))
+      .orderBy(desc(bars.createdAt));
+    
+    return result.map(row => ({
+      ...row.bar,
+      user: row.user as any,
+      commentCount: Number(row.commentCount) || 0,
+    }));
+  }
+
   async getBarsByUser(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>> {
     const result = await db
       .select({
