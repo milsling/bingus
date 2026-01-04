@@ -178,3 +178,23 @@ Preferred communication style: Simple, everyday language.
 - **bars.permissionStatus**: share_only | open_adopt | private
 - **adoptions**: Links adopted bars to originals with timestamps
 - **barSequence**: Singleton table for sequential ID generation
+
+## Beat/Instrumental Embedding
+
+### Beat Link Feature
+- **Purpose**: Let users link beats/instrumentals so readers can hear what the bar rides to
+- **Supported Providers**: YouTube, SoundCloud, Spotify, Audiomack
+- **Input Validation**: Real-time URL validation with provider detection on form input
+- **Security**: Domain whitelist enforced on both frontend and backend
+
+### BarMediaPlayer Component
+- **Location**: `client/src/components/BarMediaPlayer.tsx`
+- **Modes**: Collapsible (default) with expandable view, inline variant
+- **Provider Detection**: Automatically detects platform from URL hostname
+- **Embeds**: Loads iframe players for supported providers
+
+### Validation Flow
+1. **Frontend**: `validateBeatUrl()` checks URL format and domain whitelist
+2. **Form Feedback**: Shows provider badge or error message in real-time
+3. **Submit Block**: Invalid beat links prevent form submission
+4. **Backend**: Independent validation before database persistence
