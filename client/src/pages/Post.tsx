@@ -36,7 +36,7 @@ type BarType = "single_bar" | "snippet" | "half_verse";
 const BAR_TYPES: { value: BarType; label: string; description: string; detail: string; disabled?: boolean; badge?: string }[] = [
   { value: "single_bar", label: "Single Bar", description: "1 line max", detail: "A single punchy line, punchline, or one-liner. Perfect for quick hits." },
   { value: "snippet", label: "Snippet", description: "Up to 4 lines", detail: "A short flow or a few connected bars. Great for showing off wordplay." },
-  { value: "half_verse", label: "Half Verse", description: "Up to 8 lines", detail: "A longer section of a verse. Room to develop a full idea.", disabled: true, badge: "Paid" },
+  { value: "half_verse", label: "Half Verse", description: "Up to 8 lines", detail: "A longer section of a verse. Room to develop a full idea.", disabled: false },
 ];
 
 const LINE_BREAK_LIMITS: Record<BarType, number> = {
