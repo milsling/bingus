@@ -88,9 +88,9 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
   };
 
   const totalItems = menuItems.length;
-  const radius = 110;
+  const radius = 130;
   const startAngle = -90;
-  const angleSpread = Math.min(180, totalItems * 30);
+  const angleSpread = Math.min(200, totalItems * 32);
   const angleStep = angleSpread / (totalItems - 1 || 1);
 
   return (
@@ -102,7 +102,7 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-40"
             onClick={() => setIsOpen(false)}
           />
         )}
@@ -142,14 +142,14 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                   data-testid={`radial-item-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
                   <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center",
+                    "w-14 h-14 rounded-full flex items-center justify-center",
                     "bg-card border-2 border-primary/50 shadow-lg shadow-primary/20",
                     "transition-all hover:scale-110 hover:border-primary active:scale-95",
                     item.path && location === item.path && "bg-primary border-primary"
                   )}>
                     <div className="relative">
                       <item.icon className={cn(
-                        "h-5 w-5",
+                        "h-6 w-6",
                         item.path && location === item.path ? "text-primary-foreground" : "text-foreground"
                       )} />
                       {item.badge && item.badge > 0 && (
