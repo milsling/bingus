@@ -365,7 +365,8 @@ export async function registerRoutes(
       await db.update(bars).set({ 
         proofBarId, 
         proofHash,
-        permissionStatus: req.body.permissionStatus || "share_only"
+        permissionStatus: req.body.permissionStatus || "share_only",
+        barType: req.body.barType || "single_bar"
       }).where(eq(bars.id, bar.id));
       
       // Notify followers about new bar (only if not private)

@@ -122,6 +122,7 @@ export const api = {
     tags: string[];
     feedbackWanted?: boolean;
     permissionStatus?: string;
+    barType?: string;
     isOriginal?: boolean;
   }): Promise<BarWithUser> => {
     const response = await apiFetch('/api/bars', {

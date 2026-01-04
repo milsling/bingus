@@ -32,6 +32,13 @@ const PERMISSIONS: { value: PermissionStatus; label: string; icon: React.ReactNo
   { value: "private", label: "Private", icon: <Lock className="h-4 w-4" />, description: "Only visible on your profile" },
 ];
 
+type BarType = "single_bar" | "snippet" | "half_verse";
+const BAR_TYPES: { value: BarType; label: string; description: string }[] = [
+  { value: "single_bar", label: "Single Bar", description: "One punchy line" },
+  { value: "snippet", label: "Snippet", description: "About 4 bars" },
+  { value: "half_verse", label: "Half Verse", description: "8 bars max" },
+];
+
 export default function Post() {
   const { addBar, currentUser } = useBars();
   const { toast } = useToast();
@@ -42,6 +49,7 @@ export default function Post() {
   const [tags, setTags] = useState("");
   const [feedbackWanted, setFeedbackWanted] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>("share_only");
+  const [barType, setBarType] = useState<BarType>("single_bar");
   const [isOriginal, setIsOriginal] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [similarBars, setSimilarBars] = useState<SimilarBar[]>([]);
@@ -80,6 +88,7 @@ export default function Post() {
         tags: tags.split(",").map(t => t.trim()).filter(Boolean),
         feedbackWanted,
         permissionStatus,
+        barType,
         isOriginal,
       });
 
@@ -172,6 +181,25 @@ export default function Post() {
             </Button>
           </Link>
           <h1 className="text-3xl font-display font-bold">Drop a Bar</h1>
+        </div>
+
+        <div className="mb-4 flex gap-2">
+          {BAR_TYPES.map((type) => (
+            <button
+              key={type.value}
+              type="button"
+              onClick={() => setBarType(type.value)}
+              className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${
+                barType === type.value 
+                  ? 'border-primary bg-primary/10 text-primary' 
+                  : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
+              }`}
+              data-testid={`button-type-${type.value}`}
+            >
+              <div className="font-semibold text-sm">{type.label}</div>
+              <div className="text-xs opacity-70">{type.description}</div>
+            </button>
+          ))}
         </div>
 
         <Card className="border-border bg-card/50 backdrop-blur-sm">

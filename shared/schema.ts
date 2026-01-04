@@ -6,6 +6,7 @@ import { z } from "zod";
 
 export const permissionStatusOptions = ["share_only", "open_adopt", "private"] as const;
 export const messagePrivacyOptions = ["friends_only", "everyone"] as const;
+export const barTypeOptions = ["single_bar", "snippet", "half_verse"] as const;
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -61,6 +62,7 @@ export const bars = pgTable("bars", {
   proofHash: text("proof_hash"),
   isFeatured: boolean("is_featured").notNull().default(false),
   featuredAt: timestamp("featured_at"),
+  barType: text("bar_type").notNull().default("single_bar"),
 });
 
 export const barsRelations = relations(bars, ({ one, many }) => ({
