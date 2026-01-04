@@ -583,6 +583,11 @@ export default function BarCard({ bar }: BarCardProps) {
                   Breakdown Requested
                 </Badge>
               )}
+              {(bar as any).barType && (bar as any).barType !== "single_bar" && (
+                <Badge variant="outline" className={`text-[10px] gap-1 ${(bar as any).barType === "snippet" ? "border-violet-500/30 text-violet-400" : "border-fuchsia-500/30 text-fuchsia-400"}`} data-testid={`badge-type-${bar.id}`}>
+                  {(bar as any).barType === "snippet" ? "Snippet" : "Half Verse"}
+                </Badge>
+              )}
               <Badge variant="outline" className="border-primary/20 text-primary/80 hover:bg-primary/10" data-testid={`badge-category-${bar.id}`}>
                 {bar.category}
               </Badge>

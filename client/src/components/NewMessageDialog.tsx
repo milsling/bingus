@@ -47,7 +47,9 @@ export function NewMessageDialog({ open, onOpenChange }: NewMessageDialogProps) 
     setLocation(`/messages/${userId}`);
   };
 
-  const displayUsers = searchQuery.length >= 2 ? searchResults : friends;
+  const displayUsers = searchQuery.length >= 2 
+    ? (Array.isArray(searchResults) ? searchResults : []) 
+    : (Array.isArray(friends) ? friends : []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
