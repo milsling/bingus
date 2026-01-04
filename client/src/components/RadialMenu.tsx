@@ -137,14 +137,18 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                   onClick={() => handleItemClick(item)}
                   className={cn(
                     "absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto",
-                    "flex flex-col items-center gap-1"
+                    "flex flex-col items-center gap-1",
+                    "transition-transform duration-150 ease-out",
+                    "hover:scale-110 active:scale-105"
                   )}
                   data-testid={`radial-item-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
                   <div className={cn(
                     "w-14 h-14 rounded-full flex items-center justify-center",
                     "bg-card border-2 border-primary/50 shadow-lg shadow-primary/20",
-                    "transition-all hover:scale-110 hover:border-primary active:scale-95",
+                    "transition-all duration-150 ease-out",
+                    "hover:scale-125 hover:border-primary hover:bg-primary/20 hover:shadow-xl hover:shadow-primary/40",
+                    "active:scale-110 active:bg-primary active:border-primary",
                     item.path && location === item.path && "bg-primary border-primary"
                   )}>
                     <div className="relative">
