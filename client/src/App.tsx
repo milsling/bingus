@@ -19,6 +19,7 @@ import Messages from "@/pages/Messages";
 import Guidelines from "@/pages/Guidelines";
 import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { MaintenanceBanner } from "@/components/MaintenanceBanner";
 
 function Router() {
   const [location] = useLocation();
@@ -65,6 +66,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BarProvider>
         <TooltipProvider>
+          <MaintenanceBanner />
           <Toaster />
           <Router />
         </TooltipProvider>
