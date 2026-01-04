@@ -82,7 +82,7 @@ export function setupWebSocket(server: Server, sessionParser: any) {
       return;
     }
 
-    const mockReq = { headers: { cookie: req.headers.cookie } } as Request;
+    const mockReq = { headers: { cookie: req.headers.cookie }, url: req.url || '/' } as Request;
     const mockRes = {} as any;
 
     sessionParser(mockReq, mockRes, () => {
