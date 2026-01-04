@@ -160,7 +160,7 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                       )}
                     </div>
                   </div>
-                  <span className="text-[10px] font-medium text-foreground/80 whitespace-nowrap">
+                  <span className="text-[11px] font-logo text-foreground/90 whitespace-nowrap">
                     {item.label}
                   </span>
                 </motion.button>
