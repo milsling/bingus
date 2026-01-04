@@ -93,14 +93,29 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
     }
   };
 
-  const totalSlices = menuItems.length;
-  const sliceAngle = 180 / totalSlices;
   const radius = 120;
   const innerRadius = 40;
 
-  const createSlicePath = (index: number) => {
-    const startAngle = 180 + (index * sliceAngle);
-    const endAngle = 180 + ((index + 1) * sliceAngle);
+  const getIconPosition = (index: number, total: number) => {
+    const spreadAngle = Math.min(180, total * 35);
+    const startOffset = (180 - spreadAngle) / 2;
+    const itemAngle = total > 1 ? spreadAngle / (total - 1) : 0;
+    const midAngle = 180 + startOffset + (index * itemAngle);
+    const midRad = (midAngle * Math.PI) / 180;
+    const iconRadius = (radius + innerRadius) / 2;
+    return {
+      x: Math.cos(midRad) * iconRadius,
+      y: Math.sin(midRad) * iconRadius,
+      angle: midAngle,
+    };
+  };
+
+  const getSlicePath = (index: number, total: number) => {
+    const spreadAngle = Math.min(180, total * 35);
+    const startOffset = (180 - spreadAngle) / 2;
+    const itemAngle = spreadAngle / total;
+    const startAngle = 180 + startOffset + (index * itemAngle);
+    const endAngle = startAngle + itemAngle;
     
     const startRad = (startAngle * Math.PI) / 180;
     const endRad = (endAngle * Math.PI) / 180;
@@ -115,16 +130,6 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
     const y4 = Math.sin(startRad) * innerRadius;
     
     return `M ${x4} ${y4} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 0 0 ${x4} ${y4} Z`;
-  };
-
-  const getIconPosition = (index: number) => {
-    const midAngle = 180 + (index * sliceAngle) + (sliceAngle / 2);
-    const midRad = (midAngle * Math.PI) / 180;
-    const iconRadius = (radius + innerRadius) / 2;
-    return {
-      x: Math.cos(midRad) * iconRadius,
-      y: Math.sin(midRad) * iconRadius,
-    };
   };
 
   return (
@@ -160,7 +165,7 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                   className="overflow-visible"
                 >
                   {menuItems.map((item, index) => {
-                    const iconPos = getIconPosition(index);
+                    const iconPos = getIconPosition(index, menuItems.length);
                     const isHovered = hoveredIndex === index;
                     const isActive = item.path && location === item.path;
                     const isCenter = item.isCenter;
@@ -168,7 +173,7 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                     return (
                       <g key={item.path || item.label}>
                         <motion.path
-                          d={createSlicePath(index)}
+                          d={getSlicePath(index, menuItems.length)}
                           initial={{ opacity: 0 }}
                           animate={{ 
                             opacity: 1,
