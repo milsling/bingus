@@ -92,26 +92,29 @@ export default function Home() {
   };
 
   const filteredBars = useMemo(() => {
-    if (tagFilter) return [...tagBars];
-    
     let result: any[];
-    switch (activeTab) {
-      case "featured":
-        result = [...featuredBars];
-        break;
-      case "top":
-        result = [...topBars];
-        break;
-      case "trending":
-        result = [...trendingBars];
-        break;
-      case "categories":
-        result = selectedCategory === "All" ? [...bars] : bars.filter(bar => bar.category === selectedCategory);
-        break;
-      case "latest":
-      default:
-        result = [...bars];
-        break;
+    
+    if (tagFilter) {
+      result = [...tagBars];
+    } else {
+      switch (activeTab) {
+        case "featured":
+          result = [...featuredBars];
+          break;
+        case "top":
+          result = [...topBars];
+          break;
+        case "trending":
+          result = [...trendingBars];
+          break;
+        case "categories":
+          result = selectedCategory === "All" ? [...bars] : bars.filter(bar => bar.category === selectedCategory);
+          break;
+        case "latest":
+        default:
+          result = [...bars];
+          break;
+      }
     }
 
     if (sortFilter !== "all") {
