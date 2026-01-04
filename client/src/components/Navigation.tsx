@@ -10,7 +10,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import { NewMessageDialog } from "@/components/NewMessageDialog";
-import { RadialMenu } from "@/components/RadialMenu";
+import { BottomNav } from "@/components/BottomNav";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -187,9 +187,9 @@ export default function Navigation() {
         </div>
       </div>
 
-      {/* Mobile Radial Menu */}
+      {/* Mobile Bottom Nav */}
       <div className="md:hidden">
-        <RadialMenu onNewMessage={() => setNewMessageOpen(true)} />
+        <BottomNav onNewMessage={() => setNewMessageOpen(true)} />
       </div>
       
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
