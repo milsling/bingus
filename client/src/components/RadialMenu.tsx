@@ -93,12 +93,13 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
     }
   };
 
-  const radius = 100;
+  const radius = 130;
 
   const getItemPosition = (index: number, total: number) => {
-    const angleSpread = 180;
-    const angleStep = angleSpread / (total + 1);
-    const angle = 180 + angleStep * (index + 1);
+    const angleSpread = 160;
+    const startAngle = 180 + (180 - angleSpread) / 2;
+    const angleStep = angleSpread / (total - 1 || 1);
+    const angle = total === 1 ? 270 : startAngle + angleStep * index;
     const rad = (angle * Math.PI) / 180;
     return {
       x: Math.cos(rad) * radius,
