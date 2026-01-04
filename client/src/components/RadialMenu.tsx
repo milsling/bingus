@@ -95,8 +95,8 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
 
   const totalSlices = menuItems.length;
   const sliceAngle = 180 / totalSlices;
-  const radius = 140;
-  const innerRadius = 45;
+  const radius = 120;
+  const innerRadius = 40;
 
   const createSlicePath = (index: number) => {
     const startAngle = 180 + (index * sliceAngle);
@@ -195,19 +195,24 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                           className="pointer-events-none"
                         >
                           <foreignObject 
-                            x={-20} 
-                            y={-28} 
-                            width={40} 
-                            height={56}
-                            className="overflow-visible"
+                            x={-30} 
+                            y={-20} 
+                            width={60} 
+                            height={40}
+                            style={{ overflow: 'visible' }}
                           >
-                            <div className="flex flex-col items-center justify-center h-full">
-                              <div className="relative">
-                                <item.icon className={cn(
-                                  "transition-all duration-150",
-                                  isCenter ? "h-7 w-7" : "h-5 w-5",
-                                  isActive || isCenter ? "text-primary" : isHovered ? "text-primary" : "text-foreground"
-                                )} />
+                            <div 
+                              xmlns="http://www.w3.org/1999/xhtml"
+                              className="flex flex-col items-center justify-center w-full h-full"
+                            >
+                              <div className="relative flex items-center justify-center">
+                                <item.icon 
+                                  className={cn(
+                                    "transition-all duration-150",
+                                    isCenter ? "w-5 h-5" : "w-4 h-4",
+                                    isActive || isCenter ? "text-primary" : isHovered ? "text-primary" : "text-foreground"
+                                  )} 
+                                />
                                 {item.badge && item.badge > 0 && (
                                   <span className={cn(
                                     "absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse",
@@ -216,8 +221,8 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                                 )}
                               </div>
                               <span className={cn(
-                                "mt-1 font-logo whitespace-nowrap transition-colors duration-150",
-                                isCenter ? "text-[10px]" : "text-[9px]",
+                                "mt-0.5 font-logo whitespace-nowrap transition-colors duration-150 text-center",
+                                isCenter ? "text-[8px]" : "text-[7px]",
                                 isActive || isCenter ? "text-primary" : isHovered ? "text-primary" : "text-foreground/80"
                               )}>
                                 {item.label}
