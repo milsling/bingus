@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music } from "lucide-react";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { shareContent, getBarShareData } from "@/lib/share";
 import ProofScreenshot from "@/components/ProofScreenshot";
@@ -544,6 +544,22 @@ export default function BarCard({ bar }: BarCardProps) {
                 <span className="font-bold text-primary/80 not-italic mr-2">Breakdown:</span>
                 {bar.explanation}
               </div>
+            )}
+
+            {(bar as any).fullRapLink && (
+              <a
+                href={(bar as any).fullRapLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 transition-all group"
+                data-testid={`link-full-rap-${bar.id}`}
+              >
+                <Music className="h-4 w-4 text-purple-400" />
+                <span className="text-sm font-medium text-purple-300 group-hover:text-purple-200 transition-colors">
+                  Listen to full track
+                </span>
+                <ExternalLink className="h-3 w-3 text-purple-400/60 group-hover:text-purple-300 transition-colors ml-auto" />
+              </a>
             )}
 
             {bar.proofBarId && (
