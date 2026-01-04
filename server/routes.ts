@@ -11,7 +11,7 @@ import { fromError } from "zod-validation-error";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
-import { containsProhibitedContent } from "./moderation";
+import { analyzeContent, normalizeText, type FlaggedPhraseRule } from "./moderation";
 
 const verificationAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const passwordResetAttempts = new Map<string, { count: number; lastAttempt: number }>();
@@ -347,8 +347,17 @@ export async function registerRoutes(
         });
       }
 
-      // Content moderation check
-      const moderationResult = containsProhibitedContent(result.data.content);
+      // Content moderation check with phrase matching
+      const flaggedPhrases = await storage.getFlaggedPhrases();
+      const phraseRules: FlaggedPhraseRule[] = flaggedPhrases.map(p => ({
+        id: p.id,
+        phrase: p.phrase,
+        normalizedPhrase: p.normalizedPhrase,
+        severity: p.severity,
+        similarityThreshold: p.similarityThreshold,
+      }));
+      
+      const moderationResult = analyzeContent(result.data.content, phraseRules);
       if (moderationResult.blocked) {
         return res.status(400).json({ 
           message: moderationResult.reason || "Content violates community guidelines" 
@@ -363,8 +372,16 @@ export async function registerRoutes(
         similarity: Math.round(sb.similarity * 100),
       }));
 
+      // Set moderation status based on analysis
+      const barData = {
+        ...result.data,
+        moderationStatus: moderationResult.flagged ? 'pending_review' : 'approved',
+        moderationScore: moderationResult.similarityScore || null,
+        moderationPhraseId: moderationResult.matchedPhraseId || null,
+      };
+
       // Create the bar first
-      const bar = await storage.createBar(result.data);
+      const bar = await storage.createBar(barData);
       
       // Generate proof-of-origin data
       const sequenceNum = await storage.getNextBarSequence();
@@ -413,6 +430,7 @@ export async function registerRoutes(
         proofHash,
         duplicateWarnings: duplicateWarnings.length > 0 ? duplicateWarnings : undefined,
         newAchievements: newAchievements.length > 0 ? newAchievements : undefined,
+        pendingReview: moderationResult.flagged,
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -1545,6 +1563,105 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Report not found" });
       }
       res.json(report);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Flagged phrases admin routes
+  app.get("/api/admin/phrases", isAdmin, async (req, res) => {
+    try {
+      const phrases = await storage.getFlaggedPhrases();
+      res.json(phrases);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/phrases", isAdmin, async (req, res) => {
+    try {
+      const { phrase, severity, similarityThreshold, notes } = req.body;
+      if (!phrase || !phrase.trim()) {
+        return res.status(400).json({ message: "Phrase is required" });
+      }
+      
+      const normalized = normalizeText(phrase);
+      const newPhrase = await storage.createFlaggedPhrase({
+        phrase: phrase.trim(),
+        normalizedPhrase: normalized,
+        severity: severity || 'flag',
+        similarityThreshold: similarityThreshold || 80,
+        notes,
+        createdBy: req.user!.id,
+      });
+      res.json(newPhrase);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/admin/phrases/:id", isAdmin, async (req, res) => {
+    try {
+      const { phrase, severity, similarityThreshold, notes, isActive } = req.body;
+      const updates: any = {};
+      
+      if (phrase !== undefined) {
+        updates.phrase = phrase;
+        updates.normalizedPhrase = normalizeText(phrase);
+      }
+      if (severity !== undefined) updates.severity = severity;
+      if (similarityThreshold !== undefined) updates.similarityThreshold = similarityThreshold;
+      if (notes !== undefined) updates.notes = notes;
+      if (isActive !== undefined) updates.isActive = isActive;
+      
+      const updated = await storage.updateFlaggedPhrase(req.params.id, updates);
+      if (!updated) {
+        return res.status(404).json({ message: "Phrase not found" });
+      }
+      res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/phrases/:id", isAdmin, async (req, res) => {
+    try {
+      await storage.deleteFlaggedPhrase(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Pending moderation routes
+  app.get("/api/admin/moderation/pending", isAdmin, async (req, res) => {
+    try {
+      const pending = await storage.getPendingModerationBars();
+      res.json(pending);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/moderation/:barId/approve", isAdmin, async (req, res) => {
+    try {
+      const bar = await storage.updateBarModerationStatus(req.params.barId, 'approved');
+      if (!bar) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+      res.json(bar);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/moderation/:barId/reject", isAdmin, async (req, res) => {
+    try {
+      const bar = await storage.updateBarModerationStatus(req.params.barId, 'blocked');
+      if (!bar) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+      res.json(bar);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

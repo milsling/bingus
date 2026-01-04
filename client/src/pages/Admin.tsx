@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye } from "lucide-react";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
@@ -153,6 +154,107 @@ export default function Admin() {
     },
   });
 
+  const [newPhrase, setNewPhrase] = useState("");
+  const [newPhraseThreshold, setNewPhraseThreshold] = useState(80);
+  const [newPhraseSeverity, setNewPhraseSeverity] = useState<string>("flag");
+
+  const { data: phrases = [], isLoading: isLoadingPhrases } = useQuery<any[]>({
+    queryKey: ['admin', 'phrases'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/phrases', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch phrases');
+      return res.json();
+    },
+    enabled: !!currentUser?.isAdmin,
+  });
+
+  const { data: pendingBars = [], isLoading: isLoadingPending } = useQuery<any[]>({
+    queryKey: ['admin', 'moderation', 'pending'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/moderation/pending', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch pending bars');
+      return res.json();
+    },
+    enabled: !!currentUser?.isAdmin,
+  });
+
+  const createPhraseMutation = useMutation({
+    mutationFn: async (data: { phrase: string; severity: string; similarityThreshold: number }) => {
+      const res = await fetch('/api/admin/phrases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to create phrase');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'phrases'] });
+      setNewPhrase("");
+      setNewPhraseThreshold(80);
+      toast({ title: "Phrase added" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deletePhraseMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/phrases/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to delete phrase');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'phrases'] });
+      toast({ title: "Phrase deleted" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const approveModerationMutation = useMutation({
+    mutationFn: async (barId: string) => {
+      const res = await fetch(`/api/admin/moderation/${barId}/approve`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to approve');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'moderation', 'pending'] });
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      toast({ title: "Bar approved" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const rejectModerationMutation = useMutation({
+    mutationFn: async (barId: string) => {
+      const res = await fetch(`/api/admin/moderation/${barId}/reject`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to reject');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'moderation', 'pending'] });
+      toast({ title: "Bar rejected" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const handleModerate = () => {
     if (moderateBarId && moderateReason.trim()) {
       moderateBarMutation.mutate({ barId: moderateBarId, reason: moderateReason.trim() });
@@ -215,26 +317,192 @@ export default function Admin() {
           </Card>
         </div>
 
-        <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="reports" className="gap-2">
+        <Tabs defaultValue="moderation" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
+              <Eye className="h-4 w-4" />
+              <span className="hidden sm:inline">Review</span>
+              {pendingBars.length > 0 && (
+                <Badge variant="destructive" className="ml-1 text-xs">
+                  {pendingBars.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="phrases" className="gap-1 text-xs px-2">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="hidden sm:inline">Phrases</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="gap-1 text-xs px-2">
               <Flag className="h-4 w-4" />
-              Reports
+              <span className="hidden sm:inline">Reports</span>
               {reports.filter((r: any) => r.status === 'pending').length > 0 && (
                 <Badge variant="destructive" className="ml-1 text-xs">
                   {reports.filter((r: any) => r.status === 'pending').length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="users" className="gap-2">
+            <TabsTrigger value="users" className="gap-1 text-xs px-2">
               <Users className="h-4 w-4" />
-              Users
+              <span className="hidden sm:inline">Users</span>
             </TabsTrigger>
-            <TabsTrigger value="bars" className="gap-2">
+            <TabsTrigger value="bars" className="gap-1 text-xs px-2">
               <FileText className="h-4 w-4" />
-              Bars
+              <span className="hidden sm:inline">Bars</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="moderation">
+            <Card className="border-border bg-card/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5 text-blue-500" />
+                  Pending Review
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoadingPending ? (
+                  <p className="text-muted-foreground">Loading...</p>
+                ) : pendingBars.length === 0 ? (
+                  <p className="text-muted-foreground">No bars pending review.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingBars.map((bar: any) => (
+                      <div key={bar.id} className="border border-border rounded-lg p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">
+                              Posted by <span className="font-medium text-foreground">@{bar.user?.username}</span>
+                            </p>
+                            {bar.matchedPhrase && (
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-orange-500 border-orange-500">
+                                  {bar.moderationScore}% match
+                                </Badge>
+                                <span className="text-sm text-muted-foreground">
+                                  Matched: "{bar.matchedPhrase.phrase}"
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-green-500 border-green-500"
+                              onClick={() => approveModerationMutation.mutate(bar.id)}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => rejectModerationMutation.mutate(bar.id)}
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Block
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="border-l-2 border-primary/50 pl-3 py-1 bg-secondary/20 rounded">
+                          <p className="text-sm">{stripHtml(bar.content)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="phrases">
+            <Card className="border-border bg-card/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                  Flagged Phrases
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="border border-border rounded-lg p-4 space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Add phrases that should be flagged for review. Similar content (based on threshold %) will be held for your approval.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newPhrase}
+                      onChange={(e) => setNewPhrase(e.target.value)}
+                      placeholder="Enter phrase to flag..."
+                      className="flex-1 px-3 py-2 bg-background border border-border rounded-md text-sm"
+                    />
+                    <Select value={newPhraseSeverity} onValueChange={setNewPhraseSeverity}>
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="flag">Flag</SelectItem>
+                        <SelectItem value="block">Block</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <input
+                      type="number"
+                      value={newPhraseThreshold}
+                      onChange={(e) => setNewPhraseThreshold(parseInt(e.target.value) || 80)}
+                      className="w-16 px-2 py-2 bg-background border border-border rounded-md text-sm text-center"
+                      min={50}
+                      max={100}
+                    />
+                    <span className="text-sm text-muted-foreground self-center">%</span>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (newPhrase.trim()) {
+                          createPhraseMutation.mutate({
+                            phrase: newPhrase.trim(),
+                            severity: newPhraseSeverity,
+                            similarityThreshold: newPhraseThreshold,
+                          });
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
+                {isLoadingPhrases ? (
+                  <p className="text-muted-foreground">Loading...</p>
+                ) : phrases.length === 0 ? (
+                  <p className="text-muted-foreground">No flagged phrases yet. Add one above.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {phrases.map((phrase: any) => (
+                      <div key={phrase.id} className="flex items-center justify-between border border-border rounded-lg p-3">
+                        <div className="flex items-center gap-3">
+                          <Badge variant={phrase.severity === 'block' ? 'destructive' : 'secondary'}>
+                            {phrase.severity}
+                          </Badge>
+                          <span className="font-mono text-sm">"{phrase.phrase}"</span>
+                          <span className="text-xs text-muted-foreground">
+                            {phrase.similarityThreshold}% threshold
+                          </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive"
+                          onClick={() => deletePhraseMutation.mutate(phrase.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="reports">
             <Card className="border-border bg-card/50">

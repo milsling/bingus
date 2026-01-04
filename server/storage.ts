@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type UserAchievement, type AchievementId, type Report } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -141,6 +141,16 @@ export interface IStorage {
   createReport(data: { reporterId: string; barId?: string; commentId?: string; userId?: string; reason: string; details?: string }): Promise<Report>;
   getReports(status?: string): Promise<Array<Report & { reporter: Pick<User, 'id' | 'username'>; bar?: Bar; reportedUser?: Pick<User, 'id' | 'username'> }>>;
   updateReportStatus(reportId: string, status: string, reviewedBy: string): Promise<Report | undefined>;
+  
+  // Flagged phrase methods
+  getFlaggedPhrases(): Promise<FlaggedPhrase[]>;
+  createFlaggedPhrase(data: { phrase: string; normalizedPhrase: string; severity: string; similarityThreshold: number; notes?: string; createdBy?: string }): Promise<FlaggedPhrase>;
+  updateFlaggedPhrase(id: string, updates: Partial<FlaggedPhrase>): Promise<FlaggedPhrase | undefined>;
+  deleteFlaggedPhrase(id: string): Promise<boolean>;
+  
+  // Bar moderation methods
+  getPendingModerationBars(): Promise<Array<Bar & { user: User; matchedPhrase?: FlaggedPhrase }>>;
+  updateBarModerationStatus(barId: string, status: string): Promise<Bar | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1257,6 +1267,79 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reports.id, reportId))
       .returning();
     return report;
+  }
+
+  async getFlaggedPhrases(): Promise<FlaggedPhrase[]> {
+    return await db
+      .select()
+      .from(flaggedPhrases)
+      .where(eq(flaggedPhrases.isActive, true))
+      .orderBy(desc(flaggedPhrases.createdAt));
+  }
+
+  async createFlaggedPhrase(data: { phrase: string; normalizedPhrase: string; severity: string; similarityThreshold: number; notes?: string; createdBy?: string }): Promise<FlaggedPhrase> {
+    const [phrase] = await db
+      .insert(flaggedPhrases)
+      .values(data)
+      .returning();
+    return phrase;
+  }
+
+  async updateFlaggedPhrase(id: string, updates: Partial<FlaggedPhrase>): Promise<FlaggedPhrase | undefined> {
+    const [phrase] = await db
+      .update(flaggedPhrases)
+      .set(updates)
+      .where(eq(flaggedPhrases.id, id))
+      .returning();
+    return phrase;
+  }
+
+  async deleteFlaggedPhrase(id: string): Promise<boolean> {
+    const result = await db
+      .delete(flaggedPhrases)
+      .where(eq(flaggedPhrases.id, id));
+    return true;
+  }
+
+  async getPendingModerationBars(): Promise<Array<Bar & { user: User; matchedPhrase?: FlaggedPhrase }>> {
+    const result = await db
+      .select({
+        bar: bars,
+        user: users,
+      })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(eq(bars.moderationStatus, 'pending_review'))
+      .orderBy(desc(bars.createdAt));
+
+    const enriched = await Promise.all(
+      result.map(async (r) => {
+        let matchedPhrase: FlaggedPhrase | undefined;
+        if (r.bar.moderationPhraseId) {
+          const [phrase] = await db
+            .select()
+            .from(flaggedPhrases)
+            .where(eq(flaggedPhrases.id, r.bar.moderationPhraseId));
+          matchedPhrase = phrase;
+        }
+        return {
+          ...r.bar,
+          user: r.user as User,
+          matchedPhrase,
+        };
+      })
+    );
+
+    return enriched;
+  }
+
+  async updateBarModerationStatus(barId: string, status: string): Promise<Bar | undefined> {
+    const [bar] = await db
+      .update(bars)
+      .set({ moderationStatus: status })
+      .where(eq(bars.id, barId))
+      .returning();
+    return bar;
   }
 }
 

@@ -7,6 +7,8 @@ import { z } from "zod";
 export const permissionStatusOptions = ["share_only", "open_adopt", "private"] as const;
 export const messagePrivacyOptions = ["friends_only", "everyone"] as const;
 export const barTypeOptions = ["single_bar", "snippet", "half_verse"] as const;
+export const moderationStatusOptions = ["approved", "pending_review", "flagged", "blocked"] as const;
+export const phraseSeverityOptions = ["block", "flag"] as const;
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -64,6 +66,9 @@ export const bars = pgTable("bars", {
   featuredAt: timestamp("featured_at"),
   barType: text("bar_type").notNull().default("single_bar"),
   fullRapLink: text("full_rap_link"),
+  moderationStatus: text("moderation_status").notNull().default("approved"),
+  moderationScore: integer("moderation_score"),
+  moderationPhraseId: varchar("moderation_phrase_id"),
 });
 
 export const barsRelations = relations(bars, ({ one, many }) => ({
@@ -279,6 +284,22 @@ export const reportsRelations = relations(reports, ({ one }) => ({
   reviewedByUser: one(users, { fields: [reports.reviewedBy], references: [users.id] }),
 }));
 
+export const flaggedPhrases = pgTable("flagged_phrases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  phrase: text("phrase").notNull(),
+  normalizedPhrase: text("normalized_phrase").notNull(),
+  severity: text("severity").notNull().default("flag"),
+  similarityThreshold: integer("similarity_threshold").notNull().default(80),
+  notes: text("notes"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const flaggedPhrasesRelations = relations(flaggedPhrases, ({ one }) => ({
+  creator: one(users, { fields: [flaggedPhrases.createdBy], references: [users.id] }),
+}));
+
 export const ACHIEVEMENTS = {
   first_bar: { name: "Origin Founder", emoji: "🔥", description: "Posted your first bar", threshold: { barsMinted: 1 } },
   bar_slinger: { name: "Bar Slinger", emoji: "💀", description: "Posted 10 bars", threshold: { barsMinted: 10 } },
@@ -345,6 +366,7 @@ export type DirectMessage = typeof directMessages.$inferSelect;
 export type Adoption = typeof adoptions.$inferSelect;
 export type UserAchievement = typeof userAchievements.$inferSelect;
 export type Report = typeof reports.$inferSelect;
+export type FlaggedPhrase = typeof flaggedPhrases.$inferSelect;
 
 export const onlineStatusOptions = ["online", "offline", "busy"] as const;
 
