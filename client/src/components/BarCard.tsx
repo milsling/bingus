@@ -36,10 +36,10 @@ const LINE_BREAK_LIMITS: Record<BarType, number> = {
   half_verse: 8,
 };
 
-const BAR_TYPE_LABELS: Record<BarType, string> = {
-  single_bar: "Single Bar",
-  snippet: "Snippet",
-  half_verse: "Half Verse",
+const BAR_TYPE_INFO: Record<BarType, { label: string; detail: string }> = {
+  single_bar: { label: "Single Bar", detail: "A single punchy line, punchline, or one-liner. 1 line max." },
+  snippet: { label: "Snippet", detail: "A short flow or a few connected bars. Up to 4 lines." },
+  half_verse: { label: "Half Verse", detail: "A longer section of a verse. Up to 8 lines." },
 };
 
 const countLineBreaks = (html: string): number => {
@@ -816,6 +816,9 @@ export default function BarCard({ bar }: BarCardProps) {
                   </button>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground">
+                {BAR_TYPE_INFO[editBarType as BarType]?.detail}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-link">Full Rap Link (optional)</Label>
@@ -838,7 +841,7 @@ export default function BarCard({ bar }: BarCardProps) {
                 if (lineBreaks > maxLines) {
                   toast({
                     title: "Too many lines",
-                    description: `${BAR_TYPE_LABELS[editBarType as BarType]} allows max ${maxLines} line break${maxLines === 1 ? '' : 's'}. You have ${lineBreaks}.`,
+                    description: `${BAR_TYPE_INFO[editBarType as BarType].label} allows max ${maxLines} line break${maxLines === 1 ? '' : 's'}. You have ${lineBreaks}.`,
                     variant: "destructive",
                   });
                   return;

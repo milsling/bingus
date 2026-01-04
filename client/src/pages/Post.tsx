@@ -33,10 +33,10 @@ const PERMISSIONS: { value: PermissionStatus; label: string; icon: React.ReactNo
 ];
 
 type BarType = "single_bar" | "snippet" | "half_verse";
-const BAR_TYPES: { value: BarType; label: string; description: string; disabled?: boolean; badge?: string }[] = [
-  { value: "single_bar", label: "Single Bar", description: "One punchy line" },
-  { value: "snippet", label: "Snippet", description: "About 4 bars" },
-  { value: "half_verse", label: "Half Verse", description: "8 bars max", disabled: true, badge: "Paid" },
+const BAR_TYPES: { value: BarType; label: string; description: string; detail: string; disabled?: boolean; badge?: string }[] = [
+  { value: "single_bar", label: "Single Bar", description: "1 line max", detail: "A single punchy line, punchline, or one-liner. Perfect for quick hits." },
+  { value: "snippet", label: "Snippet", description: "Up to 4 lines", detail: "A short flow or a few connected bars. Great for showing off wordplay." },
+  { value: "half_verse", label: "Half Verse", description: "Up to 8 lines", detail: "A longer section of a verse. Room to develop a full idea.", disabled: true, badge: "Paid" },
 ];
 
 const LINE_BREAK_LIMITS: Record<BarType, number> = {
@@ -215,31 +215,36 @@ export default function Post() {
           <h1 className="text-3xl font-display font-bold">Drop a Bar</h1>
         </div>
 
-        <div className="mb-4 flex gap-2">
-          {BAR_TYPES.map((type) => (
-            <button
-              key={type.value}
-              type="button"
-              onClick={() => !type.disabled && setBarType(type.value)}
-              disabled={type.disabled}
-              className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all relative ${
-                type.disabled 
-                  ? 'border-border/30 bg-secondary/10 text-muted-foreground/50 cursor-not-allowed' 
-                  : barType === type.value 
-                    ? 'border-primary bg-primary/10 text-primary' 
-                    : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
-              }`}
-              data-testid={`button-type-${type.value}`}
-            >
-              {type.badge && (
-                <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  {type.badge}
-                </span>
-              )}
-              <div className="font-semibold text-sm">{type.label}</div>
-              <div className="text-xs opacity-70">{type.description}</div>
-            </button>
-          ))}
+        <div className="mb-4 space-y-2">
+          <div className="flex gap-2">
+            {BAR_TYPES.map((type) => (
+              <button
+                key={type.value}
+                type="button"
+                onClick={() => !type.disabled && setBarType(type.value)}
+                disabled={type.disabled}
+                className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all relative ${
+                  type.disabled 
+                    ? 'border-border/30 bg-secondary/10 text-muted-foreground/50 cursor-not-allowed' 
+                    : barType === type.value 
+                      ? 'border-primary bg-primary/10 text-primary' 
+                      : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
+                }`}
+                data-testid={`button-type-${type.value}`}
+              >
+                {type.badge && (
+                  <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {type.badge}
+                  </span>
+                )}
+                <div className="font-semibold text-sm">{type.label}</div>
+                <div className="text-xs opacity-70">{type.description}</div>
+              </button>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground px-1">
+            {BAR_TYPES.find(t => t.value === barType)?.detail}
+          </p>
         </div>
 
         <Card className="border-border bg-card/50 backdrop-blur-sm">
