@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { SearchBar } from "@/components/SearchBar";
 import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
+import { NewMessageDialog } from "@/components/NewMessageDialog";
 import iconUrl from "@/assets/icon.png";
 
 export default function Navigation() {
@@ -15,6 +17,9 @@ export default function Navigation() {
   const { currentUser } = useBars();
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
+  const [newMessageOpen, setNewMessageOpen] = useState(false);
+  
+  const isOnMessagesPage = location.startsWith("/messages");
 
   const desktopNavItems = [
     { icon: Home, label: "Feed", path: "/" },
@@ -109,16 +114,27 @@ export default function Navigation() {
                 </div>
               </Link>
               
-              {/* Prominent Drop Bar button */}
-              <Link href="/post">
-                <div className={cn(
-                  "flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground font-bold text-sm transition-transform hover:scale-105 active:scale-95 shadow-md shadow-primary/20",
-                  location === "/post" && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                )}>
-                  <Plus className="h-4 w-4" />
-                  Drop Bar
-                </div>
-              </Link>
+              {/* Context-aware action button */}
+              {isOnMessagesPage ? (
+                <button
+                  onClick={() => setNewMessageOpen(true)}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground font-bold text-sm transition-transform hover:scale-105 active:scale-95 shadow-md shadow-primary/20"
+                  data-testid="button-new-message"
+                >
+                  <PenLine className="h-4 w-4" />
+                  New Message
+                </button>
+              ) : (
+                <Link href="/post">
+                  <div className={cn(
+                    "flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground font-bold text-sm transition-transform hover:scale-105 active:scale-95 shadow-md shadow-primary/20",
+                    location === "/post" && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  )}>
+                    <Plus className="h-4 w-4" />
+                    Drop Bar
+                  </div>
+                </Link>
+              )}
               
               {/* Icon-only buttons for cleaner look */}
               <Link href="/saved">
@@ -185,18 +201,30 @@ export default function Navigation() {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-border bg-background/90 backdrop-blur-lg z-50 pb-safe">
         <div className="relative h-full flex items-center justify-center">
-          {/* Center Drop Bar button - raised above the bar */}
+          {/* Context-aware center button - raised above the bar */}
           {currentUser ? (
-            <Link href="/post">
-              <div className="absolute left-1/2 -translate-x-1/2 -top-5">
-                <div className={cn(
-                  "w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95",
-                  location === "/post" && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                )}>
-                  <Plus className="h-7 w-7 text-primary-foreground" />
+            isOnMessagesPage ? (
+              <button
+                onClick={() => setNewMessageOpen(true)}
+                className="absolute left-1/2 -translate-x-1/2 -top-5"
+                data-testid="button-new-message-mobile"
+              >
+                <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95">
+                  <PenLine className="h-7 w-7 text-primary-foreground" />
                 </div>
-              </div>
-            </Link>
+              </button>
+            ) : (
+              <Link href="/post">
+                <div className="absolute left-1/2 -translate-x-1/2 -top-5">
+                  <div className={cn(
+                    "w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95",
+                    location === "/post" && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  )}>
+                    <Plus className="h-7 w-7 text-primary-foreground" />
+                  </div>
+                </div>
+              </Link>
+            )
           ) : (
             <Link href="/auth">
               <div className="absolute left-1/2 -translate-x-1/2 -top-5">
@@ -281,6 +309,8 @@ export default function Navigation() {
           </div>
         </div>
       </nav>
+      
+      <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
     </>
   );
 }
