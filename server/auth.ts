@@ -56,7 +56,7 @@ export const sessionParser = session({
   cookie: {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    // No maxAge by default = session cookie (expires when browser closes)
   },
   store: new MemoryStore({
     checkPeriod: 86400000,

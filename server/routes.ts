@@ -214,7 +214,8 @@ export async function registerRoutes(
           return next(err);
         }
         if (req.body.rememberMe && req.session) {
-          req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+          // Remember for 48 hours
+          req.session.cookie.maxAge = 48 * 60 * 60 * 1000;
         }
         res.json(user);
       });
