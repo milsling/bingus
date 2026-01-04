@@ -107,13 +107,30 @@ export default function Messages() {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onMutate: async (content: string) => {
+      await queryClient.cancelQueries({ queryKey: ['messages', selectedUserId] });
+      const previousMessages = queryClient.getQueryData(['messages', selectedUserId]);
+      const optimisticMessage = {
+        id: `temp-${Date.now()}`,
+        senderId: currentUser?.id,
+        receiverId: selectedUserId,
+        content,
+        createdAt: new Date().toISOString(),
+        read: false,
+      };
+      queryClient.setQueryData(['messages', selectedUserId], (old: any[] = []) => [optimisticMessage, ...old]);
       setMessage("");
-      refetchMessages();
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      return { previousMessages };
     },
-    onError: (error: any) => {
+    onError: (error: any, _content, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(['messages', selectedUserId], context.previousMessages);
+      }
       toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages', selectedUserId] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 
@@ -121,7 +138,14 @@ export default function Messages() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
-  const getStatusColor = (status?: string) => {
+  const getStatusColor = (status?: string, lastSeenAt?: string | Date | null) => {
+    if (!lastSeenAt) return 'bg-gray-400';
+    const twoMinutesAgo = Date.now() - 2 * 60 * 1000;
+    const lastSeen = new Date(lastSeenAt).getTime();
+    const isRecentlyActive = lastSeen > twoMinutesAgo;
+    
+    if (!isRecentlyActive) return 'bg-gray-400';
+    
     switch (status) {
       case 'online': return 'bg-green-500';
       case 'busy': return 'bg-amber-500';
@@ -193,7 +217,7 @@ export default function Messages() {
                             <AvatarImage src={conv.user.avatarUrl || undefined} />
                             <AvatarFallback>{conv.user.username[0].toUpperCase()}</AvatarFallback>
                           </Avatar>
-                          <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${getStatusColor(conv.user.onlineStatus)} border-2 border-background`} />
+                          <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${getStatusColor(conv.user.onlineStatus, conv.user.lastSeenAt)} border-2 border-background`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
@@ -239,7 +263,7 @@ export default function Messages() {
                             <AvatarImage src={friend.avatarUrl || undefined} />
                             <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
                           </Avatar>
-                          <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${getStatusColor(friend.onlineStatus)} border-2 border-background`} />
+                          <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${getStatusColor(friend.onlineStatus, friend.lastSeenAt)} border-2 border-background`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">@{friend.username}</p>
@@ -274,7 +298,7 @@ export default function Messages() {
                         <AvatarImage src={selectedUser.avatarUrl || undefined} />
                         <AvatarFallback>{selectedUser.username[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
-                      <div className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ${getStatusColor(selectedUser.onlineStatus)} border border-background`} />
+                      <div className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ${getStatusColor(selectedUser.onlineStatus, selectedUser.lastSeenAt)} border border-background`} />
                     </div>
                   </Link>
                   <div>

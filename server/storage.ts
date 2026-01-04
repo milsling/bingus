@@ -832,7 +832,7 @@ export class DatabaseStorage implements IStorage {
     ).orderBy(desc(directMessages.createdAt)).limit(limit);
   }
 
-  async getConversations(userId: string): Promise<Array<{ user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'onlineStatus'>; lastMessage: DirectMessage; unreadCount: number }>> {
+  async getConversations(userId: string): Promise<Array<{ user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'onlineStatus' | 'lastSeenAt'>; lastMessage: DirectMessage; unreadCount: number }>> {
     const messages = await db.select().from(directMessages).where(
       or(eq(directMessages.senderId, userId), eq(directMessages.receiverId, userId))
     ).orderBy(desc(directMessages.createdAt));
@@ -846,12 +846,12 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    const result: Array<{ user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'onlineStatus'>; lastMessage: DirectMessage; unreadCount: number }> = [];
+    const result: Array<{ user: Pick<User, 'id' | 'username' | 'avatarUrl' | 'onlineStatus' | 'lastSeenAt'>; lastMessage: DirectMessage; unreadCount: number }> = [];
     const entries = Array.from(conversationsMap.entries());
     for (const entry of entries) {
       const otherId = entry[0];
       const data = entry[1];
-      const [user] = await db.select({ id: users.id, username: users.username, avatarUrl: users.avatarUrl, onlineStatus: users.onlineStatus }).from(users).where(eq(users.id, otherId));
+      const [user] = await db.select({ id: users.id, username: users.username, avatarUrl: users.avatarUrl, onlineStatus: users.onlineStatus, lastSeenAt: users.lastSeenAt }).from(users).where(eq(users.id, otherId));
       if (user) {
         result.push({ user, ...data });
       }
