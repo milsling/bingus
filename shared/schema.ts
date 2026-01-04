@@ -70,6 +70,9 @@ export const bars = pgTable("bars", {
   moderationStatus: text("moderation_status").notNull().default("approved"),
   moderationScore: integer("moderation_score"),
   moderationPhraseId: varchar("moderation_phrase_id"),
+  deletedAt: timestamp("deleted_at"),
+  deletedBy: varchar("deleted_by").references(() => users.id),
+  deletedReason: text("deleted_reason"),
 });
 
 export const barsRelations = relations(bars, ({ one, many }) => ({

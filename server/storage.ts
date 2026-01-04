@@ -156,6 +156,10 @@ export interface IStorage {
   getMaintenanceStatus(): Promise<MaintenanceStatus | null>;
   activateMaintenance(message: string, userId: string): Promise<MaintenanceStatus>;
   clearMaintenance(): Promise<void>;
+  
+  // Soft delete archive methods
+  getDeletedBars(): Promise<Array<Bar & { user: User }>>;
+  restoreBar(barId: string): Promise<Bar | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -218,6 +222,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
+      .where(sql`${bars.deletedAt} IS NULL`)
       .orderBy(desc(bars.createdAt))
       .limit(limit);
     
@@ -236,7 +241,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
-      .where(eq(bars.id, id));
+      .where(and(eq(bars.id, id), sql`${bars.deletedAt} IS NULL`));
     
     if (!result) return undefined;
     return { ...result.bar, user: result.user as User };
@@ -261,7 +266,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
-      .where(eq(bars.userId, userId))
+      .where(and(eq(bars.userId, userId), sql`${bars.deletedAt} IS NULL`))
       .orderBy(desc(bars.createdAt));
     
     return result.map(row => ({
@@ -282,8 +287,9 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBar(id: string, userId: string): Promise<boolean> {
     const result = await db
-      .delete(bars)
-      .where(and(eq(bars.id, id), eq(bars.userId, userId)))
+      .update(bars)
+      .set({ deletedAt: new Date(), deletedBy: userId })
+      .where(and(eq(bars.id, id), eq(bars.userId, userId), sql`${bars.deletedAt} IS NULL`))
       .returning();
     return result.length > 0;
   }
@@ -340,8 +346,12 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(users).orderBy(desc(users.id));
   }
 
-  async deleteBarAdmin(barId: string): Promise<boolean> {
-    const result = await db.delete(bars).where(eq(bars.id, barId)).returning();
+  async deleteBarAdmin(barId: string, adminId?: string, reason?: string): Promise<boolean> {
+    const result = await db
+      .update(bars)
+      .set({ deletedAt: new Date(), deletedBy: adminId, deletedReason: reason })
+      .where(and(eq(bars.id, barId), sql`${bars.deletedAt} IS NULL`))
+      .returning();
     return result.length > 0;
   }
 
@@ -349,10 +359,33 @@ export class DatabaseStorage implements IStorage {
     const ownerUsers = await db.select({ id: users.id }).from(users).where(eq(users.isOwner, true));
     const ownerIds = ownerUsers.map(u => u.id);
     if (ownerIds.length > 0) {
-      await db.delete(bars).where(notInArray(bars.userId, ownerIds));
+      await db.update(bars)
+        .set({ deletedAt: new Date() })
+        .where(and(notInArray(bars.userId, ownerIds), sql`${bars.deletedAt} IS NULL`));
     } else {
-      await db.delete(bars);
+      await db.update(bars)
+        .set({ deletedAt: new Date() })
+        .where(sql`${bars.deletedAt} IS NULL`);
     }
+  }
+
+  async getDeletedBars(): Promise<Array<Bar & { user: User }>> {
+    const result = await db
+      .select({ bar: bars, user: users })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(sql`${bars.deletedAt} IS NOT NULL`)
+      .orderBy(desc(bars.deletedAt));
+    return result.map(row => ({ ...row.bar, user: row.user as User }));
+  }
+
+  async restoreBar(barId: string): Promise<Bar | undefined> {
+    const [bar] = await db
+      .update(bars)
+      .set({ deletedAt: null, deletedBy: null, deletedReason: null })
+      .where(eq(bars.id, barId))
+      .returning();
+    return bar;
   }
 
   async deleteUser(userId: string): Promise<boolean> {
@@ -586,10 +619,13 @@ export class DatabaseStorage implements IStorage {
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
       .where(
-        or(
-          ilike(bars.content, searchPattern),
-          ilike(users.username, searchPattern),
-          sql`${bars.tags}::text ILIKE ${searchPattern}`
+        and(
+          sql`${bars.deletedAt} IS NULL`,
+          or(
+            ilike(bars.content, searchPattern),
+            ilike(users.username, searchPattern),
+            sql`${bars.tags}::text ILIKE ${searchPattern}`
+          )
         )
       )
       .orderBy(desc(bars.createdAt))
@@ -626,7 +662,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .select({ tags: bars.tags })
       .from(bars)
-      .where(sql`${bars.tags} IS NOT NULL AND array_length(${bars.tags}, 1) > 0`);
+      .where(sql`${bars.tags} IS NOT NULL AND array_length(${bars.tags}, 1) > 0 AND ${bars.deletedAt} IS NULL`);
     const tagSet = new Set<string>();
     const lowerQuery = query.toLowerCase();
     for (const row of result) {
@@ -662,7 +698,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
-      .where(sql`LOWER(${lowerTag}) = ANY(SELECT LOWER(unnest(${bars.tags})))`)
+      .where(and(sql`LOWER(${lowerTag}) = ANY(SELECT LOWER(unnest(${bars.tags})))`, sql`${bars.deletedAt} IS NULL`))
       .orderBy(desc(bars.createdAt));
     return result.map(r => ({
       ...r.bar,
@@ -708,7 +744,7 @@ export class DatabaseStorage implements IStorage {
       .from(bookmarks)
       .innerJoin(bars, eq(bookmarks.barId, bars.id))
       .leftJoin(users, eq(bars.userId, users.id))
-      .where(eq(bookmarks.userId, userId))
+      .where(and(eq(bookmarks.userId, userId), sql`${bars.deletedAt} IS NULL`))
       .orderBy(desc(bookmarks.createdAt));
     
     return result.map(row => ({
@@ -979,7 +1015,7 @@ export class DatabaseStorage implements IStorage {
       .select({ bar: bars, user: users })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
-      .where(eq(bars.proofBarId, proofBarId));
+      .where(and(eq(bars.proofBarId, proofBarId), sql`${bars.deletedAt} IS NULL`));
     if (!result) return undefined;
     return { ...result.bar, user: result.user as User };
   }
@@ -997,7 +1033,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
-      .where(ne(bars.permissionStatus, "private"));
+      .where(and(ne(bars.permissionStatus, "private"), sql`${bars.deletedAt} IS NULL`));
     
     const barsWithScores = await Promise.all(
       allBars.map(async (result) => {
@@ -1037,7 +1073,8 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(bars.userId, users.id))
       .where(and(
         gt(bars.createdAt, hoursAgo72),
-        ne(bars.permissionStatus, "private")
+        ne(bars.permissionStatus, "private"),
+        sql`${bars.deletedAt} IS NULL`
       ));
     
     const barsWithVelocity = await Promise.all(
@@ -1083,7 +1120,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
-      .where(eq(bars.isFeatured, true))
+      .where(and(eq(bars.isFeatured, true), sql`${bars.deletedAt} IS NULL`))
       .orderBy(desc(bars.featuredAt))
       .limit(limit);
     
