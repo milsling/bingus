@@ -11,7 +11,6 @@ import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import { NewMessageDialog } from "@/components/NewMessageDialog";
 import { RadialMenu } from "@/components/RadialMenu";
-import iconUrl from "@/assets/icon.png";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -177,7 +176,7 @@ export default function Navigation() {
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border bg-background/90 backdrop-blur-lg z-50 flex items-center justify-between px-4">
         <Link href="/">
           <div className="flex items-center gap-1.5 cursor-pointer">
-            <img src={iconUrl} alt="" className="h-6 w-6" />
+            <img src="/icon.png" alt="" className="h-6 w-6" />
             <span className="font-logo text-sm whitespace-nowrap">ORPHAN BARS</span>
           </div>
         </Link>
