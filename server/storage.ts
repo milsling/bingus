@@ -726,6 +726,15 @@ export class DatabaseStorage implements IStorage {
       )
     );
     if (existing) {
+      // If the other user already sent us a pending request, auto-accept it
+      if (existing.status === "pending" && existing.requesterId === receiverId && existing.receiverId === requesterId) {
+        const [accepted] = await db
+          .update(friendships)
+          .set({ status: "accepted" })
+          .where(eq(friendships.id, existing.id))
+          .returning();
+        return accepted;
+      }
       throw new Error("Friendship already exists or pending");
     }
     const [friendship] = await db.insert(friendships).values({
