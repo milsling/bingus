@@ -330,26 +330,23 @@ export default function Messages() {
                     ) : (
                       reversedMessages.map((msg: any) => {
                         const isSending = typeof msg.id === 'string' && msg.id.startsWith('temp-');
+                        const isMyMessage = msg.senderId === currentUser.id;
                         return (
                           <div
                             key={msg.id}
-                            className={`flex ${msg.senderId === currentUser.id ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'}`}
                           >
                             <div
-                              className={`max-w-[80%] p-3 rounded-lg ${
-                                msg.senderId === currentUser.id
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'bg-secondary'
-                              } ${isSending ? 'opacity-70' : ''}`}
+                              className={`max-w-[80%] p-3 rounded-lg ${isMyMessage ? 'bg-primary text-primary-foreground' : 'bg-secondary'} ${isSending ? 'opacity-70' : ''}`}
                             >
                               <p className="text-sm">{msg.content}</p>
-                              <p className={`text-[10px] mt-1 ${msg.senderId === currentUser.id ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                              <p className={`text-[10px] mt-1 ${isMyMessage ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                                 {isSending ? 'Sending...' : formatTimestamp(msg.createdAt)}
                               </p>
                             </div>
                           </div>
                         );
-                      })}
+                      })
                     )}
                     <div ref={messagesEndRef} />
                   </div>
