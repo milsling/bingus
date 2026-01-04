@@ -59,9 +59,6 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
     }
 
     const baseItems: RadialMenuItem[] = [
-      isOnMessagesPage && onNewMessage
-        ? { icon: PenLine, label: "New Message", action: onNewMessage }
-        : { icon: Plus, label: "Drop Bar", path: "/post" },
       { icon: Home, label: "Feed", path: "/" },
       { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount, badgeColor: "bg-primary" },
       { icon: Users, label: "Friends", path: "/friends", badge: pendingFriendRequests, badgeColor: "bg-destructive" },
@@ -170,6 +167,43 @@ export function RadialMenu({ onNewMessage }: RadialMenuProps) {
                 </motion.button>
               );
             })}
+
+            {/* Center action button - Drop Bar or New Message */}
+            {isOpen && currentUser && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0, y: 0 }}
+                animate={{ opacity: 1, scale: 1, y: -80 }}
+                exit={{ opacity: 0, scale: 0, y: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.05 }}
+                onClick={() => {
+                  setIsOpen(false);
+                  if (isOnMessagesPage && onNewMessage) {
+                    setTimeout(() => onNewMessage(), 150);
+                  } else {
+                    setTimeout(() => setLocation("/post"), 150);
+                  }
+                }}
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto flex flex-col items-center gap-1 transition-transform duration-150 ease-out hover:scale-110 active:scale-105"
+                data-testid="radial-item-center-action"
+              >
+                <div className={cn(
+                  "w-16 h-16 rounded-full flex items-center justify-center",
+                  "bg-card border-3 border-primary shadow-xl shadow-primary/30",
+                  "transition-all duration-150 ease-out",
+                  "hover:scale-115 hover:bg-primary/20 hover:shadow-2xl hover:shadow-primary/50",
+                  "active:scale-105 active:bg-primary"
+                )}>
+                  {isOnMessagesPage && onNewMessage ? (
+                    <PenLine className="h-7 w-7 text-foreground" />
+                  ) : (
+                    <Plus className="h-8 w-8 text-foreground" />
+                  )}
+                </div>
+                <span className="text-[12px] font-logo text-foreground/90 whitespace-nowrap">
+                  {isOnMessagesPage && onNewMessage ? "New Message" : "Drop Bar"}
+                </span>
+              </motion.button>
+            )}
           </AnimatePresence>
 
           <motion.button
