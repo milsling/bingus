@@ -201,7 +201,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     />
                     <span 
                       className={cn(
-                        "text-sm font-medium transition-colors",
+                        "text-base font-medium transition-colors",
                         menuSection === "orphanage" ? "text-primary-foreground" : "text-muted-foreground"
                       )} 
                       style={{ fontFamily: 'var(--font-logo)' }}
