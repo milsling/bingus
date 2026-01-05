@@ -106,26 +106,19 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               )}
               
               <div className="flex gap-3">
-                <div className="grid grid-cols-2 gap-3 flex-1">
+                <div className="grid grid-cols-2 gap-3">
                   {navItems.map((item) => {
                     const isActive = item.path && location === item.path;
                     return (
                       <button
                         key={item.path}
                         onClick={() => handleNavClick(item.path)}
-                        className={cn(
-                          "flex flex-col items-center gap-2 p-3 rounded-xl transition-all",
-                          "hover:bg-muted active:scale-95",
-                          isActive && "bg-primary/10"
-                        )}
+                        className="flex flex-col items-center gap-2 p-3 transition-all active:scale-95"
                         data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
                       >
                         <div className={cn(
-                          "relative w-12 h-12 rounded-full flex items-center justify-center",
-                          "border-2 transition-colors",
-                          isActive 
-                            ? "bg-primary border-primary" 
-                            : "bg-muted/50 border-border hover:border-primary/50"
+                          "relative w-12 h-12 rounded-full flex items-center justify-center transition-colors",
+                          isActive && "bg-primary"
                         )}>
                           {item.icon && (
                             <item.icon className={cn(
@@ -150,12 +143,12 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   })}
                 </div>
                 
-                <div className="flex flex-col gap-2 w-36">
-                  <div className="flex-1 rounded-xl bg-gradient-to-br from-primary to-primary/80 p-3 flex flex-col items-center justify-center">
+                <div className="flex flex-col gap-2 w-40">
+                  <div className="flex-1 rounded-xl bg-primary p-3 flex flex-col items-center justify-center">
                     <img 
                       src={orphanBarsLogo} 
                       alt="Orphan Bars" 
-                      className="h-10 w-auto mb-1 invert brightness-200"
+                      className="h-10 w-auto mb-1"
                     />
                     <span className="text-[10px] font-bold text-primary-foreground tracking-wide">ORPHAN BARS</span>
                   </div>
@@ -163,10 +156,9 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   <button
                     onClick={() => handleNavClick("/orphanage")}
                     className={cn(
-                      "flex-1 rounded-xl bg-gradient-to-br from-primary to-primary/80 p-3",
+                      "flex-1 rounded-xl bg-primary/70 p-3",
                       "flex flex-col items-center justify-center gap-1",
-                      "hover:from-primary/90 hover:to-primary/70 transition-all active:scale-[0.98]",
-                      location === "/orphanage" && "ring-2 ring-primary-foreground"
+                      "hover:bg-primary/80 transition-all active:scale-[0.98]"
                     )}
                     data-testid="nav-item-orphanage"
                   >
