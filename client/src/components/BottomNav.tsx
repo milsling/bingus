@@ -100,28 +100,28 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="fixed bottom-20 left-4 right-4 z-50 bg-card border border-border rounded-2xl overflow-hidden shadow-2xl"
             >
-              {currentUser && (
-                <div className="p-4 pb-0">
-                  <button
-                    onClick={() => handleNavClick("/post")}
-                    className="w-full p-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all active:scale-[0.98]"
-                    data-testid="nav-item-drop-bar-main"
-                  >
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                        <Plus className="w-7 h-7 text-primary-foreground" />
-                      </div>
-                      <div className="text-left">
-                        <span className="text-lg font-bold text-primary-foreground block">Drop Bar</span>
-                        <span className="text-xs text-primary-foreground/70">Share your bars with the world</span>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              )}
-              
               <div className="flex">
-                <div className="grid grid-cols-2 gap-2 flex-1 p-4">
+                <div className="flex-1 flex flex-col">
+                  {currentUser && (
+                    <div className="p-4 pb-0">
+                      <button
+                        onClick={() => handleNavClick("/post")}
+                        className="w-full p-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all active:scale-[0.98]"
+                        data-testid="nav-item-drop-bar-main"
+                      >
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                            <Plus className="w-7 h-7 text-primary-foreground" />
+                          </div>
+                          <div className="text-left">
+                            <span className="text-lg font-bold text-primary-foreground block">Drop Bar</span>
+                            <span className="text-xs text-primary-foreground/70">Share your bars with the world</span>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-2 p-4">
                   {navItems.map((item) => {
                     const isActive = item.path && location === item.path;
                     return (
@@ -156,14 +156,15 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       </button>
                     );
                   })}
+                  </div>
                 </div>
                 
-                <div className="flex flex-col w-40">
+                <div className="flex flex-col w-40 rounded-tr-2xl overflow-hidden">
                   <button
                     onClick={() => setMenuSection("orphanbars")}
                     className={cn(
                       "flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
-                      menuSection === "orphanbars" ? "bg-primary" : "bg-muted/30"
+                      menuSection === "orphanbars" ? "bg-primary" : "bg-primary/70"
                     )}
                     data-testid="nav-section-orphanbars"
                   >
@@ -172,13 +173,13 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       alt="Orphan Bars" 
                       className={cn(
                         "h-20 w-auto transition-all mb-1",
-                        menuSection === "orphanbars" ? "brightness-0 invert" : "opacity-80"
+                        menuSection === "orphanbars" ? "brightness-0 invert" : "brightness-0 invert opacity-60"
                       )}
                     />
                     <span 
                       className={cn(
                         "text-sm font-medium transition-colors",
-                        menuSection === "orphanbars" ? "text-primary-foreground" : "text-muted-foreground"
+                        menuSection === "orphanbars" ? "text-primary-foreground" : "text-primary-foreground/60"
                       )} 
                       style={{ fontFamily: 'var(--font-logo)' }}
                     >ORPHAN BARS</span>
@@ -188,25 +189,18 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     onClick={() => setMenuSection("orphanage")}
                     className={cn(
                       "flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
-                      menuSection === "orphanage" ? "bg-primary" : "bg-muted/30"
+                      menuSection === "orphanage" ? "bg-primary" : "bg-primary/70"
                     )}
                     data-testid="nav-section-orphanage"
                   >
                     <img 
-                      src={menuSection === "orphanage" ? orphanageFullLogoWhite : orphanageFullLogoDark} 
+                      src={orphanageFullLogoWhite} 
                       alt="The Orphanage" 
                       className={cn(
                         "h-32 w-auto object-contain transition-all",
-                        menuSection !== "orphanage" && "dark:hidden"
+                        menuSection !== "orphanage" && "opacity-60"
                       )}
                     />
-                    {menuSection !== "orphanage" && (
-                      <img 
-                        src={orphanageFullLogoWhite} 
-                        alt="The Orphanage" 
-                        className="h-32 w-auto object-contain transition-all hidden dark:block opacity-80"
-                      />
-                    )}
                   </button>
                 </div>
               </div>
