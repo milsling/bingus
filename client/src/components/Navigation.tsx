@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine } from "lucide-react";
 import orphanageLogo from "@/assets/orphanage-logo.png";
+import headerLogo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ export default function Navigation() {
         <div className="flex items-center gap-6">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <img src="/icon.png" alt="" className="h-8 w-8" />
+              <img src={headerLogo} alt="" className="h-8 w-8" />
               <span className="font-logo text-xl">ORPHAN BARS</span>
             </div>
           </Link>
@@ -172,7 +173,7 @@ export default function Navigation() {
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border/50 bg-background/95 backdrop-blur-xl z-50 flex items-center justify-between px-4 pt-[env(safe-area-inset-top)] shadow-sm">
         <Link href="/">
           <div className="flex items-center gap-1.5 cursor-pointer">
-            <img src="/icon.png" alt="" className="h-6 w-6" />
+            <img src={headerLogo} alt="" className="h-6 w-6" />
             <span className="font-logo text-sm whitespace-nowrap">ORPHAN BARS</span>
           </div>
         </Link>
