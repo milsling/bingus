@@ -195,7 +195,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanageMenuLogo} 
                       alt="The Orphanage" 
                       className={cn(
-                        "h-28 w-auto object-contain transition-all mb-1",
+                        "h-28 w-auto object-contain transition-all -mb-4",
                         menuSection === "orphanage" ? "brightness-0 invert" : "dark:invert dark:brightness-200 opacity-80"
                       )}
                     />
