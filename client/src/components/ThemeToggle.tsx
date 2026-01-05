@@ -7,24 +7,30 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (saved === "light") {
       setIsDark(false);
       document.documentElement.classList.remove("dark");
+      if (themeColorMeta) themeColorMeta.setAttribute("content", "#fafafa");
     } else {
       setIsDark(true);
       document.documentElement.classList.add("dark");
+      if (themeColorMeta) themeColorMeta.setAttribute("content", "#18181b");
     }
   }, []);
 
   const toggleTheme = () => {
     const newIsDark = !isDark;
     setIsDark(newIsDark);
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (newIsDark) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
+      if (themeColorMeta) themeColorMeta.setAttribute("content", "#18181b");
     } else {
       document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
+      if (themeColorMeta) themeColorMeta.setAttribute("content", "#fafafa");
     }
   };
 

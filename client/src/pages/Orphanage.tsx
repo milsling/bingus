@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import BarCard from "@/components/BarCard";
 import { BarSkeletonList } from "@/components/BarSkeleton";
-import orphanageLogo from "@/assets/orphanage-logo.png";
+import orphanageLogo from "@/assets/orphanage-new-logo.png";
 
 export default function Orphanage() {
   const { data: adoptableBars = [], isLoading } = useQuery({

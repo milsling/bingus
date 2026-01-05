@@ -190,3 +190,11 @@
 .animate-marquee {
   animation: marquee 15s linear infinite;
 }
+
+/* Keyboard color scheme for mobile browsers */
+:root {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
