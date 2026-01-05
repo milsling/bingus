@@ -177,11 +177,11 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
 
       <div className="fixed bottom-0 left-0 right-0 z-[100] pb-safe">
         <div className="bg-background backdrop-blur-lg border-t border-border">
-          <div className="flex items-center justify-around h-16 px-4">
+          <div className="flex items-center justify-between h-16 px-2">
             <button
               onClick={() => setSearchOpen(true)}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 rounded-lg transition-colors min-w-[60px]",
+                "flex flex-col items-center gap-1 py-2 rounded-lg transition-colors flex-1",
                 "text-muted-foreground hover:text-foreground"
               )}
               data-testid="button-search"
@@ -193,7 +193,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
             <button
               onClick={() => setLocation("/")}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 rounded-lg transition-colors min-w-[60px]",
+                "flex flex-col items-center gap-1 py-2 rounded-lg transition-colors flex-1",
                 location === "/" 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-foreground"
@@ -232,7 +232,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
             <button
               onClick={() => setLocation("/saved")}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 rounded-lg transition-colors min-w-[60px]",
+                "flex flex-col items-center gap-1 py-2 rounded-lg transition-colors flex-1",
                 location === "/saved" 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-foreground"
@@ -246,7 +246,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
             <button
               onClick={() => setLocation("/profile")}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 rounded-lg transition-colors min-w-[60px]",
+                "flex flex-col items-center gap-1 py-2 rounded-lg transition-colors flex-1",
                 location === "/profile" 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-foreground"
@@ -260,7 +260,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
             <motion.button
               onClick={() => setLocation("/orphanage")}
               className={cn(
-                "w-12 h-12 rounded-xl",
+                "w-11 h-11 rounded-xl flex-shrink-0 ml-1",
                 "bg-gradient-to-br from-primary to-primary/80",
                 "flex items-center justify-center",
                 "shadow-lg shadow-primary/30",
@@ -272,7 +272,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               <img 
                 src={orphanageIcon} 
                 alt="The Orphanage" 
-                className="w-7 h-7 object-contain invert brightness-200"
+                className="w-6 h-6 object-contain invert brightness-200"
               />
             </motion.button>
           </div>

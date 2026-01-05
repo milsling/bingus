@@ -21,14 +21,14 @@ export default function Orphanage() {
       
       <main className="max-w-3xl mx-auto">
         <div className="px-4 py-8">
-          <div className="flex flex-col items-center mb-8">
+          <div className="flex flex-col items-center mb-10">
             <img 
               src={orphanageLogo} 
               alt="The Orphanage" 
-              className="h-24 w-auto mb-4 dark:invert dark:brightness-200"
+              className="h-48 md:h-56 w-auto mb-6 dark:invert dark:brightness-200"
               data-testid="img-orphanage-logo"
             />
-            <p className="text-muted-foreground text-center text-sm max-w-md">
+            <p className="text-muted-foreground text-center text-base max-w-md">
               These bars are free to use for commercial purposes. Adopt one and make it your own.
             </p>
           </div>
