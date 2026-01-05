@@ -98,68 +98,50 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-              className="fixed bottom-20 left-4 right-4 z-50 bg-card/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl border border-border/50"
+              className="fixed bottom-20 left-4 right-4 z-50 bg-card/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl"
             >
-              <div className="flex">
-                <div className="flex-1 flex flex-col">
-                  {currentUser && (
-                    <div className="p-3 pb-2">
-                      <button
-                        onClick={() => handleNavClick("/post")}
-                        className="w-full p-5 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all active:scale-[0.98]"
-                        data-testid="nav-item-drop-bar-main"
-                      >
-                        <div className="flex items-center justify-center gap-4">
-                          <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
-                            <Plus className="w-8 h-8 text-primary-foreground" />
+              <div className="flex flex-col">
+                <div className="flex">
+                  <div className="flex-1 flex flex-col">
+                    <div className="grid grid-cols-2 gap-2 p-4">
+                    {navItems.map((item) => {
+                      const isActive = item.path && location === item.path;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleNavClick(item.path)}
+                          className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all active:scale-95 hover:bg-muted/50"
+                          data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
+                        >
+                          <div className={cn(
+                            "relative w-12 h-12 rounded-full flex items-center justify-center transition-all",
+                            isActive ? "bg-primary shadow-md shadow-primary/30" : "hover:bg-muted"
+                          )}>
+                            {item.icon && (
+                              <item.icon className={cn(
+                                "w-5 h-5",
+                                isActive ? "text-primary-foreground" : "text-foreground"
+                              )} />
+                            )}
+                            {item.badge && item.badge > 0 && (
+                              <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                                {item.badge > 99 ? '99+' : item.badge}
+                              </span>
+                            )}
                           </div>
-                          <div className="text-left">
-                            <span className="text-xl font-bold text-primary-foreground block">Drop Bar</span>
-                            <span className="text-sm text-primary-foreground/70">Share your bars with the world</span>
-                          </div>
-                        </div>
-                      </button>
+                          <span className={cn(
+                            "text-[11px] font-medium",
+                            isActive ? "text-primary" : "text-muted-foreground"
+                          )}>
+                            {item.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                     </div>
-                  )}
-                  <div className="grid grid-cols-2 gap-2 p-4">
-                  {navItems.map((item) => {
-                    const isActive = item.path && location === item.path;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => handleNavClick(item.path)}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all active:scale-95 hover:bg-muted/50"
-                        data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
-                      >
-                        <div className={cn(
-                          "relative w-12 h-12 rounded-full flex items-center justify-center transition-all",
-                          isActive ? "bg-primary shadow-md shadow-primary/30" : "hover:bg-muted"
-                        )}>
-                          {item.icon && (
-                            <item.icon className={cn(
-                              "w-5 h-5",
-                              isActive ? "text-primary-foreground" : "text-foreground"
-                            )} />
-                          )}
-                          {item.badge && item.badge > 0 && (
-                            <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                              {item.badge > 99 ? '99+' : item.badge}
-                            </span>
-                          )}
-                        </div>
-                        <span className={cn(
-                          "text-[11px] font-medium",
-                          isActive ? "text-primary" : "text-muted-foreground"
-                        )}>
-                          {item.label}
-                        </span>
-                      </button>
-                    );
-                  })}
                   </div>
-                </div>
-                
-                <div className="flex flex-col w-40 rounded-tr-2xl overflow-hidden">
+                  
+                  <div className="flex flex-col w-40 overflow-hidden">
                   <button
                     onClick={() => {
                       setMenuSection("orphanbars");
@@ -210,7 +192,24 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       )}
                     />
                   </button>
+                  </div>
                 </div>
+                
+                {currentUser && (
+                  <button
+                    onClick={() => handleNavClick("/post")}
+                    className="w-full p-4 bg-primary hover:bg-primary/90 transition-all active:scale-[0.99] flex items-center justify-center gap-3"
+                    data-testid="nav-item-drop-bar-main"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                      <Plus className="w-5 h-5 text-primary-foreground" />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-lg font-bold text-primary-foreground block">Drop Bar</span>
+                      <span className="text-xs text-primary-foreground/70">Share your bars with the world</span>
+                    </div>
+                  </button>
+                )}
               </div>
             </motion.div>
           </>
