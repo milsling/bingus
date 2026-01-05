@@ -196,7 +196,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={menuSection === "orphanage" ? orphanageFullLogoWhite : orphanageFullLogoDark} 
                       alt="The Orphanage" 
                       className={cn(
-                        "h-28 w-auto object-contain transition-all",
+                        "h-32 w-auto object-contain transition-all",
                         menuSection !== "orphanage" && "dark:hidden"
                       )}
                     />
@@ -204,7 +204,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       <img 
                         src={orphanageFullLogoWhite} 
                         alt="The Orphanage" 
-                        className="h-28 w-auto object-contain transition-all hidden dark:block opacity-80"
+                        className="h-32 w-auto object-contain transition-all hidden dark:block opacity-80"
                       />
                     )}
                   </button>
