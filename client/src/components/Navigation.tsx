@@ -65,14 +65,12 @@ export default function Navigation() {
             </div>
           </Link>
           
-          <Link href="/orphanage">
-            <div className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors hover:bg-muted cursor-pointer",
-              location === "/orphanage" ? "text-primary" : "text-muted-foreground"
-            )}>
-              <Warehouse className="h-4 w-4" />
-              Orphanage
-            </div>
+          <Link href="/orphanage" className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors hover:bg-muted cursor-pointer",
+            location === "/orphanage" ? "text-primary" : "text-muted-foreground"
+          )}>
+            <Warehouse className="h-4 w-4" />
+            Orphanage
           </Link>
           
           {currentUser && (
