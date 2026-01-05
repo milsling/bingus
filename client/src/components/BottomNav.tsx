@@ -161,7 +161,10 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 
                 <div className="flex flex-col w-40 rounded-tr-2xl overflow-hidden">
                   <button
-                    onClick={() => setMenuSection("orphanbars")}
+                    onClick={() => {
+                      setMenuSection("orphanbars");
+                      handleNavClick("/");
+                    }}
                     className={cn(
                       "h-1/2 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
                       menuSection === "orphanbars" ? "bg-primary" : "bg-primary/70"
