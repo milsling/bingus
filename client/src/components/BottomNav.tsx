@@ -98,23 +98,73 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-              className="fixed bottom-20 left-4 right-4 z-50 bg-card/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl"
+              className="fixed bottom-20 left-4 right-4 z-50 rounded-2xl overflow-hidden shadow-2xl"
             >
-              <div className="flex flex-col">
-                <div className="flex">
-                  <div className="flex-1 flex flex-col">
-                    <div className="grid grid-cols-2 gap-2 p-4">
+              <div className="flex">
+                <div className="flex flex-col w-[140px] shrink-0">
+                  <button
+                    onClick={() => {
+                      setMenuSection("orphanbars");
+                      handleNavClick("/");
+                    }}
+                    className={cn(
+                      "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95",
+                      menuSection === "orphanbars" ? "bg-primary" : "bg-primary/80"
+                    )}
+                    data-testid="nav-section-orphanbars"
+                  >
+                    <img 
+                      src={orphanBarsMenuLogo} 
+                      alt="Orphan Bars" 
+                      className={cn(
+                        "h-16 w-auto transition-all mb-1",
+                        menuSection === "orphanbars" ? "brightness-0 invert" : "brightness-0 invert opacity-70"
+                      )}
+                    />
+                    <span 
+                      className={cn(
+                        "text-xs font-medium transition-colors",
+                        menuSection === "orphanbars" ? "text-primary-foreground" : "text-primary-foreground/70"
+                      )} 
+                      style={{ fontFamily: 'var(--font-logo)' }}
+                    >ORPHAN BARS</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setMenuSection("orphanage");
+                      handleNavClick("/orphanage");
+                    }}
+                    className={cn(
+                      "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95",
+                      menuSection === "orphanage" ? "bg-primary" : "bg-primary/60"
+                    )}
+                    data-testid="nav-section-orphanage"
+                  >
+                    <img 
+                      src={orphanageFullLogoWhite} 
+                      alt="The Orphanage" 
+                      className={cn(
+                        "h-24 w-auto object-contain transition-all",
+                        menuSection !== "orphanage" && "opacity-70"
+                      )}
+                    />
+                  </button>
+                </div>
+                
+                <div className="flex-1 flex flex-col bg-card">
+                  <div className="grid grid-cols-2 gap-1 p-3 flex-1">
                     {navItems.map((item) => {
                       const isActive = item.path && location === item.path;
                       return (
                         <button
                           key={item.id}
                           onClick={() => handleNavClick(item.path)}
-                          className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all active:scale-95 hover:bg-muted/50"
+                          className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all active:scale-95 hover:bg-muted/50"
                           data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
                         >
                           <div className={cn(
-                            "relative w-12 h-12 rounded-full flex items-center justify-center transition-all",
+                            "relative w-10 h-10 rounded-full flex items-center justify-center transition-all",
                             isActive ? "bg-primary shadow-md shadow-primary/30" : "hover:bg-muted"
                           )}>
                             {item.icon && (
@@ -124,7 +174,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                               )} />
                             )}
                             {item.badge && item.badge > 0 && (
-                              <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
                                 {item.badge > 99 ? '99+' : item.badge}
                               </span>
                             )}
@@ -138,78 +188,22 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         </button>
                       );
                     })}
-                    </div>
                   </div>
                   
-                  <div className="flex flex-col w-40 overflow-hidden">
-                  <button
-                    onClick={() => {
-                      setMenuSection("orphanbars");
-                      handleNavClick("/");
-                    }}
-                    className={cn(
-                      "h-1/2 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
-                      menuSection === "orphanbars" ? "bg-primary" : "bg-primary/70"
-                    )}
-                    style={{ flexBasis: '50%' }}
-                    data-testid="nav-section-orphanbars"
-                  >
-                    <img 
-                      src={orphanBarsMenuLogo} 
-                      alt="Orphan Bars" 
-                      className={cn(
-                        "h-20 w-auto transition-all mb-1",
-                        menuSection === "orphanbars" ? "brightness-0 invert" : "brightness-0 invert opacity-60"
-                      )}
-                    />
-                    <span 
-                      className={cn(
-                        "text-sm font-medium transition-colors",
-                        menuSection === "orphanbars" ? "text-primary-foreground" : "text-primary-foreground/60"
-                      )} 
-                      style={{ fontFamily: 'var(--font-logo)' }}
-                    >ORPHAN BARS</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      setMenuSection("orphanage");
-                      handleNavClick("/orphanage");
-                    }}
-                    className={cn(
-                      "h-1/2 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
-                      menuSection === "orphanage" ? "bg-primary" : "bg-primary/70"
-                    )}
-                    style={{ flexBasis: '50%' }}
-                    data-testid="nav-section-orphanage"
-                  >
-                    <img 
-                      src={orphanageFullLogoWhite} 
-                      alt="The Orphanage" 
-                      className={cn(
-                        "h-32 w-auto object-contain transition-all",
-                        menuSection !== "orphanage" && "opacity-60"
-                      )}
-                    />
-                  </button>
-                  </div>
+                  {currentUser && (
+                    <button
+                      onClick={() => handleNavClick("/post")}
+                      className="m-3 mt-0 p-4 rounded-xl bg-primary/90 hover:bg-primary transition-all active:scale-[0.98] flex flex-col items-center justify-center"
+                      data-testid="nav-item-drop-bar-main"
+                    >
+                      <span 
+                        className="text-xl text-primary-foreground"
+                        style={{ fontFamily: 'var(--font-logo)' }}
+                      >Drop a Bar</span>
+                      <Plus className="w-5 h-5 text-primary-foreground/80 mt-1" />
+                    </button>
+                  )}
                 </div>
-                
-                {currentUser && (
-                  <button
-                    onClick={() => handleNavClick("/post")}
-                    className="w-full p-4 bg-primary hover:bg-primary/90 transition-all active:scale-[0.99] flex items-center justify-center gap-3"
-                    data-testid="nav-item-drop-bar-main"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                      <Plus className="w-5 h-5 text-primary-foreground" />
-                    </div>
-                    <div className="text-left">
-                      <span className="text-lg font-bold text-primary-foreground block">Drop Bar</span>
-                      <span className="text-xs text-primary-foreground/70">Share your bars with the world</span>
-                    </div>
-                  </button>
-                )}
               </div>
             </motion.div>
           </>
