@@ -103,19 +103,19 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               <div className="flex">
                 <div className="flex-1 flex flex-col">
                   {currentUser && (
-                    <div className="p-4 pb-0">
+                    <div className="p-3 pb-2">
                       <button
                         onClick={() => handleNavClick("/post")}
-                        className="w-full p-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all active:scale-[0.98]"
+                        className="w-full p-5 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all active:scale-[0.98]"
                         data-testid="nav-item-drop-bar-main"
                       >
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                            <Plus className="w-7 h-7 text-primary-foreground" />
+                        <div className="flex items-center justify-center gap-4">
+                          <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+                            <Plus className="w-8 h-8 text-primary-foreground" />
                           </div>
                           <div className="text-left">
-                            <span className="text-lg font-bold text-primary-foreground block">Drop Bar</span>
-                            <span className="text-xs text-primary-foreground/70">Share your bars with the world</span>
+                            <span className="text-xl font-bold text-primary-foreground block">Drop Bar</span>
+                            <span className="text-sm text-primary-foreground/70">Share your bars with the world</span>
                           </div>
                         </div>
                       </button>
