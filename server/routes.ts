@@ -542,11 +542,67 @@ export async function registerRoutes(
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
           const dislikeCount = await storage.getDislikeCount(bar.id);
           const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked, dislikeCount, disliked };
+          const usageCount = await storage.getBarUsageCount(bar.id);
+          return { ...bar, likeCount, liked, dislikeCount, disliked, usageCount };
         })
       );
       
       res.json(barsWithEngagement);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/bars/:id/usage", isAuthenticated, async (req, res) => {
+    try {
+      let { usageLink, comment } = req.body;
+      
+      if (usageLink && typeof usageLink === 'string') {
+        usageLink = usageLink.trim().slice(0, 500);
+        if (usageLink && !/^https?:\/\/.+/.test(usageLink)) {
+          return res.status(400).json({ message: "Please provide a valid URL starting with http:// or https://" });
+        }
+      } else {
+        usageLink = undefined;
+      }
+      
+      if (comment && typeof comment === 'string') {
+        comment = comment.trim().slice(0, 500);
+      } else {
+        comment = undefined;
+      }
+      
+      const bar = await storage.getBarById(req.params.id);
+      if (!bar) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+      
+      if (bar.permissionStatus !== 'open_adopt') {
+        return res.status(403).json({ message: "This bar is not available for adoption" });
+      }
+      
+      const usage = await storage.recordBarUsage(req.params.id, req.user!.id, usageLink, comment);
+      
+      if (bar.userId !== req.user!.id) {
+        await storage.createNotification({
+          userId: bar.userId,
+          type: 'bar_adopted',
+          actorId: req.user!.id,
+          barId: bar.id,
+          message: `@${req.user!.username} adopted your bar!`
+        });
+      }
+      
+      res.json(usage);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bars/:id/usages", async (req, res) => {
+    try {
+      const usages = await storage.getBarUsages(req.params.id);
+      res.json(usages);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

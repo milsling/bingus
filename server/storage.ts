@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -161,6 +161,11 @@ export interface IStorage {
   // Soft delete archive methods
   getDeletedBars(): Promise<Array<Bar & { user: User }>>;
   restoreBar(barId: string): Promise<Bar | undefined>;
+  
+  // Bar usage methods (adoption claims)
+  recordBarUsage(barId: string, userId: string, usageLink?: string, comment?: string): Promise<BarUsage>;
+  getBarUsages(barId: string): Promise<Array<BarUsage & { user: Pick<User, 'id' | 'username' | 'avatarUrl'> }>>;
+  getBarUsageCount(barId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1464,6 +1469,40 @@ export class DatabaseStorage implements IStorage {
       .update(maintenanceStatus)
       .set({ isActive: false, message: null, activatedAt: null, activatedBy: null })
       .where(eq(maintenanceStatus.id, 'singleton'));
+  }
+
+  async recordBarUsage(barId: string, userId: string, usageLink?: string, comment?: string): Promise<BarUsage> {
+    const [usage] = await db
+      .insert(barUsages)
+      .values({ barId, userId, usageLink: usageLink || null, comment: comment || null })
+      .returning();
+    return usage;
+  }
+
+  async getBarUsages(barId: string): Promise<Array<BarUsage & { user: Pick<User, 'id' | 'username' | 'avatarUrl'> }>> {
+    const result = await db
+      .select({
+        usage: barUsages,
+        user: {
+          id: users.id,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+        },
+      })
+      .from(barUsages)
+      .innerJoin(users, eq(barUsages.userId, users.id))
+      .where(eq(barUsages.barId, barId))
+      .orderBy(desc(barUsages.createdAt));
+    
+    return result.map(r => ({ ...r.usage, user: r.user }));
+  }
+
+  async getBarUsageCount(barId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(barUsages)
+      .where(eq(barUsages.barId, barId));
+    return result?.count || 0;
   }
 }
 

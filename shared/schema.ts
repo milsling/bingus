@@ -248,6 +248,20 @@ export const adoptionsRelations = relations(adoptions, ({ one }) => ({
   adoptedByUser: one(users, { fields: [adoptions.adoptedByUserId], references: [users.id] }),
 }));
 
+export const barUsages = pgTable("bar_usages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  usageLink: text("usage_link"),
+  comment: text("comment"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const barUsagesRelations = relations(barUsages, ({ one }) => ({
+  bar: one(bars, { fields: [barUsages.barId], references: [bars.id] }),
+  user: one(users, { fields: [barUsages.userId], references: [users.id] }),
+}));
+
 export const barSequence = pgTable("bar_sequence", {
   id: varchar("id").primaryKey().default("singleton"),
   currentValue: integer("current_value").notNull().default(0),
@@ -371,6 +385,7 @@ export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type Friendship = typeof friendships.$inferSelect;
 export type DirectMessage = typeof directMessages.$inferSelect;
 export type Adoption = typeof adoptions.$inferSelect;
+export type BarUsage = typeof barUsages.$inferSelect;
 export type UserAchievement = typeof userAchievements.$inferSelect;
 export type Report = typeof reports.$inferSelect;
 export type FlaggedPhrase = typeof flaggedPhrases.$inferSelect;
