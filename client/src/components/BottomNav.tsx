@@ -161,7 +161,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   <button
                     onClick={() => setMenuSection("orphanbars")}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-end gap-2 px-3 pb-4 pt-6 transition-all active:scale-95",
+                      "flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
                       menuSection === "orphanbars" ? "bg-primary" : "bg-muted/30"
                     )}
                     data-testid="nav-section-orphanbars"
@@ -170,7 +170,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanBarsMenuLogo} 
                       alt="Orphan Bars" 
                       className={cn(
-                        "h-16 w-auto transition-all",
+                        "h-20 w-auto transition-all mb-1",
                         menuSection === "orphanbars" ? "brightness-0 invert" : "opacity-80"
                       )}
                     />
@@ -186,7 +186,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   <button
                     onClick={() => setMenuSection("orphanage")}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-end gap-1 px-3 pb-4 pt-6 transition-all active:scale-95",
+                      "flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
                       menuSection === "orphanage" ? "bg-primary" : "bg-muted/30"
                     )}
                     data-testid="nav-section-orphanage"
@@ -195,7 +195,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanageMenuLogo} 
                       alt="The Orphanage" 
                       className={cn(
-                        "h-14 w-auto object-contain transition-all",
+                        "h-16 w-auto object-contain transition-all mb-0.5",
                         menuSection === "orphanage" ? "brightness-0 invert" : "dark:invert dark:brightness-200 opacity-80"
                       )}
                     />
