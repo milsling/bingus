@@ -186,7 +186,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   <button
                     onClick={() => setMenuSection("orphanage")}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-center gap-1 py-4 px-3 transition-all active:scale-95",
+                      "flex-1 flex flex-col items-center justify-center gap-0.5 py-3 px-3 transition-all active:scale-95",
                       menuSection === "orphanage" ? "bg-primary" : "bg-muted/30"
                     )}
                     data-testid="nav-section-orphanage"
@@ -195,7 +195,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanageMenuLogo} 
                       alt="The Orphanage" 
                       className={cn(
-                        "h-14 w-auto object-contain transition-all",
+                        "h-16 w-auto object-contain transition-all",
                         menuSection === "orphanage" ? "invert brightness-200" : "dark:invert dark:brightness-200 opacity-70"
                       )}
                     />
