@@ -157,11 +157,11 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   })}
                 </div>
                 
-                <div className="flex flex-col w-36">
+                <div className="flex flex-col w-40">
                   <button
                     onClick={() => setMenuSection("orphanbars")}
                     className={cn(
-                      "h-24 flex flex-col items-center justify-center gap-1 px-3 transition-all active:scale-95",
+                      "flex-1 flex flex-col items-center justify-end gap-2 px-3 pb-4 pt-6 transition-all active:scale-95",
                       menuSection === "orphanbars" ? "bg-primary" : "bg-muted/30"
                     )}
                     data-testid="nav-section-orphanbars"
@@ -170,13 +170,13 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanBarsMenuLogo} 
                       alt="Orphan Bars" 
                       className={cn(
-                        "h-12 w-auto transition-all",
-                        menuSection === "orphanbars" ? "brightness-0 invert" : "opacity-70"
+                        "h-16 w-auto transition-all",
+                        menuSection === "orphanbars" ? "brightness-0 invert" : "opacity-80"
                       )}
                     />
                     <span 
                       className={cn(
-                        "text-xs transition-colors",
+                        "text-sm font-medium transition-colors",
                         menuSection === "orphanbars" ? "text-primary-foreground" : "text-muted-foreground"
                       )} 
                       style={{ fontFamily: 'var(--font-logo)' }}
@@ -186,7 +186,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   <button
                     onClick={() => setMenuSection("orphanage")}
                     className={cn(
-                      "h-24 flex flex-col items-center justify-center gap-0.5 px-3 transition-all active:scale-95",
+                      "flex-1 flex flex-col items-center justify-end gap-1 px-3 pb-4 pt-6 transition-all active:scale-95",
                       menuSection === "orphanage" ? "bg-primary" : "bg-muted/30"
                     )}
                     data-testid="nav-section-orphanage"
@@ -195,13 +195,13 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanageMenuLogo} 
                       alt="The Orphanage" 
                       className={cn(
-                        "h-16 w-auto object-contain transition-all",
-                        menuSection === "orphanage" ? "brightness-0 invert" : "dark:invert dark:brightness-200 opacity-70"
+                        "h-14 w-auto object-contain transition-all",
+                        menuSection === "orphanage" ? "brightness-0 invert" : "dark:invert dark:brightness-200 opacity-80"
                       )}
                     />
                     <span 
                       className={cn(
-                        "text-xs transition-colors",
+                        "text-sm font-medium transition-colors",
                         menuSection === "orphanage" ? "text-primary-foreground" : "text-muted-foreground"
                       )} 
                       style={{ fontFamily: 'var(--font-logo)' }}
