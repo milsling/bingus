@@ -19,6 +19,7 @@ export const users = pgTable("users", {
   bio: text("bio"),
   location: text("location"),
   avatarUrl: text("avatar_url"),
+  bannerUrl: text("banner_url"),
   membershipTier: text("membership_tier").notNull().default("free"),
   membershipExpiresAt: timestamp("membership_expires_at"),
   isAdmin: boolean("is_admin").notNull().default(false),
