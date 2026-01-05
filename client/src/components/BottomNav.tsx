@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import orphanageIcon from "@/assets/orphanage-icon.png";
+import orphanBarsLogo from "@/assets/logo.png";
 
 interface BottomNavProps {
   onNewMessage?: () => void;
@@ -104,81 +105,79 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 </button>
               )}
               
-              <div className="grid grid-cols-3 gap-3">
-                {navItems.map((item) => {
-                  const isActive = item.path && location === item.path;
-                  return (
-                    <button
-                      key={item.path}
-                      onClick={() => handleNavClick(item.path)}
-                      className={cn(
-                        "flex flex-col items-center gap-2 p-3 rounded-xl transition-all",
-                        "hover:bg-muted active:scale-95",
-                        isActive && "bg-primary/10"
-                      )}
-                      data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
-                    >
-                      <div className={cn(
-                        "relative w-12 h-12 rounded-full flex items-center justify-center",
-                        "border-2 transition-colors",
-                        isActive 
-                          ? "bg-primary border-primary" 
-                          : "bg-muted/50 border-border hover:border-primary/50"
-                      )}>
-                        {item.icon && (
-                          <item.icon className={cn(
-                            "w-5 h-5",
-                            isActive ? "text-primary-foreground" : "text-foreground"
-                          )} />
+              <div className="flex gap-3">
+                <div className="grid grid-cols-2 gap-3 flex-1">
+                  {navItems.map((item) => {
+                    const isActive = item.path && location === item.path;
+                    return (
+                      <button
+                        key={item.path}
+                        onClick={() => handleNavClick(item.path)}
+                        className={cn(
+                          "flex flex-col items-center gap-2 p-3 rounded-xl transition-all",
+                          "hover:bg-muted active:scale-95",
+                          isActive && "bg-primary/10"
                         )}
-                        {item.badge && item.badge > 0 && (
-                          <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                            {item.badge > 99 ? '99+' : item.badge}
-                          </span>
-                        )}
-                      </div>
-                      <span className={cn(
-                        "text-[11px] font-medium",
-                        isActive ? "text-primary" : "text-muted-foreground"
-                      )}>
-                        {item.label}
-                      </span>
-                    </button>
-                  );
-                })}
+                        data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
+                      >
+                        <div className={cn(
+                          "relative w-12 h-12 rounded-full flex items-center justify-center",
+                          "border-2 transition-colors",
+                          isActive 
+                            ? "bg-primary border-primary" 
+                            : "bg-muted/50 border-border hover:border-primary/50"
+                        )}>
+                          {item.icon && (
+                            <item.icon className={cn(
+                              "w-5 h-5",
+                              isActive ? "text-primary-foreground" : "text-foreground"
+                            )} />
+                          )}
+                          {item.badge && item.badge > 0 && (
+                            <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                              {item.badge > 99 ? '99+' : item.badge}
+                            </span>
+                          )}
+                        </div>
+                        <span className={cn(
+                          "text-[11px] font-medium",
+                          isActive ? "text-primary" : "text-muted-foreground"
+                        )}>
+                          {item.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
                 
-                <button
-                  onClick={() => handleNavClick("/orphanage")}
-                  className={cn(
-                    "flex flex-col items-center gap-2 p-3 rounded-xl transition-all",
-                    "hover:bg-muted active:scale-95",
-                    location === "/orphanage" && "bg-primary/10"
-                  )}
-                  data-testid="nav-item-orphanage"
-                >
-                  <div className={cn(
-                    "relative w-12 h-12 rounded-xl flex items-center justify-center",
-                    "border-2 transition-colors",
-                    location === "/orphanage"
-                      ? "bg-primary border-primary" 
-                      : "bg-muted/50 border-border hover:border-primary/50"
-                  )}>
+                <div className="flex flex-col gap-2 w-36">
+                  <div className="flex-1 rounded-xl bg-gradient-to-br from-primary to-primary/80 p-3 flex flex-col items-center justify-center">
+                    <img 
+                      src={orphanBarsLogo} 
+                      alt="Orphan Bars" 
+                      className="h-10 w-auto mb-1 invert brightness-200"
+                    />
+                    <span className="text-[10px] font-bold text-primary-foreground tracking-wide">ORPHAN BARS</span>
+                  </div>
+                  
+                  <button
+                    onClick={() => handleNavClick("/orphanage")}
+                    className={cn(
+                      "flex-1 rounded-xl bg-gradient-to-br from-primary to-primary/80 p-3",
+                      "flex flex-col items-center justify-center gap-1",
+                      "hover:from-primary/90 hover:to-primary/70 transition-all active:scale-[0.98]",
+                      location === "/orphanage" && "ring-2 ring-primary-foreground"
+                    )}
+                    data-testid="nav-item-orphanage"
+                  >
                     <img 
                       src={orphanageIcon} 
                       alt="The Orphanage" 
-                      className={cn(
-                        "w-6 h-6 object-contain",
-                        location === "/orphanage" ? "invert brightness-200" : "dark:invert dark:brightness-200"
-                      )}
+                      className="h-10 w-auto object-contain invert brightness-200"
                     />
-                  </div>
-                  <span className={cn(
-                    "text-[11px] font-medium",
-                    location === "/orphanage" ? "text-primary" : "text-muted-foreground"
-                  )}>
-                    Orphanage
-                  </span>
-                </button>
+                    <span className="text-[10px] font-bold text-primary-foreground tracking-wide">ORPHANAGE</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           </>
