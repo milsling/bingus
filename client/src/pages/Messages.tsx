@@ -145,10 +145,12 @@ export default function Messages() {
 
   const getStatusColor = (status?: string, lastSeenAt?: string | Date | null) => {
     if (!lastSeenAt) return 'bg-gray-400';
-    const twoMinutesAgo = Date.now() - 2 * 60 * 1000;
-    const lastSeen = new Date(lastSeenAt).getTime();
-    const isRecentlyActive = lastSeen > twoMinutesAgo;
     
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    const lastSeen = new Date(lastSeenAt).getTime();
+    const isRecentlyActive = lastSeen > fiveMinutesAgo;
+    
+    if (status === 'offline') return 'bg-gray-400';
     if (!isRecentlyActive) return 'bg-gray-400';
     
     switch (status) {

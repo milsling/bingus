@@ -10,7 +10,7 @@ import { api } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface NotificationActor {
@@ -62,13 +62,14 @@ export function NotificationBell() {
     },
   });
 
-  const markRead = useMutation({
-    mutationFn: (id: string) => api.markNotificationRead(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
-    },
-  });
+  useEffect(() => {
+    if (open && unreadCount > 0) {
+      const timer = setTimeout(() => {
+        markAllRead.mutate();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [open, unreadCount]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -85,17 +86,6 @@ export function NotificationBell() {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h3 className="font-bold">Notifications</h3>
-          {unreadCount > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs"
-              onClick={() => markAllRead.mutate()}
-              data-testid="button-mark-all-read"
-            >
-              Mark all read
-            </Button>
-          )}
         </div>
         <ScrollArea className="h-[300px]">
           {notifications.length === 0 ? (
@@ -111,11 +101,6 @@ export function NotificationBell() {
                     "flex items-start gap-3 p-4 cursor-pointer transition-colors hover:bg-muted/50",
                     !notification.read && "bg-primary/5"
                   )}
-                  onClick={() => {
-                    if (!notification.read) {
-                      markRead.mutate(notification.id);
-                    }
-                  }}
                   data-testid={`notification-${notification.id}`}
                 >
                   <Avatar className="h-8 w-8">
