@@ -41,29 +41,29 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
   const getNavItems = () => {
     if (!currentUser) {
       return [
-        { icon: Home, label: "Feed", path: "/" },
-        { icon: LogIn, label: "Login", path: "/auth" },
+        { icon: Home, label: "Feed", path: "/", id: "guest-feed" },
+        { icon: LogIn, label: "Login", path: "/auth", id: "guest-login" },
       ];
     }
 
     if (menuSection === "orphanage") {
       return [
-        { icon: DoorOpen, label: "Enter", path: "/orphanage" },
-        { icon: BarChart3, label: "Stats", path: "/orphanage" },
-        { icon: Heart, label: "Favorites", path: "/saved" },
+        { icon: DoorOpen, label: "Enter", path: "/orphanage", id: "orphanage-enter" },
+        { icon: BarChart3, label: "Stats", path: "/orphanage/stats", id: "orphanage-stats" },
+        { icon: Heart, label: "Favorites", path: "/saved", id: "orphanage-favorites" },
       ];
     }
 
     const items = [
-      { icon: Home, label: "Feed", path: "/" },
-      { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount },
-      { icon: Users, label: "Friends", path: "/friends", badge: pendingFriendRequests },
-      { icon: Bookmark, label: "Saved", path: "/saved" },
-      { icon: User, label: "Profile", path: "/profile" },
+      { icon: Home, label: "Feed", path: "/", id: "main-feed" },
+      { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount, id: "main-messages" },
+      { icon: Users, label: "Friends", path: "/friends", badge: pendingFriendRequests, id: "main-friends" },
+      { icon: Bookmark, label: "Saved", path: "/saved", id: "main-saved" },
+      { icon: User, label: "Profile", path: "/profile", id: "main-profile" },
     ];
 
     if (currentUser.isAdmin) {
-      items.push({ icon: Shield, label: "Admin", path: "/admin" });
+      items.push({ icon: Shield, label: "Admin", path: "/admin", id: "main-admin" });
     }
 
     return items;
@@ -125,7 +125,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     const isActive = item.path && location === item.path;
                     return (
                       <button
-                        key={item.path}
+                        key={item.id}
                         onClick={() => handleNavClick(item.path)}
                         className="flex flex-col items-center gap-2 p-3 transition-all active:scale-95"
                         data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
