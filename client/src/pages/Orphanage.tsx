@@ -25,7 +25,7 @@ export default function Orphanage() {
             <img 
               src={orphanageLogo} 
               alt="The Orphanage" 
-              className="h-48 md:h-56 w-auto mb-6 dark:invert dark:brightness-200"
+              className="h-48 md:h-56 w-auto mb-6 invert dark:invert-0"
               data-testid="img-orphanage-logo"
             />
             <p className="text-muted-foreground text-center text-base max-w-md">
