@@ -765,6 +765,36 @@ export async function registerRoutes(
     }
   });
 
+  // Lock bar for authentication (makes it uneditable with valid proof certificate)
+  app.post("/api/bars/:id/lock", isAuthenticated, async (req, res) => {
+    try {
+      const existingBar = await storage.getBarById(req.params.id);
+      if (!existingBar) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+
+      const sessionUserId = String(req.user!.id);
+      const barOwnerId = String(existingBar.userId);
+      
+      if (barOwnerId !== sessionUserId) {
+        return res.status(403).json({ message: "You can only lock your own bars" });
+      }
+
+      if ((existingBar as any).isLocked) {
+        return res.status(400).json({ message: "This bar is already locked" });
+      }
+
+      const bar = await storage.lockBar(req.params.id, req.user!.id);
+      if (!bar) {
+        return res.status(500).json({ message: "Failed to lock bar" });
+      }
+      
+      res.json({ ...bar, message: "Bar has been locked and authenticated. It can no longer be edited." });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Like routes
   app.post("/api/bars/:id/like", isAuthenticated, async (req, res) => {
     try {

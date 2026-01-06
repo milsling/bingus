@@ -334,6 +334,15 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
+  async lockBar(id: string, userId: string): Promise<Bar | undefined> {
+    const [bar] = await db
+      .update(bars)
+      .set({ isLocked: true, lockedAt: new Date() })
+      .where(and(eq(bars.id, id), eq(bars.userId, userId)))
+      .returning();
+    return bar || undefined;
+  }
+
   async createVerificationCode(email: string, code: string): Promise<void> {
     await db.delete(verificationCodes).where(eq(verificationCodes.email, email));
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
