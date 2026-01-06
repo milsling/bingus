@@ -19,7 +19,7 @@ interface BarContextType {
     beatLink?: string;
     isRecorded?: boolean;
     isOriginal?: boolean;
-  }) => Promise<void>;
+  }) => Promise<BarWithUser>;
   currentUser: User | null;
   isLoadingUser: boolean;
   login: (username: string, password: string, rememberMe?: boolean) => Promise<void>;
@@ -214,7 +214,8 @@ export function BarProvider({ children }: { children: ReactNode }) {
     isRecorded?: boolean;
     isOriginal?: boolean;
   }) => {
-    await createBarMutation.mutateAsync(newBarData);
+    const result = await createBarMutation.mutateAsync(newBarData);
+    return result;
   };
 
   return (

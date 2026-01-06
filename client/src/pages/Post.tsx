@@ -73,6 +73,7 @@ export default function Post() {
   const [beatLink, setBeatLink] = useState("");
   const [isRecorded, setIsRecorded] = useState(false);
   const [isOriginal, setIsOriginal] = useState(true);
+  const [lockImmediately, setLockImmediately] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [similarBars, setSimilarBars] = useState<SimilarBar[]>([]);
   const [showSimilarWarning, setShowSimilarWarning] = useState(false);
@@ -103,7 +104,7 @@ export default function Post() {
     const content = getContent();
     setIsSubmitting(true);
     try {
-      await addBar({
+      const newBar = await addBar({
         content,
         explanation: explanation.trim() || undefined,
         category,
@@ -117,10 +118,36 @@ export default function Post() {
         isOriginal,
       });
 
-      toast({
-        title: "Bars Dropped!",
-        description: "Your lyric is now live on the feed.",
-      });
+      if (lockImmediately && isOriginal && newBar?.id) {
+        try {
+          const res = await fetch(`/api/bars/${newBar.id}/lock`, {
+            method: 'POST',
+            credentials: 'include',
+          });
+          if (res.ok) {
+            const lockedBar = await res.json();
+            toast({
+              title: "Bars Dropped & Locked!",
+              description: `Your bar is authenticated as ${lockedBar.proofBarId}`,
+            });
+          } else {
+            toast({
+              title: "Bars Dropped!",
+              description: "Your lyric is live but locking failed. You can lock it from the menu.",
+            });
+          }
+        } catch {
+          toast({
+            title: "Bars Dropped!",
+            description: "Your lyric is live but locking failed. You can lock it from the menu.",
+          });
+        }
+      } else {
+        toast({
+          title: "Bars Dropped!",
+          description: "Your lyric is now live on the feed.",
+        });
+      }
 
       setLocation("/");
     } catch (error: any) {
@@ -497,10 +524,31 @@ export default function Post() {
               <Switch
                 id="original"
                 checked={isOriginal}
-                onCheckedChange={setIsOriginal}
+                onCheckedChange={(checked) => {
+                  setIsOriginal(checked);
+                  if (!checked) setLockImmediately(false);
+                }}
                 data-testid="switch-original"
               />
             </div>
+
+            {isOriginal && (
+              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/30">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-primary" />
+                  <div>
+                    <Label htmlFor="lockImmediately" className="cursor-pointer">Lock & Authenticate on Drop</Label>
+                    <p className="text-xs text-muted-foreground">Get your proof ID immediately - bar cannot be edited after</p>
+                  </div>
+                </div>
+                <Switch
+                  id="lockImmediately"
+                  checked={lockImmediately}
+                  onCheckedChange={setLockImmediately}
+                  data-testid="switch-lock-immediately"
+                />
+              </div>
+            )}
 
             <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/50">
               <div className="flex items-center gap-2">
