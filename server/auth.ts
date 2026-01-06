@@ -2,13 +2,14 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { type Express } from "express";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
+const PgStore = connectPgSimple(session);
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
@@ -47,8 +48,6 @@ declare global {
   }
 }
 
-const MemoryStore = createMemoryStore(session);
-
 export const sessionParser = session({
   secret: process.env.SESSION_SECRET || "orphan-bars-secret-key-change-in-production",
   resave: false,
@@ -56,10 +55,12 @@ export const sessionParser = session({
   cookie: {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    // No maxAge by default = session cookie (expires when browser closes)
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   },
-  store: new MemoryStore({
-    checkPeriod: 86400000,
+  store: new PgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+    tableName: "sessions",
   }),
 });
 
