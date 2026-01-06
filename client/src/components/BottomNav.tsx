@@ -201,9 +201,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                               )} />
                             )}
                             {item.badge && item.badge > 0 && (
-                              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                                {item.badge > 99 ? '99+' : item.badge}
-                              </span>
+                              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_3px_rgba(168,85,247,0.7)] animate-pulse" />
                             )}
                           </div>
                           <span className={cn(
@@ -310,7 +308,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 )}
               </motion.button>
               {!isOpen && (unreadCount > 0 || pendingFriendRequests > 0) && (
-                <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-destructive border-2 border-background animate-pulse" />
+                <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-primary border-2 border-background shadow-[0_0_8px_3px_rgba(168,85,247,0.7)] animate-pulse" />
               )}
             </div>
 
