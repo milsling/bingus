@@ -222,9 +222,9 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       data-testid="nav-item-drop-bar-main"
                     >
                       <span 
-                        className="text-xl text-primary-foreground"
+                        className="text-xl text-primary-foreground uppercase"
                         style={{ fontFamily: 'var(--font-logo)' }}
-                      >Drop a Bar</span>
+                      >DROP A BAR</span>
                       <Plus className="w-5 h-5 text-primary-foreground/80 mt-1" />
                     </button>
                   )}
