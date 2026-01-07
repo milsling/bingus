@@ -150,10 +150,10 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     />
                     <span 
                       className={cn(
-                        "font-medium transition-colors",
+                        "text-lg font-medium transition-colors",
                         menuSection === "orphanbars" ? "text-primary-foreground" : "text-primary-foreground/70"
                       )} 
-                      style={{ fontFamily: 'var(--font-logo)', fontSize: '300px' }}
+                      style={{ fontFamily: 'var(--font-logo)' }}
                     >Orphan Bars</span>
                   </button>
                   
