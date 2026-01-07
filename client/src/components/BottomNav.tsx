@@ -154,7 +154,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         menuSection === "orphanbars" ? "text-primary-foreground" : "text-primary-foreground/70"
                       )} 
                       style={{ fontFamily: 'var(--font-logo)' }}
-                    >ORPHAN BARS</span>
+                    >Orphan Bars</span>
                   </button>
                   
                   <button
@@ -222,9 +222,9 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       data-testid="nav-item-drop-bar-main"
                     >
                       <span 
-                        className="text-xl text-primary-foreground uppercase"
+                        className="text-xl text-primary-foreground"
                         style={{ fontFamily: 'var(--font-logo)' }}
-                      >DROP A BAR</span>
+                      >Drop a Bar</span>
                       <Plus className="w-5 h-5 text-primary-foreground/80 mt-1" />
                     </button>
                   )}

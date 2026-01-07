@@ -31,7 +31,7 @@ export default function Navigation() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               <img src={headerLogo} alt="" className="h-8 w-8" />
-              <span className="font-logo leading-none" style={{ fontSize: '225px' }}>Orphan Bars</span>
+              <span className="font-logo leading-none" style={{ fontSize: '250px' }}>Orphan Bars</span>
             </div>
           </Link>
           <SearchBar className="w-64" />
