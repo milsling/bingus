@@ -892,17 +892,19 @@ export default function Admin() {
                         
                         {user.id !== currentUser.id && !user.isOwner && (
                           <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-border/50">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">Admin</span>
-                              <Switch
-                                checked={user.isAdmin}
-                                onCheckedChange={(checked) => 
-                                  toggleAdminMutation.mutate({ userId: user.id, isAdmin: checked })
-                                }
-                                disabled={toggleAdminMutation.isPending}
-                                data-testid={`switch-admin-${user.id}`}
-                              />
-                            </div>
+                            {currentUser.isOwner && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Admin</span>
+                                <Switch
+                                  checked={user.isAdmin}
+                                  onCheckedChange={(checked) => 
+                                    toggleAdminMutation.mutate({ userId: user.id, isAdmin: checked })
+                                  }
+                                  disabled={toggleAdminMutation.isPending}
+                                  data-testid={`switch-admin-${user.id}`}
+                                />
+                              </div>
+                            )}
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-muted-foreground">Verified</span>
                               <Switch

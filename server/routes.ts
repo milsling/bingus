@@ -1581,9 +1581,13 @@ export async function registerRoutes(
     }
   });
 
-  // Toggle admin status
+  // Toggle admin status - only owner can do this
   app.patch("/api/admin/users/:id/admin", isAdmin, async (req, res) => {
     try {
+      // Only the owner can promote/demote admins
+      if (!req.user!.isOwner) {
+        return res.status(403).json({ message: "Only the owner can change admin status" });
+      }
       if (req.params.id === req.user!.id) {
         return res.status(400).json({ message: "Cannot change your own admin status" });
       }

@@ -42,6 +42,7 @@ declare global {
       membershipTier: string;
       membershipExpiresAt: Date | null;
       isAdmin: boolean;
+      isOwner: boolean;
       emailVerified: boolean;
       usernameChangedAt: Date | null;
     }
