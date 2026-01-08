@@ -294,6 +294,10 @@ export default function BarCard({ bar }: BarCardProps) {
       }
       return { previousLikes };
     },
+    onSuccess: (data) => {
+      console.log('[LIKE SUCCESS]', data);
+      queryClient.setQueryData(['likes', bar.id], { count: data.count, liked: data.liked });
+    },
     onError: (error: any, _, context) => {
       if (context?.previousLikes) {
         queryClient.setQueryData(['likes', bar.id], context.previousLikes);
