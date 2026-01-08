@@ -6,7 +6,11 @@ import BarCard from "@/components/BarCard";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, MapPin, Share2, UserPlus, UserMinus, Users, MessageCircle, Clock } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin, Share2, UserPlus, UserMinus, Users, MessageCircle, Clock, Trophy } from "lucide-react";
+import { Link } from "wouter";
+import { ACHIEVEMENTS, type AchievementId, type AchievementRarity } from "@shared/schema";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { shareContent, getProfileShareData } from "@/lib/share";
@@ -284,21 +288,55 @@ export default function UserProfile() {
                   <span className="text-muted-foreground ml-1">Following</span>
                 </div>
               </div>
-              {achievements.length > 0 && (
+              {/* Displayed Badges */}
+              {((user.displayedBadges?.length ?? 0) > 0 || isOwnProfile) && (
                 <div className="mt-4">
-                  <div className="flex flex-wrap justify-center sm:justify-start gap-2">
-                    {achievements.map((achievement) => (
-                      <Badge 
-                        key={achievement.achievementId} 
-                        variant="secondary" 
-                        className="text-sm cursor-help"
-                        title={achievement.description}
-                        data-testid={`badge-achievement-${achievement.achievementId}`}
-                      >
-                        <span className="mr-1">{achievement.emoji}</span>
-                        {achievement.name}
-                      </Badge>
-                    ))}
+                  <div className="flex flex-wrap justify-center sm:justify-start gap-2 items-center">
+                    <TooltipProvider>
+                      {user.displayedBadges?.map((badgeId: string) => {
+                        const achievement = ACHIEVEMENTS[badgeId as AchievementId];
+                        if (!achievement) return null;
+                        const rarity = achievement.rarity;
+                        return (
+                          <Tooltip key={badgeId}>
+                            <TooltipTrigger>
+                              <span 
+                                className={cn(
+                                  "inline-flex items-center justify-center w-10 h-10 rounded-full text-xl",
+                                  `badge-${rarity}`,
+                                  rarity === "legendary" && "bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-purple-500/20",
+                                  rarity === "epic" && "bg-purple-500/20",
+                                  rarity === "rare" && "bg-blue-500/20",
+                                  rarity === "common" && "bg-gray-500/20"
+                                )}
+                                data-testid={`badge-displayed-${badgeId}`}
+                              >
+                                {achievement.emoji}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="font-semibold">{achievement.name}</p>
+                              <p className="text-xs text-muted-foreground">{achievement.description}</p>
+                              <p className={cn(
+                                "text-xs capitalize mt-1",
+                                rarity === "legendary" && "text-amber-400",
+                                rarity === "epic" && "text-purple-400",
+                                rarity === "rare" && "text-blue-400",
+                                rarity === "common" && "text-gray-400"
+                              )}>{rarity}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </TooltipProvider>
+                    {isOwnProfile && (
+                      <Link href="/badges">
+                        <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground">
+                          <Trophy className="h-4 w-4 mr-1" />
+                          {(user.displayedBadges?.length ?? 0) > 0 ? "Edit" : "Add Badges"}
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               )}

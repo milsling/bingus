@@ -2,7 +2,10 @@ import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import BarCard from "@/components/BarCard";
-import { Settings, Share2, MapPin, Edit, Trophy } from "lucide-react";
+import { Settings, Share2, MapPin, Edit } from "lucide-react";
+import { ACHIEVEMENTS, type AchievementId, type AchievementRarity } from "@shared/schema";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBars } from "@/context/BarContext";
 import { Link, useLocation } from "wouter";
@@ -103,10 +106,9 @@ export default function Profile() {
                   Edit
                 </Button>
               </Link>
-              <Link href="/achievements">
-                <Button variant="outline" className="gap-2" data-testid="button-achievements">
-                  <Trophy className="h-4 w-4" />
-                  Achievements
+              <Link href="/badges">
+                <Button variant="outline" className="gap-2" data-testid="button-badges">
+                  Badges
                 </Button>
               </Link>
               <Button variant="outline" className="gap-2" onClick={handleLogout} data-testid="button-logout">
@@ -152,6 +154,52 @@ export default function Profile() {
               </div>
             </div>
           )}
+
+          {/* Displayed Badges */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <TooltipProvider>
+              {currentUser.displayedBadges?.map((badgeId: string) => {
+                const achievement = ACHIEVEMENTS[badgeId as AchievementId];
+                if (!achievement) return null;
+                const rarity = achievement.rarity;
+                return (
+                  <Tooltip key={badgeId}>
+                    <TooltipTrigger>
+                      <span 
+                        className={cn(
+                          "inline-flex items-center justify-center w-10 h-10 rounded-full text-xl",
+                          `badge-${rarity}`,
+                          rarity === "legendary" && "bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-purple-500/20",
+                          rarity === "epic" && "bg-purple-500/20",
+                          rarity === "rare" && "bg-blue-500/20",
+                          rarity === "common" && "bg-gray-500/20"
+                        )}
+                        data-testid={`badge-displayed-${badgeId}`}
+                      >
+                        {achievement.emoji}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="font-semibold">{achievement.name}</p>
+                      <p className="text-xs text-muted-foreground">{achievement.description}</p>
+                      <p className={cn(
+                        "text-xs capitalize mt-1",
+                        rarity === "legendary" && "text-amber-400",
+                        rarity === "epic" && "text-purple-400",
+                        rarity === "rare" && "text-blue-400",
+                        rarity === "common" && "text-gray-400"
+                      )}>{rarity}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </TooltipProvider>
+            <Link href="/badges">
+              <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground">
+                {(currentUser.displayedBadges?.length ?? 0) > 0 ? "Edit Badges" : "Add Badges"}
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Tabs */}

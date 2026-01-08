@@ -54,12 +54,12 @@ export default function Badges() {
   });
 
   const { data: userData } = useQuery({
-    queryKey: ["user", currentUser?.id],
+    queryKey: ["user", currentUser?.username],
     queryFn: async () => {
-      if (!currentUser?.id) return null;
-      return api.getUser(currentUser.id);
+      if (!currentUser?.username) return null;
+      return api.getUser(currentUser.username);
     },
-    enabled: !!currentUser?.id,
+    enabled: !!currentUser?.username,
   });
 
   const updateDisplayedBadgesMutation = useMutation({
@@ -75,6 +75,7 @@ export default function Badges() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       toast({ title: "Badges updated", description: "Your displayed badges have been saved." });
     },
   });
