@@ -39,12 +39,10 @@ function evaluateCondition(condition: AchievementCondition, context: EvaluationC
   
   const metricValue = context.metrics[condition.metric as keyof UserMetrics];
   
-  // Handle boolean metrics (night_owl, early_bird, controversial_bar)
+  // Handle boolean metrics (night_owl, early_bird, controversial_bar) by coercing to 0/1
   if (typeof metricValue === 'boolean') {
-    if (condition.comparator === '=' || condition.comparator === '>=') {
-      return metricValue === (value >= 1);
-    }
-    return metricValue;
+    const numericValue = metricValue ? 1 : 0;
+    return evaluateNumeric(numericValue, condition.comparator, value);
   }
   
   return evaluateNumeric(metricValue as number, condition.comparator, value);
