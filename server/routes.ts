@@ -924,7 +924,10 @@ export async function registerRoutes(
   app.get("/api/bars/:id/likes", async (req, res) => {
     try {
       const count = await storage.getLikeCount(req.params.id);
-      const liked = req.isAuthenticated() ? await storage.hasUserLiked(req.user!.id, req.params.id) : false;
+      const isAuth = req.isAuthenticated();
+      const userId = isAuth ? req.user!.id : null;
+      const liked = isAuth ? await storage.hasUserLiked(req.user!.id, req.params.id) : false;
+      console.log(`[LIKES CHECK] Bar ${req.params.id}: auth=${isAuth}, userId=${userId}, liked=${liked}, count=${count}`);
       res.json({ count, liked });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
