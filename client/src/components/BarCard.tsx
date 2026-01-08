@@ -595,6 +595,16 @@ export default function BarCard({ bar }: BarCardProps) {
                       Creator
                     </Badge>
                   )}
+                  {(bar.user as any).isAdminPlus && (
+                    <Badge className="ml-1 bg-red-600/90 text-white text-[9px] px-1.5 py-0 h-4 shadow-[0_0_10px_rgba(255,0,0,0.6)] animate-pulse">
+                      Admin+
+                    </Badge>
+                  )}
+                  {(bar.user as any).isAdmin && !(bar.user as any).isAdminPlus && !(bar.user as any).isOwner && (
+                    <Badge className="ml-1 bg-blue-600/90 text-white text-[9px] px-1.5 py-0 h-4">
+                      Admin
+                    </Badge>
+                  )}
                 </div>
                 <span className="text-xs text-muted-foreground" data-testid={`text-timestamp-${bar.id}`}>
                   {formatTimestamp(bar.createdAt)}

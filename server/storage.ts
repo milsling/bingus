@@ -171,8 +171,11 @@ export interface IStorage {
   // Custom achievement methods
   getCustomAchievements(): Promise<CustomAchievement[]>;
   getActiveCustomAchievements(): Promise<CustomAchievement[]>;
+  getPendingAchievements(): Promise<Array<CustomAchievement & { creator?: { username: string } }>>;
   createCustomAchievement(data: InsertCustomAchievement): Promise<CustomAchievement>;
   updateCustomAchievement(id: string, updates: Partial<CustomAchievement>): Promise<CustomAchievement | undefined>;
+  approveAchievement(id: string): Promise<CustomAchievement | undefined>;
+  rejectAchievement(id: string): Promise<CustomAchievement | undefined>;
   deleteCustomAchievement(id: string): Promise<boolean>;
   checkCustomAchievements(userId: string): Promise<string[]>;
   
@@ -1566,11 +1569,52 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getActiveCustomAchievements(): Promise<CustomAchievement[]> {
-    return db.select().from(customAchievements).where(eq(customAchievements.isActive, true));
+    // Only return achievements that are both active AND approved
+    return db.select().from(customAchievements).where(
+      and(
+        eq(customAchievements.isActive, true),
+        eq(customAchievements.approvalStatus, "approved")
+      )
+    );
+  }
+
+  async getPendingAchievements(): Promise<Array<CustomAchievement & { creator?: { username: string } }>> {
+    const results = await db
+      .select({
+        achievement: customAchievements,
+        creatorUsername: users.username,
+      })
+      .from(customAchievements)
+      .leftJoin(users, eq(customAchievements.createdBy, users.id))
+      .where(eq(customAchievements.approvalStatus, "pending"))
+      .orderBy(desc(customAchievements.createdAt));
+    
+    return results.map(r => ({
+      ...r.achievement,
+      creator: r.creatorUsername ? { username: r.creatorUsername } : undefined,
+    }));
   }
 
   async createCustomAchievement(data: InsertCustomAchievement): Promise<CustomAchievement> {
     const [achievement] = await db.insert(customAchievements).values(data).returning();
+    return achievement;
+  }
+
+  async approveAchievement(id: string): Promise<CustomAchievement | undefined> {
+    const [achievement] = await db
+      .update(customAchievements)
+      .set({ approvalStatus: "approved" })
+      .where(eq(customAchievements.id, id))
+      .returning();
+    return achievement;
+  }
+
+  async rejectAchievement(id: string): Promise<CustomAchievement | undefined> {
+    const [achievement] = await db
+      .update(customAchievements)
+      .set({ approvalStatus: "rejected" })
+      .where(eq(customAchievements.id, id))
+      .returning();
     return achievement;
   }
 

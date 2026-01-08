@@ -86,12 +86,22 @@ export default function Profile() {
               </Avatar>
               
               <div className="mb-2">
-                <h1 className="text-2xl md:text-3xl font-display font-bold flex items-center gap-2">
+                <h1 className="text-2xl md:text-3xl font-display font-bold flex items-center gap-2 flex-wrap">
                   @{currentUser.username}
                   {currentUser.membershipTier !== "free" && <span className="text-primary text-xl">✓</span>}
                   {currentUser.username.toLowerCase() === "milsling" && (
                     <span className="ml-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-normal">
                       Creator
+                    </span>
+                  )}
+                  {currentUser.isAdminPlus && (
+                    <span className="ml-1 bg-red-600/90 text-white text-xs px-2 py-0.5 rounded-full font-normal shadow-[0_0_10px_rgba(255,0,0,0.6)] animate-pulse">
+                      Admin+
+                    </span>
+                  )}
+                  {currentUser.isAdmin && !currentUser.isAdminPlus && !currentUser.isOwner && (
+                    <span className="ml-1 bg-blue-600/90 text-white text-xs px-2 py-0.5 rounded-full font-normal">
+                      Admin
                     </span>
                   )}
                 </h1>

@@ -1986,7 +1986,24 @@ export async function registerRoutes(
     return res.status(403).json({ message: "Owner access required" });
   };
 
-  app.get("/api/admin/achievements/custom", isOwner, async (req, res) => {
+  // Admin+ middleware - for elevated admins (between admin and owner)
+  const isAdminPlus: typeof isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated() && req.user?.isAdminPlus) {
+      return next();
+    }
+    return res.status(403).json({ message: "Admin+ access required" });
+  };
+
+  // Admin+ or Owner middleware - for features accessible to both
+  const isAdminPlusOrOwner: typeof isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated() && (req.user?.isAdminPlus || req.user?.isOwner)) {
+      return next();
+    }
+    return res.status(403).json({ message: "Admin+ or owner access required" });
+  };
+
+  // Get all custom achievements (Admin+ or Owner)
+  app.get("/api/admin/achievements/custom", isAdminPlusOrOwner, async (req, res) => {
     try {
       const achievements = await storage.getCustomAchievements();
       res.json(achievements);
@@ -1995,7 +2012,18 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/achievements/custom", isOwner, async (req, res) => {
+  // Get pending achievements for approval (Owner only)
+  app.get("/api/admin/achievements/pending", isOwner, async (req, res) => {
+    try {
+      const pending = await storage.getPendingAchievements();
+      res.json(pending);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Create achievement - Admin+ creates as "pending", Owner creates as "approved"
+  app.post("/api/admin/achievements/custom", isAdminPlusOrOwner, async (req, res) => {
     try {
       const { name, emoji, description, rarity, conditionType, threshold } = req.body;
       
@@ -2017,6 +2045,9 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Invalid rarity" });
       }
 
+      // Admin+ creates as pending, Owner creates as approved
+      const approvalStatus = req.user!.isOwner ? "approved" : "pending";
+
       const achievement = await storage.createCustomAchievement({
         name: name.trim(),
         emoji: emoji.trim(),
@@ -2024,10 +2055,37 @@ export async function registerRoutes(
         rarity: rarity || "common",
         conditionType,
         threshold: threshold || 1,
+        approvalStatus,
         createdBy: req.user!.id,
       });
 
-      res.json(achievement);
+      res.json({ ...achievement, message: approvalStatus === "pending" ? "Achievement submitted for approval" : "Achievement created" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Approve achievement (Owner only)
+  app.post("/api/admin/achievements/:id/approve", isOwner, async (req, res) => {
+    try {
+      const achievement = await storage.approveAchievement(req.params.id);
+      if (!achievement) {
+        return res.status(404).json({ message: "Achievement not found" });
+      }
+      res.json({ ...achievement, message: "Achievement approved and now active" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Reject achievement (Owner only)
+  app.post("/api/admin/achievements/:id/reject", isOwner, async (req, res) => {
+    try {
+      const achievement = await storage.rejectAchievement(req.params.id);
+      if (!achievement) {
+        return res.status(404).json({ message: "Achievement not found" });
+      }
+      res.json({ ...achievement, message: "Achievement rejected" });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -2089,13 +2147,13 @@ export async function registerRoutes(
 
   // Debug log routes (admin or owner)
   const isAdminOrOwner: typeof isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated() && (req.user?.isAdmin || req.user?.isOwner)) {
+    if (req.isAuthenticated() && (req.user?.isAdmin || req.user?.isAdminPlus || req.user?.isOwner)) {
       return next();
     }
     return res.status(403).json({ message: "Admin or owner access required" });
   };
 
-  app.get("/api/admin/debug-logs", isAdminOrOwner, async (req, res) => {
+  app.get("/api/admin/debug-logs", isAdminPlusOrOwner, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 100;
       const action = req.query.action as string | undefined;

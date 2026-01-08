@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power } from "lucide-react";
+import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -316,7 +316,56 @@ export default function Admin() {
       if (!res.ok) throw new Error('Failed to fetch custom achievements');
       return res.json();
     },
+    enabled: !!(currentUser?.isOwner || currentUser?.isAdminPlus),
+  });
+
+  // Pending achievements for approval (owner only)
+  const { data: pendingAchievements = [], isLoading: isLoadingPendingAchievements } = useQuery<any[]>({
+    queryKey: ['admin', 'achievements', 'pending'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/achievements/pending', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch pending achievements');
+      return res.json();
+    },
     enabled: !!currentUser?.isOwner,
+  });
+
+  const approveAchievementMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/achievements/${id}/approve`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to approve achievement');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'achievements', 'custom'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'achievements', 'pending'] });
+      toast({ title: "Achievement approved and now active" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const rejectAchievementMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/achievements/${id}/reject`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to reject achievement');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'achievements', 'custom'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'achievements', 'pending'] });
+      toast({ title: "Achievement rejected" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
   });
 
   const createAchievementMutation = useMutation({
@@ -330,15 +379,16 @@ export default function Admin() {
       if (!res.ok) throw new Error('Failed to create achievement');
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'achievements', 'custom'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'achievements', 'pending'] });
       setNewAchievementName("");
       setNewAchievementEmoji("");
       setNewAchievementDescription("");
       setNewAchievementRarity("common");
       setNewAchievementCondition("bars_posted");
       setNewAchievementThreshold(1);
-      toast({ title: "Achievement created" });
+      toast({ title: data.message || (currentUser?.isOwner ? "Achievement created" : "Submitted for approval") });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -531,7 +581,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="moderation" className="w-full">
-          <TabsList className={`grid w-full mb-6 ${currentUser?.isOwner ? 'grid-cols-8' : 'grid-cols-7'}`}>
+          <TabsList className={`grid w-full mb-6 ${(currentUser?.isOwner || currentUser?.isAdminPlus) ? 'grid-cols-9' : 'grid-cols-7'}`}>
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
@@ -580,13 +630,13 @@ export default function Admin() {
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Bars</span>
             </TabsTrigger>
-            {currentUser?.isOwner && (
+            {(currentUser?.isOwner || currentUser?.isAdminPlus) && (
               <TabsTrigger value="achievements" className="gap-1 text-xs px-2">
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Badges</span>
               </TabsTrigger>
             )}
-            {currentUser?.isOwner && (
+            {(currentUser?.isOwner || currentUser?.isAdminPlus) && (
               <TabsTrigger value="debug" className="gap-1 text-xs px-2">
                 <AlertTriangle className="h-4 w-4" />
                 <span className="hidden sm:inline">Logs</span>
@@ -1191,13 +1241,13 @@ export default function Admin() {
             </Card>
           </TabsContent>
 
-          {currentUser?.isOwner && (
+          {(currentUser?.isOwner || currentUser?.isAdminPlus) && (
             <TabsContent value="achievements">
               <Card className="border-border bg-card/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-yellow-500" />
-                    Custom Achievements (Owner Only)
+                    {currentUser?.isOwner ? "Custom Achievements" : "Submit Achievement Ideas"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -1298,12 +1348,113 @@ export default function Admin() {
                       className="w-full"
                       data-testid="button-create-achievement"
                     >
-                      {createAchievementMutation.isPending ? "Creating..." : "Create Achievement"}
+                      {createAchievementMutation.isPending 
+                        ? (currentUser?.isOwner ? "Creating..." : "Submitting...") 
+                        : (currentUser?.isOwner ? "Create Achievement" : "Submit for Approval")}
                     </Button>
+                    {!currentUser?.isOwner && (
+                      <p className="text-xs text-muted-foreground mt-2 text-center">
+                        Your achievement will be reviewed by the site owner before going live.
+                      </p>
+                    )}
                   </div>
 
+                  {!currentUser?.isOwner && currentUser?.isAdminPlus && (
+                    <div className="border border-blue-500/30 bg-blue-500/10 rounded-lg p-4 space-y-3">
+                      <h3 className="font-semibold flex items-center gap-2 text-blue-400">
+                        <Clock className="h-4 w-4" />
+                        Your Pending Submissions
+                      </h3>
+                      {customAchievements.filter((a: any) => a.approvalStatus === 'pending').length === 0 ? (
+                        <p className="text-muted-foreground text-sm">No pending submissions.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {customAchievements.filter((a: any) => a.approvalStatus === 'pending').map((achievement: any) => (
+                            <div
+                              key={achievement.id}
+                              className="flex items-center gap-3 border border-border rounded-lg p-3 bg-card"
+                            >
+                              <span className="text-2xl">{achievement.emoji}</span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{achievement.name}</span>
+                                  <Badge variant="outline" className={rarityColors[achievement.rarity] || "text-gray-400"}>
+                                    {achievement.rarity}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-orange-400 border-orange-400">
+                                    Awaiting Approval
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {currentUser?.isOwner && pendingAchievements.length > 0 && (
+                    <div className="border border-orange-500/50 bg-orange-500/10 rounded-lg p-4 space-y-4">
+                      <h3 className="font-semibold flex items-center gap-2 text-orange-400">
+                        <Clock className="h-4 w-4" />
+                        Pending Approval ({pendingAchievements.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {pendingAchievements.map((achievement: any) => (
+                          <div
+                            key={achievement.id}
+                            className="flex items-center justify-between border border-border rounded-lg p-3 bg-card"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">{achievement.emoji}</span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{achievement.name}</span>
+                                  <Badge variant="outline" className={rarityColors[achievement.rarity] || "text-gray-400"}>
+                                    {achievement.rarity}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-orange-400 border-orange-400">
+                                    Pending
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {conditionOptions.find(o => o.value === achievement.conditionType)?.label} ({achievement.threshold})
+                                  {achievement.createdBy && ` • Submitted by Admin+`}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => approveAchievementMutation.mutate(achievement.id)}
+                                className="text-green-500 hover:bg-green-500/10"
+                                title="Approve"
+                                data-testid={`button-approve-achievement-${achievement.id}`}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => rejectAchievementMutation.mutate(achievement.id)}
+                                className="text-destructive hover:bg-destructive/10"
+                                title="Reject"
+                                data-testid={`button-reject-achievement-${achievement.id}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-3">
-                    <h3 className="font-semibold">Existing Custom Achievements ({customAchievements.length})</h3>
+                    <h3 className="font-semibold">Existing Custom Achievements ({customAchievements.filter((a: any) => a.approvalStatus === 'approved').length})</h3>
                     {isLoadingAchievements ? (
                       <p className="text-muted-foreground">Loading...</p>
                     ) : customAchievements.length === 0 ? (

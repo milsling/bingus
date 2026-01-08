@@ -23,6 +23,7 @@ export const users = pgTable("users", {
   membershipTier: text("membership_tier").notNull().default("free"),
   membershipExpiresAt: timestamp("membership_expires_at"),
   isAdmin: boolean("is_admin").notNull().default(false),
+  isAdminPlus: boolean("is_admin_plus").notNull().default(false),
   isOwner: boolean("is_owner").notNull().default(false),
   usernameChangedAt: timestamp("username_changed_at"),
   onlineStatus: text("online_status").notNull().default("offline"),
@@ -343,6 +344,8 @@ export const achievementConditionTypes = [
 
 export type AchievementConditionType = typeof achievementConditionTypes[number];
 
+export const achievementApprovalStatusOptions = ["pending", "approved", "rejected"] as const;
+
 export const customAchievements = pgTable("custom_achievements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -352,6 +355,7 @@ export const customAchievements = pgTable("custom_achievements", {
   conditionType: text("condition_type").notNull(),
   threshold: integer("threshold").notNull().default(1),
   isActive: boolean("is_active").notNull().default(true),
+  approvalStatus: text("approval_status").notNull().default("approved"), // pending, approved, rejected
   createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
