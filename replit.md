@@ -144,6 +144,22 @@ Preferred communication style: Simple, everyday language.
 - **Viral**: Get 100 likes on a single bar
 - **Immortal**: Get 500 likes on a single bar
 
+### Custom Achievement Maker
+- **Admin Panel**: Site owner and admins can create custom achievements via `/admin`
+- **Simple Mode**: Single condition with threshold (e.g., "Post 50 bars")
+- **Advanced Mode**: Combine multiple conditions with AND/OR logic
+- **Condition Types**: bars_posted, likes_received, followers_count, single_bar_likes, comments_made, bars_adopted, night_owl, early_bird, controversial_bar, bars_with_keyword
+- **Keyword-Based**: The `bars_with_keyword` condition allows achievements like "Post 25 bars containing 'Christmas'"
+- **Self-Like Exclusion**: All like-based calculations exclude self-likes to prevent boosting
+- **Rule Tree Storage**: Compound conditions stored as JSONB in `customAchievements.ruleTree`
+- **Approval Workflow**: Admin-created achievements require site owner approval before going live
+
+### Rule Tree Structure
+- **Condition Node**: `{type: "condition", metric: string, comparator: string, value: number, keyword?: string}`
+- **Group Node**: `{type: "group", operator: "AND" | "OR", children: AchievementRuleTree[]}`
+- **Comparators**: `>=`, `>`, `=`, `<`, `<=`
+- **Boolean Metrics**: Coerced to 0/1 for numeric comparison (e.g., night_owl >= 1)
+
 ## Proof-of-Origin System
 
 ### Immutable Bar Tracking
