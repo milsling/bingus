@@ -222,3 +222,67 @@
 html.dark {
   color-scheme: dark;
 }
+
+/* Badge rarity animations */
+@keyframes badge-glow-common {
+  0%, 100% { box-shadow: 0 0 4px 1px rgba(156, 163, 175, 0.4); }
+  50% { box-shadow: 0 0 8px 2px rgba(156, 163, 175, 0.6); }
+}
+
+@keyframes badge-glow-rare {
+  0%, 100% { box-shadow: 0 0 6px 2px rgba(59, 130, 246, 0.5); }
+  50% { box-shadow: 0 0 12px 4px rgba(59, 130, 246, 0.8); }
+}
+
+@keyframes badge-glow-epic {
+  0%, 100% { box-shadow: 0 0 8px 3px rgba(168, 85, 247, 0.6); }
+  50% { box-shadow: 0 0 16px 6px rgba(168, 85, 247, 0.9); }
+}
+
+@keyframes badge-rainbow-shimmer {
+  0% { 
+    box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.8);
+    border-color: rgba(239, 68, 68, 0.8);
+  }
+  16% { 
+    box-shadow: 0 0 12px 4px rgba(249, 115, 22, 0.8);
+    border-color: rgba(249, 115, 22, 0.8);
+  }
+  33% { 
+    box-shadow: 0 0 12px 4px rgba(234, 179, 8, 0.8);
+    border-color: rgba(234, 179, 8, 0.8);
+  }
+  50% { 
+    box-shadow: 0 0 12px 4px rgba(34, 197, 94, 0.8);
+    border-color: rgba(34, 197, 94, 0.8);
+  }
+  66% { 
+    box-shadow: 0 0 12px 4px rgba(59, 130, 246, 0.8);
+    border-color: rgba(59, 130, 246, 0.8);
+  }
+  83% { 
+    box-shadow: 0 0 12px 4px rgba(168, 85, 247, 0.8);
+    border-color: rgba(168, 85, 247, 0.8);
+  }
+  100% { 
+    box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.8);
+    border-color: rgba(239, 68, 68, 0.8);
+  }
+}
+
+.badge-common {
+  animation: badge-glow-common 2s ease-in-out infinite;
+}
+
+.badge-rare {
+  animation: badge-glow-rare 1.5s ease-in-out infinite;
+}
+
+.badge-epic {
+  animation: badge-glow-epic 1.2s ease-in-out infinite;
+}
+
+.badge-legendary {
+  animation: badge-rainbow-shimmer 3s linear infinite;
+  border: 2px solid transparent;
+}

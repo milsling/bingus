@@ -28,6 +28,7 @@ export const users = pgTable("users", {
   onlineStatus: text("online_status").notNull().default("offline"),
   lastSeenAt: timestamp("last_seen_at"),
   messagePrivacy: text("message_privacy").notNull().default("friends_only"),
+  displayedBadges: text("displayed_badges").array(),
 });
 
 export const verificationCodes = pgTable("verification_codes", {
@@ -322,17 +323,19 @@ export const flaggedPhrasesRelations = relations(flaggedPhrases, ({ one }) => ({
   creator: one(users, { fields: [flaggedPhrases.createdBy], references: [users.id] }),
 }));
 
+export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
+
 export const ACHIEVEMENTS = {
-  first_bar: { name: "Origin Founder", emoji: "🔥", description: "Posted your first bar", threshold: { barsMinted: 1 } },
-  bar_slinger: { name: "Bar Slinger", emoji: "💀", description: "Posted 10 bars", threshold: { barsMinted: 10 } },
-  bar_lord: { name: "Bar Lord", emoji: "👑", description: "Posted 50 bars", threshold: { barsMinted: 50 } },
-  crowd_pleaser: { name: "Crowd Pleaser", emoji: "🎤", description: "Received 100 total likes", threshold: { likesReceived: 100 } },
-  cult_leader: { name: "Cult Leader", emoji: "🪖", description: "Gained 50 followers", threshold: { followers: 50 } },
-  immortal_bar: { name: "Immortal", emoji: "🌹", description: "One bar reached 500 likes", threshold: { topBarLikes: 500 } },
-  milsling_legacy: { name: "Milsling Heir", emoji: "⚔️", description: "Received 1000 total likes", threshold: { likesReceived: 1000 } },
-  wordsmith: { name: "Wordsmith", emoji: "✍️", description: "Posted 25 bars", threshold: { barsMinted: 25 } },
-  rising_star: { name: "Rising Star", emoji: "⭐", description: "Gained 10 followers", threshold: { followers: 10 } },
-  viral: { name: "Viral", emoji: "🔥", description: "One bar reached 100 likes", threshold: { topBarLikes: 100 } },
+  first_bar: { name: "Origin Founder", emoji: "🔥", description: "Posted your first bar", threshold: { barsMinted: 1 }, rarity: "common" as AchievementRarity },
+  bar_slinger: { name: "Bar Slinger", emoji: "💀", description: "Posted 10 bars", threshold: { barsMinted: 10 }, rarity: "rare" as AchievementRarity },
+  bar_lord: { name: "Bar Lord", emoji: "👑", description: "Posted 50 bars", threshold: { barsMinted: 50 }, rarity: "epic" as AchievementRarity },
+  crowd_pleaser: { name: "Crowd Pleaser", emoji: "🎤", description: "Received 100 total likes", threshold: { likesReceived: 100 }, rarity: "rare" as AchievementRarity },
+  cult_leader: { name: "Cult Leader", emoji: "🪖", description: "Gained 50 followers", threshold: { followers: 50 }, rarity: "epic" as AchievementRarity },
+  immortal_bar: { name: "Immortal", emoji: "🌹", description: "One bar reached 500 likes", threshold: { topBarLikes: 500 }, rarity: "legendary" as AchievementRarity },
+  milsling_legacy: { name: "Milsling Heir", emoji: "⚔️", description: "Received 1000 total likes", threshold: { likesReceived: 1000 }, rarity: "legendary" as AchievementRarity },
+  wordsmith: { name: "Wordsmith", emoji: "✍️", description: "Posted 25 bars", threshold: { barsMinted: 25 }, rarity: "rare" as AchievementRarity },
+  rising_star: { name: "Rising Star", emoji: "⭐", description: "Gained 10 followers", threshold: { followers: 10 }, rarity: "common" as AchievementRarity },
+  viral: { name: "Viral", emoji: "🔥", description: "One bar reached 100 likes", threshold: { topBarLikes: 100 }, rarity: "rare" as AchievementRarity },
 } as const;
 
 export type AchievementId = keyof typeof ACHIEVEMENTS;
