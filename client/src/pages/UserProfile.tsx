@@ -247,12 +247,21 @@ export default function UserProfile() {
           )}
           <div className="p-4 md:p-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-            <Avatar className={`h-20 w-20 shrink-0 ${user.bannerUrl ? '-mt-12 border-4 border-card' : ''}`}>
-              <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="text-2xl">
-                {user.username.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative shrink-0">
+              <Avatar className={`h-20 w-20 ${user.bannerUrl ? '-mt-12 border-4 border-card' : ''}`}>
+                <AvatarImage src={user.avatarUrl || undefined} />
+                <AvatarFallback className="text-2xl">
+                  {user.username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {user.isOwner && (
+                <img 
+                  src="https://as2.ftcdn.net/jpg/11/81/07/69/1000_F_1181076937_61xtMn8A8yu3s1deYQLfUuaNlejIm5yn.webp"
+                  alt="Owner crown"
+                  className="absolute -top-3 -right-1 w-8 h-8 rotate-[25deg] drop-shadow-lg pointer-events-none"
+                />
+              )}
+            </div>
             <div className="flex-1 min-w-0 text-center sm:text-left w-full">
               <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                 <h1 className="text-xl md:text-2xl font-bold" data-testid="text-username">

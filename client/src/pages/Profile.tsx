@@ -106,10 +106,19 @@ export default function Profile() {
           
           <div className="px-4 md:px-8 -mt-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
-              <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-xl">
-                <AvatarImage src={currentUser.avatarUrl || undefined} />
-                <AvatarFallback>{currentUser.username[0].toUpperCase()}</AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-xl">
+                  <AvatarImage src={currentUser.avatarUrl || undefined} />
+                  <AvatarFallback>{currentUser.username[0].toUpperCase()}</AvatarFallback>
+                </Avatar>
+                {currentUser.isOwner && (
+                  <img 
+                    src="https://as2.ftcdn.net/jpg/11/81/07/69/1000_F_1181076937_61xtMn8A8yu3s1deYQLfUuaNlejIm5yn.webp"
+                    alt="Owner crown"
+                    className="absolute -top-4 -right-2 md:-top-5 md:-right-3 w-10 h-10 md:w-14 md:h-14 rotate-[25deg] drop-shadow-lg pointer-events-none"
+                  />
+                )}
+              </div>
               
               <div className="mb-2">
                 <h1 className="text-2xl md:text-3xl font-display font-bold flex items-center gap-2 flex-wrap">
