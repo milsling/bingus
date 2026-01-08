@@ -2,7 +2,7 @@ import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import BarCard from "@/components/BarCard";
-import { Settings, Share2, MapPin, Edit } from "lucide-react";
+import { Settings, Share2, MapPin, Edit, Trophy } from "lucide-react";
 import { ACHIEVEMENTS, type AchievementId, type AchievementRarity } from "@shared/schema";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { shareContent, getProfileShareData } from "@/lib/share";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 
 export default function Profile() {
   const { bars, currentUser, logout } = useBars();
@@ -26,6 +27,31 @@ export default function Profile() {
     staleTime: 30000,
     refetchOnWindowFocus: false,
   });
+
+  const { data: totalAchievements } = useQuery<{ total: number; builtIn: number; custom: number }>({
+    queryKey: ["achievements-total"],
+    queryFn: async () => {
+      const res = await fetch("/api/achievements/total", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch total achievements");
+      return res.json();
+    },
+    staleTime: 60000,
+  });
+
+  const { data: userAchievements = [] } = useQuery<any[]>({
+    queryKey: ["user-achievements", currentUser?.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/users/${currentUser!.id}/achievements`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch user achievements");
+      return res.json();
+    },
+    enabled: !!currentUser,
+    staleTime: 30000,
+  });
+
+  const earnedCount = userAchievements.length;
+  const totalCount = totalAchievements?.total || Object.keys(ACHIEVEMENTS).length;
+  const progressPercentage = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
 
   const handleShare = async () => {
     if (!currentUser) return;
@@ -164,6 +190,23 @@ export default function Profile() {
               </div>
             </div>
           )}
+
+          {/* Achievement Progress */}
+          <Link href="/badges" className="block">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border hover:bg-card/80 transition-colors cursor-pointer" data-testid="achievement-progress">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium">Achievements</span>
+                  <span className="text-sm text-muted-foreground">
+                    {earnedCount} / {totalCount}
+                  </span>
+                </div>
+                <Progress value={progressPercentage} className="h-2" />
+              </div>
+              <span className="text-xs text-muted-foreground">{progressPercentage}%</span>
+            </div>
+          </Link>
 
           {/* Displayed Badges */}
           <div className="flex flex-wrap gap-2 items-center">

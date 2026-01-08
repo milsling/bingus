@@ -1187,6 +1187,22 @@ export async function registerRoutes(
     }
   });
 
+  // Get total achievements count (built-in + active custom)
+  app.get("/api/achievements/total", async (_req, res) => {
+    try {
+      const builtInCount = Object.keys(ACHIEVEMENTS).length;
+      const customAchievements = await storage.getActiveCustomAchievements();
+      const totalCount = builtInCount + customAchievements.length;
+      res.json({ 
+        total: totalCount, 
+        builtIn: builtInCount, 
+        custom: customAchievements.length 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Update displayed badges
   app.patch("/api/user/displayed-badges", isAuthenticated, async (req, res) => {
     try {
