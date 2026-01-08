@@ -258,7 +258,7 @@ export default function UserProfile() {
                 <img 
                   src="/owner-crown.png"
                   alt="Owner crown"
-                  className="absolute -top-6 left-1/2 -translate-x-[calc(50%+12px)] w-18 h-12 rotate-[-8deg] drop-shadow-lg pointer-events-none z-10"
+                  className="absolute -top-[26px] left-1/2 -translate-x-[calc(50%+10px)] w-18 h-12 rotate-[-8deg] drop-shadow-lg pointer-events-none z-10"
                 />
               )}
             </div>
