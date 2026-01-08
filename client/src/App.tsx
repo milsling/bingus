@@ -21,6 +21,7 @@ import Guidelines from "@/pages/Guidelines";
 import Orphanage from "@/pages/Orphanage";
 import Terms from "@/pages/Terms";
 import Achievements from "@/pages/Achievements";
+import Badges from "@/pages/Badges";
 import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
@@ -57,6 +58,7 @@ function Router() {
           <Route path="/orphanage" component={Orphanage} />
           <Route path="/terms" component={Terms} />
           <Route path="/achievements" component={Achievements} />
+          <Route path="/badges" component={Badges} />
           <Route path="/discover" component={Home} />
           <Route path="/bars/:id" component={BarDetail} />
           <Route path="/u/:username">

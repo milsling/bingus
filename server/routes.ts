@@ -1086,6 +1086,33 @@ export async function registerRoutes(
     }
   });
 
+  // Update displayed badges
+  app.patch("/api/user/displayed-badges", isAuthenticated, async (req, res) => {
+    try {
+      const { displayedBadges } = req.body;
+      if (!Array.isArray(displayedBadges)) {
+        return res.status(400).json({ message: "displayedBadges must be an array" });
+      }
+      if (displayedBadges.length > 5) {
+        return res.status(400).json({ message: "Maximum 5 badges can be displayed" });
+      }
+      // Verify all badges are valid achievement IDs
+      for (const badgeId of displayedBadges) {
+        if (!ACHIEVEMENTS[badgeId as keyof typeof ACHIEVEMENTS]) {
+          return res.status(400).json({ message: `Invalid badge ID: ${badgeId}` });
+        }
+      }
+      const user = await storage.updateUser(req.user!.id, { displayedBadges });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Notification routes
   app.get("/api/notifications", isAuthenticated, async (req, res) => {
     try {
