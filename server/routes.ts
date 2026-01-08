@@ -848,7 +848,15 @@ export async function registerRoutes(
       const liked = await storage.toggleLike(req.user!.id, req.params.id);
       const count = await storage.getLikeCount(req.params.id);
       
+      // Verify the like was actually saved
+      const verified = await storage.hasUserLiked(req.user!.id, req.params.id);
+      if (liked !== verified) {
+        console.error(`[LIKE] Verification mismatch! toggleLike returned ${liked} but hasUserLiked returned ${verified}`);
+        logDetails.verificationMismatch = true;
+      }
+      
       logDetails.liked = liked;
+      logDetails.verified = verified;
       logDetails.newLikeCount = count;
       logDetails.duration = Date.now() - startTime;
       
