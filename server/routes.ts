@@ -625,6 +625,27 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/users/:id/likes", async (req, res) => {
+    try {
+      const bars = await storage.getUserLikes(req.params.id);
+      
+      const userId = req.isAuthenticated() ? req.user!.id : null;
+      const barsWithEngagement = await Promise.all(
+        bars.map(async (bar) => {
+          const likeCount = await storage.getLikeCount(bar.id);
+          const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
+          return { ...bar, likeCount, liked, dislikeCount, disliked };
+        })
+      );
+      
+      res.json(barsWithEngagement);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.post("/api/bars/:id/feature", isAuthenticated, async (req, res) => {
     try {
       const user = await storage.getUser(req.user!.id);

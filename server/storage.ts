@@ -137,6 +137,7 @@ export interface IStorage {
   getUserAchievements(userId: string): Promise<UserAchievement[]>;
   unlockAchievement(userId: string, achievementId: AchievementId): Promise<UserAchievement | null>;
   checkAndUnlockAchievements(userId: string): Promise<AchievementId[]>;
+  getUserLikes(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
   
   // Report methods
   createReport(data: { reporterId: string; barId?: string; commentId?: string; userId?: string; reason: string; details?: string }): Promise<Report>;
@@ -793,6 +794,36 @@ export class DatabaseStorage implements IStorage {
   async hasUserBookmarked(userId: string, barId: string): Promise<boolean> {
     const [existing] = await db.select().from(bookmarks).where(and(eq(bookmarks.userId, userId), eq(bookmarks.barId, barId)));
     return !!existing;
+  }
+
+  async getUserLikes(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>> {
+    const result = await db
+      .select({
+        bar: bars,
+        user: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          location: users.location,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+          membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
+          isOwner: users.isOwner,
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+      })
+      .from(likes)
+      .innerJoin(bars, eq(likes.barId, bars.id))
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(and(eq(likes.userId, userId), sql`${bars.deletedAt} IS NULL`))
+      .orderBy(desc(likes.createdAt));
+
+    return result.map(row => ({
+      ...row.bar,
+      user: row.user as any,
+      commentCount: Number(row.commentCount) || 0,
+    }));
   }
 
   async getUserBookmarks(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>> {

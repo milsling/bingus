@@ -78,6 +78,26 @@ export default function Profile() {
     return null;
   }
 
+  const { data: likedBars = [] } = useQuery<any[]>({
+    queryKey: ["liked-bars", currentUser?.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/users/${currentUser!.id}/likes`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch liked bars");
+      return res.json();
+    },
+    enabled: !!currentUser,
+  });
+
+  const { data: savedBars = [] } = useQuery<any[]>({
+    queryKey: ["bookmarks"],
+    queryFn: async () => {
+      const res = await fetch("/api/bars/bookmarks", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch saved bars");
+      return res.json();
+    },
+    enabled: !!currentUser,
+  });
+
   const userBars = bars.filter(bar => bar.userId === currentUser.id);
 
   const handleLogout = () => {
@@ -294,12 +314,28 @@ export default function Profile() {
               ))}
             </TabsContent>
             
-            <TabsContent value="likes" className="py-12 text-center text-muted-foreground">
-              No liked bars yet.
+            <TabsContent value="likes" className="py-6 space-y-6">
+              {likedBars.length > 0 ? (
+                likedBars.map(bar => (
+                  <BarCard key={bar.id} bar={bar} />
+                ))
+              ) : (
+                <div className="py-12 text-center text-muted-foreground">
+                  No liked bars yet.
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="saved" className="py-12 text-center text-muted-foreground">
-              No saved bars yet.
+            <TabsContent value="saved" className="py-6 space-y-6">
+              {savedBars.length > 0 ? (
+                savedBars.map(bar => (
+                  <BarCard key={bar.id} bar={bar} />
+                ))
+              ) : (
+                <div className="py-12 text-center text-muted-foreground">
+                  No saved bars yet.
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
