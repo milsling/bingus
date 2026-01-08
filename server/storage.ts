@@ -1,7 +1,95 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type DebugLog, type InsertDebugLog } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
+
+// User metrics cache for evaluating compound achievements
+export interface UserMetrics {
+  bars_posted: number;
+  likes_received: number;
+  followers_count: number;
+  following_count: number;
+  single_bar_likes: number;
+  single_bar_comments: number;
+  single_bar_bookmarks: number;
+  comments_made: number;
+  bars_adopted: number;
+  controversial_bar: boolean;
+  night_owl: boolean;
+  early_bird: boolean;
+  bars_with_keyword: number; // Dynamic - needs keyword context
+}
+
+// Context for evaluating conditions that need additional data (like keywords)
+export interface EvaluationContext {
+  metrics: UserMetrics;
+  keywordCounts: Map<string, number>; // keyword -> count of bars containing it
+}
+
+// Evaluate a single condition against user metrics
+function evaluateCondition(condition: AchievementCondition, context: EvaluationContext): boolean {
+  const value = condition.value;
+  
+  // Handle keyword-based metric specially
+  if (condition.metric === 'bars_with_keyword' && condition.keyword) {
+    const keyword = condition.keyword.toLowerCase();
+    const count = context.keywordCounts.get(keyword) || 0;
+    return evaluateNumeric(count, condition.comparator, value);
+  }
+  
+  const metricValue = context.metrics[condition.metric as keyof UserMetrics];
+  
+  // Handle boolean metrics (night_owl, early_bird, controversial_bar)
+  if (typeof metricValue === 'boolean') {
+    if (condition.comparator === '=' || condition.comparator === '>=') {
+      return metricValue === (value >= 1);
+    }
+    return metricValue;
+  }
+  
+  return evaluateNumeric(metricValue as number, condition.comparator, value);
+}
+
+function evaluateNumeric(numericValue: number, comparator: string, value: number): boolean {
+  switch (comparator) {
+    case '>=': return numericValue >= value;
+    case '>': return numericValue > value;
+    case '=': return numericValue === value;
+    case '<': return numericValue < value;
+    case '<=': return numericValue <= value;
+    default: return false;
+  }
+}
+
+// Recursively evaluate a rule tree
+export function evaluateRuleTree(ruleTree: AchievementRuleTree, context: EvaluationContext): boolean {
+  if (ruleTree.type === 'condition') {
+    return evaluateCondition(ruleTree as AchievementCondition, context);
+  }
+  
+  const group = ruleTree as AchievementRuleGroup;
+  if (group.children.length === 0) return false;
+  
+  if (group.operator === 'AND') {
+    return group.children.every(child => evaluateRuleTree(child, context));
+  } else {
+    return group.children.some(child => evaluateRuleTree(child, context));
+  }
+}
+
+// Extract all keywords needed from a rule tree
+export function extractKeywordsFromRuleTree(ruleTree: AchievementRuleTree): string[] {
+  if (ruleTree.type === 'condition') {
+    const condition = ruleTree as AchievementCondition;
+    if (condition.metric === 'bars_with_keyword' && condition.keyword) {
+      return [condition.keyword.toLowerCase()];
+    }
+    return [];
+  }
+  
+  const group = ruleTree as AchievementRuleGroup;
+  return group.children.flatMap(child => extractKeywordsFromRuleTree(child));
+}
 
 export interface IStorage {
   // User methods
@@ -1665,127 +1753,242 @@ export class DatabaseStorage implements IStorage {
     return true;
   }
 
+  // Get all user metrics for rule tree evaluation
+  async getUserMetricsForAchievements(userId: string): Promise<UserMetrics> {
+    const stats = await this.getUserStats(userId);
+    const followingCount = await this.getFollowingCount(userId);
+    
+    // Get top bar comments count
+    const userBars = await db.select({ id: bars.id }).from(bars).where(eq(bars.userId, userId));
+    let topBarComments = 0;
+    for (const bar of userBars) {
+      const count = await this.getCommentCount(bar.id);
+      if (count > topBarComments) topBarComments = count;
+    }
+    
+    // Get top bar bookmarks count
+    const [bookmarkResult] = await db
+      .select({ count: count() })
+      .from(bookmarks)
+      .innerJoin(bars, eq(bookmarks.barId, bars.id))
+      .where(eq(bars.userId, userId))
+      .groupBy(bookmarks.barId)
+      .orderBy(desc(count()))
+      .limit(1);
+    
+    // Get comments made count
+    const [commentsMade] = await db
+      .select({ count: count() })
+      .from(comments)
+      .where(eq(comments.userId, userId));
+    
+    // Get bars adopted count
+    const [barsAdopted] = await db
+      .select({ count: count() })
+      .from(barUsages)
+      .where(eq(barUsages.userId, userId));
+    
+    // Check controversial bar
+    let hasControversialBar = false;
+    for (const bar of userBars) {
+      const likeCount = await this.getLikeCount(bar.id);
+      const dislikeCount = await this.getDislikeCount(bar.id);
+      if (dislikeCount > likeCount && (likeCount + dislikeCount) >= 5) {
+        hasControversialBar = true;
+        break;
+      }
+    }
+    
+    // Check night owl
+    const nightBars = await db
+      .select({ id: bars.id })
+      .from(bars)
+      .where(and(
+        eq(bars.userId, userId),
+        sql`EXTRACT(HOUR FROM ${bars.createdAt}) >= 0 AND EXTRACT(HOUR FROM ${bars.createdAt}) < 5`
+      ))
+      .limit(1);
+    
+    // Check early bird
+    const earlyBars = await db
+      .select({ id: bars.id })
+      .from(bars)
+      .where(and(
+        eq(bars.userId, userId),
+        sql`EXTRACT(HOUR FROM ${bars.createdAt}) >= 5 AND EXTRACT(HOUR FROM ${bars.createdAt}) < 8`
+      ))
+      .limit(1);
+    
+    return {
+      bars_posted: stats.barsMinted,
+      likes_received: stats.likesReceived,
+      followers_count: stats.followers,
+      following_count: followingCount,
+      single_bar_likes: stats.topBarLikes,
+      single_bar_comments: topBarComments,
+      single_bar_bookmarks: bookmarkResult?.count || 0,
+      comments_made: commentsMade?.count || 0,
+      bars_adopted: barsAdopted?.count || 0,
+      controversial_bar: hasControversialBar,
+      night_owl: nightBars.length > 0,
+      early_bird: earlyBars.length > 0,
+      bars_with_keyword: 0, // Handled dynamically via keywordCounts
+    };
+  }
+  
+  // Count bars containing a specific keyword
+  async countBarsWithKeyword(userId: string, keyword: string): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(bars)
+      .where(and(
+        eq(bars.userId, userId),
+        ilike(bars.content, `%${keyword}%`)
+      ));
+    return result?.count || 0;
+  }
+
   async checkCustomAchievements(userId: string): Promise<string[]> {
     const unlockedIds: string[] = [];
     const activeAchievements = await this.getActiveCustomAchievements();
     const existingAchievements = await this.getUserAchievements(userId);
     const existingIds = new Set(existingAchievements.map(a => a.achievementId));
+    
+    // Pre-fetch user metrics once for efficiency
+    let userMetrics: UserMetrics | null = null;
 
     for (const achievement of activeAchievements) {
       const customId = `custom_${achievement.id}`;
       if (existingIds.has(customId)) continue;
 
-      const condition = achievement.conditionType;
-      const threshold = achievement.threshold;
       let meetsCondition = false;
+      
+      // Check if this achievement uses advanced rule tree
+      if (achievement.ruleTree) {
+        const ruleTree = achievement.ruleTree as AchievementRuleTree;
+        
+        // Lazy load metrics
+        if (!userMetrics) {
+          userMetrics = await this.getUserMetricsForAchievements(userId);
+        }
+        
+        // Extract and count keywords needed for this achievement
+        const keywords = extractKeywordsFromRuleTree(ruleTree);
+        const keywordCounts = new Map<string, number>();
+        for (const keyword of keywords) {
+          if (!keywordCounts.has(keyword)) {
+            keywordCounts.set(keyword, await this.countBarsWithKeyword(userId, keyword));
+          }
+        }
+        
+        const context: EvaluationContext = { metrics: userMetrics, keywordCounts };
+        meetsCondition = evaluateRuleTree(ruleTree, context);
+      } else {
+        // Legacy single-condition check
+        const condition = achievement.conditionType;
+        const threshold = achievement.threshold;
 
-      switch (condition) {
-        case "bars_posted": {
-          const stats = await this.getUserStats(userId);
-          meetsCondition = stats.barsMinted >= threshold;
-          break;
-        }
-        case "likes_received": {
-          const stats = await this.getUserStats(userId);
-          meetsCondition = stats.likesReceived >= threshold;
-          break;
-        }
-        case "followers_count": {
-          const stats = await this.getUserStats(userId);
-          meetsCondition = stats.followers >= threshold;
-          break;
-        }
-        case "following_count": {
-          const followingCount = await this.getFollowingCount(userId);
-          meetsCondition = followingCount >= threshold;
-          break;
-        }
-        case "single_bar_likes": {
-          const stats = await this.getUserStats(userId);
-          meetsCondition = stats.topBarLikes >= threshold;
-          break;
-        }
-        case "single_bar_comments": {
-          const userBars = await db.select({ id: bars.id }).from(bars).where(eq(bars.userId, userId));
-          for (const bar of userBars) {
-            const commentCount = await this.getCommentCount(bar.id);
-            if (commentCount >= threshold) {
-              meetsCondition = true;
-              break;
-            }
+        switch (condition) {
+          case "bars_posted": {
+            const stats = await this.getUserStats(userId);
+            meetsCondition = stats.barsMinted >= threshold;
+            break;
           }
-          break;
-        }
-        case "single_bar_bookmarks": {
-          const [result] = await db
-            .select({ count: count() })
-            .from(bookmarks)
-            .innerJoin(bars, eq(bookmarks.barId, bars.id))
-            .where(eq(bars.userId, userId))
-            .groupBy(bookmarks.barId)
-            .orderBy(desc(count()))
-            .limit(1);
-          meetsCondition = (result?.count || 0) >= threshold;
-          break;
-        }
-        case "comments_made": {
-          const [result] = await db
-            .select({ count: count() })
-            .from(comments)
-            .where(eq(comments.userId, userId));
-          meetsCondition = (result?.count || 0) >= threshold;
-          break;
-        }
-        case "bars_adopted": {
-          const [result] = await db
-            .select({ count: count() })
-            .from(barUsages)
-            .where(eq(barUsages.userId, userId));
-          meetsCondition = (result?.count || 0) >= threshold;
-          break;
-        }
-        case "controversial_bar": {
-          // Find a bar with more dislikes than likes and at least threshold total reactions
-          const userBars = await db.select({ id: bars.id }).from(bars).where(eq(bars.userId, userId));
-          for (const bar of userBars) {
-            const likeCount = await this.getLikeCount(bar.id);
-            const dislikeCount = await this.getDislikeCount(bar.id);
-            if (dislikeCount > likeCount && (likeCount + dislikeCount) >= threshold) {
-              meetsCondition = true;
-              break;
-            }
+          case "likes_received": {
+            const stats = await this.getUserStats(userId);
+            meetsCondition = stats.likesReceived >= threshold;
+            break;
           }
-          break;
-        }
-        case "night_owl": {
-          // Check if user posted any bar between midnight and 5am
-          const nightBars = await db
-            .select({ id: bars.id })
-            .from(bars)
-            .where(
-              and(
+          case "followers_count": {
+            const stats = await this.getUserStats(userId);
+            meetsCondition = stats.followers >= threshold;
+            break;
+          }
+          case "following_count": {
+            const followingCount = await this.getFollowingCount(userId);
+            meetsCondition = followingCount >= threshold;
+            break;
+          }
+          case "single_bar_likes": {
+            const stats = await this.getUserStats(userId);
+            meetsCondition = stats.topBarLikes >= threshold;
+            break;
+          }
+          case "single_bar_comments": {
+            const userBars = await db.select({ id: bars.id }).from(bars).where(eq(bars.userId, userId));
+            for (const bar of userBars) {
+              const commentCount = await this.getCommentCount(bar.id);
+              if (commentCount >= threshold) {
+                meetsCondition = true;
+                break;
+              }
+            }
+            break;
+          }
+          case "single_bar_bookmarks": {
+            const [result] = await db
+              .select({ count: count() })
+              .from(bookmarks)
+              .innerJoin(bars, eq(bookmarks.barId, bars.id))
+              .where(eq(bars.userId, userId))
+              .groupBy(bookmarks.barId)
+              .orderBy(desc(count()))
+              .limit(1);
+            meetsCondition = (result?.count || 0) >= threshold;
+            break;
+          }
+          case "comments_made": {
+            const [result] = await db
+              .select({ count: count() })
+              .from(comments)
+              .where(eq(comments.userId, userId));
+            meetsCondition = (result?.count || 0) >= threshold;
+            break;
+          }
+          case "bars_adopted": {
+            const [result] = await db
+              .select({ count: count() })
+              .from(barUsages)
+              .where(eq(barUsages.userId, userId));
+            meetsCondition = (result?.count || 0) >= threshold;
+            break;
+          }
+          case "controversial_bar": {
+            const userBars = await db.select({ id: bars.id }).from(bars).where(eq(bars.userId, userId));
+            for (const bar of userBars) {
+              const likeCount = await this.getLikeCount(bar.id);
+              const dislikeCount = await this.getDislikeCount(bar.id);
+              if (dislikeCount > likeCount && (likeCount + dislikeCount) >= threshold) {
+                meetsCondition = true;
+                break;
+              }
+            }
+            break;
+          }
+          case "night_owl": {
+            const nightBars = await db
+              .select({ id: bars.id })
+              .from(bars)
+              .where(and(
                 eq(bars.userId, userId),
                 sql`EXTRACT(HOUR FROM ${bars.createdAt}) >= 0 AND EXTRACT(HOUR FROM ${bars.createdAt}) < 5`
-              )
-            )
-            .limit(1);
-          meetsCondition = nightBars.length > 0;
-          break;
-        }
-        case "early_bird": {
-          // Check if user posted any bar between 5am and 8am
-          const earlyBars = await db
-            .select({ id: bars.id })
-            .from(bars)
-            .where(
-              and(
+              ))
+              .limit(1);
+            meetsCondition = nightBars.length > 0;
+            break;
+          }
+          case "early_bird": {
+            const earlyBars = await db
+              .select({ id: bars.id })
+              .from(bars)
+              .where(and(
                 eq(bars.userId, userId),
                 sql`EXTRACT(HOUR FROM ${bars.createdAt}) >= 5 AND EXTRACT(HOUR FROM ${bars.createdAt}) < 8`
-              )
-            )
-            .limit(1);
-          meetsCondition = earlyBars.length > 0;
-          break;
+              ))
+              .limit(1);
+            meetsCondition = earlyBars.length > 0;
+            break;
+          }
         }
       }
 

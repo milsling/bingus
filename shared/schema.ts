@@ -340,6 +340,7 @@ export const achievementConditionTypes = [
   "controversial_bar",     // Has a bar with more dislikes than likes (threshold = min total reactions)
   "night_owl",             // Posted a bar between midnight and 5am
   "early_bird",            // Posted a bar between 5am and 8am
+  "bars_with_keyword",     // Bars containing a specific keyword >= threshold
 ] as const;
 
 export type AchievementConditionType = typeof achievementConditionTypes[number];
@@ -352,6 +353,7 @@ export type AchievementCondition = {
   metric: AchievementConditionType;
   comparator: ">=" | ">" | "=" | "<" | "<=";
   value: number;
+  keyword?: string; // For bars_with_keyword metric
 };
 
 export type AchievementRuleGroup = {
