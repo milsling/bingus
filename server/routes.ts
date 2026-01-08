@@ -2,9 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage, generateProofHash } from "./storage";
 import { setupAuth, isAuthenticated, hashPassword, sessionParser } from "./auth";
-import { bars } from "@shared/schema";
+import { bars, likes } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import passport from "passport";
 import { insertUserSchema, insertBarSchema, updateBarSchema, ACHIEVEMENTS } from "@shared/schema";
 import { fromError } from "zod-validation-error";
@@ -2587,6 +2587,31 @@ export async function registerRoutes(
         bannedUsers,
         admins,
         onlineNow,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Debug endpoint to check user's likes (owner only)
+  app.get("/api/debug/my-likes", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const username = req.user!.username;
+      
+      // Get all likes for this user
+      const userLikes = await db.select().from(likes).where(eq(likes.userId, userId));
+      
+      // Get total like count in system
+      const [totalLikesResult] = await db.select({ count: count() }).from(likes);
+      
+      res.json({
+        userId,
+        username,
+        yourLikeCount: userLikes.length,
+        yourLikes: userLikes.map(l => ({ barId: l.barId, createdAt: l.createdAt })),
+        totalLikesInSystem: totalLikesResult?.count || 0,
         timestamp: new Date().toISOString(),
       });
     } catch (error: any) {
