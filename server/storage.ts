@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -167,6 +167,14 @@ export interface IStorage {
   getBarUsages(barId: string): Promise<Array<BarUsage & { user: Pick<User, 'id' | 'username' | 'avatarUrl'> }>>;
   getBarUsageCount(barId: string): Promise<number>;
   getUserAdoptions(userId: string): Promise<Array<BarUsage & { bar: Bar & { user: Pick<User, 'id' | 'username' | 'avatarUrl'> } }>>;
+  
+  // Custom achievement methods
+  getCustomAchievements(): Promise<CustomAchievement[]>;
+  getActiveCustomAchievements(): Promise<CustomAchievement[]>;
+  createCustomAchievement(data: InsertCustomAchievement): Promise<CustomAchievement>;
+  updateCustomAchievement(id: string, updates: Partial<CustomAchievement>): Promise<CustomAchievement | undefined>;
+  deleteCustomAchievement(id: string): Promise<boolean>;
+  checkCustomAchievements(userId: string): Promise<string[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1541,6 +1549,174 @@ export class DatabaseStorage implements IStorage {
       ...r.usage, 
       bar: { ...r.bar, user: r.barUser }
     }));
+  }
+
+  // Custom achievement methods
+  async getCustomAchievements(): Promise<CustomAchievement[]> {
+    return db.select().from(customAchievements).orderBy(desc(customAchievements.createdAt));
+  }
+
+  async getActiveCustomAchievements(): Promise<CustomAchievement[]> {
+    return db.select().from(customAchievements).where(eq(customAchievements.isActive, true));
+  }
+
+  async createCustomAchievement(data: InsertCustomAchievement): Promise<CustomAchievement> {
+    const [achievement] = await db.insert(customAchievements).values(data).returning();
+    return achievement;
+  }
+
+  async updateCustomAchievement(id: string, updates: Partial<CustomAchievement>): Promise<CustomAchievement | undefined> {
+    const [achievement] = await db
+      .update(customAchievements)
+      .set(updates)
+      .where(eq(customAchievements.id, id))
+      .returning();
+    return achievement;
+  }
+
+  async deleteCustomAchievement(id: string): Promise<boolean> {
+    const result = await db.delete(customAchievements).where(eq(customAchievements.id, id));
+    return true;
+  }
+
+  async checkCustomAchievements(userId: string): Promise<string[]> {
+    const unlockedIds: string[] = [];
+    const activeAchievements = await this.getActiveCustomAchievements();
+    const existingAchievements = await this.getUserAchievements(userId);
+    const existingIds = new Set(existingAchievements.map(a => a.achievementId));
+
+    for (const achievement of activeAchievements) {
+      const customId = `custom_${achievement.id}`;
+      if (existingIds.has(customId)) continue;
+
+      const condition = achievement.conditionType;
+      const threshold = achievement.threshold;
+      let meetsCondition = false;
+
+      switch (condition) {
+        case "bars_posted": {
+          const stats = await this.getUserStats(userId);
+          meetsCondition = stats.barsMinted >= threshold;
+          break;
+        }
+        case "likes_received": {
+          const stats = await this.getUserStats(userId);
+          meetsCondition = stats.likesReceived >= threshold;
+          break;
+        }
+        case "followers_count": {
+          const stats = await this.getUserStats(userId);
+          meetsCondition = stats.followers >= threshold;
+          break;
+        }
+        case "following_count": {
+          const followingCount = await this.getFollowingCount(userId);
+          meetsCondition = followingCount >= threshold;
+          break;
+        }
+        case "single_bar_likes": {
+          const stats = await this.getUserStats(userId);
+          meetsCondition = stats.topBarLikes >= threshold;
+          break;
+        }
+        case "single_bar_comments": {
+          const userBars = await db.select({ id: bars.id }).from(bars).where(eq(bars.userId, userId));
+          for (const bar of userBars) {
+            const commentCount = await this.getCommentCount(bar.id);
+            if (commentCount >= threshold) {
+              meetsCondition = true;
+              break;
+            }
+          }
+          break;
+        }
+        case "single_bar_bookmarks": {
+          const [result] = await db
+            .select({ count: count() })
+            .from(bookmarks)
+            .innerJoin(bars, eq(bookmarks.barId, bars.id))
+            .where(eq(bars.userId, userId))
+            .groupBy(bookmarks.barId)
+            .orderBy(desc(count()))
+            .limit(1);
+          meetsCondition = (result?.count || 0) >= threshold;
+          break;
+        }
+        case "comments_made": {
+          const [result] = await db
+            .select({ count: count() })
+            .from(comments)
+            .where(eq(comments.userId, userId));
+          meetsCondition = (result?.count || 0) >= threshold;
+          break;
+        }
+        case "bars_adopted": {
+          const [result] = await db
+            .select({ count: count() })
+            .from(barUsages)
+            .where(eq(barUsages.userId, userId));
+          meetsCondition = (result?.count || 0) >= threshold;
+          break;
+        }
+        case "controversial_bar": {
+          // Find a bar with more dislikes than likes and at least threshold total reactions
+          const userBars = await db.select({ id: bars.id }).from(bars).where(eq(bars.userId, userId));
+          for (const bar of userBars) {
+            const likeCount = await this.getLikeCount(bar.id);
+            const dislikeCount = await this.getDislikeCount(bar.id);
+            if (dislikeCount > likeCount && (likeCount + dislikeCount) >= threshold) {
+              meetsCondition = true;
+              break;
+            }
+          }
+          break;
+        }
+        case "night_owl": {
+          // Check if user posted any bar between midnight and 5am
+          const nightBars = await db
+            .select({ id: bars.id })
+            .from(bars)
+            .where(
+              and(
+                eq(bars.userId, userId),
+                sql`EXTRACT(HOUR FROM ${bars.createdAt}) >= 0 AND EXTRACT(HOUR FROM ${bars.createdAt}) < 5`
+              )
+            )
+            .limit(1);
+          meetsCondition = nightBars.length > 0;
+          break;
+        }
+        case "early_bird": {
+          // Check if user posted any bar between 5am and 8am
+          const earlyBars = await db
+            .select({ id: bars.id })
+            .from(bars)
+            .where(
+              and(
+                eq(bars.userId, userId),
+                sql`EXTRACT(HOUR FROM ${bars.createdAt}) >= 5 AND EXTRACT(HOUR FROM ${bars.createdAt}) < 8`
+              )
+            )
+            .limit(1);
+          meetsCondition = earlyBars.length > 0;
+          break;
+        }
+      }
+
+      if (meetsCondition) {
+        try {
+          await db.insert(userAchievements).values({
+            userId,
+            achievementId: customId,
+          });
+          unlockedIds.push(customId);
+        } catch (e) {
+          // Already unlocked (unique constraint)
+        }
+      }
+    }
+
+    return unlockedIds;
   }
 }
 

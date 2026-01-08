@@ -325,6 +325,44 @@ export const flaggedPhrasesRelations = relations(flaggedPhrases, ({ one }) => ({
 
 export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
 
+// Condition types for custom achievements
+export const achievementConditionTypes = [
+  "bars_posted",           // Total bars posted >= threshold
+  "likes_received",        // Total likes received >= threshold
+  "followers_count",       // Followers >= threshold
+  "following_count",       // Following >= threshold
+  "single_bar_likes",      // Any single bar has >= threshold likes
+  "single_bar_comments",   // Any single bar has >= threshold comments
+  "single_bar_bookmarks",  // Any single bar has >= threshold bookmarks
+  "comments_made",         // Total comments made >= threshold
+  "bars_adopted",          // Total bars adopted >= threshold
+  "controversial_bar",     // Has a bar with more dislikes than likes (threshold = min total reactions)
+  "night_owl",             // Posted a bar between midnight and 5am
+  "early_bird",            // Posted a bar between 5am and 8am
+] as const;
+
+export type AchievementConditionType = typeof achievementConditionTypes[number];
+
+export const customAchievements = pgTable("custom_achievements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  emoji: text("emoji").notNull(),
+  description: text("description").notNull(),
+  rarity: text("rarity").notNull().default("common"),
+  conditionType: text("condition_type").notNull(),
+  threshold: integer("threshold").notNull().default(1),
+  isActive: boolean("is_active").notNull().default(true),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const customAchievementsRelations = relations(customAchievements, ({ one }) => ({
+  creator: one(users, { fields: [customAchievements.createdBy], references: [users.id] }),
+}));
+
+export type CustomAchievement = typeof customAchievements.$inferSelect;
+export type InsertCustomAchievement = typeof customAchievements.$inferInsert;
+
 export const ACHIEVEMENTS = {
   first_bar: { name: "Origin Founder", emoji: "🔥", description: "Posted your first bar", threshold: { barsMinted: 1 }, rarity: "common" as AchievementRarity },
   bar_slinger: { name: "Bar Slinger", emoji: "💀", description: "Posted 10 bars", threshold: { barsMinted: 10 }, rarity: "rare" as AchievementRarity },
