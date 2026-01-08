@@ -202,21 +202,26 @@ export async function registerRoutes(
   });
 
   app.post("/api/auth/login", (req, res, next) => {
+    console.log(`[LOGIN] Attempting login for username: "${req.body.username}"`);
     passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) {
+        console.error(`[LOGIN] Error during authentication:`, err);
         return next(err);
       }
       if (!user) {
+        console.log(`[LOGIN] Failed login for "${req.body.username}": ${info?.message}`);
         return res.status(401).json({ message: info?.message || "Authentication failed" });
       }
+      console.log(`[LOGIN] Successful auth for user: id=${user.id}, username="${user.username}"`);
       req.login(user, (err) => {
         if (err) {
+          console.error(`[LOGIN] Session creation failed:`, err);
           return next(err);
         }
         if (req.body.rememberMe && req.session) {
-          // Remember for 48 hours
           req.session.cookie.maxAge = 48 * 60 * 60 * 1000;
         }
+        console.log(`[LOGIN] Session created for user ${user.id}`);
         res.json(user);
       });
     })(req, res, next);
