@@ -123,7 +123,7 @@ export default function AIAssistant() {
           <DialogHeader className="px-4 py-3 border-b">
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-500" />
-              Bar Assistant
+              Orphie
             </DialogTitle>
           </DialogHeader>
 
@@ -148,7 +148,7 @@ export default function AIAssistant() {
                 {messages.length === 0 && (
                   <div className="text-center text-muted-foreground py-8">
                     <Sparkles className="h-8 w-8 mx-auto mb-2 text-purple-500/50" />
-                    <p className="text-sm">Ask me anything about bars, lyrics, or hip-hop!</p>
+                    <p className="text-sm">I'm Orphie! Ask me anything about bars, lyrics, or hip-hop.</p>
                   </div>
                 )}
                 {messages.map((msg, i) => (
