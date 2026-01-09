@@ -162,7 +162,7 @@ export default function Home() {
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
           
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
             <div className="px-4 py-8 md:text-center space-y-2">
               <h1 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tighter text-foreground">
                 Drop Your <span className="text-foreground font-black italic">Bars</span>

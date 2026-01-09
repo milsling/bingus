@@ -204,7 +204,7 @@ export default function UserProfile() {
     return (
       <div className="min-h-screen bg-background pt-14 pb-20 md:pb-0 md:pt-16">
         <Navigation />
-        <main className="container max-w-2xl mx-auto px-4 py-6">
+        <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-6">
           <Button
             variant="ghost"
             className="mb-4"
@@ -224,7 +224,7 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-0 md:pt-16">
       <Navigation />
-      <main className="container max-w-2xl mx-auto px-4 py-6">
+      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-6">
         <Button
           variant="ghost"
           className="mb-4"

@@ -119,7 +119,7 @@ export default function Profile() {
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-0 md:pt-16">
       <Navigation />
       
-      <main className="max-w-3xl mx-auto">
+      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
         {/* Profile Header */}
         <div className="relative">
           {currentUser.bannerUrl ? (
