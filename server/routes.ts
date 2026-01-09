@@ -2190,6 +2190,38 @@ export async function registerRoutes(
     }
   });
 
+  // Achievement badge image routes (owner only)
+  app.get("/api/achievements/badge-images", async (_req, res) => {
+    try {
+      const images = await storage.getAllAchievementBadgeImages();
+      res.json(images);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/achievements/:id/badge-image", isOwner, async (req, res) => {
+    try {
+      const { imageUrl } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+      await storage.setAchievementBadgeImage(req.params.id, imageUrl);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/achievements/:id/badge-image", isOwner, async (req, res) => {
+    try {
+      await storage.deleteAchievementBadgeImage(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Admin archive routes (soft-deleted bars)
   app.get("/api/admin/archive", isAdmin, async (req, res) => {
     try {

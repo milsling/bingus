@@ -77,6 +77,16 @@ export default function Badges() {
     },
   });
 
+  const { data: badgeImages = {} } = useQuery<Record<string, string>>({
+    queryKey: ["achievements", "badge-images"],
+    queryFn: async () => {
+      const res = await fetch("/api/achievements/badge-images", { credentials: "include" });
+      if (!res.ok) return {};
+      return res.json();
+    },
+    staleTime: 60000,
+  });
+
   const updateDisplayedBadgesMutation = useMutation({
     mutationFn: async (displayedBadges: string[]) => {
       const response = await fetch("/api/user/displayed-badges", {
@@ -184,19 +194,36 @@ export default function Badges() {
               
               if (!achievement) return null;
               const rarity = achievement.rarity;
+              const hasBadgeImage = !!badgeImages[badgeId];
               return (
                 <TooltipProvider key={badgeId}>
                   <Tooltip>
                     <TooltipTrigger>
-                      <span 
-                        className={cn(
-                          "inline-flex items-center justify-center w-8 h-8 rounded-full text-lg",
-                          `badge-${rarity}`,
-                          rarityConfig[rarity]?.bgColor || "bg-gray-500/20"
-                        )}
-                      >
-                        {achievement.emoji}
-                      </span>
+                      {hasBadgeImage ? (
+                        <div 
+                          className={cn(
+                            "inline-flex items-center justify-center rounded px-1 py-0.5",
+                            `badge-${rarity}`,
+                            rarityConfig[rarity]?.bgColor || "bg-gray-500/20"
+                          )}
+                        >
+                          <img 
+                            src={badgeImages[badgeId]} 
+                            alt={achievement.name} 
+                            className="h-6 w-auto object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <span 
+                          className={cn(
+                            "inline-flex items-center justify-center w-8 h-8 rounded-full text-lg",
+                            `badge-${rarity}`,
+                            rarityConfig[rarity]?.bgColor || "bg-gray-500/20"
+                          )}
+                        >
+                          {achievement.emoji}
+                        </span>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="font-semibold">{achievement.name}</p>
@@ -247,12 +274,21 @@ export default function Badges() {
                         <div className="flex items-start gap-3">
                           <div 
                             className={cn(
-                              "flex items-center justify-center w-12 h-12 rounded-full text-2xl shrink-0",
+                              "flex items-center justify-center shrink-0",
+                              badgeImages[achievement.id] ? "w-auto h-12 rounded px-2" : "w-12 h-12 rounded-full text-2xl",
                               isUnlocked ? config.bgColor : "bg-muted",
                               isUnlocked && isDisplayed && `badge-${rarity}`
                             )}
                           >
-                            {isUnlocked ? achievement.emoji : <Lock className="w-5 h-5 text-muted-foreground" />}
+                            {isUnlocked ? (
+                              badgeImages[achievement.id] ? (
+                                <img src={badgeImages[achievement.id]} alt={achievement.name} className="h-6 w-auto object-contain" />
+                              ) : (
+                                achievement.emoji
+                              )
+                            ) : (
+                              <Lock className="w-5 h-5 text-muted-foreground" />
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
@@ -317,12 +353,21 @@ export default function Badges() {
                       <div className="flex items-start gap-3">
                         <div 
                           className={cn(
-                            "flex items-center justify-center w-12 h-12 rounded-full text-2xl shrink-0",
+                            "flex items-center justify-center shrink-0",
+                            badgeImages[customId] ? "w-auto h-12 rounded px-2" : "w-12 h-12 rounded-full text-2xl",
                             isUnlocked ? config.bgColor : "bg-muted",
                             isUnlocked && isDisplayed && `badge-${achievement.rarity}`
                           )}
                         >
-                          {isUnlocked ? achievement.emoji : <Lock className="w-5 h-5 text-muted-foreground" />}
+                          {isUnlocked ? (
+                            badgeImages[customId] ? (
+                              <img src={badgeImages[customId]} alt={achievement.name} className="h-6 w-auto object-contain" />
+                            ) : (
+                              achievement.emoji
+                            )
+                          ) : (
+                            <Lock className="w-5 h-5 text-muted-foreground" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">

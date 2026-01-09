@@ -18,7 +18,7 @@ import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import type { User, BarWithUser } from "@shared/schema";
+import { ACHIEVEMENTS, type User, type BarWithUser } from "@shared/schema";
 
 function stripHtml(html: string): string {
   const div = document.createElement('div');
@@ -504,6 +504,58 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'achievements', 'custom'] });
       toast({ title: "Achievement deleted" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Badge images query and mutations (owner only)
+  const { data: badgeImages = {} } = useQuery<Record<string, string>>({
+    queryKey: ['achievements', 'badge-images'],
+    queryFn: async () => {
+      const res = await fetch('/api/achievements/badge-images', { credentials: 'include' });
+      if (!res.ok) return {};
+      return res.json();
+    },
+    enabled: !!currentUser?.isOwner,
+  });
+
+  const [uploadingBadgeId, setUploadingBadgeId] = useState<string | null>(null);
+
+  const setBadgeImageMutation = useMutation({
+    mutationFn: async ({ id, imageUrl }: { id: string; imageUrl: string }) => {
+      const res = await fetch(`/api/achievements/badge-images/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ imageUrl }),
+      });
+      if (!res.ok) throw new Error('Failed to set badge image');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['achievements', 'badge-images'] });
+      setUploadingBadgeId(null);
+      toast({ title: "Badge image updated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteBadgeImageMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/achievements/badge-images/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to delete badge image');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['achievements', 'badge-images'] });
+      toast({ title: "Badge image removed" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -1823,6 +1875,93 @@ export default function Admin() {
                       </div>
                     )}
                   </div>
+
+                  {currentUser?.isOwner && (
+                    <div className="border border-border rounded-lg p-4 space-y-4">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <Trophy className="h-4 w-4" />
+                        Badge Images (80×24px recommended)
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Upload custom images for achievement badges. Images will replace emojis in the display.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {Object.entries(ACHIEVEMENTS).map(([id, achievement]) => (
+                          <div key={id} className="flex items-center gap-3 p-3 border border-border rounded-lg bg-card/50">
+                            <div className="flex-shrink-0 w-20 h-6 flex items-center justify-center bg-muted rounded overflow-hidden">
+                              {badgeImages[id] ? (
+                                <img src={badgeImages[id]} alt={achievement.name} className="h-6 object-contain" />
+                              ) : (
+                                <span className="text-lg">{achievement.emoji}</span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{achievement.name}</p>
+                              <p className="text-xs text-muted-foreground capitalize">{achievement.rarity}</p>
+                            </div>
+                            <div className="flex gap-1">
+                              {uploadingBadgeId === id ? (
+                                <form 
+                                  className="flex gap-1"
+                                  onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const form = e.target as HTMLFormElement;
+                                    const input = form.elements.namedItem('imageUrl') as HTMLInputElement;
+                                    if (input.value) {
+                                      setBadgeImageMutation.mutate({ id, imageUrl: input.value });
+                                    }
+                                  }}
+                                >
+                                  <Input
+                                    name="imageUrl"
+                                    placeholder="Image URL"
+                                    className="h-7 w-32 text-xs"
+                                    defaultValue={badgeImages[id] || ''}
+                                    data-testid={`input-badge-url-${id}`}
+                                  />
+                                  <Button type="submit" size="sm" className="h-7 px-2" data-testid={`button-save-badge-${id}`}>
+                                    <Check className="h-3 w-3" />
+                                  </Button>
+                                  <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-7 px-2"
+                                    onClick={() => setUploadingBadgeId(null)}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </form>
+                              ) : (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2"
+                                    onClick={() => setUploadingBadgeId(id)}
+                                    data-testid={`button-edit-badge-${id}`}
+                                  >
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                  {badgeImages[id] && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-destructive"
+                                      onClick={() => deleteBadgeImageMutation.mutate(id)}
+                                      data-testid={`button-delete-badge-${id}`}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

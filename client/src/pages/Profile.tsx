@@ -49,6 +49,16 @@ export default function Profile() {
     staleTime: 30000,
   });
 
+  const { data: badgeImages = {} } = useQuery<Record<string, string>>({
+    queryKey: ["achievements", "badge-images"],
+    queryFn: async () => {
+      const res = await fetch("/api/achievements/badge-images", { credentials: "include" });
+      if (!res.ok) return {};
+      return res.json();
+    },
+    staleTime: 60000,
+  });
+
   const earnedCount = userAchievements.length;
   const totalCount = totalAchievements?.total || Object.keys(ACHIEVEMENTS).length;
   const progressPercentage = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
@@ -244,22 +254,43 @@ export default function Profile() {
                 const achievement = ACHIEVEMENTS[badgeId as AchievementId];
                 if (!achievement) return null;
                 const rarity = achievement.rarity;
+                const hasBadgeImage = !!badgeImages[badgeId];
                 return (
                   <Tooltip key={badgeId}>
                     <TooltipTrigger>
-                      <span 
-                        className={cn(
-                          "inline-flex items-center justify-center w-10 h-10 rounded-full text-xl",
-                          `badge-${rarity}`,
-                          rarity === "legendary" && "bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-purple-500/20",
-                          rarity === "epic" && "bg-purple-500/20",
-                          rarity === "rare" && "bg-blue-500/20",
-                          rarity === "common" && "bg-gray-500/20"
-                        )}
-                        data-testid={`badge-displayed-${badgeId}`}
-                      >
-                        {achievement.emoji}
-                      </span>
+                      {hasBadgeImage ? (
+                        <div 
+                          className={cn(
+                            "inline-flex items-center justify-center rounded px-1 py-0.5",
+                            `badge-${rarity}`,
+                            rarity === "legendary" && "bg-gradient-to-r from-red-500/30 via-yellow-500/30 to-purple-500/30 border border-amber-500/50",
+                            rarity === "epic" && "bg-purple-500/30 border border-purple-500/50",
+                            rarity === "rare" && "bg-blue-500/30 border border-blue-500/50",
+                            rarity === "common" && "bg-gray-500/30 border border-gray-500/50"
+                          )}
+                          data-testid={`badge-displayed-${badgeId}`}
+                        >
+                          <img 
+                            src={badgeImages[badgeId]} 
+                            alt={achievement.name} 
+                            className="h-6 w-auto object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <span 
+                          className={cn(
+                            "inline-flex items-center justify-center w-10 h-10 rounded-full text-xl",
+                            `badge-${rarity}`,
+                            rarity === "legendary" && "bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-purple-500/20",
+                            rarity === "epic" && "bg-purple-500/20",
+                            rarity === "rare" && "bg-blue-500/20",
+                            rarity === "common" && "bg-gray-500/20"
+                          )}
+                          data-testid={`badge-displayed-${badgeId}`}
+                        >
+                          {achievement.emoji}
+                        </span>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="font-semibold">{achievement.name}</p>
