@@ -615,8 +615,8 @@ export default function BarCard({ bar }: BarCardProps) {
                     <span className="text-[10px] text-primary">✓</span>
                   )}
                   {bar.user.username.toLowerCase() === "milsling" && (
-                    <Badge className="ml-1 badge-creator-jitter text-white text-[9px] px-1.5 py-0 h-4">
-                      Creator
+                    <Badge className="ml-1 badge-founder-electric text-white text-[9px] px-1.5 py-0 h-4">
+                      OB FOUNDER
                     </Badge>
                   )}
                   {(bar.user as any).isAdminPlus && (
