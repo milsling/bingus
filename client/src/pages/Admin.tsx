@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X } from "lucide-react";
+import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload } from "lucide-react";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -522,6 +522,47 @@ export default function Admin() {
   });
 
   const [uploadingBadgeId, setUploadingBadgeId] = useState<string | null>(null);
+  const [badgeUploadProgress, setBadgeUploadProgress] = useState<Record<string, boolean>>({});
+
+  const uploadBadgeImage = async (badgeId: string, file: File) => {
+    try {
+      setBadgeUploadProgress(prev => ({ ...prev, [badgeId]: true }));
+      
+      const extension = file.name.split('.').pop() || 'png';
+      
+      const urlRes = await fetch('/api/uploads/badge-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ badgeId, extension }),
+      });
+      
+      if (!urlRes.ok) {
+        const err = await urlRes.json();
+        throw new Error(err.error || 'Failed to get upload URL');
+      }
+      
+      const { uploadURL, publicURL } = await urlRes.json();
+      
+      const uploadRes = await fetch(uploadURL, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      
+      if (!uploadRes.ok) {
+        throw new Error('Failed to upload file');
+      }
+      
+      await setBadgeImageMutation.mutateAsync({ id: badgeId, imageUrl: publicURL });
+      
+      toast({ title: "Badge image uploaded" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setBadgeUploadProgress(prev => ({ ...prev, [badgeId]: false }));
+    }
+  };
 
   const setBadgeImageMutation = useMutation({
     mutationFn: async ({ id, imageUrl }: { id: string; imageUrl: string }) => {
@@ -1899,50 +1940,37 @@ export default function Admin() {
                               <p className="text-sm font-medium truncate">{achievement.name}</p>
                               <p className="text-xs text-muted-foreground capitalize">{achievement.rarity}</p>
                             </div>
-                            <div className="flex gap-1">
-                              {uploadingBadgeId === id ? (
-                                <form 
-                                  className="flex gap-1"
-                                  onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const form = e.target as HTMLFormElement;
-                                    const input = form.elements.namedItem('imageUrl') as HTMLInputElement;
-                                    if (input.value) {
-                                      setBadgeImageMutation.mutate({ id, imageUrl: input.value });
-                                    }
-                                  }}
-                                >
-                                  <Input
-                                    name="imageUrl"
-                                    placeholder="Image URL"
-                                    className="h-7 w-32 text-xs"
-                                    defaultValue={badgeImages[id] || ''}
-                                    data-testid={`input-badge-url-${id}`}
-                                  />
-                                  <Button type="submit" size="sm" className="h-7 px-2" data-testid={`button-save-badge-${id}`}>
-                                    <Check className="h-3 w-3" />
-                                  </Button>
-                                  <Button 
-                                    type="button" 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="h-7 px-2"
-                                    onClick={() => setUploadingBadgeId(null)}
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                </form>
+                            <div className="flex gap-1 items-center">
+                              {badgeUploadProgress[id] ? (
+                                <span className="text-xs text-muted-foreground">Uploading...</span>
                               ) : (
                                 <>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 px-2"
-                                    onClick={() => setUploadingBadgeId(id)}
-                                    data-testid={`button-edit-badge-${id}`}
-                                  >
-                                    <Pencil className="h-3 w-3" />
-                                  </Button>
+                                  <label className="cursor-pointer">
+                                    <input
+                                      type="file"
+                                      accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          uploadBadgeImage(id, file);
+                                          e.target.value = '';
+                                        }
+                                      }}
+                                      data-testid={`input-badge-file-${id}`}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-7 px-2"
+                                      asChild
+                                    >
+                                      <span>
+                                        <Upload className="h-3 w-3" />
+                                      </span>
+                                    </Button>
+                                  </label>
                                   {badgeImages[id] && (
                                     <Button
                                       variant="ghost"

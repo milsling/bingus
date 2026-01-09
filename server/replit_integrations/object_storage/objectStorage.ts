@@ -154,6 +154,53 @@ export class ObjectStorageService {
     });
   }
 
+  // Normalizes a directory path by removing trailing slashes.
+  private normalizeDir(dir: string): string {
+    return dir.endsWith('/') ? dir.slice(0, -1) : dir;
+  }
+
+  // Gets the upload URL for a badge image (stored in private bucket, served via proxy).
+  async getBadgeImageUploadURL(badgeId: string, extension: string): Promise<{ uploadURL: string; publicURL: string }> {
+    const privateObjectDir = this.normalizeDir(this.getPrivateObjectDir());
+    if (!privateObjectDir) {
+      throw new Error(
+        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
+          "tool and set PRIVATE_OBJECT_DIR env var."
+      );
+    }
+
+    const timestamp = Date.now();
+    const fileName = `${badgeId}-${timestamp}.${extension}`;
+    const fullPath = `${privateObjectDir}/badges/${fileName}`;
+
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+
+    const uploadURL = await signObjectURL({
+      bucketName,
+      objectName,
+      method: "PUT",
+      ttlSec: 900,
+    });
+
+    const publicURL = `/objects/badges/${fileName}`;
+
+    return { uploadURL, publicURL };
+  }
+
+  // Gets the badge image file from object path.
+  async getBadgeImageFile(fileName: string): Promise<File> {
+    const privateObjectDir = this.normalizeDir(this.getPrivateObjectDir());
+    const fullPath = `${privateObjectDir}/badges/${fileName}`;
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(objectName);
+    const [exists] = await file.exists();
+    if (!exists) {
+      throw new ObjectNotFoundError();
+    }
+    return file;
+  }
+
   // Gets the object entity file from the object path.
   async getObjectEntityFile(objectPath: string): Promise<File> {
     if (!objectPath.startsWith("/objects/")) {

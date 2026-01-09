@@ -70,6 +70,53 @@ export function registerObjectStorageRoutes(app: Express): void {
   });
 
   /**
+   * Request a presigned URL for badge image upload (owner only).
+   */
+  app.post("/api/uploads/badge-image", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.isOwner) {
+        return res.status(403).json({ error: "Only site owner can upload badge images" });
+      }
+
+      const { badgeId, extension } = req.body;
+      if (!badgeId || !extension) {
+        return res.status(400).json({ error: "Missing required fields: badgeId, extension" });
+      }
+
+      const allowedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
+      const ext = extension.toLowerCase();
+      if (!allowedExtensions.includes(ext)) {
+        return res.status(400).json({ error: `Invalid extension. Allowed: ${allowedExtensions.join(', ')}` });
+      }
+
+      const { uploadURL, publicURL } = await objectStorageService.getBadgeImageUploadURL(badgeId, ext);
+
+      res.json({ uploadURL, publicURL });
+    } catch (error) {
+      console.error("Error generating badge upload URL:", error);
+      res.status(500).json({ error: "Failed to generate upload URL" });
+    }
+  });
+
+  /**
+   * Serve badge images from private storage (publicly accessible via proxy).
+   */
+  app.get("/objects/badges/:fileName", async (req, res) => {
+    try {
+      const fileName = req.params.fileName;
+      const file = await objectStorageService.getBadgeImageFile(fileName);
+      await objectStorageService.downloadObject(file, res, 86400);
+    } catch (error) {
+      console.error("Error serving badge image:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.status(404).json({ error: "Badge image not found" });
+      }
+      return res.status(500).json({ error: "Failed to serve badge image" });
+    }
+  });
+
+  /**
    * Serve uploaded objects.
    *
    * GET /objects/:objectPath(*)
