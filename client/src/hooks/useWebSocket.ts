@@ -14,10 +14,10 @@ interface UseWebSocketOptions {
   onDisconnect?: () => void;
 }
 
-const PING_INTERVAL = 15000;
-const PONG_TIMEOUT = 5000;
-const RECONNECT_BASE_DELAY = 1000;
-const RECONNECT_MAX_DELAY = 30000;
+const PING_INTERVAL = 8000;      // Faster heartbeat (8s)
+const PONG_TIMEOUT = 3000;       // Detect issues faster (3s)
+const RECONNECT_BASE_DELAY = 500; // Faster first reconnect (0.5s)
+const RECONNECT_MAX_DELAY = 10000; // Cap reconnect delay (10s)
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
   const { currentUser } = useBars();

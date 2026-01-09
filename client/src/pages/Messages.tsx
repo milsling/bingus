@@ -45,8 +45,9 @@ export default function Messages() {
       const res = await fetch('/api/messages', { credentials: 'include' });
       return res.json();
     },
-    staleTime: 30000,
-    refetchOnWindowFocus: false,
+    staleTime: 5000,
+    refetchInterval: connectionHealth === 'healthy' ? 10000 : 3000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: friends = [], isLoading: loadingFriends } = useQuery({
@@ -71,8 +72,8 @@ export default function Messages() {
       return res.json();
     },
     enabled: !!selectedUserId,
-    refetchInterval: selectedUserId ? (connectionHealth === 'healthy' ? 30000 : 5000) : false,
-    staleTime: 3000,
+    refetchInterval: selectedUserId ? (connectionHealth === 'healthy' ? 8000 : 2000) : false,
+    staleTime: 2000,
     refetchOnWindowFocus: true,
   });
 
