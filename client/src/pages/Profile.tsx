@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBars } from "@/context/BarContext";
 import { Link, useLocation } from "wouter";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { shareContent, getProfileShareData } from "@/lib/share";
@@ -82,19 +83,20 @@ export default function Profile() {
     }
   };
 
-  // Show loading while checking auth
-  if (isLoadingUser) {
+  // Redirect if not logged in (after loading completes)
+  useEffect(() => {
+    if (!isLoadingUser && !currentUser) {
+      setLocation("/auth");
+    }
+  }, [isLoadingUser, currentUser, setLocation]);
+
+  // Show loading while checking auth or if no user yet
+  if (isLoadingUser || !currentUser) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
-  }
-
-  // Redirect if not logged in
-  if (!currentUser) {
-    setLocation("/auth");
-    return null;
   }
 
   const { data: likedBars = [] } = useQuery<any[]>({
