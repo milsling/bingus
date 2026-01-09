@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Camera, Loader2, Lock, MessageCircle, ImageIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ArrowLeft, Camera, Loader2, Lock, MessageCircle, ImageIcon, ZoomIn, ZoomOut } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 export default function EditProfile() {
   const { currentUser } = useBars();
@@ -33,6 +36,92 @@ export default function EditProfile() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [messagePrivacy, setMessagePrivacy] = useState(currentUser?.messagePrivacy || "friends_only");
+  
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState<Crop>();
+  const [zoom, setZoom] = useState(1);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    const cropSize = Math.min(width, height, 300);
+    const crop = centerCrop(
+      makeAspectCrop({ unit: 'px', width: cropSize }, 1, width, height),
+      width,
+      height
+    );
+    setCrop(crop);
+  }, []);
+
+  const getCroppedImage = useCallback(async (): Promise<Blob | null> => {
+    if (!imgRef.current || !crop) return null;
+    
+    const image = imgRef.current;
+    const canvas = document.createElement('canvas');
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    
+    const outputSize = 400;
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      outputSize,
+      outputSize
+    );
+    
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.9);
+    });
+  }, [crop]);
+
+  const handleCropComplete = async () => {
+    const croppedBlob = await getCroppedImage();
+    if (!croppedBlob) {
+      toast({ title: "Crop failed", description: "Could not crop the image", variant: "destructive" });
+      return;
+    }
+    
+    setIsUploadingAvatar(true);
+    setCropDialogOpen(false);
+    
+    try {
+      const file = new File([croppedBlob], 'avatar.jpg', { type: 'image/jpeg' });
+      const { uploadURL, objectPath } = await api.requestUploadUrl({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
+
+      await fetch(uploadURL, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+
+      setAvatarUrl(objectPath);
+      toast({ title: "Image uploaded!", description: "Click Save to update your profile." });
+    } catch (error: any) {
+      toast({ title: "Upload failed", description: error.message || "Could not upload image", variant: "destructive" });
+    } finally {
+      setIsUploadingAvatar(false);
+      setImageSrc(null);
+    }
+  };
 
   const canChangeUsername = () => {
     if (!currentUser?.usernameChangedAt) return true;
@@ -221,42 +310,25 @@ export default function EditProfile() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Please select an image under 5MB.",
+        description: "Please select an image under 10MB.",
         variant: "destructive",
       });
       return;
     }
 
-    setIsUploadingAvatar(true);
-    try {
-      const { uploadURL, objectPath } = await api.requestUploadUrl({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
-
-      await fetch(uploadURL, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-
-      setAvatarUrl(objectPath);
-      toast({
-        title: "Image uploaded!",
-        description: "Click Save to update your profile.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Upload failed",
-        description: error.message || "Could not upload image",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploadingAvatar(false);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageSrc(reader.result as string);
+      setCropDialogOpen(true);
+      setZoom(1);
+    };
+    reader.readAsDataURL(file);
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -531,6 +603,68 @@ export default function EditProfile() {
           </CardContent>
         </Card>
       </main>
+
+      <Dialog open={cropDialogOpen} onOpenChange={(open) => {
+        setCropDialogOpen(open);
+        if (!open) setImageSrc(null);
+      }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Crop Profile Picture</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4">
+            {imageSrc && (
+              <div className="relative w-full max-h-[400px] overflow-hidden rounded-lg bg-black/20">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  aspect={1}
+                  circularCrop
+                  className="max-h-[400px]"
+                >
+                  <img
+                    ref={imgRef}
+                    src={imageSrc}
+                    alt="Crop preview"
+                    onLoad={onImageLoad}
+                    style={{ 
+                      maxHeight: '400px', 
+                      width: 'auto',
+                      transform: `scale(${zoom})`,
+                      transformOrigin: 'center'
+                    }}
+                  />
+                </ReactCrop>
+              </div>
+            )}
+            <div className="flex items-center gap-4 w-full px-4">
+              <ZoomOut className="h-4 w-4 text-muted-foreground" />
+              <input
+                type="range"
+                min="1"
+                max="3"
+                step="0.1"
+                value={zoom}
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                className="flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+              />
+              <ZoomIn className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => {
+              setCropDialogOpen(false);
+              setImageSrc(null);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleCropComplete} disabled={isUploadingAvatar}>
+              {isUploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Apply
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
