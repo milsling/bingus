@@ -169,8 +169,13 @@ export default function Messages() {
 
   const reversedMessages = [...chatMessages].reverse();
 
+  useEffect(() => {
+    if (!currentUser) {
+      setLocation("/auth");
+    }
+  }, [currentUser, setLocation]);
+
   if (!currentUser) {
-    setLocation("/auth");
     return null;
   }
 
