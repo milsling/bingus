@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, customTags, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type CustomTag, type InsertCustomTag, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -2094,6 +2094,43 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAchievementBadgeImage(achievementId: string): Promise<void> {
     await db.delete(achievementBadgeImages).where(eq(achievementBadgeImages.id, achievementId));
+  }
+
+  // Custom tag methods
+  async getAllCustomTags(): Promise<CustomTag[]> {
+    return db.select().from(customTags).orderBy(customTags.name);
+  }
+
+  async getActiveCustomTags(): Promise<CustomTag[]> {
+    return db.select().from(customTags).where(eq(customTags.isActive, true)).orderBy(customTags.name);
+  }
+
+  async getCustomTagByName(name: string): Promise<CustomTag | undefined> {
+    const normalizedName = name.toLowerCase().trim();
+    const [tag] = await db.select().from(customTags).where(eq(customTags.name, normalizedName));
+    return tag;
+  }
+
+  async createCustomTag(data: Omit<InsertCustomTag, 'id' | 'createdAt'>): Promise<CustomTag> {
+    const normalizedName = data.name.toLowerCase().trim();
+    const [tag] = await db.insert(customTags).values({
+      ...data,
+      name: normalizedName,
+    }).returning();
+    return tag;
+  }
+
+  async updateCustomTag(id: string, updates: Partial<Omit<InsertCustomTag, 'id' | 'createdAt'>>): Promise<CustomTag | undefined> {
+    if (updates.name) {
+      updates.name = updates.name.toLowerCase().trim();
+    }
+    const [tag] = await db.update(customTags).set(updates).where(eq(customTags.id, id)).returning();
+    return tag;
+  }
+
+  async deleteCustomTag(id: string): Promise<boolean> {
+    const result = await db.delete(customTags).where(eq(customTags.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 

@@ -13,7 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload } from "lucide-react";
+import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload, Image } from "lucide-react";
+import { ObjectUploader } from "@/components/ObjectUploader";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +40,16 @@ export default function Admin() {
   const [consoleOutput, setConsoleOutput] = useState<any>(null);
   const [consoleHistory, setConsoleHistory] = useState<string[]>([]);
   const [actionUsername, setActionUsername] = useState("");
+  
+  // Custom Tags state
+  const [showTagDialog, setShowTagDialog] = useState(false);
+  const [editingTag, setEditingTag] = useState<any>(null);
+  const [tagName, setTagName] = useState("");
+  const [tagDisplayName, setTagDisplayName] = useState("");
+  const [tagAnimation, setTagAnimation] = useState("none");
+  const [tagColor, setTagColor] = useState("");
+  const [tagBgColor, setTagBgColor] = useState("");
+  const [tagImageUrl, setTagImageUrl] = useState("");
 
   const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ['admin', 'users'],
@@ -635,6 +646,130 @@ export default function Admin() {
     },
   });
 
+  // Custom Tags query and mutations (owner only)
+  const { data: customTags = [], isLoading: isLoadingTags } = useQuery<any[]>({
+    queryKey: ['admin', 'tags'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/tags', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch custom tags');
+      return res.json();
+    },
+    enabled: !!currentUser?.isOwner,
+  });
+
+  const createTagMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch('/api/admin/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to create tag');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'tags'] });
+      setShowTagDialog(false);
+      resetTagForm();
+      toast({ title: "Custom tag created" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateTagMutation = useMutation({
+    mutationFn: async ({ id, ...data }: { id: string } & any) => {
+      const res = await fetch(`/api/admin/tags/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update tag');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'tags'] });
+      setShowTagDialog(false);
+      setEditingTag(null);
+      resetTagForm();
+      toast({ title: "Tag updated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteTagMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/tags/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to delete tag');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'tags'] });
+      toast({ title: "Tag deleted" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const resetTagForm = () => {
+    setTagName("");
+    setTagDisplayName("");
+    setTagAnimation("none");
+    setTagColor("");
+    setTagBgColor("");
+    setTagImageUrl("");
+    setEditingTag(null);
+  };
+
+  const openEditTagDialog = (tag: any) => {
+    setEditingTag(tag);
+    setTagName(tag.name);
+    setTagDisplayName(tag.displayName || "");
+    setTagAnimation(tag.animation || "none");
+    setTagColor(tag.color || "");
+    setTagBgColor(tag.backgroundColor || "");
+    setTagImageUrl(tag.imageUrl || "");
+    setShowTagDialog(true);
+  };
+
+  const handleSaveTag = () => {
+    const data = {
+      name: tagName,
+      displayName: tagDisplayName || null,
+      animation: tagAnimation,
+      color: tagColor || null,
+      backgroundColor: tagBgColor || null,
+      imageUrl: tagImageUrl || null,
+    };
+    if (editingTag) {
+      updateTagMutation.mutate({ id: editingTag.id, ...data });
+    } else {
+      createTagMutation.mutate(data);
+    }
+  };
+
+  const tagAnimationOptions = [
+    { value: "none", label: "None", preview: "" },
+    { value: "pulse", label: "Pulse", preview: "animate-pulse" },
+    { value: "glow", label: "Glow", preview: "shadow-lg shadow-primary/50" },
+    { value: "shimmer", label: "Shimmer", preview: "animate-pulse bg-gradient-to-r from-transparent via-white/20 to-transparent" },
+    { value: "bounce", label: "Bounce", preview: "hover:animate-bounce" },
+    { value: "sparkle", label: "Sparkle", preview: "animate-pulse" },
+    { value: "gradient", label: "Gradient", preview: "bg-gradient-to-r from-purple-500 to-pink-500" },
+  ];
+
   const conditionOptions = [
     { value: "bars_posted", label: "Bars Posted", description: "Post X number of bars" },
     { value: "likes_received", label: "Total Likes Received", description: "Receive X total likes across all bars" },
@@ -804,6 +939,12 @@ export default function Admin() {
               <TabsTrigger value="achievements" className="gap-1 text-xs px-2">
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Badges</span>
+              </TabsTrigger>
+            )}
+            {currentUser?.isOwner && (
+              <TabsTrigger value="tags" className="gap-1 text-xs px-2">
+                <Flag className="h-4 w-4" />
+                <span className="hidden sm:inline">Tags</span>
               </TabsTrigger>
             )}
             {(currentUser?.isOwner || currentUser?.isAdminPlus) && (
@@ -1992,6 +2133,286 @@ export default function Admin() {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+          )}
+
+          {/* Custom Tags Tab (Owner Only) */}
+          {currentUser?.isOwner && (
+            <TabsContent value="tags">
+              <Card className="border-border bg-card/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Flag className="h-5 w-5 text-purple-500" />
+                      Custom Tag Library
+                    </div>
+                    <Button onClick={() => { resetTagForm(); setShowTagDialog(true); }} size="sm">
+                      <Plus className="h-4 w-4 mr-1" />
+                      New Tag
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Create custom tags with animations and images. When users add these tags to their bars, they'll get the styling you define here.
+                  </p>
+                  
+                  {isLoadingTags ? (
+                    <p className="text-muted-foreground">Loading tags...</p>
+                  ) : customTags.length === 0 ? (
+                    <p className="text-muted-foreground">No custom tags yet. Create your first one!</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {customTags.map((tag: any) => (
+                        <div key={tag.id} className="border border-border rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {tag.imageUrl ? (
+                                <img src={tag.imageUrl} alt={tag.name} className="h-6 w-6 object-cover rounded" />
+                              ) : (
+                                <Badge 
+                                  variant="secondary" 
+                                  className={`${tag.animation === 'pulse' ? 'animate-pulse' : ''} ${tag.animation === 'glow' ? 'shadow-lg shadow-primary/50' : ''}`}
+                                  style={{ 
+                                    color: tag.color || undefined, 
+                                    backgroundColor: tag.backgroundColor || undefined 
+                                  }}
+                                >
+                                  #{tag.displayName || tag.name}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Badge variant={tag.isActive ? "default" : "secondary"} className="text-xs">
+                                {tag.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <p>Name: <span className="text-foreground">#{tag.name}</span></p>
+                            {tag.displayName && <p>Display: <span className="text-foreground">{tag.displayName}</span></p>}
+                            <p>Animation: <span className="text-foreground capitalize">{tag.animation}</span></p>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => openEditTagDialog(tag)}>
+                              <Pencil className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => updateTagMutation.mutate({ id: tag.id, isActive: !tag.isActive })}
+                            >
+                              {tag.isActive ? "Disable" : "Enable"}
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Tag</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete the tag "#{tag.name}"? This won't remove the tag from existing bars, but it will stop applying custom styling.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteTagMutation.mutate(tag.id)}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Tag Create/Edit Dialog */}
+              <Dialog open={showTagDialog} onOpenChange={(open) => { setShowTagDialog(open); if (!open) resetTagForm(); }}>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>{editingTag ? "Edit Tag" : "Create New Tag"}</DialogTitle>
+                    <DialogDescription>
+                      {editingTag ? "Update the tag settings below." : "Create a custom tag with styling and animation."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="tag-name">Tag Name *</Label>
+                        <Input
+                          id="tag-name"
+                          value={tagName}
+                          onChange={(e) => setTagName(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                          placeholder="fire"
+                          disabled={!!editingTag}
+                        />
+                        <p className="text-xs text-muted-foreground">Lowercase, no spaces. This is what users type.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tag-display">Display Name</Label>
+                        <Input
+                          id="tag-display"
+                          value={tagDisplayName}
+                          onChange={(e) => setTagDisplayName(e.target.value)}
+                          placeholder="Optional: Fire 🔥"
+                        />
+                        <p className="text-xs text-muted-foreground">How it appears (can include emoji).</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Animation Effect</Label>
+                      <Select value={tagAnimation} onValueChange={setTagAnimation}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tagAnimationOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="tag-color">Text Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="tag-color"
+                            value={tagColor}
+                            onChange={(e) => setTagColor(e.target.value)}
+                            placeholder="#ffffff"
+                          />
+                          <input 
+                            type="color" 
+                            value={tagColor || "#ffffff"} 
+                            onChange={(e) => setTagColor(e.target.value)}
+                            className="w-10 h-10 rounded border cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tag-bg">Background Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="tag-bg"
+                            value={tagBgColor}
+                            onChange={(e) => setTagBgColor(e.target.value)}
+                            placeholder="#6b21a8"
+                          />
+                          <input 
+                            type="color" 
+                            value={tagBgColor || "#6b21a8"} 
+                            onChange={(e) => setTagBgColor(e.target.value)}
+                            className="w-10 h-10 rounded border cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Tag Image (optional)</Label>
+                      <div className="flex items-center gap-3">
+                        {tagImageUrl ? (
+                          <div className="flex items-center gap-2">
+                            <img src={tagImageUrl} alt="Tag preview" className="h-10 w-10 object-contain rounded border" />
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setTagImageUrl("")}
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
+                        ) : (
+                          <ObjectUploader
+                            maxNumberOfFiles={1}
+                            maxFileSize={2097152}
+                            onGetUploadParameters={async (file) => {
+                              const res = await fetch('/api/uploads/presigned-url', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify({
+                                  filename: file.name,
+                                  contentType: file.type,
+                                  directory: 'tag-images',
+                                }),
+                              });
+                              const data = await res.json();
+                              return {
+                                method: 'PUT' as const,
+                                url: data.uploadUrl,
+                                headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                              };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                const publicUrl = (file.response?.body as any)?.publicUrl || file.uploadURL?.split('?')[0];
+                                if (publicUrl) {
+                                  setTagImageUrl(publicUrl);
+                                }
+                              }
+                            }}
+                            buttonClassName="w-full"
+                          >
+                            <Image className="h-4 w-4 mr-2" />
+                            Upload Tag Image
+                          </ObjectUploader>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">If set, displays as an image instead of text badge. Max 2MB.</p>
+                    </div>
+
+                    {/* Preview */}
+                    <div className="border rounded-lg p-4 bg-secondary/20">
+                      <Label className="text-xs text-muted-foreground mb-2 block">Preview</Label>
+                      <div className="flex items-center gap-2">
+                        {tagImageUrl ? (
+                          <img src={tagImageUrl} alt="Tag preview" className="h-6 w-6 object-cover rounded" />
+                        ) : (
+                          <Badge 
+                            variant="secondary"
+                            className={`${tagAnimation === 'pulse' ? 'animate-pulse' : ''} ${tagAnimation === 'glow' ? 'shadow-lg shadow-primary/50' : ''} ${tagAnimation === 'bounce' ? 'hover:animate-bounce' : ''}`}
+                            style={{ 
+                              color: tagColor || undefined, 
+                              backgroundColor: tagBgColor || undefined 
+                            }}
+                          >
+                            #{tagDisplayName || tagName || "tagname"}
+                          </Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">← How it will look</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => { setShowTagDialog(false); resetTagForm(); }}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSaveTag} disabled={!tagName.trim() || createTagMutation.isPending || updateTagMutation.isPending}>
+                      {editingTag ? "Update Tag" : "Create Tag"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </TabsContent>
           )}
 

@@ -44,7 +44,66 @@ const BAR_TYPE_INFO: Record<BarType, { label: string; detail: string }> = {
   half_verse: { label: "Half Verse", detail: "A longer section of a verse. Up to 8 lines." },
 };
 
-function CollapsibleTags({ tags, barId }: { tags: string[]; barId: number | string }) {
+function getAnimationClasses(animation: string | undefined): string {
+  switch (animation) {
+    case 'pulse':
+      return 'animate-pulse';
+    case 'glow':
+      return 'shadow-lg shadow-primary/50 hover:shadow-xl hover:shadow-primary/70';
+    case 'bounce':
+      return 'hover:animate-bounce';
+    case 'shimmer':
+      return 'relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-[shimmer_2s_infinite]';
+    case 'sparkle':
+      return 'animate-pulse hover:brightness-125';
+    case 'gradient':
+      return 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white hover:from-red-500 hover:via-pink-500 hover:to-purple-500 transition-all duration-500';
+    default:
+      return '';
+  }
+}
+
+function StyledTag({ tag, barId, customTags }: { tag: string; barId: number | string; customTags: any[] }) {
+  const normalizedTag = tag.toLowerCase().trim();
+  const customTag = customTags.find(ct => ct.name === normalizedTag);
+  
+  const animationClass = getAnimationClasses(customTag?.animation);
+  
+  if (customTag?.imageUrl) {
+    return (
+      <Link href={`/?tag=${encodeURIComponent(tag)}`}>
+        <img 
+          src={customTag.imageUrl} 
+          alt={`#${tag}`} 
+          className={`h-5 w-auto object-contain rounded cursor-pointer hover:scale-110 transition-transform ${animationClass}`}
+          data-testid={`badge-tag-${tag}-${barId}`}
+        />
+      </Link>
+    );
+  }
+  
+  const style = customTag ? {
+    color: customTag.color || undefined,
+    backgroundColor: customTag.animation === 'gradient' ? undefined : (customTag.backgroundColor || undefined),
+  } : {};
+  
+  const displayName = customTag?.displayName || tag;
+  
+  return (
+    <Link href={`/?tag=${encodeURIComponent(tag)}`}>
+      <Badge 
+        variant="secondary" 
+        className={`text-xs hover:bg-primary/20 hover:text-primary cursor-pointer transition-all ${animationClass} ${customTag ? '' : 'text-muted-foreground'}`}
+        style={style}
+        data-testid={`badge-tag-${tag}-${barId}`}
+      >
+        #{displayName}
+      </Badge>
+    </Link>
+  );
+}
+
+function CollapsibleTags({ tags, barId, customTags }: { tags: string[]; barId: number | string; customTags: any[] }) {
   const [expanded, setExpanded] = useState(false);
   const MAX_VISIBLE = 2;
   
@@ -52,11 +111,7 @@ function CollapsibleTags({ tags, barId }: { tags: string[]; barId: number | stri
     return (
       <>
         {tags.map(tag => (
-          <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}>
-            <Badge variant="secondary" className="text-xs text-muted-foreground hover:bg-primary/20 hover:text-primary cursor-pointer transition-colors" data-testid={`badge-tag-${tag}-${barId}`}>
-              #{tag}
-            </Badge>
-          </Link>
+          <StyledTag key={tag} tag={tag} barId={barId} customTags={customTags} />
         ))}
       </>
     );
@@ -68,11 +123,7 @@ function CollapsibleTags({ tags, barId }: { tags: string[]; barId: number | stri
   return (
     <>
       {visibleTags.map(tag => (
-        <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}>
-          <Badge variant="secondary" className="text-xs text-muted-foreground hover:bg-primary/20 hover:text-primary cursor-pointer transition-colors" data-testid={`badge-tag-${tag}-${barId}`}>
-            #{tag}
-          </Badge>
-        </Link>
+        <StyledTag key={tag} tag={tag} barId={barId} customTags={customTags} />
       ))}
       <Badge 
         variant="outline" 
@@ -225,6 +276,17 @@ export default function BarCard({ bar }: BarCardProps) {
   const { currentUser } = useBars();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  const { data: customTags = [] } = useQuery({
+    queryKey: ['customTags'],
+    queryFn: async () => {
+      const res = await fetch('/api/tags/custom', { credentials: 'include' });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+  });
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -800,7 +862,7 @@ export default function BarCard({ bar }: BarCardProps) {
                 {bar.category}
               </Badge>
               {bar.tags && bar.tags.length > 0 && (
-                <CollapsibleTags tags={bar.tags} barId={bar.id} />
+                <CollapsibleTags tags={bar.tags} barId={bar.id} customTags={customTags} />
               )}
             </div>
           </CardContent>

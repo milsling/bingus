@@ -2224,6 +2224,87 @@ export async function registerRoutes(
     }
   });
 
+  // Custom tag routes
+  app.get("/api/tags/custom", async (_req, res) => {
+    try {
+      const tags = await storage.getActiveCustomTags();
+      res.json(tags);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/tags", isOwner, async (_req, res) => {
+    try {
+      const tags = await storage.getAllCustomTags();
+      res.json(tags);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/tags", isOwner, async (req, res) => {
+    try {
+      const { name, displayName, imageUrl, animation, color, backgroundColor } = req.body;
+      if (!name || !name.trim()) {
+        return res.status(400).json({ message: "Tag name is required" });
+      }
+      
+      const existing = await storage.getCustomTagByName(name);
+      if (existing) {
+        return res.status(400).json({ message: "A tag with this name already exists" });
+      }
+      
+      const tag = await storage.createCustomTag({
+        name: name.trim(),
+        displayName: displayName?.trim() || null,
+        imageUrl: imageUrl || null,
+        animation: animation || "none",
+        color: color || null,
+        backgroundColor: backgroundColor || null,
+        createdBy: req.user!.id,
+      });
+      res.json(tag);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/admin/tags/:id", isOwner, async (req, res) => {
+    try {
+      const { name, displayName, imageUrl, animation, color, backgroundColor, isActive } = req.body;
+      const updates: any = {};
+      
+      if (name !== undefined) updates.name = name;
+      if (displayName !== undefined) updates.displayName = displayName;
+      if (imageUrl !== undefined) updates.imageUrl = imageUrl;
+      if (animation !== undefined) updates.animation = animation;
+      if (color !== undefined) updates.color = color;
+      if (backgroundColor !== undefined) updates.backgroundColor = backgroundColor;
+      if (isActive !== undefined) updates.isActive = isActive;
+      
+      const tag = await storage.updateCustomTag(req.params.id, updates);
+      if (!tag) {
+        return res.status(404).json({ message: "Tag not found" });
+      }
+      res.json(tag);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/tags/:id", isOwner, async (req, res) => {
+    try {
+      const success = await storage.deleteCustomTag(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Tag not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Admin archive routes (soft-deleted bars)
   app.get("/api/admin/archive", isAdmin, async (req, res) => {
     try {
