@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, customTags, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type CustomTag, type InsertCustomTag, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, customTags, customCategories, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type CustomTag, type InsertCustomTag, type CustomCategory, type InsertCustomCategory, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -2130,6 +2130,43 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCustomTag(id: string): Promise<boolean> {
     const result = await db.delete(customTags).where(eq(customTags.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Custom category methods
+  async getAllCustomCategories(): Promise<CustomCategory[]> {
+    return db.select().from(customCategories).orderBy(customCategories.sortOrder, customCategories.name);
+  }
+
+  async getActiveCustomCategories(): Promise<CustomCategory[]> {
+    return db.select().from(customCategories).where(eq(customCategories.isActive, true)).orderBy(customCategories.sortOrder, customCategories.name);
+  }
+
+  async getCustomCategoryByName(name: string): Promise<CustomCategory | undefined> {
+    const normalizedName = name.toLowerCase().trim();
+    const [category] = await db.select().from(customCategories).where(eq(customCategories.name, normalizedName));
+    return category;
+  }
+
+  async createCustomCategory(data: Omit<InsertCustomCategory, 'id' | 'createdAt'>): Promise<CustomCategory> {
+    const normalizedName = data.name.toLowerCase().trim();
+    const [category] = await db.insert(customCategories).values({
+      ...data,
+      name: normalizedName,
+    }).returning();
+    return category;
+  }
+
+  async updateCustomCategory(id: string, updates: Partial<Omit<InsertCustomCategory, 'id' | 'createdAt'>>): Promise<CustomCategory | undefined> {
+    if (updates.name) {
+      updates.name = updates.name.toLowerCase().trim();
+    }
+    const [category] = await db.update(customCategories).set(updates).where(eq(customCategories.id, id)).returning();
+    return category;
+  }
+
+  async deleteCustomCategory(id: string): Promise<boolean> {
+    const result = await db.delete(customCategories).where(eq(customCategories.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 }

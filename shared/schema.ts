@@ -452,6 +452,31 @@ export const insertCustomTagSchema = createInsertSchema(customTags).omit({
   createdAt: true,
 });
 
+export const customCategories = pgTable("custom_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name"),
+  imageUrl: text("image_url"),
+  color: text("color"),
+  backgroundColor: text("background_color"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const customCategoriesRelations = relations(customCategories, ({ one }) => ({
+  creator: one(users, { fields: [customCategories.createdBy], references: [users.id] }),
+}));
+
+export type CustomCategory = typeof customCategories.$inferSelect;
+export type InsertCustomCategory = typeof customCategories.$inferInsert;
+
+export const insertCustomCategorySchema = createInsertSchema(customCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type AchievementId = keyof typeof ACHIEVEMENTS;
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({

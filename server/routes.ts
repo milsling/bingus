@@ -2305,6 +2305,88 @@ export async function registerRoutes(
     }
   });
 
+  // Public custom categories endpoint
+  app.get("/api/categories/custom", async (_req, res) => {
+    try {
+      const categories = await storage.getActiveCustomCategories();
+      res.json(categories);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin custom categories CRUD
+  app.get("/api/admin/categories", isOwner, async (_req, res) => {
+    try {
+      const categories = await storage.getAllCustomCategories();
+      res.json(categories);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/categories", isOwner, async (req, res) => {
+    try {
+      const { name, displayName, imageUrl, color, backgroundColor, sortOrder } = req.body;
+      if (!name || !name.trim()) {
+        return res.status(400).json({ message: "Category name is required" });
+      }
+      
+      const existing = await storage.getCustomCategoryByName(name);
+      if (existing) {
+        return res.status(400).json({ message: "A category with this name already exists" });
+      }
+      
+      const category = await storage.createCustomCategory({
+        name: name.trim(),
+        displayName: displayName?.trim() || null,
+        imageUrl: imageUrl || null,
+        color: color || null,
+        backgroundColor: backgroundColor || null,
+        sortOrder: sortOrder ?? 0,
+        createdBy: req.user!.id,
+      });
+      res.json(category);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/admin/categories/:id", isOwner, async (req, res) => {
+    try {
+      const { name, displayName, imageUrl, color, backgroundColor, sortOrder, isActive } = req.body;
+      const updates: any = {};
+      
+      if (name !== undefined) updates.name = name;
+      if (displayName !== undefined) updates.displayName = displayName;
+      if (imageUrl !== undefined) updates.imageUrl = imageUrl;
+      if (color !== undefined) updates.color = color;
+      if (backgroundColor !== undefined) updates.backgroundColor = backgroundColor;
+      if (sortOrder !== undefined) updates.sortOrder = sortOrder;
+      if (isActive !== undefined) updates.isActive = isActive;
+      
+      const category = await storage.updateCustomCategory(req.params.id, updates);
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json(category);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/categories/:id", isOwner, async (req, res) => {
+    try {
+      const success = await storage.deleteCustomCategory(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Admin archive routes (soft-deleted bars)
   app.get("/api/admin/archive", isAdmin, async (req, res) => {
     try {
