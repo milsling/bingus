@@ -187,7 +187,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         setIsOpen(false);
                         setOrphieOpen(true);
                       }}
-                      className="flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500"
+                      className="flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95 bg-gradient-to-br from-purple-950 to-purple-900 hover:from-purple-900 hover:to-purple-800 border-t border-purple-700/30"
                       data-testid="nav-section-orphie"
                     >
                       <Sparkles className="h-7 w-7 text-white mb-1" />
