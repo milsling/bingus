@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload, Image } from "lucide-react";
+import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload, Image, Star } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
@@ -2873,6 +2873,32 @@ export default function Admin() {
                             Look Up
                           </Button>
                         </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Calculate Retroactive XP</Label>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          data-testid="button-retro-xp"
+                          onClick={async () => {
+                            try {
+                              const res = await fetch('/api/retro-xp', {
+                                method: 'POST',
+                                credentials: 'include',
+                              });
+                              const data = await res.json();
+                              if (!res.ok) throw new Error(data.message);
+                              toast({ title: "Retroactive XP Calculated", description: `Updated ${data.results?.length || 0} users` });
+                              setConsoleOutput({ rows: data.results || [], rowCount: data.results?.length || 0 });
+                            } catch (error: any) {
+                              toast({ title: "Error", description: error.message, variant: "destructive" });
+                            }
+                          }}
+                        >
+                          <Star className="h-4 w-4 mr-2" />
+                          Run XP Calculation
+                        </Button>
                       </div>
 
                       <div className="space-y-2">
