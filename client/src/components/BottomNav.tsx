@@ -15,12 +15,14 @@ import {
   Search,
   DoorOpen,
   Heart,
-  BarChart3
+  BarChart3,
+  Sparkles
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
+import AIAssistant from "@/components/AIAssistant";
 import orphanBarsMenuLogo from "@/assets/orphan-bars-menu-logo.png";
 import orphanageFullLogoWhite from "@/assets/orphanage-full-logo-white.png";
 import orphanageFullLogoDark from "@/assets/orphanage-full-logo-dark.png";
@@ -32,6 +34,7 @@ interface BottomNavProps {
 export function BottomNav({ onNewMessage }: BottomNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [orphieOpen, setOrphieOpen] = useState(false);
   const [location, setLocation] = useLocation();
   const [menuSection, setMenuSection] = useState<"orphanbars" | "orphanage">(
     location.startsWith("/orphanage") ? "orphanage" : "orphanbars"
@@ -135,7 +138,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       handleNavClick("/");
                     }}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95",
+                      "flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
                       menuSection === "orphanbars" ? "bg-primary" : "bg-primary/80"
                     )}
                     data-testid="nav-section-orphanbars"
@@ -144,13 +147,13 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanBarsMenuLogo} 
                       alt="Orphan Bars" 
                       className={cn(
-                        "h-16 w-auto transition-all mb-1",
+                        "h-10 w-auto transition-all mb-1",
                         menuSection === "orphanbars" ? "brightness-0 invert" : "brightness-0 invert opacity-70"
                       )}
                     />
                     <span 
                       className={cn(
-                        "text-lg font-medium transition-colors",
+                        "text-sm font-medium transition-colors",
                         menuSection === "orphanbars" ? "text-primary-foreground" : "text-primary-foreground/70"
                       )} 
                       style={{ fontFamily: 'var(--font-logo)' }}
@@ -163,7 +166,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       handleNavClick("/orphanage");
                     }}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95",
+                      "flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95",
                       menuSection === "orphanage" ? "bg-primary" : "bg-primary/60"
                     )}
                     data-testid="nav-section-orphanage"
@@ -172,11 +175,25 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanageFullLogoWhite} 
                       alt="The Orphanage" 
                       className={cn(
-                        "h-24 w-auto object-contain transition-all",
+                        "h-16 w-auto object-contain transition-all",
                         menuSection !== "orphanage" && "opacity-70"
                       )}
                     />
                   </button>
+                  
+                  {currentUser && (
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        setOrphieOpen(true);
+                      }}
+                      className="flex-1 flex flex-col items-center justify-center px-3 py-3 transition-all active:scale-95 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500"
+                      data-testid="nav-section-orphie"
+                    >
+                      <Sparkles className="h-7 w-7 text-white mb-1" />
+                      <span className="text-sm font-medium text-white">Orphie AI</span>
+                    </button>
+                  )}
                 </div>
                 
                 <div className="flex-1 flex flex-col bg-card">
@@ -342,6 +359,8 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
           </div>
         </div>
       </div>
+      
+      <AIAssistant open={orphieOpen} onOpenChange={setOrphieOpen} hideFloatingButton />
     </>
   );
 }

@@ -86,7 +86,7 @@ function App() {
           <SwipeBackNavigation>
             <Router />
           </SwipeBackNavigation>
-          <AIAssistant />
+          <AIAssistant hideFloatingButton />
         </TooltipProvider>
       </BarProvider>
     </QueryClientProvider>

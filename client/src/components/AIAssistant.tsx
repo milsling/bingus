@@ -11,8 +11,17 @@ interface Message {
   content: string;
 }
 
-export default function AIAssistant() {
-  const [isOpen, setIsOpen] = useState(false);
+interface AIAssistantProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideFloatingButton?: boolean;
+}
+
+export default function AIAssistant({ open, onOpenChange, hideFloatingButton = false }: AIAssistantProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const isOpen = open !== undefined ? open : internalOpen;
+  const setIsOpen = onOpenChange || setInternalOpen;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -48,16 +57,18 @@ export default function AIAssistant() {
 
   return (
     <>
-      <div className="fixed bottom-20 right-4 md:bottom-6 z-50 flex flex-col gap-3">
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-500/30"
-          size="icon"
-          data-testid="button-ai-assistant"
-        >
-          <Sparkles className="h-6 w-6" />
-        </Button>
-      </div>
+      {!hideFloatingButton && (
+        <div className="fixed bottom-20 right-4 md:bottom-6 z-50 flex flex-col gap-3">
+          <Button
+            onClick={() => setIsOpen(true)}
+            className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-500/30"
+            size="icon"
+            data-testid="button-ai-assistant"
+          >
+            <Sparkles className="h-6 w-6" />
+          </Button>
+        </div>
+      )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-md h-[70vh] flex flex-col p-0 gap-0">
