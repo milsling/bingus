@@ -287,22 +287,21 @@ html.dark {
   border: 2px solid transparent;
 }
 
-/* OB Founder badge - smooth gold glow */
-@keyframes founder-gold-glow {
+/* OB Founder badge - smooth gold pulse glow */
+@keyframes founderPulse {
   0%, 100% { 
-    box-shadow: 
-      0 0 8px 2px rgba(255, 193, 7, 0.6),
-      0 0 16px 4px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 10px #ffd70060;
   }
   50% { 
-    box-shadow: 
-      0 0 12px 4px rgba(255, 193, 7, 0.8),
-      0 0 24px 8px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 0 25px #ffd700ff, 0 0 40px #ffaa00aa;
   }
 }
 
 .badge-founder-electric {
-  animation: founder-gold-glow 3s ease-in-out infinite;
+  position: relative;
   background: linear-gradient(135deg, #b8860b, #daa520, #ffd700);
   border: 1px solid rgba(255, 215, 0, 0.5);
+  color: #fff;
+  text-shadow: 0 0 10px #ffd70080;
+  animation: founderPulse 4s ease-in-out infinite;
 }
