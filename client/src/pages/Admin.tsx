@@ -1787,9 +1787,9 @@ export default function Admin() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <div className="flex items-center gap-2">
+                        <div className="space-y-2">
                           <Label>Logic:</Label>
-                          <div className="flex gap-1">
+                          <div className="flex flex-wrap gap-2">
                             <Button
                               type="button"
                               variant={ruleOperator === "AND" ? "default" : "outline"}
@@ -1799,7 +1799,7 @@ export default function Admin() {
                               data-testid="button-operator-and"
                             >
                               <span className={ruleOperator === "AND" ? "" : "text-blue-400"}>AND</span>
-                              <span className="ml-1 text-xs opacity-70">(all must be true)</span>
+                              <span className="ml-1 text-xs opacity-70 hidden sm:inline">(all must be true)</span>
                             </Button>
                             <Button
                               type="button"
@@ -1810,7 +1810,7 @@ export default function Admin() {
                               data-testid="button-operator-or"
                             >
                               <span className={ruleOperator === "OR" ? "" : "text-orange-400"}>OR</span>
-                              <span className="ml-1 text-xs opacity-70">(any can be true)</span>
+                              <span className="ml-1 text-xs opacity-70 hidden sm:inline">(any can be true)</span>
                             </Button>
                           </div>
                         </div>
