@@ -514,6 +514,57 @@ export const insertCustomCategorySchema = createInsertSchema(customCategories).o
 
 export type AchievementId = keyof typeof ACHIEVEMENTS;
 
+// Profile Badges - Custom badges that appear next to usernames
+export const profileBadges = pgTable("profile_badges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  emoji: text("emoji"),
+  color: text("color"), // text color
+  backgroundColor: text("background_color"),
+  borderColor: text("border_color"),
+  animation: text("animation").notNull().default("none"),
+  rarity: text("rarity").notNull().default("common"), // common, rare, epic, legendary
+  isActive: boolean("is_active").notNull().default(true),
+  linkedAchievementId: text("linked_achievement_id"), // links to achievement key if earned from achievement
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const profileBadgesRelations = relations(profileBadges, ({ one }) => ({
+  creator: one(users, { fields: [profileBadges.createdBy], references: [users.id] }),
+}));
+
+export type ProfileBadge = typeof profileBadges.$inferSelect;
+export type InsertProfileBadge = typeof profileBadges.$inferInsert;
+
+export const insertProfileBadgeSchema = createInsertSchema(profileBadges).omit({
+  id: true,
+  createdAt: true,
+});
+
+// User Badges - Junction table for which users own which badges
+export const userBadges = pgTable("user_badges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  badgeId: varchar("badge_id").notNull().references(() => profileBadges.id, { onDelete: "cascade" }),
+  source: text("source").notNull().default("owner_gift"), // "achievement", "owner_gift", "purchase", "event"
+  sourceDetails: text("source_details"), // e.g., achievement ID or event name
+  grantedBy: varchar("granted_by").references(() => users.id), // who gave the badge (for owner gifts)
+  grantedAt: timestamp("granted_at").notNull().defaultNow(),
+});
+
+export const userBadgesRelations = relations(userBadges, ({ one }) => ({
+  user: one(users, { fields: [userBadges.userId], references: [users.id] }),
+  badge: one(profileBadges, { fields: [userBadges.badgeId], references: [profileBadges.id] }),
+  granter: one(users, { fields: [userBadges.grantedBy], references: [users.id] }),
+}));
+
+export type UserBadge = typeof userBadges.$inferSelect;
+export type InsertUserBadge = typeof userBadges.$inferInsert;
+
 export const notificationsRelations = relations(notifications, ({ one }) => ({
   user: one(users, { fields: [notifications.userId], references: [users.id] }),
   actor: one(users, { fields: [notifications.actorId], references: [users.id] }),
