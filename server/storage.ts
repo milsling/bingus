@@ -2409,6 +2409,11 @@ export class DatabaseStorage implements IStorage {
     await db.update(users).set({ displayedBadges: badgeIds }).where(eq(users.id, userId));
   }
 
+  async getUserDisplayedBadges(userId: string): Promise<ProfileBadge[]> {
+    const result = await this.getDisplayedBadgesForUsers([userId]);
+    return result.get(userId) || [];
+  }
+
   async getDisplayedBadgesForUsers(userIds: string[]): Promise<Map<string, ProfileBadge[]>> {
     if (userIds.length === 0) return new Map();
     

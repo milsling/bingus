@@ -2660,6 +2660,16 @@ export async function registerRoutes(
     }
   });
 
+  // Get displayed badges for any user (public)
+  app.get("/api/users/:userId/displayed-badges", async (req, res) => {
+    try {
+      const badges = await storage.getUserDisplayedBadges(req.params.userId);
+      res.json(badges);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Set displayed badges for current user
   app.patch("/api/badges/displayed", isAuthenticated, async (req, res) => {
     try {

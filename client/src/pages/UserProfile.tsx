@@ -3,6 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { api } from "@/lib/api";
 import Navigation from "@/components/Navigation";
 import BarCard from "@/components/BarCard";
+import { UserProfileBadges } from "@/components/UserProfileBadges";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -278,6 +279,7 @@ export default function UserProfile() {
                 <h1 className="text-xl md:text-2xl font-bold" data-testid="text-username">
                   @{user.username}
                 </h1>
+                <UserProfileBadges userId={user.id} size="sm" maxBadges={5} />
                 {user.membershipTier !== "free" && (
                   <Badge variant="secondary">{user.membershipTier}</Badge>
                 )}

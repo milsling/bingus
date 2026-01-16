@@ -2,6 +2,7 @@ import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import BarCard from "@/components/BarCard";
+import { UserProfileBadges } from "@/components/UserProfileBadges";
 import { Settings, Share2, MapPin, Edit, Trophy, Star, Crown, Zap } from "lucide-react";
 import { ACHIEVEMENTS, type AchievementId, type AchievementRarity } from "@shared/schema";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -193,6 +194,7 @@ export default function Profile() {
               <div className="mb-2">
                 <h1 className="text-2xl md:text-3xl font-display font-bold flex items-center gap-2 flex-wrap">
                   @{currentUser.username}
+                  <UserProfileBadges userId={currentUser.id} size="sm" maxBadges={5} />
                   {currentUser.membershipTier !== "free" && <span className="text-primary text-xl">✓</span>}
                   {currentUser.username.toLowerCase() === "milsling" && (
                     <span className="ml-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-normal">

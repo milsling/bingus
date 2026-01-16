@@ -3,6 +3,7 @@ import type { BarWithUser } from "@shared/schema";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music, Flag, Info, LockKeyhole, Star, Crown, Sparkles } from "lucide-react";
 import AIAssistant from "@/components/AIAssistant";
 import { BarMediaPlayer } from "@/components/BarMediaPlayer";
+import { UserProfileBadges } from "@/components/UserProfileBadges";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { shareContent, getBarShareData } from "@/lib/share";
 import ProofScreenshot from "@/components/ProofScreenshot";
@@ -227,6 +228,7 @@ function CommentItem({ comment, currentUserId, onDelete }: CommentItemProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold">@{comment.user?.username}</span>
+          {comment.user?.id && <UserProfileBadges userId={comment.user.id} size="xs" maxBadges={2} />}
           <span className="text-[10px] text-muted-foreground">{formatTimestamp(comment.createdAt)}</span>
         </div>
         <p className="text-sm text-foreground/80">{comment.content}</p>
@@ -703,6 +705,7 @@ export default function BarCard({ bar }: BarCardProps) {
                       Admin
                     </Badge>
                   )}
+                  <UserProfileBadges userId={bar.user.id} size="xs" maxBadges={3} />
                 </div>
                 <span className="text-xs text-muted-foreground" data-testid={`text-timestamp-${bar.id}`}>
                   {formatTimestamp(bar.createdAt)}
