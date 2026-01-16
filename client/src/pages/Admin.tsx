@@ -3038,31 +3038,34 @@ export default function Admin() {
                         ) : (
                           <ObjectUploader
                             maxNumberOfFiles={1}
-                            maxFileSize={2097152}
+                            maxFileSize={5242880}
                             onGetUploadParameters={async (file) => {
-                              const res = await fetch('/api/uploads/presigned-url', {
+                              const res = await fetch('/api/uploads/request-url', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 credentials: 'include',
                                 body: JSON.stringify({
-                                  filename: file.name,
+                                  name: file.name,
+                                  size: file.size,
                                   contentType: file.type,
-                                  directory: 'badge-images',
                                 }),
                               });
+                              if (!res.ok) {
+                                throw new Error('Failed to get upload URL');
+                              }
                               const data = await res.json();
                               return {
                                 method: 'PUT' as const,
-                                url: data.uploadUrl,
+                                url: data.uploadURL,
                                 headers: { 'Content-Type': file.type || 'application/octet-stream' },
                               };
                             }}
                             onComplete={(result) => {
                               if (result.successful && result.successful.length > 0) {
                                 const file = result.successful[0];
-                                const publicUrl = (file.response?.body as any)?.publicUrl || file.uploadURL?.split('?')[0];
-                                if (publicUrl) {
-                                  setBadgeImageUrl(publicUrl);
+                                const objectPath = (file.response?.body as any)?.objectPath;
+                                if (objectPath) {
+                                  setBadgeImageUrl(objectPath);
                                 }
                               }
                             }}
