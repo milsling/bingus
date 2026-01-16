@@ -41,6 +41,9 @@ export default function Admin() {
   const [consoleHistory, setConsoleHistory] = useState<string[]>([]);
   const [actionUsername, setActionUsername] = useState("");
   
+  // Tab navigation state
+  const [activeTab, setActiveTab] = useState("moderation");
+  
   // Custom Tags state
   const [showTagDialog, setShowTagDialog] = useState(false);
   const [editingTag, setEditingTag] = useState<any>(null);
@@ -969,8 +972,12 @@ export default function Admin() {
           <h1 className="text-3xl font-display font-bold">Admin Dashboard</h1>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-card/50">
+        <div className={`grid grid-cols-2 gap-4 mb-8 ${currentUser?.isOwner ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+          <Card 
+            className="bg-card/50 cursor-pointer hover:bg-card/70 transition-colors border-2 border-transparent hover:border-blue-500/50"
+            onClick={() => setActiveTab("users")}
+            data-testid="card-total-users"
+          >
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <Users className="h-8 w-8 text-blue-500" />
@@ -981,7 +988,11 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-card/50">
+          <Card 
+            className="bg-card/50 cursor-pointer hover:bg-card/70 transition-colors border-2 border-transparent hover:border-green-500/50"
+            onClick={() => setActiveTab("bars")}
+            data-testid="card-total-bars"
+          >
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <FileText className="h-8 w-8 text-green-500" />
@@ -992,7 +1003,11 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-card/50">
+          <Card 
+            className="bg-card/50 cursor-pointer hover:bg-card/70 transition-colors border-2 border-transparent hover:border-yellow-500/50"
+            onClick={() => setActiveTab("users")}
+            data-testid="card-admins"
+          >
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <Crown className="h-8 w-8 text-yellow-500" />
@@ -1003,9 +1018,26 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
+          {currentUser?.isOwner && (
+            <Card 
+              className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 cursor-pointer hover:from-purple-600/30 hover:to-pink-600/30 transition-colors border-2 border-purple-500/50 hover:border-purple-500"
+              onClick={() => setActiveTab("console")}
+              data-testid="card-owner-console"
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <Power className="h-8 w-8 text-purple-500" />
+                  <div>
+                    <p className="text-2xl font-bold">Owner</p>
+                    <p className="text-sm text-muted-foreground">Console</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        <Tabs defaultValue="moderation" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full mb-6 ${(currentUser?.isOwner || currentUser?.isAdminPlus) ? 'grid-cols-9' : 'grid-cols-7'}`}>
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
               <Eye className="h-4 w-4" />
