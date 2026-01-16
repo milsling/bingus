@@ -7,10 +7,35 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowLeft, Trophy, Lock, Check, Star, Sparkles, Crown, Gem } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Trophy, Lock, Check, Star, Sparkles, Crown, Gem, Gift } from "lucide-react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+
+interface ProfileBadge {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string | null;
+  imageUrl: string | null;
+  emoji: string | null;
+  color: string | null;
+  backgroundColor: string | null;
+  borderColor: string | null;
+  animation: string;
+  rarity: string;
+}
+
+interface UserProfileBadge {
+  id: string;
+  userId: string;
+  badgeId: string;
+  source: string;
+  sourceDetails: string | null;
+  grantedAt: string;
+  badge: ProfileBadge;
+}
 
 const rarityConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
   common: { 
@@ -105,6 +130,50 @@ export default function Badges() {
     },
   });
 
+  // Profile Badges (collectible badges given by owner/events)
+  const { data: myProfileBadges = [] } = useQuery<UserProfileBadge[]>({
+    queryKey: ["my-profile-badges"],
+    queryFn: async () => {
+      const res = await fetch("/api/badges/my-collection", { credentials: "include" });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!currentUser?.id,
+  });
+
+  const displayedProfileBadgeIds = userData?.displayedBadges || [];
+
+  const updateProfileBadgesMutation = useMutation({
+    mutationFn: async (badgeIds: string[]) => {
+      const res = await fetch("/api/badges/displayed", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ badgeIds }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to update displayed badges");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      toast({ title: "Profile badges updated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const toggleProfileBadge = (badgeId: string) => {
+    const newDisplayed = displayedProfileBadgeIds.includes(badgeId)
+      ? displayedProfileBadgeIds.filter((id: string) => id !== badgeId)
+      : [...displayedProfileBadgeIds, badgeId];
+    updateProfileBadgesMutation.mutate(newDisplayed);
+  };
+
   const unlockedIds = new Set(userAchievements.map((a: { achievementId: string }) => a.achievementId));
   const displayedBadges = new Set(userData?.displayedBadges || []);
 
@@ -165,10 +234,27 @@ export default function Badges() {
             My Badges
           </h1>
           <p className="text-sm text-muted-foreground">
-            Toggle badges to display on your profile (max 5)
+            Manage your achievement badges and profile badges
           </p>
         </div>
       </div>
+
+      <Tabs defaultValue="achievements" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="achievements" className="gap-2">
+            <Trophy className="h-4 w-4" />
+            Achievements
+          </TabsTrigger>
+          <TabsTrigger value="profile-badges" className="gap-2">
+            <Gift className="h-4 w-4" />
+            Profile Badges
+            {myProfileBadges.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">{myProfileBadges.length}</Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="achievements">
 
       <div className="mb-6">
         <div className="flex items-center gap-2 flex-wrap">
@@ -403,6 +489,119 @@ export default function Badges() {
           </div>
         )}
       </div>
+        </TabsContent>
+
+        <TabsContent value="profile-badges">
+          {myProfileBadges.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Gift className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Profile Badges Yet</h3>
+                <p className="text-muted-foreground">
+                  Profile badges are special collectibles given by the site owner or earned through events. Keep an eye out for them!
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              <div className="mb-6 p-4 rounded-lg bg-secondary/20 border border-border">
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <Star className="h-4 w-4 text-pink-500" />
+                  Currently Displaying
+                </h3>
+                {displayedProfileBadgeIds.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No profile badges selected. Click a badge below to display it.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {displayedProfileBadgeIds.map((badgeId: string) => {
+                      const userBadge = myProfileBadges.find(ub => ub.badge.id === badgeId);
+                      if (!userBadge) return null;
+                      const badge = userBadge.badge;
+                      return (
+                        <Badge
+                          key={badgeId}
+                          variant="secondary"
+                          className={cn(
+                            "gap-1",
+                            badge.animation === "pulse" && "animate-pulse",
+                            badge.animation === "glow" && "shadow-lg shadow-primary/50"
+                          )}
+                          style={{
+                            color: badge.color || undefined,
+                            backgroundColor: badge.backgroundColor || undefined,
+                            borderColor: badge.borderColor || undefined,
+                            borderWidth: badge.borderColor ? "2px" : undefined,
+                          }}
+                        >
+                          {badge.emoji && <span>{badge.emoji}</span>}
+                          {badge.displayName}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {myProfileBadges.map((userBadge) => {
+                  const badge = userBadge.badge;
+                  const isDisplayed = displayedProfileBadgeIds.includes(badge.id);
+                  const config = rarityConfig[badge.rarity] || rarityConfig.common;
+                  
+                  return (
+                    <Card
+                      key={userBadge.id}
+                      className={cn(
+                        "transition-all cursor-pointer hover:bg-card/70",
+                        isDisplayed && "ring-2 ring-primary border-primary"
+                      )}
+                      onClick={() => toggleProfileBadge(badge.id)}
+                      data-testid={`profile-badge-card-${badge.id}`}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0">
+                            {badge.imageUrl ? (
+                              <img
+                                src={badge.imageUrl}
+                                alt={badge.displayName}
+                                className="h-12 w-12 object-contain rounded"
+                              />
+                            ) : badge.emoji ? (
+                              <span className="text-3xl">{badge.emoji}</span>
+                            ) : (
+                              <Gift className="h-10 w-10 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold truncate">{badge.displayName}</span>
+                              {isDisplayed && (
+                                <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                              )}
+                            </div>
+                            {badge.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">{badge.description}</p>
+                            )}
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="outline" className={cn("text-xs capitalize", config.color)}>
+                                {badge.rarity}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground capitalize">
+                                {userBadge.source.replace(/_/g, " ")}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
