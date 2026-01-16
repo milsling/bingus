@@ -2,6 +2,12 @@ import type { User, BarWithUser } from "@shared/schema";
 
 type ApiError = {
   message: string;
+  aiRejected?: boolean;
+  canRequestReview?: boolean;
+  reasons?: string[];
+  plagiarismRisk?: string;
+  plagiarismDetails?: string;
+  blocked?: boolean;
 };
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -9,7 +15,19 @@ async function handleResponse<T>(response: Response): Promise<T> {
     const error: ApiError = await response.json().catch(() => ({ 
       message: 'An error occurred' 
     }));
-    throw new Error(error.message);
+    // Create an error that preserves all the extended properties for AI moderation
+    const extendedError: any = new Error(error.message);
+    if (error.aiRejected) {
+      extendedError.aiRejected = error.aiRejected;
+      extendedError.canRequestReview = error.canRequestReview;
+      extendedError.reasons = error.reasons;
+      extendedError.plagiarismRisk = error.plagiarismRisk;
+      extendedError.plagiarismDetails = error.plagiarismDetails;
+    }
+    if (error.blocked) {
+      extendedError.blocked = error.blocked;
+    }
+    throw extendedError;
   }
   return response.json();
 }

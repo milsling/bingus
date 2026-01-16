@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload, Image, Star } from "lucide-react";
+import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload, Image, Star, Bot, FileQuestion } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
@@ -269,6 +269,65 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'moderation', 'pending'] });
       toast({ title: "Bar rejected" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // AI Review Requests for bars rejected by AI moderation
+  const { data: aiReviewRequests = [], isLoading: isLoadingAiReviews } = useQuery<any[]>({
+    queryKey: ['admin', 'ai-review-requests'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/ai-review-requests?status=pending', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch AI review requests');
+      return res.json();
+    },
+    enabled: !!currentUser?.isAdmin,
+  });
+
+  const [selectedAiReview, setSelectedAiReview] = useState<any | null>(null);
+  const [aiReviewNotes, setAiReviewNotes] = useState("");
+
+  const approveAiReviewMutation = useMutation({
+    mutationFn: async ({ id, reviewNotes }: { id: string; reviewNotes: string }) => {
+      const res = await fetch(`/api/admin/ai-review-requests/${id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reviewNotes }),
+      });
+      if (!res.ok) throw new Error('Failed to approve');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'ai-review-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      setSelectedAiReview(null);
+      setAiReviewNotes("");
+      toast({ title: "Bar approved and posted!" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const rejectAiReviewMutation = useMutation({
+    mutationFn: async ({ id, reviewNotes }: { id: string; reviewNotes: string }) => {
+      const res = await fetch(`/api/admin/ai-review-requests/${id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reviewNotes }),
+      });
+      if (!res.ok) throw new Error('Failed to reject');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'ai-review-requests'] });
+      setSelectedAiReview(null);
+      setAiReviewNotes("");
+      toast({ title: "Review request rejected" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -1038,13 +1097,22 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full mb-6 ${(currentUser?.isOwner || currentUser?.isAdminPlus) ? 'grid-cols-7' : 'grid-cols-6'}`}>
+          <TabsList className={`grid w-full mb-6 ${(currentUser?.isOwner || currentUser?.isAdminPlus) ? 'grid-cols-8' : 'grid-cols-7'}`}>
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
               {pendingBars.length > 0 && (
                 <Badge variant="destructive" className="ml-1 text-xs">
                   {pendingBars.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="ai-reviews" className="gap-1 text-xs px-2">
+              <Bot className="h-4 w-4" />
+              <span className="hidden sm:inline">AI Appeals</span>
+              {aiReviewRequests.length > 0 && (
+                <Badge variant="destructive" className="ml-1 text-xs">
+                  {aiReviewRequests.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -1145,6 +1213,172 @@ export default function Admin() {
                       </div>
                     ))}
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="ai-reviews">
+            <Card className="border-border bg-card/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-orange-500" />
+                  AI Moderation Appeals
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Review bars that were rejected by AI moderation. Users have submitted these for manual review.
+                </p>
+                {isLoadingAiReviews ? (
+                  <p className="text-muted-foreground">Loading...</p>
+                ) : aiReviewRequests.length === 0 ? (
+                  <p className="text-muted-foreground">No pending AI review requests.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {aiReviewRequests.map((review: any) => (
+                      <div key={review.id} className="border border-border rounded-lg p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                              Submitted by <span className="font-medium text-foreground">@{review.user?.username}</span>
+                              {' · '}
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </p>
+                            <Badge variant="outline" className="text-xs">
+                              {review.category} · {review.barType?.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedAiReview(review)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Review
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="border-l-2 border-orange-500/50 pl-3 py-1 bg-secondary/20 rounded">
+                          <p className="text-sm whitespace-pre-wrap">{review.content?.replace(/<[^>]+>/g, '')}</p>
+                        </div>
+                        {review.aiRejectionReasons && review.aiRejectionReasons.length > 0 && (
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-orange-500">AI Rejection Reasons:</p>
+                            <ul className="text-xs text-muted-foreground list-disc list-inside">
+                              {review.aiRejectionReasons.map((reason: string, idx: number) => (
+                                <li key={idx}>{reason}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {review.userAppeal && (
+                          <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded">
+                            <p className="text-xs font-medium text-blue-500 flex items-center gap-1">
+                              <FileQuestion className="h-3 w-3" />
+                              User's Appeal:
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-1">{review.userAppeal}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Review Detail Dialog */}
+                {selectedAiReview && (
+                  <Dialog open={!!selectedAiReview} onOpenChange={() => { setSelectedAiReview(null); setAiReviewNotes(""); }}>
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Bot className="h-5 w-5 text-orange-500" />
+                          Review AI Appeal
+                        </DialogTitle>
+                      </DialogHeader>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <Label className="text-sm font-medium">Content:</Label>
+                          <div className="mt-1 p-3 bg-secondary/30 rounded-lg border border-border/50">
+                            <p className="text-sm whitespace-pre-wrap">{selectedAiReview.content?.replace(/<[^>]+>/g, '')}</p>
+                          </div>
+                        </div>
+                        
+                        {selectedAiReview.explanation && (
+                          <div>
+                            <Label className="text-sm font-medium">Explanation:</Label>
+                            <p className="text-sm text-muted-foreground mt-1">{selectedAiReview.explanation}</p>
+                          </div>
+                        )}
+                        
+                        {selectedAiReview.aiRejectionReasons && selectedAiReview.aiRejectionReasons.length > 0 && (
+                          <div>
+                            <Label className="text-sm font-medium text-orange-500">AI Rejection Reasons:</Label>
+                            <ul className="text-sm text-muted-foreground list-disc list-inside mt-1">
+                              {selectedAiReview.aiRejectionReasons.map((reason: string, idx: number) => (
+                                <li key={idx}>{reason}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {selectedAiReview.plagiarismRisk && selectedAiReview.plagiarismRisk !== "none" && (
+                          <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                            <p className="text-sm font-medium text-yellow-500">Plagiarism Risk: {selectedAiReview.plagiarismRisk}</p>
+                            {selectedAiReview.plagiarismDetails && (
+                              <p className="text-sm text-muted-foreground mt-1">{selectedAiReview.plagiarismDetails}</p>
+                            )}
+                          </div>
+                        )}
+                        
+                        {selectedAiReview.userAppeal && (
+                          <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                            <p className="text-sm font-medium text-blue-500">User's Appeal:</p>
+                            <p className="text-sm text-muted-foreground mt-1">{selectedAiReview.userAppeal}</p>
+                          </div>
+                        )}
+                        
+                        <div>
+                          <Label htmlFor="review-notes" className="text-sm font-medium">Admin Notes (Optional):</Label>
+                          <Textarea
+                            id="review-notes"
+                            placeholder="Add notes about your decision..."
+                            value={aiReviewNotes}
+                            onChange={(e) => setAiReviewNotes(e.target.value)}
+                            rows={2}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                          variant="outline"
+                          onClick={() => { setSelectedAiReview(null); setAiReviewNotes(""); }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => rejectAiReviewMutation.mutate({ id: selectedAiReview.id, reviewNotes: aiReviewNotes })}
+                          disabled={rejectAiReviewMutation.isPending}
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                        <Button
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => approveAiReviewMutation.mutate({ id: selectedAiReview.id, reviewNotes: aiReviewNotes })}
+                          disabled={approveAiReviewMutation.isPending}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Approve & Post
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 )}
               </CardContent>
             </Card>

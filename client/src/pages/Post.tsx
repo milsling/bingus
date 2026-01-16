@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Bold, Italic, Underline, MessageSquare, Shield, Share2, Users, Lock, AlertTriangle, Search, CheckCircle, Music } from "lucide-react";
+import { ArrowLeft, Bold, Italic, Underline, MessageSquare, Shield, Share2, Users, Lock, AlertTriangle, Search, CheckCircle, Music, AlertCircle, FileQuestion } from "lucide-react";
 import { validateBeatUrl } from "@/components/BarMediaPlayer";
 import { Link, useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
@@ -80,6 +80,16 @@ export default function Post() {
   const [isChecking, setIsChecking] = useState(false);
   const [showOriginalityReport, setShowOriginalityReport] = useState(false);
   const [originalityChecked, setOriginalityChecked] = useState(false);
+  
+  // AI moderation rejection state
+  const [showAiRejectionModal, setShowAiRejectionModal] = useState(false);
+  const [aiRejectionData, setAiRejectionData] = useState<{
+    reasons: string[];
+    plagiarismRisk?: string;
+    plagiarismDetails?: string;
+  } | null>(null);
+  const [userAppeal, setUserAppeal] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     if (!currentUser) {
@@ -151,13 +161,71 @@ export default function Post() {
 
       setLocation("/");
     } catch (error: any) {
+      // Check if this is an AI moderation rejection
+      if (error.aiRejected && error.canRequestReview) {
+        setAiRejectionData({
+          reasons: error.reasons || [],
+          plagiarismRisk: error.plagiarismRisk,
+          plagiarismDetails: error.plagiarismDetails,
+        });
+        setShowAiRejectionModal(true);
+      } else {
+        toast({
+          title: "Failed to post",
+          description: error.message || "Could not post your bars. Try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleSubmitForReview = async () => {
+    const content = getContent();
+    setIsSubmittingReview(true);
+    try {
+      const response = await fetch("/api/ai-review-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          content,
+          category,
+          tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+          explanation: explanation.trim() || undefined,
+          barType,
+          beatLink: beatLink.trim() || undefined,
+          fullRapLink: fullRapLink.trim() || undefined,
+          aiRejectionReasons: aiRejectionData?.reasons || [],
+          plagiarismRisk: aiRejectionData?.plagiarismRisk,
+          plagiarismDetails: aiRejectionData?.plagiarismDetails,
+          userAppeal: userAppeal.trim(),
+        }),
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to submit for review");
+      }
+      
       toast({
-        title: "Failed to post",
-        description: error.message || "Could not post your bars. Try again.",
+        title: "Submitted for Review",
+        description: "An admin will review your bar and you'll be notified of the decision.",
+      });
+      
+      setShowAiRejectionModal(false);
+      setAiRejectionData(null);
+      setUserAppeal("");
+      setLocation("/");
+    } catch (error: any) {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Could not submit for review. Try again.",
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSubmittingReview(false);
     }
   };
 
@@ -619,6 +687,90 @@ export default function Post() {
               data-testid="button-post-anyway"
             >
               {isSubmitting ? "Posting..." : "Post Anyway"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Moderation Rejection Modal */}
+      <Dialog open={showAiRejectionModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowAiRejectionModal(false);
+          setAiRejectionData(null);
+          setUserAppeal("");
+        }
+      }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-orange-500">
+              <AlertCircle className="h-5 w-5" />
+              Content Not Approved
+            </DialogTitle>
+            <DialogDescription>
+              Our moderation system flagged your bar. You can request a manual review if you believe this was incorrect.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {aiRejectionData?.reasons && aiRejectionData.reasons.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Reasons:</Label>
+                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground bg-secondary/30 p-3 rounded-lg">
+                  {aiRejectionData.reasons.map((reason, idx) => (
+                    <li key={idx}>{reason}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {aiRejectionData?.plagiarismRisk && aiRejectionData.plagiarismRisk !== "none" && (
+              <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <p className="text-sm font-medium text-yellow-500">Plagiarism Risk: {aiRejectionData.plagiarismRisk}</p>
+                {aiRejectionData.plagiarismDetails && (
+                  <p className="text-sm text-muted-foreground mt-1">{aiRejectionData.plagiarismDetails}</p>
+                )}
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="appeal" className="text-sm font-medium flex items-center gap-2">
+                <FileQuestion className="h-4 w-4" />
+                Your Appeal (Optional)
+              </Label>
+              <Textarea
+                id="appeal"
+                placeholder="Explain why this bar should be approved. For example: 'This is original wordplay referencing...' or 'The phrase is from my own song...'"
+                value={userAppeal}
+                onChange={(e) => setUserAppeal(e.target.value)}
+                rows={3}
+                className="resize-none"
+                data-testid="textarea-appeal"
+              />
+              <p className="text-xs text-muted-foreground">
+                Provide context that might help an admin understand your bar better.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAiRejectionModal(false);
+                setAiRejectionData(null);
+                setUserAppeal("");
+              }}
+              data-testid="button-cancel-review"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitForReview}
+              disabled={isSubmittingReview}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+              data-testid="button-submit-review"
+            >
+              {isSubmittingReview ? "Submitting..." : "Submit for Manual Review"}
             </Button>
           </DialogFooter>
         </DialogContent>
