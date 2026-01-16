@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage, generateProofHash } from "./storage";
 import { setupAuth, isAuthenticated, hashPassword, sessionParser } from "./auth";
-import { bars, likes } from "@shared/schema";
+import { bars, likes, users } from "@shared/schema";
 import { db } from "./db";
 import { eq, count } from "drizzle-orm";
 import passport from "passport";
@@ -13,6 +13,8 @@ import { registerAIRoutes } from "./replit_integrations/ai";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
 import { analyzeContent, normalizeText, type FlaggedPhraseRule } from "./moderation";
+import { moderateContent } from "./replit_integrations/ai/barAssistant";
+import { aiReviewRequests } from "@shared/schema";
 
 const verificationAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const passwordResetAttempts = new Map<string, { count: number; lastAttempt: number }>();
@@ -377,10 +379,25 @@ export async function registerRoutes(
         similarityThreshold: p.similarityThreshold,
       }));
       
-      const moderationResult = analyzeContent(result.data.content, phraseRules);
-      if (moderationResult.blocked) {
+      const textModerationResult = analyzeContent(result.data.content, phraseRules);
+      if (textModerationResult.blocked) {
         return res.status(400).json({ 
-          message: moderationResult.reason || "Content violates community guidelines" 
+          message: textModerationResult.reason || "Content violates community guidelines",
+          blocked: true
+        });
+      }
+      
+      // AI moderation check - runs after text moderation passes
+      const aiModerationResult = await moderateContent(result.data.content);
+      if (!aiModerationResult.approved) {
+        // AI rejected the content - return rejection with option to submit for review
+        return res.status(400).json({
+          message: "Content was not approved by our moderation system",
+          aiRejected: true,
+          reasons: aiModerationResult.reasons,
+          plagiarismRisk: aiModerationResult.plagiarismRisk,
+          plagiarismDetails: aiModerationResult.plagiarismDetails,
+          canRequestReview: true
         });
       }
 
@@ -409,9 +426,9 @@ export async function registerRoutes(
       // Set moderation status based on analysis
       const barData = {
         ...result.data,
-        moderationStatus: moderationResult.flagged ? 'pending_review' : 'approved',
-        moderationScore: moderationResult.similarityScore || null,
-        moderationPhraseId: moderationResult.matchedPhraseId || null,
+        moderationStatus: textModerationResult.flagged ? 'pending_review' : 'approved',
+        moderationScore: textModerationResult.similarityScore || null,
+        moderationPhraseId: textModerationResult.matchedPhraseId || null,
       };
 
       // Create the bar (no proofBarId yet - assigned when locked)
@@ -458,7 +475,7 @@ export async function registerRoutes(
         ...bar, 
         duplicateWarnings: duplicateWarnings.length > 0 ? duplicateWarnings : undefined,
         newAchievements: newAchievements.length > 0 ? newAchievements : undefined,
-        pendingReview: moderationResult.flagged,
+        pendingReview: textModerationResult.flagged,
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -2070,6 +2087,179 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Bar not found" });
       }
       res.json(bar);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // AI Review Request routes - for bars rejected by AI moderation
+  app.post("/api/ai-review-request", isAuthenticated, async (req, res) => {
+    try {
+      const { content, category, tags, explanation, barType, beatLink, fullRapLink, 
+              aiRejectionReasons, plagiarismRisk, plagiarismDetails, userAppeal } = req.body;
+      
+      if (!content || !category) {
+        return res.status(400).json({ message: "Content and category are required" });
+      }
+      
+      // Create the review request
+      const result = await db.insert(aiReviewRequests).values({
+        userId: req.user!.id,
+        content,
+        category,
+        tags: tags || [],
+        explanation,
+        barType: barType || "single_bar",
+        beatLink,
+        fullRapLink,
+        aiRejectionReasons: aiRejectionReasons || [],
+        plagiarismRisk,
+        plagiarismDetails,
+        userAppeal,
+        status: "pending",
+      }).returning();
+      
+      res.json({ success: true, reviewRequest: result[0] });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get user's own AI review requests
+  app.get("/api/ai-review-requests/mine", isAuthenticated, async (req, res) => {
+    try {
+      const requests = await db.select()
+        .from(aiReviewRequests)
+        .where(eq(aiReviewRequests.userId, req.user!.id))
+        .orderBy(aiReviewRequests.createdAt);
+      res.json(requests);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin routes for AI review requests
+  app.get("/api/admin/ai-review-requests", isAdmin, async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      let query = db.select({
+        request: aiReviewRequests,
+        user: {
+          id: users.id,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+        }
+      })
+        .from(aiReviewRequests)
+        .leftJoin(users, eq(aiReviewRequests.userId, users.id))
+        .orderBy(aiReviewRequests.createdAt);
+      
+      if (status) {
+        query = query.where(eq(aiReviewRequests.status, status)) as typeof query;
+      }
+      
+      const results = await query;
+      res.json(results.map(r => ({ ...r.request, user: r.user })));
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Approve AI review request - creates the bar
+  app.post("/api/admin/ai-review-requests/:id/approve", isAdmin, async (req, res) => {
+    try {
+      const { reviewNotes } = req.body;
+      const requestId = req.params.id;
+      
+      // Get the review request
+      const [reviewRequest] = await db.select().from(aiReviewRequests).where(eq(aiReviewRequests.id, requestId));
+      if (!reviewRequest) {
+        return res.status(404).json({ message: "Review request not found" });
+      }
+      
+      if (reviewRequest.status !== "pending") {
+        return res.status(400).json({ message: "This request has already been processed" });
+      }
+      
+      // Create the bar from the review request
+      const bar = await storage.createBar({
+        userId: reviewRequest.userId,
+        content: reviewRequest.content,
+        category: reviewRequest.category,
+        tags: reviewRequest.tags || [],
+        explanation: reviewRequest.explanation,
+        barType: reviewRequest.barType as any,
+        beatLink: reviewRequest.beatLink,
+        fullRapLink: reviewRequest.fullRapLink,
+        moderationStatus: "approved",
+      });
+      
+      // Update bar with additional fields
+      await db.update(bars).set({ 
+        permissionStatus: "share_only",
+        barType: reviewRequest.barType || "single_bar",
+        fullRapLink: reviewRequest.fullRapLink || null,
+        beatLink: reviewRequest.beatLink || null
+      }).where(eq(bars.id, bar.id));
+      
+      // Update the review request status
+      await db.update(aiReviewRequests).set({
+        status: "approved",
+        reviewedBy: req.user!.id,
+        reviewedAt: new Date(),
+        reviewNotes,
+      }).where(eq(aiReviewRequests.id, requestId));
+      
+      // Award XP for the posted bar
+      await storage.awardXp(reviewRequest.userId, 10, 'bar_posted');
+      
+      // Notify the user
+      await storage.createNotification({
+        userId: reviewRequest.userId,
+        type: "system",
+        message: "Your bar has been approved and posted!",
+        barId: bar.id,
+      });
+      
+      res.json({ success: true, bar });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Reject AI review request
+  app.post("/api/admin/ai-review-requests/:id/reject", isAdmin, async (req, res) => {
+    try {
+      const { reviewNotes } = req.body;
+      const requestId = req.params.id;
+      
+      const [reviewRequest] = await db.select().from(aiReviewRequests).where(eq(aiReviewRequests.id, requestId));
+      if (!reviewRequest) {
+        return res.status(404).json({ message: "Review request not found" });
+      }
+      
+      if (reviewRequest.status !== "pending") {
+        return res.status(400).json({ message: "This request has already been processed" });
+      }
+      
+      // Update the review request status
+      await db.update(aiReviewRequests).set({
+        status: "rejected",
+        reviewedBy: req.user!.id,
+        reviewedAt: new Date(),
+        reviewNotes,
+      }).where(eq(aiReviewRequests.id, requestId));
+      
+      // Notify the user
+      await storage.createNotification({
+        userId: reviewRequest.userId,
+        type: "system",
+        message: reviewNotes 
+          ? `Your bar review request was not approved: ${reviewNotes}`
+          : "Your bar review request was not approved.",
+      });
+      
+      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

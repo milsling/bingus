@@ -330,6 +330,33 @@ export const flaggedPhrasesRelations = relations(flaggedPhrases, ({ one }) => ({
   creator: one(users, { fields: [flaggedPhrases.createdBy], references: [users.id] }),
 }));
 
+// AI moderation review requests - when AI rejects a bar but user wants manual review
+export const aiReviewRequests = pgTable("ai_review_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  category: text("category").notNull(),
+  tags: text("tags").array(),
+  explanation: text("explanation"),
+  barType: text("bar_type").notNull().default("single_bar"),
+  beatLink: text("beat_link"),
+  fullRapLink: text("full_rap_link"),
+  aiRejectionReasons: text("ai_rejection_reasons").array(),
+  plagiarismRisk: text("plagiarism_risk"),
+  plagiarismDetails: text("plagiarism_details"),
+  userAppeal: text("user_appeal"), // User's explanation for why it should be approved
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const aiReviewRequestsRelations = relations(aiReviewRequests, ({ one }) => ({
+  user: one(users, { fields: [aiReviewRequests.userId], references: [users.id] }),
+  reviewer: one(users, { fields: [aiReviewRequests.reviewedBy], references: [users.id] }),
+}));
+
 export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
 
 // Condition types for custom achievements
