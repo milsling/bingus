@@ -2774,6 +2774,14 @@ export async function registerRoutes(
         return res.status(400).json({ message: "User already has this badge" });
       }
       const userBadge = await storage.grantBadgeToUser(userId, badgeId, "owner_gift", req.user!.id);
+      
+      // Send notification to user about receiving the badge
+      await storage.createNotification({
+        userId,
+        type: "badge_granted",
+        message: `The king has blessed you with a one of a kind custom badge "${badge.displayName}". Enjoy.`,
+      });
+      
       res.json(userBadge);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
