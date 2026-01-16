@@ -1038,7 +1038,7 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full mb-6 ${(currentUser?.isOwner || currentUser?.isAdminPlus) ? 'grid-cols-9' : 'grid-cols-7'}`}>
+          <TabsList className={`grid w-full mb-6 ${(currentUser?.isOwner || currentUser?.isAdminPlus) ? 'grid-cols-7' : 'grid-cols-6'}`}>
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
@@ -1058,15 +1058,6 @@ export default function Admin() {
               {reports.filter((r: any) => r.status === 'pending').length > 0 && (
                 <Badge variant="destructive" className="ml-1 text-xs">
                   {reports.filter((r: any) => r.status === 'pending').length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="maintenance" className="gap-1 text-xs px-2">
-              <Wrench className="h-4 w-4" />
-              <span className="hidden sm:inline">Maint.</span>
-              {maintenanceStatus?.isActive && (
-                <Badge variant="default" className="ml-1 text-xs bg-orange-500">
-                  ON
                 </Badge>
               )}
             </TabsTrigger>
@@ -1091,24 +1082,6 @@ export default function Admin() {
               <TabsTrigger value="achievements" className="gap-1 text-xs px-2">
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Badges</span>
-              </TabsTrigger>
-            )}
-            {currentUser?.isOwner && (
-              <TabsTrigger value="tags" className="gap-1 text-xs px-2">
-                <Flag className="h-4 w-4" />
-                <span className="hidden sm:inline">Tags</span>
-              </TabsTrigger>
-            )}
-            {(currentUser?.isOwner || currentUser?.isAdminPlus) && (
-              <TabsTrigger value="debug" className="gap-1 text-xs px-2">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="hidden sm:inline">Logs</span>
-              </TabsTrigger>
-            )}
-            {currentUser?.isOwner && (
-              <TabsTrigger value="console" className="gap-1 text-xs px-2">
-                <Power className="h-4 w-4" />
-                <span className="hidden sm:inline">Console</span>
               </TabsTrigger>
             )}
           </TabsList>
@@ -1341,14 +1314,16 @@ export default function Admin() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="maintenance">
-            <Card className="border-border bg-card/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wrench className="h-5 w-5 text-orange-500" />
-                  Maintenance Warning
-                </CardTitle>
-              </CardHeader>
+          {/* Maintenance Tab (Owner Only) */}
+          {currentUser?.isOwner && (
+            <TabsContent value="maintenance">
+              <Card className="border-border bg-card/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wrench className="h-5 w-5 text-orange-500" />
+                    Maintenance Warning
+                  </CardTitle>
+                </CardHeader>
               <CardContent className="space-y-6">
                 <div className="p-4 rounded-lg bg-secondary/30 space-y-4">
                   <div className="flex items-center justify-between">
@@ -1422,6 +1397,7 @@ export default function Admin() {
               </CardContent>
             </Card>
           </TabsContent>
+          )}
 
           <TabsContent value="archive">
             <Card className="border-border bg-card/50">
@@ -2823,7 +2799,50 @@ export default function Admin() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-3">
+                  {/* Owner-only quick access buttons */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 h-auto py-3"
+                      onClick={() => setActiveTab("debug")}
+                      data-testid="button-goto-debug"
+                    >
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      <span>Debug Logs</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 h-auto py-3"
+                      onClick={() => setActiveTab("maintenance")}
+                      data-testid="button-goto-maintenance"
+                    >
+                      <Wrench className="h-5 w-5 text-orange-500" />
+                      <span>Maintenance</span>
+                      {maintenanceStatus?.isActive && (
+                        <Badge className="ml-1 bg-orange-500 text-xs">ON</Badge>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 h-auto py-3"
+                      onClick={() => setActiveTab("tags")}
+                      data-testid="button-goto-tags"
+                    >
+                      <Flag className="h-5 w-5 text-blue-500" />
+                      <span>Custom Tags</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 h-auto py-3"
+                      onClick={() => setActiveTab("achievements")}
+                      data-testid="button-goto-achievements"
+                    >
+                      <Trophy className="h-5 w-5 text-purple-500" />
+                      <span>Achievements</span>
+                    </Button>
+                  </div>
+
+                  <div className="border-t border-border pt-6 space-y-3">
                     <Label>SQL Query (SELECT only)</Label>
                     <div className="flex gap-2">
                       <Textarea
