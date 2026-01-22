@@ -3336,5 +3336,48 @@ export async function registerRoutes(
     }
   });
 
+  // AI Settings routes (Owner only)
+  app.get("/api/ai-settings", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user?.isOwner) {
+        return res.status(403).json({ message: "Owner access required" });
+      }
+      const settings = await storage.getAISettings();
+      res.json(settings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/ai-settings", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user?.isOwner) {
+        return res.status(403).json({ message: "Owner access required" });
+      }
+      const updates = req.body;
+      const settings = await storage.updateAISettings(updates, req.user.id);
+      res.json(settings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Public endpoint to check which AI features are enabled
+  app.get("/api/ai-features", async (req, res) => {
+    try {
+      const settings = await storage.getAISettings();
+      res.json({
+        moderation: settings.moderationEnabled,
+        styleAnalysis: settings.styleAnalysisEnabled,
+        orphieChat: settings.orphieChatEnabled,
+        barExplanations: settings.barExplanationsEnabled,
+        rhymeSuggestions: settings.rhymeSuggestionsEnabled,
+        orphieGreeting: settings.orphieGreeting,
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   return httpServer;
 }
