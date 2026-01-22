@@ -126,6 +126,7 @@ export default function Badges() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: ["user-displayed-badges"] });
       toast({ title: "Badges updated", description: "Your displayed badges have been saved." });
     },
   });
@@ -160,6 +161,7 @@ export default function Badges() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: ["user-displayed-badges"] });
       toast({ title: "Profile badges updated" });
     },
     onError: (error: any) => {

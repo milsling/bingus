@@ -29,16 +29,27 @@ export function UserProfileBadges({
   maxBadges = 3,
   className 
 }: UserProfileBadgesProps) {
-  const { data: badges = [] } = useQuery<ProfileBadge[]>({
+  const { data: badges = [], error } = useQuery<ProfileBadge[]>({
     queryKey: ["user-displayed-badges", userId],
     queryFn: async () => {
       const res = await fetch(`/api/users/${userId}/displayed-badges`, { credentials: "include" });
-      if (!res.ok) return [];
-      return res.json();
+      if (!res.ok) {
+        console.error("[UserProfileBadges] Failed to fetch badges:", res.status, res.statusText);
+        return [];
+      }
+      const data = await res.json();
+      if (data.length > 0) {
+        console.log("[UserProfileBadges] Loaded badges for user", userId, ":", data.map((b: ProfileBadge) => b.displayName));
+      }
+      return data;
     },
     enabled: !!userId,
     staleTime: 60000,
   });
+  
+  if (error) {
+    console.error("[UserProfileBadges] Query error:", error);
+  }
 
   const displayBadges = badges.slice(0, maxBadges);
 

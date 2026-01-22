@@ -2422,21 +2422,31 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(sql`${users.id} = ANY(${userIds})`);
     
+    console.log("[BADGES STORAGE] Users fetched:", usersWithBadges.map(u => ({ id: u.id, displayedBadges: u.displayedBadges })));
+    
     const allBadgeIds = new Set<string>();
     usersWithBadges.forEach(u => {
       (u.displayedBadges || []).forEach(id => allBadgeIds.add(id));
     });
     
-    if (allBadgeIds.size === 0) return new Map();
+    console.log("[BADGES STORAGE] All badge IDs to fetch:", Array.from(allBadgeIds));
+    
+    if (allBadgeIds.size === 0) {
+      console.log("[BADGES STORAGE] No badge IDs found, returning empty map");
+      return new Map();
+    }
     
     // Separate achievement badge IDs from profile badge IDs
     const achievementKeys = Object.keys(ACHIEVEMENTS);
+    console.log("[BADGES STORAGE] Known achievement keys:", achievementKeys);
     const achievementBadgeIds: string[] = [];
     const profileBadgeIds: string[] = [];
     
     allBadgeIds.forEach(id => {
       // Check if it's an achievement ID (includes custom_ prefix for custom achievements)
-      if (achievementKeys.includes(id) || id.startsWith('custom_')) {
+      const isAchievement = achievementKeys.includes(id) || id.startsWith('custom_');
+      console.log(`[BADGES STORAGE] Badge ID "${id}" - isAchievement: ${isAchievement}`);
+      if (isAchievement) {
         achievementBadgeIds.push(id);
       } else {
         profileBadgeIds.push(id);

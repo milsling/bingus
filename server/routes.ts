@@ -2682,9 +2682,12 @@ export async function registerRoutes(
   // Get displayed badges for any user (public)
   app.get("/api/users/:userId/displayed-badges", async (req, res) => {
     try {
+      console.log("[BADGES] Fetching displayed badges for userId:", req.params.userId);
       const badges = await storage.getUserDisplayedBadges(req.params.userId);
+      console.log("[BADGES] Returned badges:", badges.length, badges.map(b => b.displayName));
       res.json(badges);
     } catch (error: any) {
+      console.error("[BADGES] Error fetching badges:", error);
       res.status(500).json({ message: error.message });
     }
   });
