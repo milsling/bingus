@@ -2570,6 +2570,7 @@ export class DatabaseStorage implements IStorage {
     
     for (const protectedBar of allProtected) {
       const normalizedProtected = protectedBar.content.toLowerCase().trim().replace(/\s+/g, ' ');
+      const threshold = (protectedBar.similarityThreshold || 80) / 100; // Convert to decimal
       
       // Check for exact match or if the new content contains the protected content
       if (normalizedContent === normalizedProtected || 
@@ -2578,14 +2579,14 @@ export class DatabaseStorage implements IStorage {
         return protectedBar;
       }
       
-      // Also check similarity - if 80% of words match, consider it a match
+      // Check word similarity using the custom threshold for this bar
       const contentWords = normalizedContent.split(' ').filter(w => w.length > 2);
       const protectedWords = normalizedProtected.split(' ').filter(w => w.length > 2);
       
       if (protectedWords.length > 3) {
         const matchingWords = contentWords.filter(w => protectedWords.includes(w));
         const similarity = matchingWords.length / protectedWords.length;
-        if (similarity >= 0.8) {
+        if (similarity >= threshold) {
           return protectedBar;
         }
       }

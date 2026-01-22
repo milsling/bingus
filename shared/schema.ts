@@ -653,6 +653,7 @@ export const protectedBars = pgTable("protected_bars", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   content: text("content").notNull(), // The protected bar content
   notes: text("notes"), // Owner's private notes about this bar
+  similarityThreshold: integer("similarity_threshold").notNull().default(80), // 0-100% similarity required to block
   createdAt: timestamp("created_at").notNull().defaultNow(),
   createdBy: varchar("created_by").references(() => users.id),
 });

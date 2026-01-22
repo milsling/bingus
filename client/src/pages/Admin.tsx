@@ -1069,6 +1069,7 @@ export default function Admin() {
   // Protected Bars state and queries (owner only)
   const [protectedBarContent, setProtectedBarContent] = useState("");
   const [protectedBarNotes, setProtectedBarNotes] = useState("");
+  const [protectedBarThreshold, setProtectedBarThreshold] = useState(80);
 
   const { data: protectedBars = [], isLoading: isLoadingProtectedBars } = useQuery<any[]>({
     queryKey: ['protected-bars'],
@@ -1081,7 +1082,7 @@ export default function Admin() {
   });
 
   const createProtectedBarMutation = useMutation({
-    mutationFn: async (data: { content: string; notes?: string }) => {
+    mutationFn: async (data: { content: string; notes?: string; similarityThreshold: number }) => {
       const res = await fetch('/api/protected-bars', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1098,6 +1099,7 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ['protected-bars'] });
       setProtectedBarContent("");
       setProtectedBarNotes("");
+      setProtectedBarThreshold(80);
       toast({ title: "Bar added to your secret backlog" });
     },
     onError: (error: any) => {
@@ -3453,10 +3455,33 @@ export default function Admin() {
                         data-testid="input-protected-notes"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="protected-threshold">
+                        Similarity Threshold: {protectedBarThreshold}%
+                      </Label>
+                      <input
+                        type="range"
+                        id="protected-threshold"
+                        min="0"
+                        max="100"
+                        value={protectedBarThreshold}
+                        onChange={(e) => setProtectedBarThreshold(Number(e.target.value))}
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                        data-testid="slider-protected-threshold"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {protectedBarThreshold === 100 ? "Exact match only" :
+                         protectedBarThreshold >= 80 ? "Very similar bars will be blocked" :
+                         protectedBarThreshold >= 50 ? "Moderately similar bars will be blocked" :
+                         protectedBarThreshold >= 20 ? "Loosely similar bars will be blocked" :
+                         "Almost anything will be blocked"}
+                      </p>
+                    </div>
                     <Button
                       onClick={() => createProtectedBarMutation.mutate({
                         content: protectedBarContent,
                         notes: protectedBarNotes || undefined,
+                        similarityThreshold: protectedBarThreshold,
                       })}
                       disabled={!protectedBarContent.trim() || createProtectedBarMutation.isPending}
                       className="w-full"
@@ -3485,9 +3510,10 @@ export default function Admin() {
                                     Notes: {bar.notes}
                                   </p>
                                 )}
-                                <p className="text-xs text-muted-foreground mt-2">
-                                  Added: {new Date(bar.createdAt).toLocaleDateString()}
-                                </p>
+                                <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
+                                  <span>Threshold: {bar.similarityThreshold || 80}%</span>
+                                  <span>Added: {new Date(bar.createdAt).toLocaleDateString()}</span>
+                                </div>
                               </div>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>

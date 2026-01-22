@@ -3304,13 +3304,15 @@ export async function registerRoutes(
       if (!req.user?.isOwner) {
         return res.status(403).json({ message: "Owner access required" });
       }
-      const { content, notes } = req.body;
+      const { content, notes, similarityThreshold } = req.body;
       if (!content || typeof content !== 'string' || content.trim().length === 0) {
         return res.status(400).json({ message: "Content is required" });
       }
+      const threshold = typeof similarityThreshold === 'number' ? Math.min(100, Math.max(0, similarityThreshold)) : 80;
       const protectedBar = await storage.createProtectedBar({
         content: content.trim(),
         notes: notes?.trim() || null,
+        similarityThreshold: threshold,
         createdBy: req.user.id,
       });
       res.json(protectedBar);
