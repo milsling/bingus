@@ -1125,6 +1125,40 @@ export default function Admin() {
     },
   });
 
+  // AI Settings query and mutation (owner only)
+  const { data: aiSettings, isLoading: isLoadingAISettings } = useQuery<any>({
+    queryKey: ['ai-settings'],
+    queryFn: async () => {
+      const res = await fetch('/api/ai-settings', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch AI settings');
+      return res.json();
+    },
+    enabled: !!currentUser?.isOwner,
+  });
+
+  const updateAISettingsMutation = useMutation({
+    mutationFn: async (updates: Record<string, any>) => {
+      const res = await fetch('/api/ai-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to update AI settings');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-settings'] });
+      toast({ title: "AI settings updated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const resetBadgeForm = () => {
     setBadgeName("");
     setBadgeDisplayName("");
@@ -1338,7 +1372,7 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full mb-6 ${currentUser?.isOwner ? 'grid-cols-9' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
+          <TabsList className={`grid w-full mb-6 ${currentUser?.isOwner ? 'grid-cols-10' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
@@ -1402,6 +1436,12 @@ export default function Admin() {
                     {protectedBars.length}
                   </Badge>
                 )}
+              </TabsTrigger>
+            )}
+            {currentUser?.isOwner && (
+              <TabsTrigger value="ai-settings" className="gap-1 text-xs px-2">
+                <Bot className="h-4 w-4" />
+                <span className="hidden sm:inline">AI</span>
               </TabsTrigger>
             )}
           </TabsList>
@@ -3550,6 +3590,213 @@ export default function Admin() {
                       </div>
                     )}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
+          {currentUser?.isOwner && (
+            <TabsContent value="ai-settings">
+              <Card className="border-border bg-card/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bot className="h-5 w-5 text-cyan-500" />
+                    AI Settings
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Control Orphie and AI features across the platform.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {isLoadingAISettings ? (
+                    <p className="text-muted-foreground">Loading AI settings...</p>
+                  ) : (
+                    <>
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-lg border-b pb-2">Feature Toggles</h3>
+                        <div className="grid gap-4">
+                          <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                            <div>
+                              <p className="font-medium">AI Content Moderation</p>
+                              <p className="text-sm text-muted-foreground">Automatically screen bars for policy violations</p>
+                            </div>
+                            <Switch
+                              checked={aiSettings?.moderationEnabled ?? true}
+                              onCheckedChange={(checked) => updateAISettingsMutation.mutate({ moderationEnabled: checked })}
+                              data-testid="toggle-moderation"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                            <div>
+                              <p className="font-medium">Orphie Chat</p>
+                              <p className="text-sm text-muted-foreground">Allow users to chat with the AI assistant</p>
+                            </div>
+                            <Switch
+                              checked={aiSettings?.orphieChatEnabled ?? true}
+                              onCheckedChange={(checked) => updateAISettingsMutation.mutate({ orphieChatEnabled: checked })}
+                              data-testid="toggle-orphie-chat"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                            <div>
+                              <p className="font-medium">Style Analysis</p>
+                              <p className="text-sm text-muted-foreground">Let Orphie analyze user writing styles</p>
+                            </div>
+                            <Switch
+                              checked={aiSettings?.styleAnalysisEnabled ?? true}
+                              onCheckedChange={(checked) => updateAISettingsMutation.mutate({ styleAnalysisEnabled: checked })}
+                              data-testid="toggle-style-analysis"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                            <div>
+                              <p className="font-medium">Bar Explanations</p>
+                              <p className="text-sm text-muted-foreground">AI-powered breakdowns of wordplay and references</p>
+                            </div>
+                            <Switch
+                              checked={aiSettings?.barExplanationsEnabled ?? true}
+                              onCheckedChange={(checked) => updateAISettingsMutation.mutate({ barExplanationsEnabled: checked })}
+                              data-testid="toggle-explanations"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                            <div>
+                              <p className="font-medium">Rhyme Suggestions</p>
+                              <p className="text-sm text-muted-foreground">AI writing assistance and rhyme helper</p>
+                            </div>
+                            <Switch
+                              checked={aiSettings?.rhymeSuggestionsEnabled ?? true}
+                              onCheckedChange={(checked) => updateAISettingsMutation.mutate({ rhymeSuggestionsEnabled: checked })}
+                              data-testid="toggle-suggestions"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                            <div>
+                              <p className="font-medium">Auto-Approve Clean Content</p>
+                              <p className="text-sm text-muted-foreground">Automatically approve bars that pass AI moderation</p>
+                            </div>
+                            <Switch
+                              checked={aiSettings?.autoApproveEnabled ?? true}
+                              onCheckedChange={(checked) => updateAISettingsMutation.mutate({ autoApproveEnabled: checked })}
+                              data-testid="toggle-auto-approve"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-lg border-b pb-2">Moderation Strictness</h3>
+                        <div className="space-y-2">
+                          <Label>How strict should AI moderation be?</Label>
+                          <select
+                            value={aiSettings?.moderationStrictness ?? "balanced"}
+                            onChange={(e) => updateAISettingsMutation.mutate({ moderationStrictness: e.target.value })}
+                            className="w-full p-2 border border-border rounded-lg bg-background"
+                            data-testid="select-strictness"
+                          >
+                            <option value="lenient">Lenient - Allow edgy content, only block clear violations</option>
+                            <option value="balanced">Balanced - Standard moderation for hip-hop platform</option>
+                            <option value="strict">Strict - Conservative moderation, flag borderline content</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-lg border-b pb-2">Orphie Customization</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="orphie-greeting">Custom Greeting</Label>
+                            <Input
+                              id="orphie-greeting"
+                              placeholder="What's good! I'm Orphie..."
+                              defaultValue={aiSettings?.orphieGreeting || ""}
+                              onBlur={(e) => {
+                                if (e.target.value !== (aiSettings?.orphieGreeting || "")) {
+                                  updateAISettingsMutation.mutate({ orphieGreeting: e.target.value || null });
+                                }
+                              }}
+                              data-testid="input-orphie-greeting"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">Custom message Orphie shows when users open the chat</p>
+                          </div>
+                          <div>
+                            <Label htmlFor="orphie-personality">Custom Personality/Instructions</Label>
+                            <Textarea
+                              id="orphie-personality"
+                              placeholder="Additional instructions for Orphie's personality..."
+                              defaultValue={aiSettings?.orphiePersonality || ""}
+                              onBlur={(e) => {
+                                if (e.target.value !== (aiSettings?.orphiePersonality || "")) {
+                                  updateAISettingsMutation.mutate({ orphiePersonality: e.target.value || null });
+                                }
+                              }}
+                              className="min-h-[100px]"
+                              data-testid="input-orphie-personality"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">Add personality traits or special instructions for how Orphie should respond</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-lg border-b pb-2">Rate Limits (per user/hour)</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="chat-limit">Chat Messages</Label>
+                            <Input
+                              id="chat-limit"
+                              type="number"
+                              min="1"
+                              max="200"
+                              defaultValue={aiSettings?.chatRateLimit || 50}
+                              onBlur={(e) => {
+                                const val = parseInt(e.target.value) || 50;
+                                if (val !== (aiSettings?.chatRateLimit || 50)) {
+                                  updateAISettingsMutation.mutate({ chatRateLimit: Math.min(200, Math.max(1, val)) });
+                                }
+                              }}
+                              data-testid="input-chat-limit"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="explanation-limit">Explanations</Label>
+                            <Input
+                              id="explanation-limit"
+                              type="number"
+                              min="1"
+                              max="100"
+                              defaultValue={aiSettings?.explanationRateLimit || 30}
+                              onBlur={(e) => {
+                                const val = parseInt(e.target.value) || 30;
+                                if (val !== (aiSettings?.explanationRateLimit || 30)) {
+                                  updateAISettingsMutation.mutate({ explanationRateLimit: Math.min(100, Math.max(1, val)) });
+                                }
+                              }}
+                              data-testid="input-explanation-limit"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="suggestion-limit">Suggestions</Label>
+                            <Input
+                              id="suggestion-limit"
+                              type="number"
+                              min="1"
+                              max="100"
+                              defaultValue={aiSettings?.suggestionRateLimit || 20}
+                              onBlur={(e) => {
+                                const val = parseInt(e.target.value) || 20;
+                                if (val !== (aiSettings?.suggestionRateLimit || 20)) {
+                                  updateAISettingsMutation.mutate({ suggestionRateLimit: Math.min(100, Math.max(1, val)) });
+                                }
+                              }}
+                              data-testid="input-suggestion-limit"
+                            />
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Maximum requests per user per hour for each AI feature</p>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
