@@ -401,6 +401,18 @@ export async function registerRoutes(
         });
       }
 
+      // Protected bars check - blocks non-owner users from posting content matching owner's backlog
+      if (!req.user?.isOwner) {
+        const protectedMatch = await storage.checkContentAgainstProtectedBars(result.data.content);
+        if (protectedMatch) {
+          return res.status(403).json({
+            message: "Access denied, you can't steal from God",
+            blocked: true,
+            protectedContent: true
+          });
+        }
+      }
+
       // Check for similar bars (duplicate detection)
       const similarBars = await storage.findSimilarBars(result.data.content, 0.8);
       const duplicateWarnings = similarBars.map(sb => ({
@@ -3251,6 +3263,54 @@ export async function registerRoutes(
         totalLikesInSystem: totalLikesResult?.count || 0,
         timestamp: new Date().toISOString(),
       });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Protected Bars routes (Owner only)
+  app.get("/api/protected-bars", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user?.isOwner) {
+        return res.status(403).json({ message: "Owner access required" });
+      }
+      const protectedBars = await storage.getProtectedBars();
+      res.json(protectedBars);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/protected-bars", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user?.isOwner) {
+        return res.status(403).json({ message: "Owner access required" });
+      }
+      const { content, notes } = req.body;
+      if (!content || typeof content !== 'string' || content.trim().length === 0) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+      const protectedBar = await storage.createProtectedBar({
+        content: content.trim(),
+        notes: notes?.trim() || null,
+        createdBy: req.user.id,
+      });
+      res.json(protectedBar);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/protected-bars/:id", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user?.isOwner) {
+        return res.status(403).json({ message: "Owner access required" });
+      }
+      const deleted = await storage.deleteProtectedBar(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Protected bar not found" });
+      }
+      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
