@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, customTags, customCategories, profileBadges, userBadges, protectedBars, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type CustomTag, type InsertCustomTag, type CustomCategory, type InsertCustomCategory, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType, type ProfileBadge, type InsertProfileBadge, type UserBadge, type InsertUserBadge, type ProtectedBar, type InsertProtectedBar } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, customTags, customCategories, profileBadges, userBadges, protectedBars, aiSettings, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type CustomTag, type InsertCustomTag, type CustomCategory, type InsertCustomCategory, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType, type ProfileBadge, type InsertProfileBadge, type UserBadge, type InsertUserBadge, type ProtectedBar, type InsertProtectedBar, type AISettings } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -2593,6 +2593,26 @@ export class DatabaseStorage implements IStorage {
     }
     
     return null;
+  }
+
+  // AI Settings methods
+  async getAISettings(): Promise<AISettings> {
+    const [settings] = await db.select().from(aiSettings).where(eq(aiSettings.id, 'default'));
+    if (!settings) {
+      // Create default settings if not exists
+      const [newSettings] = await db.insert(aiSettings).values({ id: 'default' }).returning();
+      return newSettings;
+    }
+    return settings;
+  }
+
+  async updateAISettings(updates: Partial<AISettings>, updatedBy?: string): Promise<AISettings> {
+    const [settings] = await db
+      .update(aiSettings)
+      .set({ ...updates, updatedAt: new Date(), updatedBy: updatedBy || null })
+      .where(eq(aiSettings.id, 'default'))
+      .returning();
+    return settings;
   }
 }
 
