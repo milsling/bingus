@@ -1,6 +1,6 @@
 import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, customTags, customCategories, profileBadges, userBadges, protectedBars, aiSettings, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type CustomTag, type InsertCustomTag, type CustomCategory, type InsertCustomCategory, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType, type ProfileBadge, type InsertProfileBadge, type UserBadge, type InsertUserBadge, type ProtectedBar, type InsertProtectedBar, type AISettings } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne } from "drizzle-orm";
+import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne, inArray } from "drizzle-orm";
 import { createHash } from "crypto";
 
 // User metrics cache for evaluating compound achievements
@@ -2422,14 +2422,14 @@ export class DatabaseStorage implements IStorage {
       usersWithBadges = await db
         .select({ id: users.id, displayedBadges: users.displayedBadges })
         .from(users)
-        .where(sql`${users.id} = ANY(${userIds})`);
+        .where(inArray(users.id, userIds));
     } catch (error: any) {
       console.error("[BADGES STORAGE] Error fetching users with badges:", error.message);
       // If there's a malformed array, try fetching without the displayedBadges
       const usersOnly = await db
         .select({ id: users.id })
         .from(users)
-        .where(sql`${users.id} = ANY(${userIds})`);
+        .where(inArray(users.id, userIds));
       usersWithBadges = usersOnly.map(u => ({ id: u.id, displayedBadges: null }));
     }
     
@@ -2471,7 +2471,7 @@ export class DatabaseStorage implements IStorage {
       const badgesList = await db
         .select()
         .from(profileBadges)
-        .where(sql`${profileBadges.id} = ANY(${profileBadgeIds})`);
+        .where(inArray(profileBadges.id, profileBadgeIds));
       badgesList.forEach(b => badgesMap.set(b.id, b));
     }
     
@@ -2481,7 +2481,7 @@ export class DatabaseStorage implements IStorage {
       const images = await db
         .select()
         .from(achievementBadgeImages)
-        .where(sql`${achievementBadgeImages.id} = ANY(${achievementBadgeIds})`);
+        .where(inArray(achievementBadgeImages.id, achievementBadgeIds));
       images.forEach(img => achievementImages.set(img.id, img.imageUrl));
     }
     
@@ -2495,7 +2495,7 @@ export class DatabaseStorage implements IStorage {
       const customAchievementsList = await db
         .select()
         .from(customAchievements)
-        .where(sql`${customAchievements.id} = ANY(${customAchievementIds})`);
+        .where(inArray(customAchievements.id, customAchievementIds));
       customAchievementsList.forEach(ca => {
         customAchievementsMap.set(`custom_${ca.id}`, {
           name: ca.name,
