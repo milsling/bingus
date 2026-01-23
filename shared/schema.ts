@@ -438,6 +438,7 @@ export type DebugLog = typeof debugLogs.$inferSelect;
 export type InsertDebugLog = typeof debugLogs.$inferInsert;
 
 export const ACHIEVEMENTS = {
+  // Original achievements
   first_bar: { name: "Origin Founder", emoji: "🔥", imageUrl: null as string | null, description: "Posted your first bar", threshold: { barsMinted: 1 }, rarity: "common" as AchievementRarity },
   bar_slinger: { name: "Bar Slinger", emoji: "💀", imageUrl: null as string | null, description: "Posted 10 bars", threshold: { barsMinted: 10 }, rarity: "rare" as AchievementRarity },
   bar_lord: { name: "Bar Lord", emoji: "👑", imageUrl: null as string | null, description: "Posted 50 bars", threshold: { barsMinted: 50 }, rarity: "epic" as AchievementRarity },
@@ -448,6 +449,43 @@ export const ACHIEVEMENTS = {
   wordsmith: { name: "Wordsmith", emoji: "✍️", imageUrl: null as string | null, description: "Posted 25 bars", threshold: { barsMinted: 25 }, rarity: "rare" as AchievementRarity },
   rising_star: { name: "Rising Star", emoji: "⭐", imageUrl: null as string | null, description: "Gained 10 followers", threshold: { followers: 10 }, rarity: "common" as AchievementRarity },
   viral: { name: "Viral", emoji: "🔥", imageUrl: null as string | null, description: "One bar reached 100 likes", threshold: { topBarLikes: 100 }, rarity: "rare" as AchievementRarity },
+
+  // Engagement & Virality Boosters
+  viral_bronze: { name: "Viral Bronze", emoji: "🥉", imageUrl: null as string | null, description: "One bar reached 50 likes + 10 bookmarks", threshold: { topBarEngagement: 60 }, rarity: "rare" as AchievementRarity },
+  viral_silver: { name: "Viral Silver", emoji: "🥈", imageUrl: null as string | null, description: "One bar reached 200 likes + 50 bookmarks", threshold: { topBarEngagement: 250 }, rarity: "epic" as AchievementRarity },
+  viral_gold: { name: "Viral Gold", emoji: "🥇", imageUrl: null as string | null, description: "One bar reached 500 likes + 100 bookmarks", threshold: { topBarEngagement: 600 }, rarity: "legendary" as AchievementRarity },
+  thread_dominator: { name: "Thread Dominator", emoji: "💬", imageUrl: null as string | null, description: "One bar sparked 20+ comments", threshold: { topBarComments: 20 }, rarity: "epic" as AchievementRarity },
+  reply_king: { name: "Reply King", emoji: "🗣️", imageUrl: null as string | null, description: "Made 50 comments on others' bars", threshold: { commentsMade: 50 }, rarity: "rare" as AchievementRarity },
+  adopted_remixed: { name: "Adopted & Remixed", emoji: "🔄", imageUrl: null as string | null, description: "Your bars got adopted 5+ times", threshold: { barsAdoptedByOthers: 5 }, rarity: "epic" as AchievementRarity },
+
+  // Consistency & Grind Streaks
+  streak_starter: { name: "Streak Starter", emoji: "🔥", imageUrl: null as string | null, description: "Posted bars 7 days in a row", threshold: { streakDays: 7 }, rarity: "common" as AchievementRarity },
+  streak_master: { name: "Streak Master", emoji: "⚡", imageUrl: null as string | null, description: "Posted bars 14 days in a row", threshold: { streakDays: 14 }, rarity: "rare" as AchievementRarity },
+  streak_legend: { name: "Streak Legend", emoji: "🌟", imageUrl: null as string | null, description: "Posted bars 30 days in a row", threshold: { streakDays: 30 }, rarity: "epic" as AchievementRarity },
+  streak_immortal: { name: "Streak Immortal", emoji: "💎", imageUrl: null as string | null, description: "Posted bars 100 days in a row", threshold: { streakDays: 100 }, rarity: "legendary" as AchievementRarity },
+  volume_spitter: { name: "Volume Spitter", emoji: "🎯", imageUrl: null as string | null, description: "Posted 100 bars total", threshold: { barsMinted: 100 }, rarity: "epic" as AchievementRarity },
+  bar_machine: { name: "Bar Machine", emoji: "🏭", imageUrl: null as string | null, description: "Posted 500 bars total", threshold: { barsMinted: 500 }, rarity: "legendary" as AchievementRarity },
+  bar_god: { name: "Bar God", emoji: "⚡", imageUrl: null as string | null, description: "Posted 1000 bars total", threshold: { barsMinted: 1000 }, rarity: "legendary" as AchievementRarity },
+  weekend_warrior: { name: "Weekend Warrior", emoji: "🌙", imageUrl: null as string | null, description: "Posted 5+ bars on a weekend", threshold: { weekendBars: 5 }, rarity: "common" as AchievementRarity },
+  midnight_marauder: { name: "Midnight Marauder", emoji: "🦇", imageUrl: null as string | null, description: "Posted 3+ bars between midnight and 5am", threshold: { midnightBars: 3 }, rarity: "rare" as AchievementRarity },
+
+  // Community & Social
+  mentor: { name: "Mentor", emoji: "🎓", imageUrl: null as string | null, description: "Adopted 20+ bars from others", threshold: { adoptionsGiven: 20 }, rarity: "epic" as AchievementRarity },
+  bar_adopter: { name: "Bar Adopter", emoji: "🤝", imageUrl: null as string | null, description: "Adopted 5 bars from others", threshold: { adoptionsGiven: 5 }, rarity: "common" as AchievementRarity },
+  comment_goat: { name: "Comment GOAT", emoji: "🐐", imageUrl: null as string | null, description: "Received 100+ likes on your comments", threshold: { commentLikesReceived: 100 }, rarity: "epic" as AchievementRarity },
+  crew_builder: { name: "Crew Builder", emoji: "👥", imageUrl: null as string | null, description: "Gained 100+ followers", threshold: { followers: 100 }, rarity: "epic" as AchievementRarity },
+  influencer: { name: "Influencer", emoji: "📢", imageUrl: null as string | null, description: "Gained 500+ followers", threshold: { followers: 500 }, rarity: "legendary" as AchievementRarity },
+  network_king: { name: "Network King", emoji: "🕸️", imageUrl: null as string | null, description: "Following 100+ active posters", threshold: { following: 100 }, rarity: "rare" as AchievementRarity },
+
+  // Platform Health
+  clean_streak: { name: "Clean Streak", emoji: "✨", imageUrl: null as string | null, description: "90 days without violations", threshold: { cleanDays: 90 }, rarity: "rare" as AchievementRarity },
+  rule_follower: { name: "Rule Follower", emoji: "📜", imageUrl: null as string | null, description: "180 days without violations", threshold: { cleanDays: 180 }, rarity: "epic" as AchievementRarity },
+  model_citizen: { name: "Model Citizen", emoji: "🏆", imageUrl: null as string | null, description: "365 days without violations", threshold: { cleanDays: 365 }, rarity: "legendary" as AchievementRarity },
+
+  // Underdog & Special
+  underdog: { name: "Underdog", emoji: "🐕", imageUrl: null as string | null, description: "Got 50+ likes on a bar with <50 followers", threshold: { underdogBar: 1 }, rarity: "epic" as AchievementRarity },
+  og_member: { name: "OG Member", emoji: "🎖️", imageUrl: null as string | null, description: "Account older than 1 year", threshold: { accountAgeDays: 365 }, rarity: "rare" as AchievementRarity },
+  veteran: { name: "Veteran", emoji: "🎗️", imageUrl: null as string | null, description: "Account older than 2 years", threshold: { accountAgeDays: 730 }, rarity: "epic" as AchievementRarity },
 } as const;
 
 // Achievement badge images stored in database for built-in achievements

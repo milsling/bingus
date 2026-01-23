@@ -1,0 +1,53 @@
+Engagement & Virality Boosters (reward bars that slap hard)
+•  Viral Bar — Total likes + reposts/bookmarks on a single bar hits explosive numbers.
+	•  Example: ≥ 500 likes OR ≥ 100 bookmarks on one bar.
+	•  Why: Encourages crafting shareable heat. Nuance: Cap it per bar to prevent one-hit wonders from dominating; add tiers (Bronze/Silver/Gold viral).
+•  Thread Dominator or Reply Chain King — Starts or keeps a long comment thread under your bar.
+	•  Example: ≥ 20 comments on your posted bar (or you reply ≥ 10 times in one thread).
+	•  Edge case: Filter out self-replies or spam; reward discourse over bot farms.
+•  Adopted & Remixed — Your bar gets adopted AND someone posts a flip/extension of it.
+	•  Example: ≥ 3 adoptions + keyword match in new posts linking back.
+	•  Implication: Rewards influence—bars so good others build on ’em.
+Consistency & Grind Streaks (for the daily spitters)
+•  Streak Master — Consecutive days posting bars.
+	•  Example: ≥ 7/14/30/100 day streak (multi-tier unlock).
+	•  Why: Builds habit. Nuance: Pause on missed days but allow “wildcard” skips for real life; add “Comeback Kid” for returning after 30+ day break.
+•  Volume Spitter — Raw post count milestones.
+	•  Example: 50/100/500/1000 bars posted total (lifetime or yearly reset).
+	•  Edge case: Differentiate quality vs quantity—maybe weight only “approved” or non-deleted posts.
+•  Weekend Warrior / Midnight Marauder — Post volume during specific windows.
+	•  Example: ≥ 5 bars between Fri 8PM–Sun 8PM OR ≥ 3 between 12AM–5AM.
+	•  Fun angle: Ties into Night Owl but more granular.
+Style & Technical Skill (reward craft over just volume)
+•  Multisyllabic Monster or Wordplay Wizard — Bars with keyword/tags like “multisyllable”, “double entendre”, “alliteration” get extra love.
+	•  Example: ≥ 10 bars tagged “wordplay” that receive ≥ 50 likes each.
+	•  Nuance: Self-tagging risks abuse—maybe require community upvotes on tag accuracy or admin/mod verification.
+•  Punchline Predator — Bars tagged “punchline” that rack high single-bar likes/comments.
+	•  Example: Top 10% of punchline-tagged bars by engagement in a month.
+	•  Implication: Encourages concise killers over long verses.
+•  Metaphor Madman / Simile Savage — Similar tag-based, but for imagery-heavy bars.
+	•  Example: Bars with “metaphor” tag + high “Imagery” category upvotes (if your feed has category sorting).
+Community & Social (reward building the scene)
+•  Mentor or Bar Adopter — Adopts a high number of bars from others.
+	•  Example: ≥ 20 adoptions given out.
+	•  Why: Balances the taker economy—rewards giving back.
+•  Comment GOAT — High-quality replies (likes on your comments under others’ bars).
+	•  Example: ≥ 100 likes received on comments you made.
+	•  Edge case: Prevent farming by requiring original replies, not just “fire” spam.
+•  Crew Builder — Followers count OR creates/follows themed lists/groups (if app has that).
+	•  Example: ≥ 500 followers OR following ≥ 100 active posters.
+Niche/Challenge/Meme (for fun, seasonal, or weird flexes)
+•  Meme Bar — Bars with trending keywords (e.g., current events, viral sounds) or specific challenges.
+	•  Example: Bars with keyword “AI” or “pineapple pizza” (since I gotta rep that shit) ≥ 1 and gets likes.
+	•  Implication: Keeps things current; rotate keywords monthly.
+•  Roast Master — Bars flagged “controversial” that still get positive engagement.
+	•  Example: Controversial bar + net positive likes/comments ratio > 2:1.
+	•  Nuance: Risky—could encourage toxicity; add moderation layer.
+•  Underdog — Low-follower user posts a bar that outperforms expectations.
+	•  Example: User with <100 followers posts bar ≥ 200 likes.
+	•  Rewards new blood breaking through.
+Platform Health & Anti-Abuse (keep it clean)
+•  Clean Streak — No deleted/flagged bars for X days.
+	•  Example: 90 days without violations.
+•  Rule Follower — Consistently follows posting guidelines (no spam, proper tags).
+	•  Auto-track via mod actions or self-certification.

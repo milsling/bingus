@@ -18,6 +18,17 @@ export interface UserMetrics {
   night_owl: boolean;
   early_bird: boolean;
   bars_with_keyword: number; // Dynamic - needs keyword context
+  // New metrics for expanded achievements
+  posting_streak_days: number;
+  comment_likes_received: number;
+  adoptions_given: number;
+  bars_adopted_by_others: number;
+  weekend_bars: number;
+  midnight_bars: number;
+  days_without_violations: number;
+  top_bar_engagement: number; // likes + bookmarks on single bar
+  tagged_bars_with_likes: number; // bars with specific tags that got likes
+  account_age_days: number;
 }
 
 // Context for evaluating conditions that need additional data (like keywords)
