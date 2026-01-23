@@ -361,8 +361,8 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
         </div>
       </div>
 
-      {/* Tablet FAB Menu - iPad/tablets only */}
-      <div className="hidden md:block lg:hidden fixed bottom-6 right-6 z-[100]">
+      {/* Tablet/Desktop FAB Menu - shows on md screens and larger */}
+      <div className="hidden md:block fixed bottom-6 right-6 z-[100]">
         <AnimatePresence>
           {isOpen && (
             <motion.div
