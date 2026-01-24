@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload, Image, Star, Bot, FileQuestion, Lock } from "lucide-react";
+import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload, Image, Star, Bot, FileQuestion, Lock, History } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
@@ -4026,6 +4026,121 @@ export default function Admin() {
                       </div>
                     </div>
                   )}
+
+                  {/* Features & Version History */}
+                  <div className="border-t border-border pt-6 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <History className="h-5 w-5 text-purple-400" />
+                      <h3 className="text-lg font-semibold">Features & Version History</h3>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-4 max-h-[400px] overflow-y-auto">
+                      <div className="space-y-3">
+                        {/* Version 2.5.0 */}
+                        <div className="border-l-2 border-purple-500 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-purple-600 text-white text-xs">v2.5.0</Badge>
+                            <span className="text-xs text-muted-foreground">Jan 2026</span>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• Features & Version History section in Owner Console</li>
+                            <li>• Redesigned tablet FAB menu with quarter-pie arc animation</li>
+                            <li>• Vertical sidebar navigation going upward</li>
+                            <li>• Admin button shoots left for admin users</li>
+                          </ul>
+                        </div>
+
+                        {/* Version 2.4.0 */}
+                        <div className="border-l-2 border-purple-400 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-purple-500 text-white text-xs">v2.4.0</Badge>
+                            <span className="text-xs text-muted-foreground">Jan 2026</span>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• 25+ new achievements across all categories</li>
+                            <li>• Viral bar tiers (Viral, Super Viral, Legendary)</li>
+                            <li>• Streak system (7, 14, 30, 60, 100 day streaks)</li>
+                            <li>• Volume milestones (100, 250, 500, 1000 bars)</li>
+                            <li>• Social achievements (Mentor, Bar Adopter, Comment GOAT)</li>
+                            <li>• Clean streak badges (90, 180, 365 days)</li>
+                            <li>• Special achievements (Underdog, OG Member, Veteran)</li>
+                          </ul>
+                        </div>
+
+                        {/* Version 2.3.0 */}
+                        <div className="border-l-2 border-purple-300 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-purple-400 text-white text-xs">v2.3.0</Badge>
+                            <span className="text-xs text-muted-foreground">Jan 2026</span>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• Custom achievement system with badge images</li>
+                            <li>• Display up to 5 badges next to username</li>
+                            <li>• Profile badges system (owner-granted badges)</li>
+                            <li>• OB FOUNDER hardcoded badge for site owner</li>
+                            <li>• Badge upload and management in admin</li>
+                          </ul>
+                        </div>
+
+                        {/* Version 2.2.0 */}
+                        <div className="border-l-2 border-purple-200 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-purple-300 text-purple-900 text-xs">v2.2.0</Badge>
+                            <span className="text-xs text-muted-foreground">Jan 2026</span>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• Orphie AI assistant with content moderation</li>
+                            <li>• AI-powered bar suggestions and feedback</li>
+                            <li>• Three-tier moderation system</li>
+                            <li>• Report handling with action tracking</li>
+                          </ul>
+                        </div>
+
+                        {/* Version 2.1.0 */}
+                        <div className="border-l-2 border-gray-400 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">v2.1.0</Badge>
+                            <span className="text-xs text-muted-foreground">Jan 2026</span>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• Direct messaging with WebSocket real-time updates</li>
+                            <li>• Friends system with request handling</li>
+                            <li>• Online presence indicators</li>
+                            <li>• XP and leveling system</li>
+                          </ul>
+                        </div>
+
+                        {/* Version 2.0.0 */}
+                        <div className="border-l-2 border-gray-300 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">v2.0.0</Badge>
+                            <span className="text-xs text-muted-foreground">Dec 2025</span>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• Proof-of-origin system with SHA256 hashing</li>
+                            <li>• Bar adoption system</li>
+                            <li>• Beat/instrumental embedding</li>
+                            <li>• PWA with offline support</li>
+                            <li>• Push notifications</li>
+                          </ul>
+                        </div>
+
+                        {/* Version 1.0.0 */}
+                        <div className="border-l-2 border-gray-200 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">v1.0.0</Badge>
+                            <span className="text-xs text-muted-foreground">Initial</span>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• Core platform launch</li>
+                            <li>• User authentication</li>
+                            <li>• Bar posting with categories and tags</li>
+                            <li>• Bookmarks and search</li>
+                            <li>• User profiles</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
