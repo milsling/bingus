@@ -22,6 +22,9 @@ import Orphanage from "@/pages/Orphanage";
 import Terms from "@/pages/Terms";
 import Achievements from "@/pages/Achievements";
 import Badges from "@/pages/Badges";
+import Apps from "@/pages/Apps";
+import Notebook from "@/pages/Notebook";
+import RhymeDictionary from "@/pages/RhymeDictionary";
 import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
@@ -60,6 +63,9 @@ function Router() {
           <Route path="/terms" component={Terms} />
           <Route path="/achievements" component={Achievements} />
           <Route path="/badges" component={Badges} />
+          <Route path="/apps" component={Apps} />
+          <Route path="/apps/notebook" component={Notebook} />
+          <Route path="/apps/rhyme" component={RhymeDictionary} />
           <Route path="/discover" component={Home} />
           <Route path="/bars/:id" component={BarDetail} />
           <Route path="/u/:username">
