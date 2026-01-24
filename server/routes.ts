@@ -3438,5 +3438,72 @@ export async function registerRoutes(
     }
   });
 
+  // ============ Notebook Routes ============
+  
+  // Get all notebooks for current user
+  app.get("/api/notebooks", isAuthenticated, async (req, res) => {
+    try {
+      const notebooks = await storage.getNotebooks(req.user!.id);
+      res.json(notebooks);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get single notebook
+  app.get("/api/notebooks/:id", isAuthenticated, async (req, res) => {
+    try {
+      const notebook = await storage.getNotebook(req.params.id, req.user!.id);
+      if (!notebook) {
+        return res.status(404).json({ message: "Notebook not found" });
+      }
+      res.json(notebook);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Create notebook
+  app.post("/api/notebooks", isAuthenticated, async (req, res) => {
+    try {
+      const { title, content } = req.body;
+      const notebook = await storage.createNotebook({
+        userId: req.user!.id,
+        title: title || "Untitled",
+        content: content || "",
+      });
+      res.status(201).json(notebook);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Update notebook
+  app.patch("/api/notebooks/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { title, content } = req.body;
+      const notebook = await storage.updateNotebook(req.params.id, req.user!.id, { title, content });
+      if (!notebook) {
+        return res.status(404).json({ message: "Notebook not found" });
+      }
+      res.json(notebook);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Delete notebook
+  app.delete("/api/notebooks/:id", isAuthenticated, async (req, res) => {
+    try {
+      const deleted = await storage.deleteNotebook(req.params.id, req.user!.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Notebook not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   return httpServer;
 }
