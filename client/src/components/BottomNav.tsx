@@ -70,6 +70,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
       { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount, id: "main-messages" },
       { icon: Users, label: "Friends", path: "/friends", badge: pendingFriendRequests, id: "main-friends" },
       { icon: Bookmark, label: "Saved", path: "/saved", id: "main-saved" },
+      { icon: LayoutGrid, label: "Apps", path: "/apps", id: "main-apps" },
       { icon: User, label: "Profile", path: "/profile", id: "main-profile" },
     ];
 
