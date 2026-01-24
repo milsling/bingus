@@ -734,3 +734,26 @@ export const aiSettings = pgTable("ai_settings", {
 
 export type AISettings = typeof aiSettings.$inferSelect;
 export type InsertAISettings = typeof aiSettings.$inferInsert;
+
+// Notebooks - User writing documents
+export const notebooks = pgTable("notebooks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull().default("Untitled"),
+  content: text("content").notNull().default(""),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const notebooksRelations = relations(notebooks, ({ one }) => ({
+  user: one(users, { fields: [notebooks.userId], references: [users.id] }),
+}));
+
+export type Notebook = typeof notebooks.$inferSelect;
+export type InsertNotebook = z.infer<typeof insertNotebookSchema>;
+
+export const insertNotebookSchema = createInsertSchema(notebooks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
