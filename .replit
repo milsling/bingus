@@ -42,3 +42,6 @@ waitForPort = 5000
 [agent]
 mockupState = "FULLSTACK"
 integrations = ["javascript_database:1.0.0", "javascript_object_storage:2.0.0", "javascript_openai_ai_integrations:2.0.0"]
+
+[objectStorage]
+defaultBucketID = "replit-objstore-c36745b7-e905-4ff3-b869-c154e4ebcb2c"
