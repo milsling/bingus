@@ -59,7 +59,7 @@ export const sessionParser = session({
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   },
   store: new PgStore({
-    conString: process.env.DATABASE_URL,
+    conString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
     createTableIfMissing: true,
     tableName: "sessions",
   }),

@@ -136,10 +136,12 @@ async function startServer() {
     log("Starting server initialization...");
     
     // Check required environment variables
-    const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET'];
-    const missingVars = requiredEnvVars.filter(v => !process.env[v]);
-    if (missingVars.length > 0) {
-      log(`Warning: Missing environment variables: ${missingVars.join(', ')}`);
+    const hasDatabase = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+    if (!hasDatabase) {
+      log(`Warning: No database URL configured. Set SUPABASE_DATABASE_URL or DATABASE_URL.`);
+    }
+    if (!process.env.SESSION_SECRET) {
+      log(`Warning: Missing SESSION_SECRET environment variable.`);
     }
     
     // Test database connection
