@@ -1,17 +1,37 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, unique, integer, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  timestamp,
+  boolean,
+  unique,
+  integer,
+  jsonb,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const permissionStatusOptions = ["share_only", "open_adopt", "private"] as const;
+export const permissionStatusOptions = [
+  "share_only",
+  "open_adopt",
+  "private",
+] as const;
 export const messagePrivacyOptions = ["friends_only", "everyone"] as const;
 export const barTypeOptions = ["single_bar", "snippet", "half_verse"] as const;
-export const moderationStatusOptions = ["approved", "pending_review", "flagged", "blocked"] as const;
+export const moderationStatusOptions = [
+  "approved",
+  "pending_review",
+  "flagged",
+  "blocked",
+] as const;
 export const phraseSeverityOptions = ["block", "flag"] as const;
 
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
@@ -39,7 +59,9 @@ export const users = pgTable("users", {
 });
 
 export const verificationCodes = pgTable("verification_codes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   email: text("email").notNull(),
   code: text("code").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -47,7 +69,9 @@ export const verificationCodes = pgTable("verification_codes", {
 });
 
 export const passwordResetCodes = pgTable("password_reset_codes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   email: text("email").notNull(),
   code: text("code").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -59,8 +83,12 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const bars = pgTable("bars", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   explanation: text("explanation"),
   category: text("category").notNull(),
@@ -97,9 +125,15 @@ export const barsRelations = relations(bars, ({ one, many }) => ({
 }));
 
 export const likes = pgTable("likes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  barId: varchar("bar_id")
+    .notNull()
+    .references(() => bars.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -109,9 +143,15 @@ export const likesRelations = relations(likes, ({ one }) => ({
 }));
 
 export const comments = pgTable("comments", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  barId: varchar("bar_id")
+    .notNull()
+    .references(() => bars.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -122,82 +162,150 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
   likes: many(commentLikes),
 }));
 
-export const commentLikes = pgTable("comment_likes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  commentId: varchar("comment_id").notNull().references(() => comments.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => [
-  unique("comment_likes_unique").on(table.userId, table.commentId)
-]);
+export const commentLikes = pgTable(
+  "comment_likes",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    commentId: varchar("comment_id")
+      .notNull()
+      .references(() => comments.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [unique("comment_likes_unique").on(table.userId, table.commentId)],
+);
 
 export const commentLikesRelations = relations(commentLikes, ({ one }) => ({
   user: one(users, { fields: [commentLikes.userId], references: [users.id] }),
-  comment: one(comments, { fields: [commentLikes.commentId], references: [comments.id] }),
+  comment: one(comments, {
+    fields: [commentLikes.commentId],
+    references: [comments.id],
+  }),
 }));
 
-export const dislikes = pgTable("dislikes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => [
-  unique("dislikes_unique").on(table.userId, table.barId)
-]);
+export const dislikes = pgTable(
+  "dislikes",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    barId: varchar("bar_id")
+      .notNull()
+      .references(() => bars.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [unique("dislikes_unique").on(table.userId, table.barId)],
+);
 
 export const dislikesRelations = relations(dislikes, ({ one }) => ({
   user: one(users, { fields: [dislikes.userId], references: [users.id] }),
   bar: one(bars, { fields: [dislikes.barId], references: [bars.id] }),
 }));
 
-export const commentDislikes = pgTable("comment_dislikes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  commentId: varchar("comment_id").notNull().references(() => comments.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => [
-  unique("comment_dislikes_unique").on(table.userId, table.commentId)
-]);
+export const commentDislikes = pgTable(
+  "comment_dislikes",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    commentId: varchar("comment_id")
+      .notNull()
+      .references(() => comments.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    unique("comment_dislikes_unique").on(table.userId, table.commentId),
+  ],
+);
 
-export const commentDislikesRelations = relations(commentDislikes, ({ one }) => ({
-  user: one(users, { fields: [commentDislikes.userId], references: [users.id] }),
-  comment: one(comments, { fields: [commentDislikes.commentId], references: [comments.id] }),
-}));
+export const commentDislikesRelations = relations(
+  commentDislikes,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [commentDislikes.userId],
+      references: [users.id],
+    }),
+    comment: one(comments, {
+      fields: [commentDislikes.commentId],
+      references: [comments.id],
+    }),
+  }),
+);
 
-export const follows = pgTable("follows", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  followerId: varchar("follower_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  followingId: varchar("following_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => [
-  unique("follows_unique").on(table.followerId, table.followingId)
-]);
+export const follows = pgTable(
+  "follows",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    followerId: varchar("follower_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    followingId: varchar("following_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [unique("follows_unique").on(table.followerId, table.followingId)],
+);
 
 export const followsRelations = relations(follows, ({ one }) => ({
-  follower: one(users, { fields: [follows.followerId], references: [users.id] }),
-  following: one(users, { fields: [follows.followingId], references: [users.id] }),
+  follower: one(users, {
+    fields: [follows.followerId],
+    references: [users.id],
+  }),
+  following: one(users, {
+    fields: [follows.followingId],
+    references: [users.id],
+  }),
 }));
 
 export const notifications = pgTable("notifications", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   type: text("type").notNull(),
-  actorId: varchar("actor_id").references(() => users.id, { onDelete: "cascade" }),
+  actorId: varchar("actor_id").references(() => users.id, {
+    onDelete: "cascade",
+  }),
   barId: varchar("bar_id").references(() => bars.id, { onDelete: "cascade" }),
-  commentId: varchar("comment_id").references(() => comments.id, { onDelete: "cascade" }),
+  commentId: varchar("comment_id").references(() => comments.id, {
+    onDelete: "cascade",
+  }),
   message: text("message").notNull(),
   read: boolean("read").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const bookmarks = pgTable("bookmarks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => [
-  unique("bookmarks_unique").on(table.userId, table.barId)
-]);
+export const bookmarks = pgTable(
+  "bookmarks",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    barId: varchar("bar_id")
+      .notNull()
+      .references(() => bars.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [unique("bookmarks_unique").on(table.userId, table.barId)],
+);
 
 export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
   user: one(users, { fields: [bookmarks.userId], references: [users.id] }),
@@ -205,63 +313,122 @@ export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
 }));
 
 export const pushSubscriptions = pgTable("push_subscriptions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   endpoint: text("endpoint").notNull().unique(),
   p256dh: text("p256dh").notNull(),
   auth: text("auth").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const friendships = pgTable("friendships", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  requesterId: varchar("requester_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  receiverId: varchar("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  status: text("status").notNull().default("pending"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => [
-  unique("friendships_unique").on(table.requesterId, table.receiverId)
-]);
+export const friendships = pgTable(
+  "friendships",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    requesterId: varchar("requester_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    receiverId: varchar("receiver_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("pending"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    unique("friendships_unique").on(table.requesterId, table.receiverId),
+  ],
+);
 
 export const friendshipsRelations = relations(friendships, ({ one }) => ({
-  requester: one(users, { fields: [friendships.requesterId], references: [users.id] }),
-  receiver: one(users, { fields: [friendships.receiverId], references: [users.id] }),
+  requester: one(users, {
+    fields: [friendships.requesterId],
+    references: [users.id],
+  }),
+  receiver: one(users, {
+    fields: [friendships.receiverId],
+    references: [users.id],
+  }),
 }));
 
 export const directMessages = pgTable("direct_messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  senderId: varchar("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  receiverId: varchar("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  senderId: varchar("sender_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  receiverId: varchar("receiver_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   readAt: timestamp("read_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const directMessagesRelations = relations(directMessages, ({ one }) => ({
-  sender: one(users, { fields: [directMessages.senderId], references: [users.id] }),
-  receiver: one(users, { fields: [directMessages.receiverId], references: [users.id] }),
+  sender: one(users, {
+    fields: [directMessages.senderId],
+    references: [users.id],
+  }),
+  receiver: one(users, {
+    fields: [directMessages.receiverId],
+    references: [users.id],
+  }),
 }));
 
-export const adoptions = pgTable("adoptions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  originalBarId: varchar("original_bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
-  adoptedByBarId: varchar("adopted_by_bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
-  adoptedByUserId: varchar("adopted_by_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => [
-  unique("adoptions_unique").on(table.originalBarId, table.adoptedByBarId)
-]);
+export const adoptions = pgTable(
+  "adoptions",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    originalBarId: varchar("original_bar_id")
+      .notNull()
+      .references(() => bars.id, { onDelete: "cascade" }),
+    adoptedByBarId: varchar("adopted_by_bar_id")
+      .notNull()
+      .references(() => bars.id, { onDelete: "cascade" }),
+    adoptedByUserId: varchar("adopted_by_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    unique("adoptions_unique").on(table.originalBarId, table.adoptedByBarId),
+  ],
+);
 
 export const adoptionsRelations = relations(adoptions, ({ one }) => ({
-  originalBar: one(bars, { fields: [adoptions.originalBarId], references: [bars.id] }),
-  adoptedByBar: one(bars, { fields: [adoptions.adoptedByBarId], references: [bars.id] }),
-  adoptedByUser: one(users, { fields: [adoptions.adoptedByUserId], references: [users.id] }),
+  originalBar: one(bars, {
+    fields: [adoptions.originalBarId],
+    references: [bars.id],
+  }),
+  adoptedByBar: one(bars, {
+    fields: [adoptions.adoptedByBarId],
+    references: [bars.id],
+  }),
+  adoptedByUser: one(users, {
+    fields: [adoptions.adoptedByUserId],
+    references: [users.id],
+  }),
 }));
 
 export const barUsages = pgTable("bar_usages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  barId: varchar("bar_id").notNull().references(() => bars.id, { onDelete: "cascade" }),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  barId: varchar("bar_id")
+    .notNull()
+    .references(() => bars.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   usageLink: text("usage_link"),
   comment: text("comment"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -277,28 +444,60 @@ export const barSequence = pgTable("bar_sequence", {
   currentValue: integer("current_value").notNull().default(0),
 });
 
-export const userAchievements = pgTable("user_achievements", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  achievementId: text("achievement_id").notNull(),
-  unlockedAt: timestamp("unlocked_at").notNull().defaultNow(),
-}, (table) => [
-  unique("user_achievements_unique").on(table.userId, table.achievementId)
-]);
+export const userAchievements = pgTable(
+  "user_achievements",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    achievementId: text("achievement_id").notNull(),
+    unlockedAt: timestamp("unlocked_at").notNull().defaultNow(),
+  },
+  (table) => [
+    unique("user_achievements_unique").on(table.userId, table.achievementId),
+  ],
+);
 
-export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
-  user: one(users, { fields: [userAchievements.userId], references: [users.id] }),
-}));
+export const userAchievementsRelations = relations(
+  userAchievements,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [userAchievements.userId],
+      references: [users.id],
+    }),
+  }),
+);
 
-export const reportReasonOptions = ["illegal_content", "harassment", "spam", "other"] as const;
-export const reportStatusOptions = ["pending", "reviewed", "dismissed", "action_taken"] as const;
+export const reportReasonOptions = [
+  "illegal_content",
+  "harassment",
+  "spam",
+  "other",
+] as const;
+export const reportStatusOptions = [
+  "pending",
+  "reviewed",
+  "dismissed",
+  "action_taken",
+] as const;
 
 export const reports = pgTable("reports", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  reporterId: varchar("reporter_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  reporterId: varchar("reporter_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   barId: varchar("bar_id").references(() => bars.id, { onDelete: "cascade" }),
-  commentId: varchar("comment_id").references(() => comments.id, { onDelete: "cascade" }),
-  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  commentId: varchar("comment_id").references(() => comments.id, {
+    onDelete: "cascade",
+  }),
+  userId: varchar("user_id").references(() => users.id, {
+    onDelete: "cascade",
+  }),
   reason: text("reason").notNull(),
   details: text("details"),
   status: text("status").notNull().default("pending"),
@@ -308,14 +507,25 @@ export const reports = pgTable("reports", {
 });
 
 export const reportsRelations = relations(reports, ({ one }) => ({
-  reporter: one(users, { fields: [reports.reporterId], references: [users.id] }),
+  reporter: one(users, {
+    fields: [reports.reporterId],
+    references: [users.id],
+  }),
   bar: one(bars, { fields: [reports.barId], references: [bars.id] }),
-  comment: one(comments, { fields: [reports.commentId], references: [comments.id] }),
-  reviewedByUser: one(users, { fields: [reports.reviewedBy], references: [users.id] }),
+  comment: one(comments, {
+    fields: [reports.commentId],
+    references: [comments.id],
+  }),
+  reviewedByUser: one(users, {
+    fields: [reports.reviewedBy],
+    references: [users.id],
+  }),
 }));
 
 export const flaggedPhrases = pgTable("flagged_phrases", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   phrase: text("phrase").notNull(),
   normalizedPhrase: text("normalized_phrase").notNull(),
   severity: text("severity").notNull().default("flag"),
@@ -327,13 +537,20 @@ export const flaggedPhrases = pgTable("flagged_phrases", {
 });
 
 export const flaggedPhrasesRelations = relations(flaggedPhrases, ({ one }) => ({
-  creator: one(users, { fields: [flaggedPhrases.createdBy], references: [users.id] }),
+  creator: one(users, {
+    fields: [flaggedPhrases.createdBy],
+    references: [users.id],
+  }),
 }));
 
 // AI moderation review requests - when AI rejects a bar but user wants manual review
 export const aiReviewRequests = pgTable("ai_review_requests", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   category: text("category").notNull(),
   tags: text("tags").array(),
@@ -352,33 +569,47 @@ export const aiReviewRequests = pgTable("ai_review_requests", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const aiReviewRequestsRelations = relations(aiReviewRequests, ({ one }) => ({
-  user: one(users, { fields: [aiReviewRequests.userId], references: [users.id] }),
-  reviewer: one(users, { fields: [aiReviewRequests.reviewedBy], references: [users.id] }),
-}));
+export const aiReviewRequestsRelations = relations(
+  aiReviewRequests,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [aiReviewRequests.userId],
+      references: [users.id],
+    }),
+    reviewer: one(users, {
+      fields: [aiReviewRequests.reviewedBy],
+      references: [users.id],
+    }),
+  }),
+);
 
 export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
 
 // Condition types for custom achievements
 export const achievementConditionTypes = [
-  "bars_posted",           // Total bars posted >= threshold
-  "likes_received",        // Total likes received >= threshold
-  "followers_count",       // Followers >= threshold
-  "following_count",       // Following >= threshold
-  "single_bar_likes",      // Any single bar has >= threshold likes
-  "single_bar_comments",   // Any single bar has >= threshold comments
-  "single_bar_bookmarks",  // Any single bar has >= threshold bookmarks
-  "comments_made",         // Total comments made >= threshold
-  "bars_adopted",          // Total bars adopted >= threshold
-  "controversial_bar",     // Has a bar with more dislikes than likes (threshold = min total reactions)
-  "night_owl",             // Posted a bar between midnight and 5am
-  "early_bird",            // Posted a bar between 5am and 8am
-  "bars_with_keyword",     // Bars containing a specific keyword >= threshold
+  "bars_posted", // Total bars posted >= threshold
+  "likes_received", // Total likes received >= threshold
+  "followers_count", // Followers >= threshold
+  "following_count", // Following >= threshold
+  "single_bar_likes", // Any single bar has >= threshold likes
+  "single_bar_comments", // Any single bar has >= threshold comments
+  "single_bar_bookmarks", // Any single bar has >= threshold bookmarks
+  "comments_made", // Total comments made >= threshold
+  "bars_adopted", // Total bars adopted >= threshold
+  "controversial_bar", // Has a bar with more dislikes than likes (threshold = min total reactions)
+  "night_owl", // Posted a bar between midnight and 5am
+  "early_bird", // Posted a bar between 5am and 8am
+  "bars_with_keyword", // Bars containing a specific keyword >= threshold
 ] as const;
 
-export type AchievementConditionType = typeof achievementConditionTypes[number];
+export type AchievementConditionType =
+  (typeof achievementConditionTypes)[number];
 
-export const achievementApprovalStatusOptions = ["pending", "approved", "rejected"] as const;
+export const achievementApprovalStatusOptions = [
+  "pending",
+  "approved",
+  "rejected",
+] as const;
 
 // Rule tree types for compound achievement conditions
 export type AchievementCondition = {
@@ -400,7 +631,9 @@ export type AchievementRuleGroup = {
 export type AchievementRuleTree = AchievementCondition | AchievementRuleGroup;
 
 export const customAchievements = pgTable("custom_achievements", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   emoji: text("emoji"), // Deprecated - use imageUrl instead
   imageUrl: text("image_url"), // Custom badge image URL
@@ -415,16 +648,24 @@ export const customAchievements = pgTable("custom_achievements", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const customAchievementsRelations = relations(customAchievements, ({ one }) => ({
-  creator: one(users, { fields: [customAchievements.createdBy], references: [users.id] }),
-}));
+export const customAchievementsRelations = relations(
+  customAchievements,
+  ({ one }) => ({
+    creator: one(users, {
+      fields: [customAchievements.createdBy],
+      references: [users.id],
+    }),
+  }),
+);
 
 export type CustomAchievement = typeof customAchievements.$inferSelect;
 export type InsertCustomAchievement = typeof customAchievements.$inferInsert;
 
 // Debug logs for admin troubleshooting
 export const debugLogs = pgTable("debug_logs", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   action: text("action").notNull(), // like, dislike, follow, etc.
   userId: varchar("user_id"),
   targetId: varchar("target_id"), // barId, userId, etc.
@@ -439,53 +680,312 @@ export type InsertDebugLog = typeof debugLogs.$inferInsert;
 
 export const ACHIEVEMENTS = {
   // Original achievements
-  first_bar: { name: "Origin Founder", emoji: "🔥", imageUrl: null as string | null, description: "Posted your first bar", threshold: { barsMinted: 1 }, rarity: "common" as AchievementRarity },
-  bar_slinger: { name: "Bar Slinger", emoji: "💀", imageUrl: null as string | null, description: "Posted 10 bars", threshold: { barsMinted: 10 }, rarity: "rare" as AchievementRarity },
-  bar_lord: { name: "Bar Lord", emoji: "👑", imageUrl: null as string | null, description: "Posted 50 bars", threshold: { barsMinted: 50 }, rarity: "epic" as AchievementRarity },
-  crowd_pleaser: { name: "Crowd Pleaser", emoji: "🎤", imageUrl: null as string | null, description: "Received 100 total likes", threshold: { likesReceived: 100 }, rarity: "rare" as AchievementRarity },
-  cult_leader: { name: "Cult Leader", emoji: "🪖", imageUrl: null as string | null, description: "Gained 50 followers", threshold: { followers: 50 }, rarity: "epic" as AchievementRarity },
-  immortal_bar: { name: "Immortal", emoji: "🌹", imageUrl: null as string | null, description: "One bar reached 500 likes", threshold: { topBarLikes: 500 }, rarity: "legendary" as AchievementRarity },
-  milsling_legacy: { name: "Milsling Heir", emoji: "⚔️", imageUrl: null as string | null, description: "Received 1000 total likes", threshold: { likesReceived: 1000 }, rarity: "legendary" as AchievementRarity },
-  wordsmith: { name: "Wordsmith", emoji: "✍️", imageUrl: null as string | null, description: "Posted 25 bars", threshold: { barsMinted: 25 }, rarity: "rare" as AchievementRarity },
-  rising_star: { name: "Rising Star", emoji: "⭐", imageUrl: null as string | null, description: "Gained 10 followers", threshold: { followers: 10 }, rarity: "common" as AchievementRarity },
-  viral: { name: "Viral", emoji: "🔥", imageUrl: null as string | null, description: "One bar reached 100 likes", threshold: { topBarLikes: 100 }, rarity: "rare" as AchievementRarity },
+  first_bar: {
+    name: "Origin Founder",
+    emoji: "🔥",
+    imageUrl: null as string | null,
+    description: "Posted your first bar",
+    threshold: { barsMinted: 1 },
+    rarity: "common" as AchievementRarity,
+  },
+  bar_slinger: {
+    name: "Bar Slinger",
+    emoji: "💀",
+    imageUrl: null as string | null,
+    description: "Posted 10 bars",
+    threshold: { barsMinted: 10 },
+    rarity: "rare" as AchievementRarity,
+  },
+  bar_lord: {
+    name: "Bar Lord",
+    emoji: "👑",
+    imageUrl: null as string | null,
+    description: "Posted 50 bars",
+    threshold: { barsMinted: 50 },
+    rarity: "epic" as AchievementRarity,
+  },
+  crowd_pleaser: {
+    name: "Crowd Pleaser",
+    emoji: "🎤",
+    imageUrl: null as string | null,
+    description: "Received 100 total likes",
+    threshold: { likesReceived: 100 },
+    rarity: "rare" as AchievementRarity,
+  },
+  cult_leader: {
+    name: "Cult Leader",
+    emoji: "🪖",
+    imageUrl: null as string | null,
+    description: "Gained 50 followers",
+    threshold: { followers: 50 },
+    rarity: "epic" as AchievementRarity,
+  },
+  immortal_bar: {
+    name: "Immortal",
+    emoji: "🌹",
+    imageUrl: null as string | null,
+    description: "One bar reached 500 likes",
+    threshold: { topBarLikes: 500 },
+    rarity: "legendary" as AchievementRarity,
+  },
+  milsling_legacy: {
+    name: "Milsling Heir",
+    emoji: "⚔️",
+    imageUrl: null as string | null,
+    description: "Received 1000 total likes",
+    threshold: { likesReceived: 1000 },
+    rarity: "legendary" as AchievementRarity,
+  },
+  wordsmith: {
+    name: "Wordsmith",
+    emoji: "✍️",
+    imageUrl: null as string | null,
+    description: "Posted 25 bars",
+    threshold: { barsMinted: 25 },
+    rarity: "rare" as AchievementRarity,
+  },
+  rising_star: {
+    name: "Rising Star",
+    emoji: "⭐",
+    imageUrl: null as string | null,
+    description: "Gained 10 followers",
+    threshold: { followers: 10 },
+    rarity: "common" as AchievementRarity,
+  },
+  viral: {
+    name: "Viral",
+    emoji: "🔥",
+    imageUrl: null as string | null,
+    description: "One bar reached 100 likes",
+    threshold: { topBarLikes: 100 },
+    rarity: "rare" as AchievementRarity,
+  },
 
   // Engagement & Virality Boosters
-  viral_bronze: { name: "Viral Bronze", emoji: "🥉", imageUrl: null as string | null, description: "One bar reached 50 likes + 10 bookmarks", threshold: { topBarEngagement: 60 }, rarity: "rare" as AchievementRarity },
-  viral_silver: { name: "Viral Silver", emoji: "🥈", imageUrl: null as string | null, description: "One bar reached 200 likes + 50 bookmarks", threshold: { topBarEngagement: 250 }, rarity: "epic" as AchievementRarity },
-  viral_gold: { name: "Viral Gold", emoji: "🥇", imageUrl: null as string | null, description: "One bar reached 500 likes + 100 bookmarks", threshold: { topBarEngagement: 600 }, rarity: "legendary" as AchievementRarity },
-  thread_dominator: { name: "Thread Dominator", emoji: "💬", imageUrl: null as string | null, description: "One bar sparked 20+ comments", threshold: { topBarComments: 20 }, rarity: "epic" as AchievementRarity },
-  reply_king: { name: "Reply King", emoji: "🗣️", imageUrl: null as string | null, description: "Made 50 comments on others' bars", threshold: { commentsMade: 50 }, rarity: "rare" as AchievementRarity },
-  adopted_remixed: { name: "Adopted & Remixed", emoji: "🔄", imageUrl: null as string | null, description: "Your bars got adopted 5+ times", threshold: { barsAdoptedByOthers: 5 }, rarity: "epic" as AchievementRarity },
+  viral_bronze: {
+    name: "Viral Bronze",
+    emoji: "🥉",
+    imageUrl: null as string | null,
+    description: "One bar reached 50 likes + 10 bookmarks",
+    threshold: { topBarEngagement: 60 },
+    rarity: "rare" as AchievementRarity,
+  },
+  viral_silver: {
+    name: "Viral Silver",
+    emoji: "🥈",
+    imageUrl: null as string | null,
+    description: "One bar reached 200 likes + 50 bookmarks",
+    threshold: { topBarEngagement: 250 },
+    rarity: "epic" as AchievementRarity,
+  },
+  viral_gold: {
+    name: "Viral Gold",
+    emoji: "🥇",
+    imageUrl: null as string | null,
+    description: "One bar reached 500 likes + 100 bookmarks",
+    threshold: { topBarEngagement: 600 },
+    rarity: "legendary" as AchievementRarity,
+  },
+  thread_dominator: {
+    name: "Thread Dominator",
+    emoji: "💬",
+    imageUrl: null as string | null,
+    description: "One bar sparked 20+ comments",
+    threshold: { topBarComments: 20 },
+    rarity: "epic" as AchievementRarity,
+  },
+  reply_king: {
+    name: "Reply King",
+    emoji: "🗣️",
+    imageUrl: null as string | null,
+    description: "Made 50 comments on others' bars",
+    threshold: { commentsMade: 50 },
+    rarity: "rare" as AchievementRarity,
+  },
+  adopted_remixed: {
+    name: "Adopted & Remixed",
+    emoji: "🔄",
+    imageUrl: null as string | null,
+    description: "Your bars got adopted 5+ times",
+    threshold: { barsAdoptedByOthers: 5 },
+    rarity: "epic" as AchievementRarity,
+  },
 
   // Consistency & Grind Streaks
-  streak_starter: { name: "Streak Starter", emoji: "🔥", imageUrl: null as string | null, description: "Posted bars 7 days in a row", threshold: { streakDays: 7 }, rarity: "common" as AchievementRarity },
-  streak_master: { name: "Streak Master", emoji: "⚡", imageUrl: null as string | null, description: "Posted bars 14 days in a row", threshold: { streakDays: 14 }, rarity: "rare" as AchievementRarity },
-  streak_legend: { name: "Streak Legend", emoji: "🌟", imageUrl: null as string | null, description: "Posted bars 30 days in a row", threshold: { streakDays: 30 }, rarity: "epic" as AchievementRarity },
-  streak_immortal: { name: "Streak Immortal", emoji: "💎", imageUrl: null as string | null, description: "Posted bars 100 days in a row", threshold: { streakDays: 100 }, rarity: "legendary" as AchievementRarity },
-  volume_spitter: { name: "Volume Spitter", emoji: "🎯", imageUrl: null as string | null, description: "Posted 100 bars total", threshold: { barsMinted: 100 }, rarity: "epic" as AchievementRarity },
-  bar_machine: { name: "Bar Machine", emoji: "🏭", imageUrl: null as string | null, description: "Posted 500 bars total", threshold: { barsMinted: 500 }, rarity: "legendary" as AchievementRarity },
-  bar_god: { name: "Bar God", emoji: "⚡", imageUrl: null as string | null, description: "Posted 1000 bars total", threshold: { barsMinted: 1000 }, rarity: "legendary" as AchievementRarity },
-  weekend_warrior: { name: "Weekend Warrior", emoji: "🌙", imageUrl: null as string | null, description: "Posted 5+ bars on a weekend", threshold: { weekendBars: 5 }, rarity: "common" as AchievementRarity },
-  midnight_marauder: { name: "Midnight Marauder", emoji: "🦇", imageUrl: null as string | null, description: "Posted 3+ bars between midnight and 5am", threshold: { midnightBars: 3 }, rarity: "rare" as AchievementRarity },
+  streak_starter: {
+    name: "Streak Starter",
+    emoji: "🔥",
+    imageUrl: null as string | null,
+    description: "Posted bars 7 days in a row",
+    threshold: { streakDays: 7 },
+    rarity: "common" as AchievementRarity,
+  },
+  streak_master: {
+    name: "Streak Master",
+    emoji: "⚡",
+    imageUrl: null as string | null,
+    description: "Posted bars 14 days in a row",
+    threshold: { streakDays: 14 },
+    rarity: "rare" as AchievementRarity,
+  },
+  streak_legend: {
+    name: "Streak Legend",
+    emoji: "🌟",
+    imageUrl: null as string | null,
+    description: "Posted bars 30 days in a row",
+    threshold: { streakDays: 30 },
+    rarity: "epic" as AchievementRarity,
+  },
+  streak_immortal: {
+    name: "Streak Immortal",
+    emoji: "💎",
+    imageUrl: null as string | null,
+    description: "Posted bars 100 days in a row",
+    threshold: { streakDays: 100 },
+    rarity: "legendary" as AchievementRarity,
+  },
+  volume_spitter: {
+    name: "Volume Spitter",
+    emoji: "🎯",
+    imageUrl: null as string | null,
+    description: "Posted 100 bars total",
+    threshold: { barsMinted: 100 },
+    rarity: "epic" as AchievementRarity,
+  },
+  bar_machine: {
+    name: "Bar Machine",
+    emoji: "🏭",
+    imageUrl: null as string | null,
+    description: "Posted 500 bars total",
+    threshold: { barsMinted: 500 },
+    rarity: "legendary" as AchievementRarity,
+  },
+  bar_god: {
+    name: "Bar God",
+    emoji: "⚡",
+    imageUrl: null as string | null,
+    description: "Posted 1000 bars total",
+    threshold: { barsMinted: 1000 },
+    rarity: "legendary" as AchievementRarity,
+  },
+  weekend_warrior: {
+    name: "Weekend Warrior",
+    emoji: "🌙",
+    imageUrl: null as string | null,
+    description: "Posted 5+ bars on a weekend",
+    threshold: { weekendBars: 5 },
+    rarity: "common" as AchievementRarity,
+  },
+  midnight_marauder: {
+    name: "Midnight Marauder",
+    emoji: "🦇",
+    imageUrl: null as string | null,
+    description: "Posted 3+ bars between midnight and 5am",
+    threshold: { midnightBars: 3 },
+    rarity: "rare" as AchievementRarity,
+  },
 
   // Community & Social
-  mentor: { name: "Mentor", emoji: "🎓", imageUrl: null as string | null, description: "Adopted 20+ bars from others", threshold: { adoptionsGiven: 20 }, rarity: "epic" as AchievementRarity },
-  bar_adopter: { name: "Bar Adopter", emoji: "🤝", imageUrl: null as string | null, description: "Adopted 5 bars from others", threshold: { adoptionsGiven: 5 }, rarity: "common" as AchievementRarity },
-  comment_goat: { name: "Comment GOAT", emoji: "🐐", imageUrl: null as string | null, description: "Received 100+ likes on your comments", threshold: { commentLikesReceived: 100 }, rarity: "epic" as AchievementRarity },
-  crew_builder: { name: "Crew Builder", emoji: "👥", imageUrl: null as string | null, description: "Gained 100+ followers", threshold: { followers: 100 }, rarity: "epic" as AchievementRarity },
-  influencer: { name: "Influencer", emoji: "📢", imageUrl: null as string | null, description: "Gained 500+ followers", threshold: { followers: 500 }, rarity: "legendary" as AchievementRarity },
-  network_king: { name: "Network King", emoji: "🕸️", imageUrl: null as string | null, description: "Following 100+ active posters", threshold: { following: 100 }, rarity: "rare" as AchievementRarity },
+  mentor: {
+    name: "Mentor",
+    emoji: "🎓",
+    imageUrl: null as string | null,
+    description: "Adopted 20+ bars from others",
+    threshold: { adoptionsGiven: 20 },
+    rarity: "epic" as AchievementRarity,
+  },
+  bar_adopter: {
+    name: "Bar Adopter",
+    emoji: "🤝",
+    imageUrl: null as string | null,
+    description: "Adopted 5 bars from others",
+    threshold: { adoptionsGiven: 5 },
+    rarity: "common" as AchievementRarity,
+  },
+  comment_goat: {
+    name: "Comment GOAT",
+    emoji: "🐐",
+    imageUrl: null as string | null,
+    description: "Received 100+ likes on your comments",
+    threshold: { commentLikesReceived: 100 },
+    rarity: "epic" as AchievementRarity,
+  },
+  crew_builder: {
+    name: "Crew Builder",
+    emoji: "👥",
+    imageUrl: null as string | null,
+    description: "Gained 100+ followers",
+    threshold: { followers: 100 },
+    rarity: "epic" as AchievementRarity,
+  },
+  influencer: {
+    name: "Influencer",
+    emoji: "📢",
+    imageUrl: null as string | null,
+    description: "Gained 500+ followers",
+    threshold: { followers: 500 },
+    rarity: "legendary" as AchievementRarity,
+  },
+  network_king: {
+    name: "Network King",
+    emoji: "🕸️",
+    imageUrl: null as string | null,
+    description: "Following 100+ active posters",
+    threshold: { following: 100 },
+    rarity: "rare" as AchievementRarity,
+  },
 
   // Platform Health
-  clean_streak: { name: "Clean Streak", emoji: "✨", imageUrl: null as string | null, description: "90 days without violations", threshold: { cleanDays: 90 }, rarity: "rare" as AchievementRarity },
-  rule_follower: { name: "Rule Follower", emoji: "📜", imageUrl: null as string | null, description: "180 days without violations", threshold: { cleanDays: 180 }, rarity: "epic" as AchievementRarity },
-  model_citizen: { name: "Model Citizen", emoji: "🏆", imageUrl: null as string | null, description: "365 days without violations", threshold: { cleanDays: 365 }, rarity: "legendary" as AchievementRarity },
+  clean_streak: {
+    name: "Clean Streak",
+    emoji: "✨",
+    imageUrl: null as string | null,
+    description: "90 days without violations",
+    threshold: { cleanDays: 90 },
+    rarity: "rare" as AchievementRarity,
+  },
+  rule_follower: {
+    name: "Rule Follower",
+    emoji: "📜",
+    imageUrl: null as string | null,
+    description: "180 days without violations",
+    threshold: { cleanDays: 180 },
+    rarity: "epic" as AchievementRarity,
+  },
+  model_citizen: {
+    name: "Model Citizen",
+    emoji: "🏆",
+    imageUrl: null as string | null,
+    description: "365 days without violations",
+    threshold: { cleanDays: 365 },
+    rarity: "legendary" as AchievementRarity,
+  },
 
   // Underdog & Special
-  underdog: { name: "Underdog", emoji: "🐕", imageUrl: null as string | null, description: "Got 50+ likes on a bar with <50 followers", threshold: { underdogBar: 1 }, rarity: "epic" as AchievementRarity },
-  og_member: { name: "OG Member", emoji: "🎖️", imageUrl: null as string | null, description: "Account older than 1 year", threshold: { accountAgeDays: 365 }, rarity: "rare" as AchievementRarity },
-  veteran: { name: "Veteran", emoji: "🎗️", imageUrl: null as string | null, description: "Account older than 2 years", threshold: { accountAgeDays: 730 }, rarity: "epic" as AchievementRarity },
+  underdog: {
+    name: "Underdog",
+    emoji: "🐕",
+    imageUrl: null as string | null,
+    description: "Got 50+ likes on a bar with <50 followers",
+    threshold: { underdogBar: 1 },
+    rarity: "epic" as AchievementRarity,
+  },
+  og_member: {
+    name: "OG Member",
+    emoji: "🎖️",
+    imageUrl: null as string | null,
+    description: "Account older than 1 year",
+    threshold: { accountAgeDays: 365 },
+    rarity: "rare" as AchievementRarity,
+  },
+  veteran: {
+    name: "Veteran",
+    emoji: "🎗️",
+    imageUrl: null as string | null,
+    description: "Account older than 2 years",
+    threshold: { accountAgeDays: 730 },
+    rarity: "epic" as AchievementRarity,
+  },
 } as const;
 
 // Achievement badge images stored in database for built-in achievements
@@ -497,11 +997,21 @@ export const achievementBadgeImages = pgTable("achievement_badge_images", {
 
 export type AchievementBadgeImage = typeof achievementBadgeImages.$inferSelect;
 
-export const tagAnimationOptions = ["none", "pulse", "glow", "shimmer", "bounce", "sparkle", "gradient"] as const;
-export type TagAnimation = typeof tagAnimationOptions[number];
+export const tagAnimationOptions = [
+  "none",
+  "pulse",
+  "glow",
+  "shimmer",
+  "bounce",
+  "sparkle",
+  "gradient",
+] as const;
+export type TagAnimation = (typeof tagAnimationOptions)[number];
 
 export const customTags = pgTable("custom_tags", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: text("name").notNull().unique(),
   displayName: text("display_name"),
   imageUrl: text("image_url"),
@@ -514,7 +1024,10 @@ export const customTags = pgTable("custom_tags", {
 });
 
 export const customTagsRelations = relations(customTags, ({ one }) => ({
-  creator: one(users, { fields: [customTags.createdBy], references: [users.id] }),
+  creator: one(users, {
+    fields: [customTags.createdBy],
+    references: [users.id],
+  }),
 }));
 
 export type CustomTag = typeof customTags.$inferSelect;
@@ -526,7 +1039,9 @@ export const insertCustomTagSchema = createInsertSchema(customTags).omit({
 });
 
 export const customCategories = pgTable("custom_categories", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: text("name").notNull().unique(),
   displayName: text("display_name"),
   imageUrl: text("image_url"),
@@ -538,14 +1053,22 @@ export const customCategories = pgTable("custom_categories", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const customCategoriesRelations = relations(customCategories, ({ one }) => ({
-  creator: one(users, { fields: [customCategories.createdBy], references: [users.id] }),
-}));
+export const customCategoriesRelations = relations(
+  customCategories,
+  ({ one }) => ({
+    creator: one(users, {
+      fields: [customCategories.createdBy],
+      references: [users.id],
+    }),
+  }),
+);
 
 export type CustomCategory = typeof customCategories.$inferSelect;
 export type InsertCustomCategory = typeof customCategories.$inferInsert;
 
-export const insertCustomCategorySchema = createInsertSchema(customCategories).omit({
+export const insertCustomCategorySchema = createInsertSchema(
+  customCategories,
+).omit({
   id: true,
   createdAt: true,
 });
@@ -554,7 +1077,9 @@ export type AchievementId = keyof typeof ACHIEVEMENTS;
 
 // Profile Badges - Custom badges that appear next to usernames
 export const profileBadges = pgTable("profile_badges", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: text("name").notNull().unique(),
   displayName: text("display_name").notNull(),
   description: text("description"),
@@ -572,7 +1097,10 @@ export const profileBadges = pgTable("profile_badges", {
 });
 
 export const profileBadgesRelations = relations(profileBadges, ({ one }) => ({
-  creator: one(users, { fields: [profileBadges.createdBy], references: [users.id] }),
+  creator: one(users, {
+    fields: [profileBadges.createdBy],
+    references: [users.id],
+  }),
 }));
 
 export type ProfileBadge = typeof profileBadges.$inferSelect;
@@ -585,9 +1113,15 @@ export const insertProfileBadgeSchema = createInsertSchema(profileBadges).omit({
 
 // User Badges - Junction table for which users own which badges
 export const userBadges = pgTable("user_badges", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  badgeId: varchar("badge_id").notNull().references(() => profileBadges.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  badgeId: varchar("badge_id")
+    .notNull()
+    .references(() => profileBadges.id, { onDelete: "cascade" }),
   source: text("source").notNull().default("owner_gift"), // "achievement", "owner_gift", "purchase", "event"
   sourceDetails: text("source_details"), // e.g., achievement ID or event name
   grantedBy: varchar("granted_by").references(() => users.id), // who gave the badge (for owner gifts)
@@ -596,8 +1130,14 @@ export const userBadges = pgTable("user_badges", {
 
 export const userBadgesRelations = relations(userBadges, ({ one }) => ({
   user: one(users, { fields: [userBadges.userId], references: [users.id] }),
-  badge: one(profileBadges, { fields: [userBadges.badgeId], references: [profileBadges.id] }),
-  granter: one(users, { fields: [userBadges.grantedBy], references: [users.id] }),
+  badge: one(profileBadges, {
+    fields: [userBadges.badgeId],
+    references: [profileBadges.id],
+  }),
+  granter: one(users, {
+    fields: [userBadges.grantedBy],
+    references: [users.id],
+  }),
 }));
 
 export type UserBadge = typeof userBadges.$inferSelect;
@@ -605,7 +1145,10 @@ export type InsertUserBadge = typeof userBadges.$inferInsert;
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({
   user: one(users, { fields: [notifications.userId], references: [users.id] }),
-  actor: one(users, { fields: [notifications.actorId], references: [users.id] }),
+  actor: one(users, {
+    fields: [notifications.actorId],
+    references: [users.id],
+  }),
   bar: one(bars, { fields: [notifications.barId], references: [bars.id] }),
 }));
 
@@ -625,12 +1168,31 @@ export const insertBarSchema = createInsertSchema(bars).omit({
 export const updateBarSchema = z.object({
   content: z.string().min(1).max(2000).optional(),
   explanation: z.string().max(500).optional().nullable(),
-  category: z.enum(["Funny", "Serious", "Wordplay", "Storytelling", "Battle", "Freestyle"]).optional(),
+  category: z
+    .enum([
+      "Funny",
+      "Serious",
+      "Wordplay",
+      "Storytelling",
+      "Battle",
+      "Freestyle",
+    ])
+    .optional(),
   tags: z.array(z.string()).optional(),
   feedbackWanted: z.boolean().optional(),
   barType: z.enum(["single_bar", "snippet", "half_verse"]).optional(),
-  fullRapLink: z.string().optional().nullable().transform(v => v === "" ? null : v).pipe(z.string().url().nullable().optional()),
-  beatLink: z.string().optional().nullable().transform(v => v === "" ? null : v).pipe(z.string().url().nullable().optional()),
+  fullRapLink: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => (v === "" ? null : v))
+    .pipe(z.string().url().nullable().optional()),
+  beatLink: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => (v === "" ? null : v))
+    .pipe(z.string().url().nullable().optional()),
 });
 
 export const insertCommentSchema = createInsertSchema(comments).omit({
@@ -673,7 +1235,14 @@ export type BarWithUser = Bar & {
   adoptedFromBarId?: string | null;
 };
 
-export const categoryOptions = ["Funny", "Serious", "Wordplay", "Storytelling", "Battle", "Freestyle"] as const;
+export const categoryOptions = [
+  "Funny",
+  "Serious",
+  "Wordplay",
+  "Storytelling",
+  "Battle",
+  "Freestyle",
+] as const;
 export const membershipTiers = ["free", "donor", "donor_plus"] as const;
 
 export const maintenanceStatus = pgTable("maintenance_status", {
@@ -688,7 +1257,9 @@ export type MaintenanceStatus = typeof maintenanceStatus.$inferSelect;
 
 // Protected Bars - Owner's secret backlog that prevents others from posting matching content
 export const protectedBars = pgTable("protected_bars", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   content: text("content").notNull(), // The protected bar content
   notes: text("notes"), // Owner's private notes about this bar
   similarityThreshold: integer("similarity_threshold").notNull().default(80), // 0-100% similarity required to block
@@ -697,7 +1268,10 @@ export const protectedBars = pgTable("protected_bars", {
 });
 
 export const protectedBarsRelations = relations(protectedBars, ({ one }) => ({
-  creator: one(users, { fields: [protectedBars.createdBy], references: [users.id] }),
+  creator: one(users, {
+    fields: [protectedBars.createdBy],
+    references: [users.id],
+  }),
 }));
 
 export type ProtectedBar = typeof protectedBars.$inferSelect;
@@ -710,15 +1284,25 @@ export const insertProtectedBarSchema = createInsertSchema(protectedBars).omit({
 
 // AI Settings - Owner configurable AI abilities
 export const aiSettings = pgTable("ai_settings", {
-  id: varchar("id").primaryKey().default(sql`'default'`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`'default'`),
   // Feature toggles
   moderationEnabled: boolean("moderation_enabled").notNull().default(true),
-  styleAnalysisEnabled: boolean("style_analysis_enabled").notNull().default(true),
+  styleAnalysisEnabled: boolean("style_analysis_enabled")
+    .notNull()
+    .default(true),
   orphieChatEnabled: boolean("orphie_chat_enabled").notNull().default(true),
-  barExplanationsEnabled: boolean("bar_explanations_enabled").notNull().default(true),
-  rhymeSuggestionsEnabled: boolean("rhyme_suggestions_enabled").notNull().default(true),
+  barExplanationsEnabled: boolean("bar_explanations_enabled")
+    .notNull()
+    .default(true),
+  rhymeSuggestionsEnabled: boolean("rhyme_suggestions_enabled")
+    .notNull()
+    .default(true),
   // Moderation settings
-  moderationStrictness: text("moderation_strictness").notNull().default("balanced"), // "lenient", "balanced", "strict"
+  moderationStrictness: text("moderation_strictness")
+    .notNull()
+    .default("balanced"), // "lenient", "balanced", "strict"
   autoApproveEnabled: boolean("auto_approve_enabled").notNull().default(true),
   // Orphie customization
   orphiePersonality: text("orphie_personality"), // Custom instructions for Orphie
@@ -737,8 +1321,12 @@ export type InsertAISettings = typeof aiSettings.$inferInsert;
 
 // Notebooks - User writing documents
 export const notebooks = pgTable("notebooks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull().default("Untitled"),
   content: text("content").notNull().default(""),
   createdAt: timestamp("created_at").notNull().defaultNow(),
