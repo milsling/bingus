@@ -89,7 +89,7 @@
   /* ========================================
      ORPHANBARS - Apple Vision Pro Glass (Dark Only)
      ======================================== */
-  --background: 268 33% 18%;
+  --background: 230 25% 10%;
   --foreground: 0 0% 98%;
 
   --card: 0 0% 6%;
@@ -148,8 +148,9 @@
     @apply border-border;
   }
   body {
-    @apply font-sans antialiased bg-background text-foreground;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    @apply font-sans antialiased text-foreground;
+    background: radial-gradient(ellipse at center, #3d2066 0%, #1a1a2e 50%, #0f0f1a 100%);
+    background-attachment: fixed;
   }
   
   h1, h2, h3, h4, h5, h6 {
