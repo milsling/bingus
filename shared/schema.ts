@@ -45,6 +45,7 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").notNull().default(false),
   isAdminPlus: boolean("is_admin_plus").notNull().default(false),
   isOwner: boolean("is_owner").notNull().default(false),
+  isGuest: boolean("is_guest").notNull().default(false),
   usernameChangedAt: timestamp("username_changed_at"),
   onlineStatus: text("online_status").notNull().default("offline"),
   lastSeenAt: timestamp("last_seen_at"),

@@ -236,6 +236,42 @@ export async function registerRoutes(
     })(req, res, next);
   });
 
+  app.post("/api/auth/guest", async (req, res, next) => {
+    try {
+      const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const guestUser = {
+        id: guestId,
+        username: `Guest_${Math.random().toString(36).substr(2, 6)}`,
+        email: `${guestId}@guest.orphanbars.com`,
+        emailVerified: false,
+        bio: null,
+        location: null,
+        avatarUrl: null,
+        bannerUrl: null,
+        membershipTier: "free",
+        membershipExpiresAt: null,
+        isAdmin: false,
+        isAdminPlus: false,
+        isOwner: false,
+        isGuest: true,
+        xp: 0,
+        level: 1,
+      };
+      
+      req.login(guestUser, (err) => {
+        if (err) {
+          console.error(`[GUEST] Session creation failed:`, err);
+          return next(err);
+        }
+        console.log(`[GUEST] Guest session created: ${guestUser.username}`);
+        res.json(guestUser);
+      });
+    } catch (error) {
+      console.error("[GUEST] Error creating guest session:", error);
+      res.status(500).json({ message: "Failed to create guest session" });
+    }
+  });
+
   app.post("/api/auth/logout", (req, res) => {
     req.logout((err) => {
       if (err) {

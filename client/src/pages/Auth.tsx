@@ -145,6 +145,37 @@ export default function Auth() {
     }
   };
 
+  const handleGuestLogin = async () => {
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch("/api/auth/guest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to login as guest");
+      }
+      
+      const guestUser = await response.json();
+      toast({
+        title: "Welcome, Guest!",
+        description: "You're browsing in view-only mode.",
+      });
+      window.location.href = "/";
+    } catch (error: any) {
+      toast({
+        title: "Guest login failed",
+        description: error.message || "Could not create guest session",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -774,6 +805,30 @@ export default function Auth() {
                       Google
                     </Button>
                   </div>
+                  
+                  <div className="relative w-full">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-white/10" />
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-transparent px-2 text-muted-foreground">or</span>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full glass-input border-white/[0.1] hover:bg-white/[0.05]"
+                    onClick={handleGuestLogin}
+                    disabled={isLoading}
+                    data-testid="button-login-guest"
+                  >
+                    <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Continue as Guest
+                  </Button>
                   
                   <Button
                     type="button"
