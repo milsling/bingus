@@ -641,18 +641,18 @@ export default function Auth() {
           </div>
         )}
 
-      <Card className="w-full max-w-md bg-black/20 backdrop-blur-xl border-white/10 shadow-[0_0_80px_rgba(139,92,246,0.3),0_8px_40px_rgba(0,0,0,0.4)]">
+      <Card className="w-full max-w-md bg-white/5 backdrop-blur-2xl border-white/10 rounded-[32px] overflow-hidden shadow-[0_0_120px_rgba(139,92,246,0.4),0_8px_40px_rgba(0,0,0,0.4)]">
         <Tabs defaultValue="login" className="w-full" onValueChange={() => resetSignup()}>
-          <TabsList className="grid w-full grid-cols-2 rounded-t-xl rounded-b-none bg-white/[0.02] p-0 h-14 border-b border-white/[0.06]">
+          <TabsList className="grid w-full grid-cols-2 bg-transparent p-0 h-14 border-b border-white/[0.06]">
             <TabsTrigger 
               value="login" 
-              className="h-full rounded-tl-xl rounded-tr-none rounded-b-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
+              className="h-full rounded-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
             >
               Login
             </TabsTrigger>
             <TabsTrigger 
               value="signup" 
-              className="h-full rounded-tr-xl rounded-tl-none rounded-b-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
+              className="h-full rounded-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
             >
               Create Account
             </TabsTrigger>
