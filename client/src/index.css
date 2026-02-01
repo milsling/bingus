@@ -377,12 +377,12 @@ html.dark {
    GLASSMORPHISM UTILITIES - Apple Vision Pro Style
    ======================================== */
 
-/* Glass panel base - Vision Pro style (ultra transparent) */
+/* Glass panel base - Vision Pro style (gray glass) */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(120, 120, 130, 0.10);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
   border-radius: 1.25rem;
 }
 
@@ -404,12 +404,12 @@ html.dark {
   border-radius: 1rem;
 }
 
-/* Glass nav - navigation specific styling */
+/* Glass nav - navigation specific styling (gray glass) */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(120, 120, 130, 0.12);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 /* Glass button - Vision Pro style */
