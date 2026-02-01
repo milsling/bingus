@@ -15,6 +15,7 @@ import { setupWebSocket, notifyNewMessage } from "./websocket";
 import { analyzeContent, normalizeText, type FlaggedPhraseRule } from "./moderation";
 import { moderateContent } from "./replit_integrations/ai/barAssistant";
 import { aiReviewRequests } from "@shared/schema";
+import { validateSupabaseToken } from "./supabaseAuth";
 
 const verificationAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const passwordResetAttempts = new Map<string, { count: number; lastAttempt: number }>();
@@ -388,6 +389,141 @@ export async function registerRoutes(
       res.json(req.user);
     } else {
       res.status(401).json({ message: "Not authenticated" });
+    }
+  });
+
+  // Supabase auth routes - for social login (Google, Apple)
+  app.get("/api/auth/supabase/user", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Missing authorization header' });
+    }
+
+    const token = authHeader.substring(7);
+    const supabaseUser = await validateSupabaseToken(token);
+    if (!supabaseUser) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    const appUser = await storage.getUserBySupabaseId(supabaseUser.id);
+    if (!appUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { password: _, ...userWithoutPassword } = appUser;
+    res.json(userWithoutPassword);
+  });
+
+  app.post("/api/auth/supabase/oauth-callback", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Missing authorization header' });
+    }
+
+    const token = authHeader.substring(7);
+    const supabaseUser = await validateSupabaseToken(token);
+    if (!supabaseUser) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    try {
+      let appUser = await storage.getUserBySupabaseId(supabaseUser.id);
+      
+      if (!appUser) {
+        const email = supabaseUser.email || '';
+        const provider = req.body.provider || 'oauth';
+        let baseUsername = email.split('@')[0] || provider + '_user';
+        baseUsername = baseUsername.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 20);
+        
+        let username = baseUsername;
+        let counter = 1;
+        while (await storage.getUserByUsername(username)) {
+          username = `${baseUsername}${counter}`;
+          counter++;
+        }
+
+        appUser = await storage.createUser({
+          username,
+          password: '',
+          email,
+          supabaseId: supabaseUser.id,
+          isGuest: false,
+        });
+      }
+
+      const { password: _, ...userWithoutPassword } = appUser;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      console.error('OAuth callback error:', error);
+      res.status(500).json({ message: error.message || 'Failed to complete sign in' });
+    }
+  });
+
+  app.post("/api/auth/supabase/register", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Missing authorization header' });
+    }
+
+    const token = authHeader.substring(7);
+    const supabaseUser = await validateSupabaseToken(token);
+    if (!supabaseUser) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    try {
+      const { username } = req.body;
+      if (!username) {
+        return res.status(400).json({ message: 'Username is required' });
+      }
+
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ message: 'Username already taken' });
+      }
+
+      const appUser = await storage.createUser({
+        username,
+        password: '',
+        email: supabaseUser.email || '',
+        supabaseId: supabaseUser.id,
+        isGuest: false,
+      });
+
+      const { password: _, ...userWithoutPassword } = appUser;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      console.error('Supabase register error:', error);
+      res.status(500).json({ message: error.message || 'Failed to create user' });
+    }
+  });
+
+  app.post("/api/auth/supabase/pre-register", async (req, res) => {
+    try {
+      const { email, username, supabaseId } = req.body;
+      
+      if (!email || !username || !supabaseId) {
+        return res.status(400).json({ message: 'Email, username, and supabaseId are required' });
+      }
+
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ message: 'Username already taken' });
+      }
+
+      const appUser = await storage.createUser({
+        username,
+        password: '',
+        email,
+        supabaseId,
+        isGuest: false,
+      });
+
+      const { password: _, ...userWithoutPassword } = appUser;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      console.error('Supabase pre-register error:', error);
+      res.status(500).json({ message: error.message || 'Failed to create user' });
     }
   });
 
