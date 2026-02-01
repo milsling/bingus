@@ -37,6 +37,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import iconUrl from "@/assets/icon.png";
+import { getSupabase } from "@/lib/supabase";
 
 type SignupStep = "email" | "verify" | "details";
 type ResetStep = "email" | "code" | "password";
@@ -45,6 +46,27 @@ export default function Auth() {
   const [, setLocation] = useLocation();
   const { login, signup, sendVerificationCode, verifyCode } = useBars();
   const { toast } = useToast();
+  
+  const handleOAuthLogin = async (provider: 'google' | 'apple') => {
+    try {
+      const supabase = await getSupabase();
+      if (!supabase) {
+        toast({ title: "Error", description: "Authentication service unavailable", variant: "destructive" });
+        return;
+      }
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to sign in", variant: "destructive" });
+    }
+  };
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -783,6 +805,7 @@ export default function Auth() {
                       type="button"
                       variant="outline"
                       className="w-full glass-input border-white/[0.1] hover:bg-white/[0.05]"
+                      onClick={() => handleOAuthLogin('apple')}
                       data-testid="button-login-apple"
                     >
                       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -794,6 +817,7 @@ export default function Auth() {
                       type="button"
                       variant="outline"
                       className="w-full glass-input border-white/[0.1] hover:bg-white/[0.05]"
+                      onClick={() => handleOAuthLogin('google')}
                       data-testid="button-login-google"
                     >
                       <svg className="h-5 w-5" viewBox="0 0 24 24">
