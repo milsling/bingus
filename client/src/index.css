@@ -453,10 +453,8 @@ html.dark {
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
-/* Dark mode background with purple glow */
+/* Dark mode background - purple */
 body {
-  background: 
-    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(126, 34, 206, 0.25) 0%, transparent 70%),
-    #1c1c1f;
+  background: #2d1f3d;
   background-attachment: fixed;
 }
