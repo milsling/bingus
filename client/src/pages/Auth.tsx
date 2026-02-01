@@ -641,7 +641,7 @@ export default function Auth() {
           </div>
         )}
 
-      <Card className="w-full max-w-md glass-panel border-white/[0.1] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
+      <Card className="w-full max-w-md bg-black/20 backdrop-blur-xl border-white/10 shadow-[0_0_80px_rgba(139,92,246,0.3),0_8px_40px_rgba(0,0,0,0.4)]">
         <Tabs defaultValue="login" className="w-full" onValueChange={() => resetSignup()}>
           <TabsList className="grid w-full grid-cols-2 rounded-t-xl rounded-b-none bg-white/[0.02] p-0 h-14 border-b border-white/[0.06]">
             <TabsTrigger 
