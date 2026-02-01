@@ -19,7 +19,7 @@ type FeedTab = "featured" | "latest" | "top" | "trending" | "categories";
 type SortFilter = "all" | "technical" | "funny" | "imagery";
 
 export default function Home() {
-  const { bars, isLoadingBars, refetchBars } = useBars();
+  const { bars, isLoadingBars, refetchBars, currentUser } = useBars();
   const [selectedCategory, setSelectedCategory] = useState<Category | "All">("All");
   const [activeTab, setActiveTab] = useState<FeedTab>("latest");
   const [sortFilter, setSortFilter] = useState<SortFilter>("all");
@@ -150,30 +150,87 @@ export default function Home() {
     isLoadingBars;
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-20 md:ml-20 lg:ml-24">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
       <Navigation />
       
+      {/* Mobile search */}
       <div className="md:hidden sticky top-[72px] z-40 px-3 py-2">
         <div className="glass-panel p-3">
           <SearchBar />
         </div>
       </div>
 
-      <main>
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
+      {/* Desktop: Three column layout with left panes */}
+      <div className="hidden md:flex max-w-[1600px] mx-auto px-4 gap-6">
+        {/* Left Column - Two glass panes */}
+        <aside className="w-72 shrink-0 space-y-4 sticky top-24 h-fit">
+          {/* User Profile Preview Pane */}
+          {currentUser ? (
+            <div className="glass-panel p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+                  {currentUser.username?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold text-white">@{currentUser.username}</p>
+                  <p className="text-xs text-white/50">Level {currentUser.level || 1}</p>
+                </div>
+              </div>
+              <div className="flex gap-4 text-sm text-white/60 mb-3">
+                <div><span className="text-white font-semibold">{currentUser.xp || 0}</span> XP</div>
+                <div><span className="text-white font-semibold">{currentUser.barCount || 0}</span> Bars</div>
+              </div>
+              {currentUser.badges && currentUser.badges.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {currentUser.badges.slice(0, 4).map((badge: string, i: number) => (
+                    <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="glass-panel p-4 text-center">
+              <p className="text-white/60 text-sm mb-3">Join the community</p>
+              <a href="/auth" className="block w-full py-2 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 transition-colors">
+                Login / Sign Up
+              </a>
+            </div>
+          )}
           
-          <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
-            <div className="px-4 py-8 md:text-center space-y-2">
-              <h1 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tighter text-foreground">
+          {/* Tags / Categories Pane */}
+          <div className="glass-panel p-4">
+            <h3 className="text-sm font-semibold text-white/80 mb-3">Popular Tags</h3>
+            <div className="flex flex-wrap gap-2">
+              {["wordplay", "punchline", "metaphor", "storytelling", "battle", "conscious"].map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setLocation(`/?tag=${tag}`)}
+                  className="text-xs px-2.5 py-1 rounded-full bg-white/[0.04] text-white/60 hover:bg-white/[0.08] hover:text-white transition-colors border border-white/[0.06]"
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+        
+        {/* Center Column - Feed */}
+        <main className="flex-1 min-w-0">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
+            
+            <div className="py-6 space-y-2 text-center">
+              <h1 className="text-4xl lg:text-5xl font-display font-black uppercase tracking-tighter text-foreground">
                 Drop Your <span className="text-foreground font-black italic">Bars</span>
               </h1>
-              <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto">
+              <p className="text-muted-foreground text-lg max-w-xl mx-auto">
                 No home for your fire bars? Orphan 'em, cuh.
               </p>
             </div>
 
-            <div className="px-4 mb-4">
+            <div className="mb-4">
               <div className="glass-panel p-4">
                 <div className="flex items-start gap-2">
                   <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
