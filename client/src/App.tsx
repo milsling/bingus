@@ -28,6 +28,7 @@ import RhymeDictionary from "@/pages/RhymeDictionary";
 import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
+import { VersionCheck } from "@/components/VersionCheck";
 import { SwipeBackNavigation } from "@/components/SwipeBackNavigation";
 import AIAssistant from "@/components/AIAssistant";
 import { useBackground } from "@/components/BackgroundSelector";
@@ -93,6 +94,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BarProvider>
         <TooltipProvider>
+          <VersionCheck />
           <BackgroundInitializer />
           <MaintenanceBanner />
           <Toaster />

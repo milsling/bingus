@@ -49,6 +49,8 @@ function clearRateLimit(attemptsMap: Map<string, { count: number; lastAttempt: n
   attemptsMap.delete(key);
 }
 
+const APP_VERSION = Date.now().toString();
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -57,6 +59,11 @@ export async function registerRoutes(
   registerObjectStorageRoutes(app);
   registerAIRoutes(app);
   setupWebSocket(httpServer, sessionParser);
+
+  // Version check endpoint - forces clients to refresh when version changes
+  app.get("/api/version", (req, res) => {
+    res.json({ version: APP_VERSION });
+  });
 
   // Auth routes
   app.post("/api/auth/send-code", async (req, res) => {
