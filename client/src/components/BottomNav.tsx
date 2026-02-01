@@ -131,10 +131,10 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-              className="fixed bottom-24 left-3 right-3 z-50 glass-panel overflow-hidden"
+              className="fixed bottom-24 left-3 right-3 z-50 bg-gray-400/[0.3] backdrop-blur-3xl rounded-[24px] border border-white/[0.2] shadow-[0_8px_32px_rgba(0,0,0,0.25)] overflow-hidden"
             >
               <div className="flex">
-                <div className="flex flex-col w-[130px] shrink-0 border-r border-white/[0.08]">
+                <div className="flex flex-col w-[120px] shrink-0 border-r border-white/[0.1]">
                   <button
                     onClick={() => {
                       setMenuSection("orphanbars");
@@ -143,8 +143,8 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     className={cn(
                       "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95",
                       menuSection === "orphanbars" 
-                        ? "bg-primary/20 border-l-2 border-l-primary" 
-                        : "hover:bg-white/[0.05]"
+                        ? "bg-white/[0.15]" 
+                        : "hover:bg-white/[0.08]"
                     )}
                     data-testid="nav-section-orphanbars"
                   >
@@ -152,14 +152,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanBarsMenuLogo} 
                       alt="Orphan Bars" 
                       className={cn(
-                        "h-9 w-auto transition-all mb-1 brightness-0 invert",
-                        menuSection === "orphanbars" ? "opacity-100" : "opacity-50"
+                        "h-8 w-auto transition-all mb-1 brightness-0 invert",
+                        menuSection === "orphanbars" ? "opacity-100" : "opacity-60"
                       )}
                     />
                     <span 
                       className={cn(
-                        "text-xs font-medium transition-colors",
-                        menuSection === "orphanbars" ? "text-white" : "text-white/50"
+                        "text-[10px] font-medium transition-colors",
+                        menuSection === "orphanbars" ? "text-white" : "text-white/60"
                       )} 
                       style={{ fontFamily: 'var(--font-logo)' }}
                     >ORPHAN BARS</span>
@@ -171,10 +171,10 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       handleNavClick("/orphanage");
                     }}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 border-t border-white/[0.05]",
+                      "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 border-t border-white/[0.08]",
                       menuSection === "orphanage" 
-                        ? "bg-primary/20 border-l-2 border-l-primary" 
-                        : "hover:bg-white/[0.05]"
+                        ? "bg-white/[0.15]" 
+                        : "hover:bg-white/[0.08]"
                     )}
                     data-testid="nav-section-orphanage"
                   >
@@ -182,8 +182,8 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       src={orphanageFullLogoWhite} 
                       alt="The Orphanage" 
                       className={cn(
-                        "h-14 w-auto object-contain transition-all",
-                        menuSection !== "orphanage" && "opacity-50"
+                        "h-12 w-auto object-contain transition-all",
+                        menuSection !== "orphanage" && "opacity-60"
                       )}
                     />
                   </button>
@@ -194,11 +194,11 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         setIsOpen(false);
                         setOrphieOpen(true);
                       }}
-                      className="flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 bg-gradient-to-br from-purple-500/20 to-purple-600/10 hover:from-purple-500/30 hover:to-purple-600/20 border-t border-white/[0.05]"
+                      className="flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 bg-white/[0.08] hover:bg-white/[0.12] border-t border-white/[0.08]"
                       data-testid="nav-section-orphie"
                     >
-                      <Sparkles className="h-6 w-6 text-purple-300 mb-1" />
-                      <span className="text-xs font-medium text-purple-200">Orphie AI</span>
+                      <Sparkles className="h-5 w-5 text-purple-300 mb-1" />
+                      <span className="text-[10px] font-medium text-white/80">Orphie AI</span>
                     </button>
                   )}
                 </div>
@@ -212,32 +212,32 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                           key={item.id}
                           onClick={() => handleNavClick(item.path)}
                           className={cn(
-                            "flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all active:scale-95",
+                            "flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95",
                             isActive 
-                              ? "bg-white/[0.08] border border-white/[0.1]" 
-                              : "hover:bg-white/[0.05]"
+                              ? "bg-white/[0.15]" 
+                              : "hover:bg-white/[0.08]"
                           )}
                           data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
                         >
                           <div className={cn(
                             "relative w-10 h-10 rounded-xl flex items-center justify-center transition-all",
                             isActive 
-                              ? "bg-primary/20 border border-primary/40" 
-                              : "bg-white/[0.05]"
+                              ? "bg-white/[0.2]" 
+                              : "bg-white/[0.08]"
                           )}>
                             {item.icon && (
                               <item.icon className={cn(
                                 "w-5 h-5",
-                                isActive ? "text-primary" : "text-white/70"
-                              )} />
+                                isActive ? "text-white" : "text-white/70"
+                              )} strokeWidth={1.8} />
                             )}
                             {item.badge && item.badge > 0 && (
-                              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_3px_rgba(168,85,247,0.7)] animate-pulse" />
+                              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500" />
                             )}
                           </div>
                           <span className={cn(
                             "text-[11px] font-medium",
-                            isActive ? "text-white" : "text-white/50"
+                            isActive ? "text-white" : "text-white/60"
                           )}>
                             {item.label}
                           </span>
@@ -249,14 +249,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   {currentUser && (
                     <button
                       onClick={() => handleNavClick("/post")}
-                      className="m-3 mt-0 p-4 rounded-xl bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 transition-all active:scale-[0.98] flex flex-col items-center justify-center shadow-lg shadow-primary/30"
+                      className="m-3 mt-0 p-3.5 rounded-2xl bg-white/[0.2] hover:bg-white/[0.25] border border-white/[0.2] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                       data-testid="nav-item-drop-bar-main"
                     >
+                      <Plus className="w-5 h-5 text-white" strokeWidth={2} />
                       <span 
-                        className="text-lg text-white font-medium"
+                        className="text-base text-white font-medium"
                         style={{ fontFamily: 'var(--font-logo)' }}
                       >Drop a Bar</span>
-                      <Plus className="w-5 h-5 text-white/80 mt-1" />
                     </button>
                   )}
                 </div>
@@ -281,7 +281,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-24 left-3 right-3 z-50 glass-panel p-4"
+              className="fixed bottom-24 left-3 right-3 z-50 bg-gray-400/[0.3] backdrop-blur-3xl rounded-[20px] border border-white/[0.2] shadow-[0_8px_32px_rgba(0,0,0,0.25)] p-4"
             >
               <SearchBar className="w-full" />
             </motion.div>
@@ -289,93 +289,109 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
         )}
       </AnimatePresence>
 
-      {/* Mobile Bottom Nav - Premium Glass Style */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] p-4 pb-safe">
+      {/* Mobile Bottom Nav - Apple Vision Pro Style */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] px-3 pb-2 safe-area-inset-bottom">
         <div className="relative">
-          {/* Glow effect behind nav */}
-          <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 via-transparent to-transparent blur-xl rounded-full" />
-          
-          <div className="relative bg-white/[0.03] backdrop-blur-2xl rounded-full border border-white/[0.08] shadow-2xl shadow-black/50">
-            <div className="flex items-center justify-between h-16 px-2">
+          <div className="relative bg-gray-400/[0.25] backdrop-blur-3xl rounded-[28px] border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+            <div className="flex items-center justify-around h-[72px] px-1">
               <button
                 onClick={() => setSearchOpen(true)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-full transition-all flex-1",
-                  "text-white/40 hover:text-white/90 hover:bg-white/[0.08]"
+                  "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200",
+                  "text-white/50 active:scale-90 active:bg-white/[0.08]"
                 )}
                 data-testid="button-search"
               >
-                <Search className="w-5 h-5" />
-                <span className="text-[9px] font-medium tracking-wide">Search</span>
+                <Search className="w-[22px] h-[22px]" strokeWidth={1.8} />
+                <span className="text-[10px] font-medium opacity-80">Search</span>
               </button>
 
               <button
                 onClick={() => setLocation("/")}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-full transition-all flex-1",
+                  "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/" 
-                    ? "text-white bg-white/[0.12]" 
-                    : "text-white/40 hover:text-white/90 hover:bg-white/[0.08]"
+                    ? "text-white" 
+                    : "text-white/50 active:bg-white/[0.08]"
                 )}
                 data-testid="nav-feed"
               >
-                <Home className="w-5 h-5" />
-                <span className="text-[9px] font-medium tracking-wide">Feed</span>
+                <div className={cn(
+                  "p-2 rounded-xl transition-all duration-200",
+                  location === "/" && "bg-white/[0.12]"
+                )}>
+                  <Home className="w-[22px] h-[22px]" strokeWidth={1.8} />
+                </div>
+                <span className="text-[10px] font-medium opacity-80">Feed</span>
               </button>
 
-              <div className="relative -mt-6 mx-2">
+              <div className="relative mx-1">
                 <motion.button
                   onClick={handleCenterClick}
                   className={cn(
-                    "w-16 h-16 rounded-full",
-                    "bg-gradient-to-br from-purple-500 via-primary to-purple-600",
+                    "w-14 h-14 rounded-2xl",
+                    "bg-gradient-to-b from-white/[0.25] to-white/[0.12]",
+                    "backdrop-blur-xl",
                     "flex items-center justify-center",
-                    "shadow-xl shadow-purple-500/40",
-                    "border-2 border-white/30",
-                    "ring-4 ring-purple-500/20",
-                    isOpen && "from-white/30 via-white/20 to-white/10 shadow-white/30 ring-white/10"
+                    "border border-white/[0.25]",
+                    "shadow-[0_4px_16px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.2)]",
+                    isOpen && "bg-white/[0.35] border-white/[0.35]"
                   )}
-                  whileTap={{ scale: 0.9 }}
-                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.92 }}
                   data-testid="button-menu"
                 >
-                  {isOpen ? (
-                    <X className="w-7 h-7 text-white drop-shadow-lg" />
-                  ) : (
-                    <Grid3X3 className="w-7 h-7 text-white drop-shadow-lg" />
-                  )}
+                  <motion.div
+                    animate={{ rotate: isOpen ? 45 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {isOpen ? (
+                      <X className="w-6 h-6 text-white" strokeWidth={2} />
+                    ) : (
+                      <Grid3X3 className="w-6 h-6 text-white" strokeWidth={1.8} />
+                    )}
+                  </motion.div>
                 </motion.button>
                 {!isOpen && (unreadCount > 0 || pendingFriendRequests > 0) && (
-                  <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-red-500 border-2 border-white/50 shadow-[0_0_12px_4px_rgba(239,68,68,0.6)] animate-pulse" />
+                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 border border-black/30" />
                 )}
               </div>
 
               <button
                 onClick={() => setLocation("/saved")}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-full transition-all flex-1",
+                  "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/saved" 
-                    ? "text-white bg-white/[0.12]" 
-                    : "text-white/40 hover:text-white/90 hover:bg-white/[0.08]"
+                    ? "text-white" 
+                    : "text-white/50 active:bg-white/[0.08]"
                 )}
                 data-testid="nav-saved"
               >
-                <Bookmark className="w-5 h-5" />
-                <span className="text-[9px] font-medium tracking-wide">Saved</span>
+                <div className={cn(
+                  "p-2 rounded-xl transition-all duration-200",
+                  location === "/saved" && "bg-white/[0.12]"
+                )}>
+                  <Bookmark className="w-[22px] h-[22px]" strokeWidth={1.8} />
+                </div>
+                <span className="text-[10px] font-medium opacity-80">Saved</span>
               </button>
 
               <button
                 onClick={() => setLocation("/profile")}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-full transition-all flex-1",
+                  "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/profile" 
-                    ? "text-white bg-white/[0.12]" 
-                    : "text-white/40 hover:text-white/90 hover:bg-white/[0.08]"
+                    ? "text-white" 
+                    : "text-white/50 active:bg-white/[0.08]"
                 )}
                 data-testid="nav-profile"
               >
-                <User className="w-5 h-5" />
-                <span className="text-[9px] font-medium tracking-wide">Profile</span>
+                <div className={cn(
+                  "p-2 rounded-xl transition-all duration-200",
+                  location === "/profile" && "bg-white/[0.12]"
+                )}>
+                  <User className="w-[22px] h-[22px]" strokeWidth={1.8} />
+                </div>
+                <span className="text-[10px] font-medium opacity-80">Profile</span>
               </button>
             </div>
           </div>
