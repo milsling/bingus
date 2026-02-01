@@ -120,7 +120,7 @@ export function SearchBar({ className }: { className?: string }) {
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          className="pl-9 pr-8"
+          className="pl-9 pr-8 rounded-full glass-input"
           data-testid="input-search"
         />
         {query && (
