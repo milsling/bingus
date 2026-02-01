@@ -370,10 +370,12 @@ html.dark {
    GLASSMORPHISM UTILITIES - Apple Vision Pro Style
    ======================================== */
 
-/* Glass panel base - dark frosted glass effect */
+/* Glass panel base - transparent frosted glass effect */
 .glass-panel {
-  background: #1c1c1e;
-  border: 1px solid #2a2a2e;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1.25rem;
 }
 
@@ -386,17 +388,21 @@ html.dark {
   border-color: #3a3a3c;
 }
 
-/* Glass card - dark card effect */
+/* Glass card - transparent frosted glass effect */
 .glass-card {
-  background: #1c1c1e;
-  border: 1px solid #2a2a2e;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
 }
 
 /* Glass nav - navigation specific styling */
 .glass-nav {
-  background: #1c1c1e;
-  border: 1px solid #2a2a2e;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Glass button - dark interactive button */
