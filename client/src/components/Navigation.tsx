@@ -6,7 +6,6 @@ import headerLogo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchBar } from "@/components/SearchBar";
 import { OnlineStatusIndicator } from "@/components/OnlineStatus";
@@ -157,7 +156,6 @@ export default function Navigation() {
           )}
           
           <OnlineStatusIndicator />
-          <ThemeToggle />
           
           {!currentUser && (
             <Link href="/auth">
@@ -182,7 +180,6 @@ export default function Navigation() {
           <div className="flex items-center gap-1">
             {currentUser && <NotificationBell />}
             <OnlineStatusIndicator />
-            <ThemeToggle />
           </div>
         </div>
       </div>

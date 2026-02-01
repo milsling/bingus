@@ -6,7 +6,6 @@ import { BarSkeletonList } from "@/components/BarSkeleton";
 import { SearchBar } from "@/components/SearchBar";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { Clock, Flame, Trophy, Grid3X3, Hash, X, Lightbulb, Laugh, Palette, HelpCircle, Star, BadgeCheck } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import iconUrl from "@/assets/icon.png";
 import { useBars } from "@/context/BarContext";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
