@@ -370,12 +370,12 @@ html.dark {
    GLASSMORPHISM UTILITIES - Apple Vision Pro Style
    ======================================== */
 
-/* Glass panel base - transparent frosted glass effect */
+/* Glass panel base - subtle frosted glass effect */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 20, 22, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #2d2d30;
   border-radius: 1.25rem;
 }
 
@@ -388,21 +388,21 @@ html.dark {
   border-color: #3a3a3c;
 }
 
-/* Glass card - transparent frosted glass effect */
+/* Glass card - subtle frosted glass effect */
 .glass-card {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 20, 22, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #2d2d30;
   border-radius: 1rem;
 }
 
 /* Glass nav - navigation specific styling */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 20, 22, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #2d2d30;
 }
 
 /* Glass button - dark interactive button */
@@ -459,14 +459,12 @@ html.dark {
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
-/* Dark mode background with purple glow */
+/* Dark mode background with subtle purple tint */
 body {
   background: 
-    radial-gradient(ellipse 130% 100% at 50% -10%, rgba(147, 51, 234, 0.5) 0%, transparent 55%),
-    radial-gradient(ellipse 100% 90% at -20% 50%, rgba(139, 92, 246, 0.4) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 90% at 120% 60%, rgba(168, 85, 247, 0.35) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 70% at 50% 120%, rgba(124, 58, 237, 0.3) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 70%),
-    #18181b;
+    radial-gradient(ellipse 150% 100% at 50% 0%, rgba(88, 28, 135, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 100% at 0% 50%, rgba(88, 28, 135, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 100% at 100% 50%, rgba(88, 28, 135, 0.08) 0%, transparent 50%),
+    #1a1a1d;
   background-attachment: fixed;
 }
