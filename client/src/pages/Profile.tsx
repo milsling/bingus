@@ -157,12 +157,12 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-0 md:pt-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-0 md:pt-16">
       <Navigation />
       
-      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
+      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-3 md:px-0">
         {/* Profile Header */}
-        <div className="relative">
+        <div className="relative glass-panel overflow-hidden">
           {currentUser.bannerUrl ? (
             <div className="h-32 md:h-48 w-full overflow-hidden">
               <img 
@@ -172,7 +172,7 @@ export default function Profile() {
               />
             </div>
           ) : (
-            <div className="h-32 md:h-48 bg-gradient-to-r from-zinc-900 to-zinc-800 w-full" />
+            <div className="h-32 md:h-48 bg-gradient-to-r from-purple-900/30 via-zinc-900 to-zinc-800 w-full" />
           )}
           
           <div className="px-4 md:px-8 -mt-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
@@ -218,21 +218,21 @@ export default function Profile() {
 
             <div className="flex gap-2 w-full md:w-auto mb-2 flex-wrap">
               <Link href="/profile/edit">
-                <Button variant="outline" className="gap-2" data-testid="button-edit-profile">
+                <Button variant="outline" className="gap-2 glass-button border-white/10 hover:bg-white/10" data-testid="button-edit-profile">
                   <Edit className="h-4 w-4" />
                   Edit
                 </Button>
               </Link>
               <Link href="/badges">
-                <Button variant="outline" className="gap-2" data-testid="button-badges">
+                <Button variant="outline" className="gap-2 glass-button border-white/10 hover:bg-white/10" data-testid="button-badges">
                   Badges
                 </Button>
               </Link>
-              <Button variant="outline" className="gap-2" onClick={handleLogout} data-testid="button-logout">
+              <Button variant="outline" className="gap-2 glass-button border-white/10 hover:bg-white/10" onClick={handleLogout} data-testid="button-logout">
                 <Settings className="h-4 w-4" />
                 Logout
               </Button>
-              <Button className="gap-2" onClick={handleShare} data-testid="button-share">
+              <Button className="gap-2 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg shadow-primary/30" onClick={handleShare} data-testid="button-share">
                 <Share2 className="h-4 w-4" />
                 Share
               </Button>
@@ -243,9 +243,9 @@ export default function Profile() {
         {/* Stats & Bio */}
         <div className="px-4 md:px-8 py-6 space-y-4">
           <div className="flex gap-6 text-sm">
-            <div className="flex items-center gap-1" data-testid="stat-bars">
-              <span className="font-bold text-foreground">{stats?.barsCount ?? 0}</span>
-              <span className="text-muted-foreground">Bars</span>
+            <div className="flex items-center gap-1 glass-button px-3 py-1.5 rounded-lg" data-testid="stat-bars">
+              <span className="font-bold text-white">{stats?.barsCount ?? 0}</span>
+              <span className="text-white/60">Bars</span>
             </div>
             <div className="flex items-center gap-1" data-testid="stat-followers">
               <span className="font-bold text-foreground">{stats?.followersCount ?? 0}</span>
@@ -258,7 +258,7 @@ export default function Profile() {
           </div>
 
           {/* XP & Level Display */}
-          <div className="p-4 rounded-lg bg-gradient-to-r from-purple-900/30 to-violet-800/20 border border-purple-500/30" data-testid="xp-section">
+          <div className="glass-panel p-4 bg-gradient-to-r from-purple-500/10 to-violet-500/5" data-testid="xp-section">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 {level >= 10 ? (
@@ -321,7 +321,7 @@ export default function Profile() {
 
           {/* Achievement Progress */}
           <Link href="/badges" className="block">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border hover:bg-card/80 transition-colors cursor-pointer" data-testid="achievement-progress">
+            <div className="flex items-center gap-3 p-3 glass-panel glass-panel-hover cursor-pointer" data-testid="achievement-progress">
               <Trophy className="h-5 w-5 text-amber-500" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">

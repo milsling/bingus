@@ -151,11 +151,13 @@ export default function Home() {
     isLoadingBars;
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-0 md:pt-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-0 md:pt-16">
       <Navigation />
       
-      <div className="md:hidden sticky top-14 z-40 p-3 bg-background/90 backdrop-blur-md border-b border-border">
-        <SearchBar />
+      <div className="md:hidden sticky top-[72px] z-40 px-3 py-2">
+        <div className="glass-panel p-3">
+          <SearchBar />
+        </div>
       </div>
 
       <main>
@@ -172,26 +174,28 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="px-4 mb-4 p-3 bg-secondary/30 rounded-lg border border-border/50">
-              <div className="flex items-start gap-2">
-                <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">How it works:</span> Drop your best bars, tag them with style (wordplay, punchline, metaphor), and add a breakdown to explain the entendre. Explore, like, and save your favorites from the community.{" "}
-                  <a href="/guidelines" className="text-primary hover:underline font-medium">Read the rules</a>
-                </p>
+            <div className="px-4 mb-4">
+              <div className="glass-panel p-4">
+                <div className="flex items-start gap-2">
+                  <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-white/60">
+                    <span className="font-semibold text-white">How it works:</span> Drop your best bars, tag them with style (wordplay, punchline, metaphor), and add a breakdown to explain the entendre. Explore, like, and save your favorites from the community.{" "}
+                    <a href="/guidelines" className="text-primary hover:underline font-medium">Read the rules</a>
+                  </p>
+                </div>
               </div>
             </div>
 
             {tagFilter && (
               <div className="px-4 mb-4">
-                <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <div className="glass-panel flex items-center gap-2 p-3">
                   <Hash className="h-4 w-4 text-primary" />
-                  <span className="text-sm">Showing bars tagged with</span>
-                  <Badge variant="secondary" className="font-semibold">#{tagFilter}</Badge>
+                  <span className="text-sm text-white/70">Showing bars tagged with</span>
+                  <Badge variant="secondary" className="font-semibold bg-primary/20 text-primary border-primary/30">#{tagFilter}</Badge>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="ml-auto h-7 text-muted-foreground hover:text-foreground"
+                    className="ml-auto h-7 text-white/50 hover:text-white hover:bg-white/10"
                     onClick={clearTagFilter}
                     data-testid="button-clear-tag"
                   >
@@ -206,7 +210,7 @@ export default function Home() {
               <>
                 <div className="px-4 mb-4">
                   <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FeedTab)} className="w-full">
-                    <TabsList className="w-full grid grid-cols-5 bg-secondary/50">
+                    <TabsList className="w-full grid grid-cols-5 glass-panel p-1 h-auto">
                       <TabsTrigger value="featured" className="gap-1 text-xs sm:text-sm" data-testid="tab-featured">
                         <Star className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Featured</span>
