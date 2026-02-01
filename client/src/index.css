@@ -420,6 +420,7 @@ html.dark {
 .glass-input {
   background: #2c2c2e !important;
   border: 1px solid #3a3a3c !important;
+  border-radius: 9999px !important;
   transition: all 0.15s ease;
 }
 
