@@ -197,7 +197,7 @@ export default function Home() {
       </div>
 
       {/* Desktop: Three column layout - fixed height, only center scrolls */}
-      <div className="hidden md:flex h-[calc(100vh-96px)] pt-24 max-w-[1600px] mx-auto px-4 gap-6">
+      <div className="hidden md:flex h-screen pt-16 px-4 gap-4">
         {/* Left Column - Fixed, non-scrolling */}
         <aside className="w-64 shrink-0 space-y-4 overflow-y-auto py-4 scrollbar-thin">
           {/* User Profile Preview Pane */}
@@ -253,7 +253,7 @@ export default function Home() {
         </aside>
         
         {/* Center Column - Feed (scrollable) */}
-        <main className="flex-1 min-w-[500px] overflow-y-auto py-4 scrollbar-thin">
+        <main className="flex-1 overflow-y-auto py-4 scrollbar-thin">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
             
