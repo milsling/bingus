@@ -2,7 +2,7 @@
 
 ## Overview
 
-Orphan Bars is a social platform designed for lyricists to share, discover, and interact with one-liners, punchlines, and entendres. It aims to foster a community around lyrical creativity, allowing users to post their bars with categories and tags, browse content from others, and manage their profiles. The project envisions a vibrant, hip-hop themed online space that caters to wordsmiths, offering unique features like a proof-of-origin system for lyrical works, an XP and leveling system for engagement, and rich social interactions.
+Orphan Bars is a social platform for lyricists to share rap bars, punchlines, one-liners, and wordplay. Users can post original content, engage through likes/comments/bookmarks, follow other lyricists, and build their catalog. The platform features a proof-of-origin system that generates timestamped certificates for posted bars, an XP/leveling system, achievements, and direct messaging.
 
 ## User Preferences
 
@@ -10,59 +10,63 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend
-- **Framework**: React 18 with TypeScript.
-- **Routing**: Wouter.
-- **State Management**: TanStack React Query for server state, React Context for global UI state.
-- **Styling**: Tailwind CSS v4 with shadcn/ui component library (New York style variant).
-- **UI/UX**: Hip-hop themed design with customizable typography, a dark purple/charcoal color scheme, animated page transitions (Framer Motion), skeleton loading, and PWA features like pull-to-refresh and swipe gestures.
-- **Build Tool**: Vite.
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Routing**: Wouter (lightweight React router)
+- **State Management**: TanStack React Query for server state, React Context for auth/user state
+- **UI Components**: shadcn/ui component library built on Radix UI primitives
+- **Styling**: Tailwind CSS v4 with custom theme configuration
+- **Animations**: Framer Motion for page transitions and micro-interactions
+- **Build Tool**: Vite with custom plugins for meta image handling
 
-### Backend
-- **Runtime**: Node.js with Express.
-- **Language**: TypeScript.
-- **API Pattern**: RESTful endpoints.
-- **Session Management**: Express-session.
+### Backend Architecture
+- **Runtime**: Node.js with Express
+- **Language**: TypeScript compiled with TSX
+- **API Pattern**: RESTful endpoints under `/api/*`
+- **Authentication**: Passport.js with local strategy, session-based auth stored in PostgreSQL
+- **Real-time**: WebSocket server for live notifications and messaging
+- **File Uploads**: Uppy with presigned URL pattern for object storage
 
-### Authentication
-- **Strategy**: Passport.js with local strategy.
-- **Security**: scrypt hashing for passwords, server-side sessions with secure cookies.
+### Data Layer
+- **Database**: PostgreSQL (via Neon serverless)
+- **ORM**: Drizzle ORM with drizzle-kit for migrations
+- **Schema Location**: `shared/schema.ts` contains all table definitions
+- **Key Tables**: users, bars, likes, comments, follows, notifications, direct_messages, achievements, badges
 
-### Data Storage
-- **Database**: PostgreSQL via Drizzle ORM.
-- **Schema**: Defined in `shared/schema.ts`, shared between client and server.
-- **Key Tables**: `users`, `bars`, `bookmarks`, `push_subscriptions`, `friendships`, `direct_messages`, `user_achievements`.
+### Content Moderation
+- Server-side content filtering with blocked terms and pattern matching
+- AI-assisted moderation via integrated AI service
+- Flagging system with approval workflow for suspicious content
 
-### File Storage
-- **Service**: Google Cloud Storage via Replit Object Storage integration.
-- **Mechanism**: Presigned URLs for direct client uploads.
-
-### Core Features
-- **Progressive Web App (PWA)**: Includes features like full-text search, bookmarks, offline mode via service worker, push notifications, and home screen integration.
-- **Social Features**: Comprehensive friends system, direct messaging with real-time updates via WebSockets, online presence indicators, and an achievement system with custom achievement creation capabilities.
-- **Gamification**: XP and leveling system based on user activity, offering level-based perks.
-- **Proof-of-Origin System**: Unique IDs, immutable timestamps, and SHA256 hashes for each bar to ensure authenticity and track lineage through an adoption system. Includes shareable proof images.
-- **Beat/Instrumental Embedding**: Allows users to link beats from YouTube, SoundCloud, Spotify, and Audiomack to their bars, with real-time URL validation and embed player support.
-- **Admin Console**: Site owner-only console with SQL query runner (SELECT only) and quick actions for site management.
-- **Real-time Communication**: WebSocket implementation for direct messaging with heartbeats, auto-reconnect, and optimistic UI updates.
+### Key Features Implementation
+- **Proof of Origin**: SHA-256 hash generated from content + timestamp + user + sequential ID
+- **XP System**: Points earned from posts (+10), likes received (+5), adoptions (+20), comments (+3), bookmarks (+2) with daily caps
+- **Leveling**: Level = floor(sqrt(xp / 100)) + 1, with perks unlocking at levels 3, 5, and 10
+- **Achievements**: Condition-based unlocks tracked against user metrics
 
 ## External Dependencies
 
 ### Database
-- **PostgreSQL**: Primary database.
-- **Drizzle ORM**: Type-safe database queries.
+- **Neon PostgreSQL**: Serverless Postgres via `@neondatabase/serverless`
+- Connection string required in `DATABASE_URL` environment variable
 
-### Cloud Services
-- **Google Cloud Storage**: For file uploads, integrated via Replit Object Storage.
-- **Replit Sidecar**: For GCS authentication token management.
+### Email Service
+- **Resend**: Transactional email for verification codes and password resets
+- API key required in `RESEND_API_KEY` environment variable
 
-### Key NPM Packages
-- **@tanstack/react-query**: Server state management.
-- **drizzle-orm** / **drizzle-kit**: ORM and migrations.
-- **passport** / **passport-local**: Authentication.
-- **@uppy/core** / **@uppy/aws-s3**: File upload handling.
-- **zod**: Schema validation.
-- **date-fns**: Date utilities.
+### Object Storage
+- **Supabase/Google Cloud Storage**: For avatar and media file uploads
+- Uses presigned URL pattern for secure uploads
 
-### Fonts
-- **Google Fonts**: Syne, UnifrakturMaguntia, Anton, Oswald, JetBrains Mono for user-switchable display fonts.
+### AI Integration
+- AI assistant for bar writing help and content moderation
+- Integrated through custom AI routes
+
+### Authentication
+- Session storage in PostgreSQL via `connect-pg-simple`
+- Password hashing with scrypt
+
+### Required Environment Variables
+- `DATABASE_URL` - PostgreSQL connection string
+- `RESEND_API_KEY` - Resend email service API key
+- `SESSION_SECRET` - Express session secret (auto-generated if not set)
