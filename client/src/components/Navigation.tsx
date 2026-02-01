@@ -170,18 +170,20 @@ export default function Navigation() {
         </div>
       </nav>
 
-      {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border/50 bg-background/95 backdrop-blur-xl z-50 flex items-center justify-between px-4 pt-[env(safe-area-inset-top)] shadow-sm">
-        <Link href="/">
-          <div className="flex items-center gap-1.5 cursor-pointer">
-            <img src={headerLogo} alt="" className="h-6 w-6" />
-            <span className="font-logo text-sm whitespace-nowrap">ORPHAN BARS</span>
+      {/* Mobile Top Bar - Glass Style */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+        <div className="glass-nav rounded-2xl h-12 flex items-center justify-between px-4 shadow-lg shadow-black/20">
+          <Link href="/">
+            <div className="flex items-center gap-1.5 cursor-pointer">
+              <img src={headerLogo} alt="" className="h-5 w-5" />
+              <span className="font-logo text-sm whitespace-nowrap text-white">ORPHAN BARS</span>
+            </div>
+          </Link>
+          <div className="flex items-center gap-1">
+            {currentUser && <NotificationBell />}
+            <OnlineStatusIndicator />
+            <ThemeToggle />
           </div>
-        </Link>
-        <div className="flex items-center gap-2">
-          {currentUser && <NotificationBell />}
-          <OnlineStatusIndicator />
-          <ThemeToggle />
         </div>
       </div>
 

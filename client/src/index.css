@@ -170,25 +170,25 @@
 
 .dark {
   /* ========================================
-     ORPHANBARS DARK MODE - Purple & Charcoal
+     ORPHANBARS DARK MODE - Apple Vision Pro Glass
      ======================================== */
-  --background: 240 5% 10%;
+  --background: 0 0% 4%;
   --foreground: 0 0% 98%;
 
-  --card: 240 5% 13%;
+  --card: 0 0% 6%;
   --card-foreground: 0 0% 98%;
 
-  --popover: 240 5% 10%;
+  --popover: 0 0% 6%;
   --popover-foreground: 0 0% 98%;
 
   --primary: 265 70% 60%; 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 240 3.7% 18%;
+  --secondary: 0 0% 10%;
   --secondary-foreground: 0 0% 98%;
 
-  --muted: 240 3.7% 18%;
-  --muted-foreground: 240 5% 70%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 65%;
 
   --accent: 265 70% 60%; 
   --accent-foreground: 0 0% 100%;
@@ -196,26 +196,32 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 240 3.7% 20%;
-  --input: 240 3.7% 20%;
+  --border: 0 0% 15%;
+  --input: 0 0% 12%;
   --ring: 265 70% 60%;
   
+  /* Glass panel variables */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-hover: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+  
   /* Dark mode shadows - subtle glow effect */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.35);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6), 0 10px 10px rgba(0, 0, 0, 0.45);
   
   --shadow-card: 
-    0 1px 3px rgba(0, 0, 0, 0.3),
-    0 4px 6px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.03);
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
   
   --shadow-card-hover: 
-    0 4px 12px rgba(0, 0, 0, 0.4),
-    0 8px 16px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(168, 85, 247, 0.15);
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 12px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(168, 85, 247, 0.2);
 }
 
 @layer base {
@@ -439,4 +445,122 @@ html.dark {
 /* Light mode avatar ring - softer */
 :root:not(.dark) [data-slot="avatar"] {
   box-shadow: 0 0 0 2px hsl(var(--background)), var(--shadow-xs);
+}
+
+/* ========================================
+   GLASSMORPHISM UTILITIES - Apple Vision Pro Style
+   ======================================== */
+
+/* Glass panel base - floating frosted glass effect */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.25rem;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-panel-hover {
+  transition: all 0.2s ease;
+}
+
+.glass-panel-hover:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 12px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Glass card - more prominent floating effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    0 12px 40px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Glass nav - navigation specific styling */
+.glass-nav {
+  background: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Glass button - subtle interactive glass */
+.glass-button {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.15s ease;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.glass-button:active {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(0.98);
+}
+
+/* Glass input - form field styling */
+.glass-input {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.15s ease;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+}
+
+/* Glass modal/dialog overlay */
+.glass-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Glass menu item - for nav items */
+.glass-menu-item {
+  background: transparent;
+  border-radius: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.glass-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.glass-menu-item.active {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* Dark mode background with subtle gradient */
+.dark body {
+  background: 
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 40%),
+    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(59, 130, 246, 0.04) 0%, transparent 40%),
+    hsl(0, 0%, 4%);
+  background-attachment: fixed;
 }
