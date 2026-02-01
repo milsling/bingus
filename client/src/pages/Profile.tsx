@@ -157,7 +157,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-0 md:pt-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-20 md:ml-20 lg:ml-24">
       <Navigation />
       
       <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-3 md:px-0">

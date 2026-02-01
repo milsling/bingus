@@ -150,7 +150,7 @@ export default function Home() {
     isLoadingBars;
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-0 md:pt-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-20 md:ml-20 lg:ml-24">
       <Navigation />
       
       <div className="md:hidden sticky top-[72px] z-40 px-3 py-2">

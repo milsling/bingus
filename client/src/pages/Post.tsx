@@ -314,7 +314,7 @@ export default function Post() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-0 md:pt-16">
+    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-20 md:ml-20 lg:ml-24">
       <Navigation />
       
       <main className="max-w-2xl mx-auto p-4 md:p-8">
