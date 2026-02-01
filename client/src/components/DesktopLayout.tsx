@@ -68,7 +68,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
 
       {/* Top Navigation Bar - Premium Glass Style */}
       <nav className="fixed top-4 left-4 right-4 h-14 z-50">
-        <div className="h-full bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-full shadow-2xl shadow-black/50 flex items-center px-4">
+        <div className="h-full bg-gray-400/[0.08] backdrop-blur-3xl border border-white/[0.05] rounded-full shadow-2xl shadow-black/30 flex items-center px-4">
           {/* Left Section - Hamburger + Logo */}
           <div className="flex items-center gap-1 min-w-[200px]">
             {/* Hamburger Menu Button */}
