@@ -269,7 +269,6 @@ export async function registerRoutes(
         isAdmin: false,
         isAdminPlus: false,
         isOwner: false,
-        isGuest: true,
         xp: 0,
         level: 1,
       };
@@ -506,7 +505,6 @@ export async function registerRoutes(
         password: '',
         email: supabaseUser.email || '',
         supabaseId: supabaseUser.id,
-        isGuest: false,
       });
 
       const { password: _, ...userWithoutPassword } = appUser;
@@ -545,7 +543,6 @@ export async function registerRoutes(
         password: '',
         email: supabaseUser.email || '',
         supabaseId: supabaseUser.id,
-        isGuest: false,
       });
 
       const { password: _, ...userWithoutPassword } = appUser;
