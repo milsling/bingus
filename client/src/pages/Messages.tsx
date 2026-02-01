@@ -330,7 +330,7 @@ export default function Messages() {
   );
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-20 md:ml-20 lg:ml-24">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
       <Navigation />
 
       <main className="max-w-5xl mx-auto h-[calc(100vh-80px)] md:h-[calc(100vh-64px)] md:p-4">

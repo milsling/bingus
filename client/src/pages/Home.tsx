@@ -150,7 +150,7 @@ export default function Home() {
     isLoadingBars;
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
+    <div className="min-h-screen bg-background md:h-screen md:overflow-hidden">
       <Navigation />
       
       {/* Mobile search */}
@@ -160,10 +160,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Desktop: Three column layout with left panes */}
-      <div className="hidden md:flex max-w-[1600px] mx-auto px-4 gap-6">
-        {/* Left Column - Two glass panes */}
-        <aside className="w-72 shrink-0 space-y-4 sticky top-24 h-fit">
+      {/* Desktop: Three column layout - fixed height, only center scrolls */}
+      <div className="hidden md:flex h-[calc(100vh-96px)] pt-24 max-w-[1600px] mx-auto px-4 gap-6">
+        {/* Left Column - Fixed, non-scrolling */}
+        <aside className="w-72 shrink-0 space-y-4 overflow-y-auto py-4 scrollbar-thin">
           {/* User Profile Preview Pane */}
           {currentUser ? (
             <div className="glass-panel p-4">
@@ -216,8 +216,8 @@ export default function Home() {
           </div>
         </aside>
         
-        {/* Center Column - Feed */}
-        <main className="flex-1 min-w-0">
+        {/* Center Column - Feed (scrollable) */}
+        <main className="flex-1 min-w-0 overflow-y-auto py-4 scrollbar-thin">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
             
@@ -243,7 +243,7 @@ export default function Home() {
             </div>
 
             {tagFilter && (
-              <div className="px-4 mb-4">
+              <div className="mb-4">
                 <div className="glass-panel flex items-center gap-2 p-3">
                   <Hash className="h-4 w-4 text-primary" />
                   <span className="text-sm text-white/70">Showing bars tagged with</span>
@@ -264,7 +264,7 @@ export default function Home() {
 
             {!tagFilter && (
               <>
-                <div className="px-4 mb-4">
+                <div className="mb-4">
                   <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FeedTab)} className="w-full">
                     <TabsList className="w-full grid grid-cols-5 glass-panel p-1 h-auto">
                       <TabsTrigger value="featured" className="gap-1 text-xs sm:text-sm" data-testid="tab-featured">
@@ -291,7 +291,7 @@ export default function Home() {
                   </Tabs>
                 </div>
 
-                <div className="px-4 mb-4">
+                <div className="mb-4">
                   <div className="flex gap-2 flex-wrap">
                     <Button
                       variant={sortFilter === "all" ? "default" : "outline"}
@@ -353,7 +353,7 @@ export default function Home() {
             )}
 
             <PullToRefresh onRefresh={handleRefresh}>
-              <div className="px-4 py-6 space-y-6">
+              <div className="py-6 space-y-6">
                 {isLoading ? (
                   <BarSkeletonList count={5} />
                 ) : filteredBars.length === 0 ? (
@@ -368,8 +368,167 @@ export default function Home() {
               </div>
             </PullToRefresh>
           </div>
-        </div>
-      </main>
+        </main>
+        
+        {/* Right Column - Leaderboard, Challenge, Activity (fixed, scrollable if needed) */}
+        <aside className="w-72 shrink-0 space-y-4 overflow-y-auto py-4 scrollbar-thin">
+          {/* Leaderboard */}
+          <div className="glass-panel p-4">
+            <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-yellow-500" />
+              Top Lyricists
+            </h3>
+            <div className="space-y-2">
+              {[
+                { rank: 1, name: "LyricalGenius", xp: 12450, badge: "🥇" },
+                { rank: 2, name: "BarMaster", xp: 10320, badge: "🥈" },
+                { rank: 3, name: "WordSmith", xp: 9180, badge: "🥉" },
+                { rank: 4, name: "FlowKing", xp: 8740, badge: "" },
+                { rank: 5, name: "MetaphorMaven", xp: 7890, badge: "" },
+              ].map((user) => (
+                <div key={user.rank} className="flex items-center gap-2 text-sm">
+                  <span className="w-5 text-white/40">{user.badge || user.rank}</span>
+                  <span className="flex-1 text-white/80 truncate">{user.name}</span>
+                  <span className="text-primary text-xs">{user.xp.toLocaleString()} XP</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Challenge of the Day */}
+          <div className="glass-panel p-4">
+            <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+              <Flame className="h-4 w-4 text-orange-500" />
+              Challenge of the Day
+            </h3>
+            <p className="text-xs text-white/60 mb-2">Write a bar using the theme:</p>
+            <p className="text-sm font-medium text-primary mb-3">"Time is money"</p>
+            <div className="flex items-center justify-between text-xs text-white/50">
+              <span>47 submissions</span>
+              <span>Ends in 6h</span>
+            </div>
+          </div>
+          
+          {/* Recent Activity */}
+          <div className="glass-panel p-4">
+            <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+              <Clock className="h-4 w-4 text-blue-400" />
+              Recent Activity
+            </h3>
+            <div className="space-y-3 text-xs">
+              {[
+                { action: "liked", user: "FlowKing", target: "a bar", time: "2m ago" },
+                { action: "posted", user: "WordSmith", target: "new bar", time: "5m ago" },
+                { action: "commented", user: "BarMaster", target: "on a bar", time: "12m ago" },
+                { action: "followed", user: "NewWriter", target: "you", time: "18m ago" },
+              ].map((activity, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <div className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-white/40">
+                    {activity.user.charAt(0)}
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-white/70">{activity.user}</span>
+                    <span className="text-white/40"> {activity.action} {activity.target}</span>
+                    <p className="text-white/30">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden pt-20 pb-24">
+        <main className="px-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
+            
+            <div className="py-6 space-y-2 text-center">
+              <h1 className="text-3xl font-display font-black uppercase tracking-tighter text-foreground">
+                Drop Your <span className="text-foreground font-black italic">Bars</span>
+              </h1>
+              <p className="text-muted-foreground text-base">
+                No home for your fire bars? Orphan 'em, cuh.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <div className="glass-panel p-3">
+                <div className="flex items-start gap-2">
+                  <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-white/60">
+                    <span className="font-semibold text-white">How it works:</span> Drop your bars, tag them, and add breakdowns.{" "}
+                    <a href="/guidelines" className="text-primary hover:underline font-medium">Read the rules</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {tagFilter && (
+              <div className="mb-4">
+                <div className="glass-panel flex items-center gap-2 p-3">
+                  <Hash className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-white/70">Tag:</span>
+                  <Badge variant="secondary" className="font-semibold bg-primary/20 text-primary border-primary/30 text-xs">#{tagFilter}</Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-auto h-6 text-white/50 hover:text-white hover:bg-white/10"
+                    onClick={clearTagFilter}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {!tagFilter && (
+              <div className="mb-4">
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FeedTab)} className="w-full">
+                  <TabsList className="w-full grid grid-cols-5 glass-panel p-1 h-auto">
+                    <TabsTrigger value="featured" className="text-xs p-2" data-testid="tab-featured-mobile">
+                      <Star className="h-4 w-4" />
+                    </TabsTrigger>
+                    <TabsTrigger value="latest" className="text-xs p-2" data-testid="tab-latest-mobile">
+                      <Clock className="h-4 w-4" />
+                    </TabsTrigger>
+                    <TabsTrigger value="top" className="text-xs p-2" data-testid="tab-top-mobile">
+                      <Trophy className="h-4 w-4" />
+                    </TabsTrigger>
+                    <TabsTrigger value="trending" className="text-xs p-2" data-testid="tab-trending-mobile">
+                      <Flame className="h-4 w-4" />
+                    </TabsTrigger>
+                    <TabsTrigger value="categories" className="text-xs p-2" data-testid="tab-categories-mobile">
+                      <Grid3X3 className="h-4 w-4" />
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            )}
+
+            {activeTab === "categories" && !tagFilter && (
+              <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
+            )}
+
+            <PullToRefresh onRefresh={handleRefresh}>
+              <div className="py-4 space-y-4">
+                {isLoading ? (
+                  <BarSkeletonList count={5} />
+                ) : filteredBars.length === 0 ? (
+                  <div className="text-center py-16 text-muted-foreground">
+                    <p className="text-sm">No bars found.</p>
+                  </div>
+                ) : (
+                  filteredBars.map((bar) => (
+                    <BarCard key={bar.id} bar={bar} />
+                  ))
+                )}
+              </div>
+            </PullToRefresh>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

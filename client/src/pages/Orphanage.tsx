@@ -243,7 +243,7 @@ export default function Orphanage() {
   }, [adoptableBars]);
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-20 md:ml-20 lg:ml-24">
+    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
       <Navigation />
       
       <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
