@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Camera, Loader2, Lock, MessageCircle, ImageIcon, ZoomIn, ZoomOut } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, Lock, MessageCircle, ImageIcon, ZoomIn, ZoomOut, Palette } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import { api } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import { BackgroundSelector, useBackground } from "@/components/BackgroundSelector";
 
 export default function EditProfile() {
   const { currentUser } = useBars();
@@ -24,6 +25,7 @@ export default function EditProfile() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const { variant: bgVariant, setVariant: setBgVariant } = useBackground();
 
   const [bio, setBio] = useState(currentUser?.bio || "");
   const [location, setLocationField] = useState(currentUser?.location || "");
@@ -600,6 +602,19 @@ export default function EditProfile() {
             {updatePrivacyMutation.isPending && (
               <p className="text-xs text-muted-foreground mt-2">Saving...</p>
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card/50 backdrop-blur-sm mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Appearance
+            </CardTitle>
+            <CardDescription>Customize how Orphan Bars looks for you</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BackgroundSelector variant={bgVariant} onSelect={setBgVariant} />
           </CardContent>
         </Card>
       </main>

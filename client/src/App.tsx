@@ -30,6 +30,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
 import { SwipeBackNavigation } from "@/components/SwipeBackNavigation";
 import AIAssistant from "@/components/AIAssistant";
+import { useBackground } from "@/components/BackgroundSelector";
 
 function Router() {
   const [location] = useLocation();
@@ -82,11 +83,17 @@ function Router() {
   );
 }
 
+function BackgroundInitializer() {
+  useBackground();
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BarProvider>
         <TooltipProvider>
+          <BackgroundInitializer />
           <MaintenanceBanner />
           <Toaster />
           <SwipeBackNavigation>
