@@ -370,12 +370,10 @@ html.dark {
    GLASSMORPHISM UTILITIES - Apple Vision Pro Style
    ======================================== */
 
-/* Glass panel base - subtle frosted glass effect */
+/* Glass panel base */
 .glass-panel {
-  background: rgba(20, 20, 22, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid #2d2d30;
+  background: #1c1c1f;
+  border: 1px solid #2a2a2d;
   border-radius: 1.25rem;
 }
 
@@ -388,21 +386,17 @@ html.dark {
   border-color: #3a3a3c;
 }
 
-/* Glass card - subtle frosted glass effect */
+/* Glass card */
 .glass-card {
-  background: rgba(20, 20, 22, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid #2d2d30;
+  background: #1c1c1f;
+  border: 1px solid #2a2a2d;
   border-radius: 1rem;
 }
 
 /* Glass nav - navigation specific styling */
 .glass-nav {
-  background: rgba(20, 20, 22, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid #2d2d30;
+  background: #1c1c1f;
+  border: 1px solid #2a2a2d;
 }
 
 /* Glass button - dark interactive button */
@@ -424,14 +418,14 @@ html.dark {
 
 /* Glass input - form field styling */
 .glass-input {
-  background: #2c2c2e !important;
-  border: 1px solid #3a3a3c !important;
+  background: #38383b !important;
+  border: 1px solid #3d3d40 !important;
   border-radius: 9999px !important;
   transition: all 0.15s ease;
 }
 
 .glass-input:focus {
-  background: #2c2c2e !important;
+  background: #38383b !important;
   border-color: hsl(265 70% 60% / 0.5) !important;
   box-shadow: 0 0 0 3px hsl(265 70% 60% / 0.15);
 }
@@ -459,12 +453,10 @@ html.dark {
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
-/* Dark mode background with subtle purple tint */
+/* Dark mode background with purple glow */
 body {
   background: 
-    radial-gradient(ellipse 150% 100% at 50% 0%, rgba(88, 28, 135, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 100% at 0% 50%, rgba(88, 28, 135, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 100% at 100% 50%, rgba(88, 28, 135, 0.08) 0%, transparent 50%),
-    #1a1a1d;
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(126, 34, 206, 0.25) 0%, transparent 70%),
+    #1c1c1f;
   background-attachment: fixed;
 }

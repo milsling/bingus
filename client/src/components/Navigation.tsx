@@ -30,7 +30,7 @@ export default function Navigation() {
   return (
     <>
       {/* Desktop Floating Top Bar - Gmail/YouTube style */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl bg-[#141416]/95 backdrop-blur-sm border border-[#2d2d30]">
+      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl bg-[#1c1c1f] border border-[#2a2a2d]">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-2">
           <DropdownMenu>
