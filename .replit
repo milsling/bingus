@@ -45,3 +45,8 @@ integrations = ["javascript_database:1.0.0", "javascript_object_storage:2.0.0", 
 
 [objectStorage]
 defaultBucketID = "replit-objstore-c36745b7-e905-4ff3-b869-c154e4ebcb2c"
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_URL = "https://gcbfcbumlgfzzqioyotq.supabase.co/"
