@@ -606,7 +606,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col p-4">
+    <div className="min-h-screen flex flex-col p-4">
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="mb-8 text-center space-y-2">
           <Link href="/">
