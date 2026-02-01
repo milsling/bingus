@@ -38,7 +38,6 @@ async function syncFromProduction() {
         isAdmin: user.is_admin,
         isAdminPlus: user.is_admin_plus,
         isOwner: user.is_owner,
-        isGuest: user.is_guest || false,
         xp: user.xp,
         level: user.level,
         messagePrivacy: user.message_privacy,
