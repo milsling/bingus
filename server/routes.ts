@@ -430,24 +430,10 @@ export async function registerRoutes(
       let appUser = await storage.getUserBySupabaseId(supabaseUser.id);
       
       if (!appUser) {
-        const email = supabaseUser.email || '';
-        const provider = req.body.provider || 'oauth';
-        let baseUsername = email.split('@')[0] || provider + '_user';
-        baseUsername = baseUsername.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 20);
-        
-        let username = baseUsername;
-        let counter = 1;
-        while (await storage.getUserByUsername(username)) {
-          username = `${baseUsername}${counter}`;
-          counter++;
-        }
-
-        appUser = await storage.createUser({
-          username,
-          password: '',
-          email,
-          supabaseId: supabaseUser.id,
-          isGuest: false,
+        return res.json({ 
+          needsUsername: true, 
+          email: supabaseUser.email,
+          supabaseId: supabaseUser.id 
         });
       }
 
@@ -456,6 +442,55 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error('OAuth callback error:', error);
       res.status(500).json({ message: error.message || 'Failed to complete sign in' });
+    }
+  });
+
+  app.post("/api/auth/supabase/complete-signup", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Missing authorization header' });
+    }
+
+    const token = authHeader.substring(7);
+    const supabaseUser = await validateSupabaseToken(token);
+    if (!supabaseUser) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    try {
+      const { username } = req.body;
+      if (!username || username.length < 3) {
+        return res.status(400).json({ message: 'Username must be at least 3 characters' });
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return res.status(400).json({ message: 'Username can only contain letters, numbers, and underscores' });
+      }
+
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: 'Username already taken' });
+      }
+
+      const existingSupabaseUser = await storage.getUserBySupabaseId(supabaseUser.id);
+      if (existingSupabaseUser) {
+        const { password: _, ...userWithoutPassword } = existingSupabaseUser;
+        return res.json(userWithoutPassword);
+      }
+
+      const appUser = await storage.createUser({
+        username,
+        password: '',
+        email: supabaseUser.email || '',
+        supabaseId: supabaseUser.id,
+        isGuest: false,
+      });
+
+      const { password: _, ...userWithoutPassword } = appUser;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      console.error('Complete signup error:', error);
+      res.status(500).json({ message: error.message || 'Failed to create account' });
     }
   });
 
