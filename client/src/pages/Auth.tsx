@@ -35,6 +35,7 @@ import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import iconUrl from "@/assets/icon.png";
 
 type SignupStep = "email" | "verify" | "details";
@@ -66,6 +67,16 @@ export default function Auth() {
   
   // Saved accounts feature
   const [savedAccounts, setSavedAccounts] = useState<string[]>([]);
+  
+  const { data: motd } = useQuery({
+    queryKey: ['/api/motd'],
+    queryFn: async () => {
+      const res = await fetch('/api/motd');
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 5,
+  });
   
   useEffect(() => {
     const saved = localStorage.getItem('orphanbars_saved_accounts');
@@ -596,15 +607,6 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col p-4">
-      <div className="py-4">
-        <Link href="/">
-          <Button variant="outline" className="gap-2" data-testid="button-back-home">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Feed
-          </Button>
-        </Link>
-      </div>
-      
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="mb-8 text-center space-y-2">
           <Link href="/">
@@ -617,19 +619,40 @@ export default function Auth() {
             No home for your fire bars? Orphan 'em, cuh.
           </p>
         </div>
+        
+        {motd?.isActive && motd?.message && (
+          <div className="w-full max-w-md mb-6 p-4 rounded-xl bg-white/[0.03] border border-white/[0.1] backdrop-blur-sm">
+            <div className="flex items-start gap-3">
+              <span className="text-xl">📢</span>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white/90">{motd.message}</p>
+                {motd.linkUrl && motd.linkText && (
+                  <a 
+                    href={motd.linkUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline mt-1 inline-block"
+                  >
+                    {motd.linkText} →
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
-      <Card className="w-full max-w-md border-border bg-card/50 backdrop-blur-sm">
+      <Card className="w-full max-w-md border-white/[0.1] bg-white/[0.03] backdrop-blur-xl shadow-2xl shadow-black/20">
         <Tabs defaultValue="login" className="w-full" onValueChange={() => resetSignup()}>
-          <TabsList className="grid w-full grid-cols-2 rounded-t-lg rounded-b-none bg-secondary/50 p-0 h-14">
+          <TabsList className="grid w-full grid-cols-2 rounded-t-xl rounded-b-none bg-white/[0.02] p-0 h-14 border-b border-white/[0.05]">
             <TabsTrigger 
               value="login" 
-              className="h-full rounded-none data-[state=active]:bg-background data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
+              className="h-full rounded-tl-xl rounded-tr-none rounded-b-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
             >
               Login
             </TabsTrigger>
             <TabsTrigger 
               value="signup" 
-              className="h-full rounded-none data-[state=active]:bg-background data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
+              className="h-full rounded-tr-xl rounded-tl-none rounded-b-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
             >
               Create Account
             </TabsTrigger>
