@@ -89,7 +89,7 @@
   /* ========================================
      ORPHANBARS - Apple Vision Pro Glass (Dark Only)
      ======================================== */
-  --background: 240 6% 10%;
+  --background: 268 33% 18%;
   --foreground: 0 0% 98%;
 
   --card: 0 0% 6%;
@@ -453,8 +453,3 @@ html.dark {
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
-/* Dark mode background - purple */
-body {
-  background: #2d1f3d;
-  background-attachment: fixed;
-}
