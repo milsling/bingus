@@ -25,7 +25,7 @@ export default function EditProfile() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
-  const { variant: bgVariant, setVariant: setBgVariant } = useBackground();
+  useBackground();
 
   const [bio, setBio] = useState(currentUser?.bio || "");
   const [location, setLocationField] = useState(currentUser?.location || "");
@@ -614,7 +614,7 @@ export default function EditProfile() {
             <CardDescription>Customize how Orphan Bars looks for you</CardDescription>
           </CardHeader>
           <CardContent>
-            <BackgroundSelector variant={bgVariant} onSelect={setBgVariant} />
+            <BackgroundSelector />
           </CardContent>
         </Card>
       </main>
