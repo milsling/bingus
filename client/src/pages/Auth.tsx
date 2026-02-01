@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 
 const RAP_USERNAMES = [
   "SpitFire_99",
