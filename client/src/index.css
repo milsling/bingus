@@ -150,9 +150,12 @@
   body {
     @apply font-sans antialiased text-foreground;
     background: 
-      radial-gradient(ellipse at 30% 20%, rgba(139, 69, 180, 0.4) 0%, transparent 50%),
-      radial-gradient(ellipse at 70% 80%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
-      radial-gradient(ellipse at center, #3d2066 0%, #1a1a2e 40%, #0f0f1a 100%);
+      radial-gradient(ellipse at 50% 50%, rgba(168, 85, 247, 0.35) 0%, transparent 40%),
+      radial-gradient(ellipse at 30% 30%, rgba(139, 69, 180, 0.4) 0%, transparent 45%),
+      radial-gradient(ellipse at 70% 70%, rgba(59, 130, 246, 0.35) 0%, transparent 45%),
+      radial-gradient(ellipse at 20% 80%, rgba(236, 72, 153, 0.25) 0%, transparent 40%),
+      radial-gradient(ellipse at 80% 20%, rgba(99, 102, 241, 0.3) 0%, transparent 40%),
+      radial-gradient(ellipse at center, #3d2066 0%, #1a1a2e 35%, #0f0f1a 100%);
     background-attachment: fixed;
   }
   
