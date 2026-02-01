@@ -65,6 +65,14 @@ export async function registerRoutes(
     res.json({ version: APP_VERSION });
   });
 
+  // Supabase config endpoint for client-side OAuth
+  app.get("/api/config/supabase", (req, res) => {
+    res.json({
+      url: process.env.SUPABASE_URL || '',
+      anonKey: process.env.SUPABASE_ANON_KEY || ''
+    });
+  });
+
   // Auth routes
   app.post("/api/auth/send-code", async (req, res) => {
     try {
