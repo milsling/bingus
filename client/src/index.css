@@ -453,13 +453,13 @@ html.dark {
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
-/* Dark mode background with subtle purple glow */
+/* Dark mode background with purple glow */
 body {
   background: 
-    radial-gradient(ellipse 100% 80% at 50% -10%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 60% at 0% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 60% at 100% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 30% 100%, rgba(124, 58, 237, 0.06) 0%, transparent 40%),
-    #0a0a0a;
+    radial-gradient(ellipse 120% 100% at 50% -20%, rgba(147, 51, 234, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 80% at -10% 60%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 80% at 110% 70%, rgba(168, 85, 247, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+    #0d0d0f;
   background-attachment: fixed;
 }
