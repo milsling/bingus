@@ -3505,5 +3505,108 @@ export async function registerRoutes(
     }
   });
 
+  // Leaderboard - Top users by XP
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+      const topUsers = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          xp: users.xp,
+          level: users.level,
+          avatarUrl: users.avatarUrl,
+          displayedBadges: users.displayedBadges,
+        })
+        .from(users)
+        .orderBy(sql`${users.xp} DESC`)
+        .limit(limit);
+      
+      res.json(topUsers);
+    } catch (error: any) {
+      console.error("Leaderboard error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Recent public activity (likes, comments, new bars)
+  app.get("/api/activity/recent", async (req, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit as string) || 10, 20);
+      
+      // Get recent likes with user and bar info
+      const recentLikes = await db.execute(sql`
+        SELECT 
+          'like' as type,
+          l.id,
+          l.created_at as "createdAt",
+          u.username as "actorUsername",
+          u.avatar_url as "actorAvatar",
+          b.id as "barId",
+          SUBSTRING(b.content, 1, 50) as "barPreview",
+          bu.username as "barAuthor"
+        FROM likes l
+        JOIN users u ON l.user_id = u.id
+        JOIN bars b ON l.bar_id = b.id
+        JOIN users bu ON b.user_id = bu.id
+        WHERE b.moderation_status = 'approved'
+        ORDER BY l.created_at DESC
+        LIMIT ${limit}
+      `);
+
+      // Get recent comments
+      const recentComments = await db.execute(sql`
+        SELECT 
+          'comment' as type,
+          c.id,
+          c.created_at as "createdAt",
+          u.username as "actorUsername",
+          u.avatar_url as "actorAvatar",
+          b.id as "barId",
+          SUBSTRING(b.content, 1, 50) as "barPreview",
+          bu.username as "barAuthor"
+        FROM comments c
+        JOIN users u ON c.user_id = u.id
+        JOIN bars b ON c.bar_id = b.id
+        JOIN users bu ON b.user_id = bu.id
+        WHERE b.moderation_status = 'approved'
+        ORDER BY c.created_at DESC
+        LIMIT ${limit}
+      `);
+
+      // Get recent bars posted
+      const recentBars = await db.execute(sql`
+        SELECT 
+          'post' as type,
+          b.id,
+          b.created_at as "createdAt",
+          u.username as "actorUsername",
+          u.avatar_url as "actorAvatar",
+          b.id as "barId",
+          SUBSTRING(b.content, 1, 50) as "barPreview",
+          u.username as "barAuthor"
+        FROM bars b
+        JOIN users u ON b.user_id = u.id
+        WHERE b.moderation_status = 'approved'
+        ORDER BY b.created_at DESC
+        LIMIT ${limit}
+      `);
+
+      // Combine and sort by time
+      const allActivity = [
+        ...(recentLikes.rows || []),
+        ...(recentComments.rows || []),
+        ...(recentBars.rows || []),
+      ].sort((a: any, b: any) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ).slice(0, limit);
+
+      res.json(allActivity);
+    } catch (error: any) {
+      console.error("Recent activity error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   return httpServer;
 }

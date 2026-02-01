@@ -5,14 +5,28 @@ import CategoryFilter from "@/components/CategoryFilter";
 import { BarSkeletonList } from "@/components/BarSkeleton";
 import { SearchBar } from "@/components/SearchBar";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import { Clock, Flame, Trophy, Grid3X3, Hash, X, Lightbulb, Laugh, Palette, HelpCircle, Star, BadgeCheck } from "lucide-react";
+import { Clock, Flame, Trophy, Grid3X3, Hash, X, Lightbulb, Laugh, Palette, HelpCircle, Star, BadgeCheck, Heart, MessageCircle, PenLine } from "lucide-react";
 import iconUrl from "@/assets/icon.png";
 import { useBars } from "@/context/BarContext";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { useLocation, useSearch } from "wouter";
+import { useLocation, useSearch, Link } from "wouter";
+
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
 
 type Category = "Funny" | "Serious" | "Wordplay" | "Storytelling" | "Battle" | "Freestyle";
 type FeedTab = "featured" | "latest" | "top" | "trending" | "categories";
@@ -71,6 +85,28 @@ export default function Home() {
       return res.json();
     },
     enabled: activeTab === "trending",
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Leaderboard query - real data from database
+  const { data: leaderboard = [] } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => {
+      const res = await fetch('/api/leaderboard?limit=5', { credentials: 'include' });
+      return res.json();
+    },
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Recent activity query - real data from database
+  const { data: recentActivity = [] } = useQuery({
+    queryKey: ['recent-activity'],
+    queryFn: async () => {
+      const res = await fetch('/api/activity/recent?limit=6', { credentials: 'include' });
+      return res.json();
+    },
     staleTime: 30000,
     refetchOnWindowFocus: false,
   });
@@ -372,67 +408,85 @@ export default function Home() {
         
         {/* Right Column - Leaderboard, Challenge, Activity (fixed, scrollable if needed) */}
         <aside className="w-72 shrink-0 space-y-4 overflow-y-auto py-4 scrollbar-thin">
-          {/* Leaderboard */}
+          {/* Leaderboard - Real data */}
           <div className="glass-panel p-4">
             <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
               <Trophy className="h-4 w-4 text-yellow-500" />
               Top Lyricists
             </h3>
             <div className="space-y-2">
-              {[
-                { rank: 1, name: "LyricalGenius", xp: 12450, badge: "🥇" },
-                { rank: 2, name: "BarMaster", xp: 10320, badge: "🥈" },
-                { rank: 3, name: "WordSmith", xp: 9180, badge: "🥉" },
-                { rank: 4, name: "FlowKing", xp: 8740, badge: "" },
-                { rank: 5, name: "MetaphorMaven", xp: 7890, badge: "" },
-              ].map((user) => (
-                <div key={user.rank} className="flex items-center gap-2 text-sm">
-                  <span className="w-5 text-white/40">{user.badge || user.rank}</span>
-                  <span className="flex-1 text-white/80 truncate">{user.name}</span>
-                  <span className="text-primary text-xs">{user.xp.toLocaleString()} XP</span>
-                </div>
-              ))}
+              {leaderboard.length > 0 ? (
+                leaderboard.map((user: any, index: number) => (
+                  <Link key={user.id} href={`/user/${user.username}`}>
+                    <div className="flex items-center gap-2 text-sm hover:bg-white/[0.04] rounded-lg p-1 -m-1 transition-colors cursor-pointer">
+                      <span className="w-5 text-white/40">
+                        {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1}
+                      </span>
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary">
+                          {user.username?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="flex-1 text-white/80 truncate">{user.username}</span>
+                      <span className="text-primary text-xs">{(user.xp || 0).toLocaleString()} XP</span>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-white/40 text-xs">No users yet</p>
+              )}
             </div>
           </div>
           
-          {/* Challenge of the Day */}
+          {/* Challenge of the Day - Coming Soon placeholder */}
           <div className="glass-panel p-4">
             <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
               <Flame className="h-4 w-4 text-orange-500" />
               Challenge of the Day
             </h3>
-            <p className="text-xs text-white/60 mb-2">Write a bar using the theme:</p>
-            <p className="text-sm font-medium text-primary mb-3">"Time is money"</p>
-            <div className="flex items-center justify-between text-xs text-white/50">
-              <span>47 submissions</span>
-              <span>Ends in 6h</span>
-            </div>
+            <p className="text-xs text-white/40 text-center py-4">Coming soon...</p>
           </div>
           
-          {/* Recent Activity */}
+          {/* Recent Activity - Real data */}
           <div className="glass-panel p-4">
             <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
               <Clock className="h-4 w-4 text-blue-400" />
               Recent Activity
             </h3>
             <div className="space-y-3 text-xs">
-              {[
-                { action: "liked", user: "FlowKing", target: "a bar", time: "2m ago" },
-                { action: "posted", user: "WordSmith", target: "new bar", time: "5m ago" },
-                { action: "commented", user: "BarMaster", target: "on a bar", time: "12m ago" },
-                { action: "followed", user: "NewWriter", target: "you", time: "18m ago" },
-              ].map((activity, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <div className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-white/40">
-                    {activity.user.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <span className="text-white/70">{activity.user}</span>
-                    <span className="text-white/40"> {activity.action} {activity.target}</span>
-                    <p className="text-white/30">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
+              {recentActivity.length > 0 ? (
+                recentActivity.slice(0, 6).map((activity: any, i: number) => (
+                  <Link key={`${activity.type}-${activity.id}-${i}`} href={`/bar/${activity.barId}`}>
+                    <div className="flex items-start gap-2 hover:bg-white/[0.04] rounded-lg p-1 -m-1 transition-colors cursor-pointer">
+                      {activity.actorAvatar ? (
+                        <img src={activity.actorAvatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-white/40">
+                          {activity.actorUsername?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1">
+                          {activity.type === 'like' && <Heart className="h-3 w-3 text-red-400" />}
+                          {activity.type === 'comment' && <MessageCircle className="h-3 w-3 text-blue-400" />}
+                          {activity.type === 'post' && <PenLine className="h-3 w-3 text-green-400" />}
+                          <span className="text-white/70 truncate">{activity.actorUsername}</span>
+                        </div>
+                        <span className="text-white/40">
+                          {activity.type === 'like' && 'liked a bar'}
+                          {activity.type === 'comment' && 'commented on a bar'}
+                          {activity.type === 'post' && 'dropped a new bar'}
+                        </span>
+                        <p className="text-white/30">{formatTimeAgo(activity.createdAt)}</p>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-white/40 text-center py-2">No recent activity</p>
+              )}
             </div>
           </div>
         </aside>
