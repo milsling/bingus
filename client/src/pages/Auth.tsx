@@ -313,7 +313,7 @@ export default function Auth() {
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   required
-                  className="bg-secondary/30 border-border/50"
+                  className="glass-input"
                 />
               </div>
             </CardContent>
@@ -418,7 +418,7 @@ export default function Auth() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="bg-secondary/30 border-border/50"
+                  className="glass-input"
                 />
                 <p className="text-xs text-muted-foreground">At least 6 characters</p>
               </div>
@@ -458,7 +458,7 @@ export default function Auth() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-secondary/30 border-border/50"
+                  className="glass-input"
                 />
               </div>
             </CardContent>
@@ -562,7 +562,7 @@ export default function Auth() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
-                    className="bg-secondary/30 border-border/50"
+                    className="glass-input"
                   />
                   {!username && (
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden h-5">
@@ -585,7 +585,7 @@ export default function Auth() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="bg-secondary/30 border-border/50"
+                  className="glass-input"
                 />
                 <p className="text-xs text-muted-foreground">At least 6 characters</p>
               </div>
@@ -641,9 +641,9 @@ export default function Auth() {
           </div>
         )}
 
-      <Card className="w-full max-w-md border-white/[0.1] bg-white/[0.03] backdrop-blur-xl shadow-2xl shadow-black/20">
+      <Card className="w-full max-w-md glass-panel border-white/[0.1] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
         <Tabs defaultValue="login" className="w-full" onValueChange={() => resetSignup()}>
-          <TabsList className="grid w-full grid-cols-2 rounded-t-xl rounded-b-none bg-white/[0.02] p-0 h-14 border-b border-white/[0.05]">
+          <TabsList className="grid w-full grid-cols-2 rounded-t-xl rounded-b-none bg-white/[0.02] p-0 h-14 border-b border-white/[0.06]">
             <TabsTrigger 
               value="login" 
               className="h-full rounded-tl-xl rounded-tr-none rounded-b-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
@@ -703,7 +703,7 @@ export default function Auth() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required 
-                        className="bg-secondary/30 border-border/50"
+                        className="glass-input"
                       />
                       {!username && (
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden h-5">
@@ -725,7 +725,7 @@ export default function Auth() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required 
-                      className="bg-secondary/30 border-border/50"
+                      className="glass-input"
                     />
                   </div>
                   <div className="flex items-center gap-2">
