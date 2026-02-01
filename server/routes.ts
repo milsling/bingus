@@ -429,6 +429,14 @@ export async function registerRoutes(
     try {
       let appUser = await storage.getUserBySupabaseId(supabaseUser.id);
       
+      if (!appUser && supabaseUser.email) {
+        const existingUserByEmail = await storage.getUserByEmail(supabaseUser.email);
+        if (existingUserByEmail) {
+          await storage.linkSupabaseAccount(existingUserByEmail.id, supabaseUser.id);
+          appUser = await storage.getUser(existingUserByEmail.id);
+        }
+      }
+      
       if (!appUser) {
         return res.json({ 
           needsUsername: true, 
