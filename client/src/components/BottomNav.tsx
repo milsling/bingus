@@ -289,88 +289,95 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
         )}
       </AnimatePresence>
 
-      {/* Mobile Bottom Nav - Apple Vision Pro Glass Style */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] p-3 pb-safe">
-        <div className="glass-nav rounded-2xl shadow-xl shadow-black/30">
-          <div className="flex items-center justify-between h-16 px-1">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className={cn(
-                "flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all flex-1",
-                "text-white/50 hover:text-white/80 hover:bg-white/[0.06]"
-              )}
-              data-testid="button-search"
-            >
-              <Search className="w-5 h-5" />
-              <span className="text-[10px] font-medium">Search</span>
-            </button>
-
-            <button
-              onClick={() => setLocation("/")}
-              className={cn(
-                "flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all flex-1",
-                location === "/" 
-                  ? "text-white bg-white/[0.1]" 
-                  : "text-white/50 hover:text-white/80 hover:bg-white/[0.06]"
-              )}
-              data-testid="nav-feed"
-            >
-              <Home className="w-5 h-5" />
-              <span className="text-[10px] font-medium">Feed</span>
-            </button>
-
-            <div className="relative -mt-4 mx-1">
-              <motion.button
-                onClick={handleCenterClick}
+      {/* Mobile Bottom Nav - Premium Glass Style */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] p-4 pb-safe">
+        <div className="relative">
+          {/* Glow effect behind nav */}
+          <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 via-transparent to-transparent blur-xl rounded-full" />
+          
+          <div className="relative bg-white/[0.03] backdrop-blur-2xl rounded-full border border-white/[0.08] shadow-2xl shadow-black/50">
+            <div className="flex items-center justify-between h-16 px-2">
+              <button
+                onClick={() => setSearchOpen(true)}
                 className={cn(
-                  "w-14 h-14 rounded-2xl",
-                  "bg-gradient-to-br from-primary via-purple-500 to-primary/80",
-                  "flex items-center justify-center",
-                  "shadow-lg shadow-primary/50",
-                  "border border-white/20",
-                  isOpen && "from-white/20 via-white/10 to-white/5 shadow-white/20"
+                  "flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-full transition-all flex-1",
+                  "text-white/40 hover:text-white/90 hover:bg-white/[0.08]"
                 )}
-                whileTap={{ scale: 0.92 }}
-                data-testid="button-menu"
+                data-testid="button-search"
               >
-                {isOpen ? (
-                  <X className="w-6 h-6 text-white" />
-                ) : (
-                  <Grid3X3 className="w-6 h-6 text-white" />
+                <Search className="w-5 h-5" />
+                <span className="text-[9px] font-medium tracking-wide">Search</span>
+              </button>
+
+              <button
+                onClick={() => setLocation("/")}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-full transition-all flex-1",
+                  location === "/" 
+                    ? "text-white bg-white/[0.12]" 
+                    : "text-white/40 hover:text-white/90 hover:bg-white/[0.08]"
                 )}
-              </motion.button>
-              {!isOpen && (unreadCount > 0 || pendingFriendRequests > 0) && (
-                <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-primary border-2 border-[#0a0a0a] shadow-[0_0_8px_3px_rgba(168,85,247,0.7)] animate-pulse" />
-              )}
+                data-testid="nav-feed"
+              >
+                <Home className="w-5 h-5" />
+                <span className="text-[9px] font-medium tracking-wide">Feed</span>
+              </button>
+
+              <div className="relative -mt-6 mx-2">
+                <motion.button
+                  onClick={handleCenterClick}
+                  className={cn(
+                    "w-16 h-16 rounded-full",
+                    "bg-gradient-to-br from-purple-500 via-primary to-purple-600",
+                    "flex items-center justify-center",
+                    "shadow-xl shadow-purple-500/40",
+                    "border-2 border-white/30",
+                    "ring-4 ring-purple-500/20",
+                    isOpen && "from-white/30 via-white/20 to-white/10 shadow-white/30 ring-white/10"
+                  )}
+                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  data-testid="button-menu"
+                >
+                  {isOpen ? (
+                    <X className="w-7 h-7 text-white drop-shadow-lg" />
+                  ) : (
+                    <Grid3X3 className="w-7 h-7 text-white drop-shadow-lg" />
+                  )}
+                </motion.button>
+                {!isOpen && (unreadCount > 0 || pendingFriendRequests > 0) && (
+                  <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-red-500 border-2 border-white/50 shadow-[0_0_12px_4px_rgba(239,68,68,0.6)] animate-pulse" />
+                )}
+              </div>
+
+              <button
+                onClick={() => setLocation("/saved")}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-full transition-all flex-1",
+                  location === "/saved" 
+                    ? "text-white bg-white/[0.12]" 
+                    : "text-white/40 hover:text-white/90 hover:bg-white/[0.08]"
+                )}
+                data-testid="nav-saved"
+              >
+                <Bookmark className="w-5 h-5" />
+                <span className="text-[9px] font-medium tracking-wide">Saved</span>
+              </button>
+
+              <button
+                onClick={() => setLocation("/profile")}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-full transition-all flex-1",
+                  location === "/profile" 
+                    ? "text-white bg-white/[0.12]" 
+                    : "text-white/40 hover:text-white/90 hover:bg-white/[0.08]"
+                )}
+                data-testid="nav-profile"
+              >
+                <User className="w-5 h-5" />
+                <span className="text-[9px] font-medium tracking-wide">Profile</span>
+              </button>
             </div>
-
-            <button
-              onClick={() => setLocation("/saved")}
-              className={cn(
-                "flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all flex-1",
-                location === "/saved" 
-                  ? "text-white bg-white/[0.1]" 
-                  : "text-white/50 hover:text-white/80 hover:bg-white/[0.06]"
-              )}
-              data-testid="nav-saved"
-            >
-              <Bookmark className="w-5 h-5" />
-              <span className="text-[10px] font-medium">Saved</span>
-            </button>
-
-            <button
-              onClick={() => setLocation("/profile")}
-              className={cn(
-                "flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all flex-1",
-                location === "/profile" 
-                  ? "text-white bg-white/[0.1]" 
-                  : "text-white/50 hover:text-white/80 hover:bg-white/[0.06]"
-              )}
-              data-testid="nav-profile"
-            >
-              <User className="w-5 h-5" />
-              <span className="text-[10px] font-medium">Profile</span>
-            </button>
           </div>
         </div>
       </div>
