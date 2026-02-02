@@ -886,12 +886,12 @@ export default function BarCard({ bar }: BarCardProps) {
             </div>
           </CardContent>
 
-          <CardFooter className="border-t border-white/5 py-3 flex-col">
-            <div className="flex w-full items-center justify-between text-muted-foreground">
+          <CardFooter className="border-t border-white/5 py-3 flex-col px-2 sm:px-4">
+            <div className="flex w-full items-center justify-center gap-1 sm:gap-2 text-muted-foreground">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={`gap-2 transition-colors ${likesData?.liked ? 'text-red-500' : 'hover:text-red-500 hover:bg-red-500/10'}`}
+                className={`gap-1 sm:gap-2 px-2 sm:px-3 transition-colors ${likesData?.liked ? 'text-red-500' : 'hover:text-red-500 hover:bg-red-500/10'}`}
                 onClick={handleLike}
                 disabled={likeMutation.isPending}
                 data-testid={`button-like-${bar.id}`}
@@ -903,7 +903,7 @@ export default function BarCard({ bar }: BarCardProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={`gap-1 transition-colors ${dislikesData?.disliked ? 'text-orange-500' : 'hover:text-orange-500 hover:bg-orange-500/10'}`}
+                className={`gap-1 px-2 sm:px-3 transition-colors ${dislikesData?.disliked ? 'text-orange-500' : 'hover:text-orange-500 hover:bg-orange-500/10'}`}
                 onClick={handleDislike}
                 disabled={dislikeMutation.isPending}
                 data-testid={`button-dislike-${bar.id}`}
@@ -915,7 +915,7 @@ export default function BarCard({ bar }: BarCardProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={`gap-2 transition-colors ${showComments ? 'text-blue-400' : 'hover:text-blue-400 hover:bg-blue-400/10'}`}
+                className={`gap-1 sm:gap-2 px-2 sm:px-3 transition-colors ${showComments ? 'text-blue-400' : 'hover:text-blue-400 hover:bg-blue-400/10'}`}
                 onClick={() => setShowComments(!showComments)}
                 data-testid={`button-comment-${bar.id}`}
               >
@@ -926,24 +926,24 @@ export default function BarCard({ bar }: BarCardProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="gap-2 hover:text-primary hover:bg-primary/10 transition-colors" 
+                className="gap-1 sm:gap-2 px-2 sm:px-3 hover:text-primary hover:bg-primary/10 transition-colors" 
                 onClick={handleShare}
                 data-testid={`button-share-${bar.id}`}
               >
                 <Share2 className="h-4 w-4" />
-                <span className="text-xs">Share</span>
+                <span className="text-xs hidden sm:inline">Share</span>
               </Button>
               
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={`gap-2 transition-colors ${bookmarkData?.bookmarked ? 'text-primary' : 'hover:text-primary hover:bg-primary/10'}`}
+                className={`gap-1 sm:gap-2 px-2 sm:px-3 transition-colors ${bookmarkData?.bookmarked ? 'text-primary' : 'hover:text-primary hover:bg-primary/10'}`}
                 onClick={handleBookmark}
                 disabled={bookmarkMutation.isPending}
                 data-testid={`button-bookmark-${bar.id}`}
               >
                 <Bookmark className={`h-4 w-4 ${bookmarkData?.bookmarked ? 'fill-current' : ''}`} />
-                <span className="text-xs">Save</span>
+                <span className="text-xs hidden sm:inline">Save</span>
               </Button>
             </div>
 
