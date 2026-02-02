@@ -131,7 +131,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-              className="fixed bottom-24 left-3 right-3 z-50 bg-gray-400/[0.3] backdrop-blur-3xl rounded-[24px] border border-white/[0.2] shadow-[0_8px_32px_rgba(0,0,0,0.25)] overflow-hidden"
+              className="fixed bottom-24 left-3 right-3 z-50 bg-white/[0.08] backdrop-blur-3xl rounded-[24px] border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.2)] overflow-hidden"
             >
               <div className="flex">
                 <div className="flex flex-col w-[120px] shrink-0 border-r border-white/[0.1]">
@@ -143,8 +143,8 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     className={cn(
                       "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95",
                       menuSection === "orphanbars" 
-                        ? "bg-white/[0.15]" 
-                        : "hover:bg-white/[0.08]"
+                        ? "bg-white/[0.10]" 
+                        : "hover:bg-white/[0.06]"
                     )}
                     data-testid="nav-section-orphanbars"
                   >
@@ -173,8 +173,8 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     className={cn(
                       "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 border-t border-white/[0.08]",
                       menuSection === "orphanage" 
-                        ? "bg-white/[0.15]" 
-                        : "hover:bg-white/[0.08]"
+                        ? "bg-white/[0.10]" 
+                        : "hover:bg-white/[0.06]"
                     )}
                     data-testid="nav-section-orphanage"
                   >
@@ -194,7 +194,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         setIsOpen(false);
                         setOrphieOpen(true);
                       }}
-                      className="flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 bg-white/[0.08] hover:bg-white/[0.12] border-t border-white/[0.08]"
+                      className="flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 bg-white/[0.05] hover:bg-white/[0.08] border-t border-white/[0.08]"
                       data-testid="nav-section-orphie"
                     >
                       <Sparkles className="h-5 w-5 text-purple-300 mb-1" />
@@ -214,16 +214,16 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                           className={cn(
                             "flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95",
                             isActive 
-                              ? "bg-white/[0.15]" 
-                              : "hover:bg-white/[0.08]"
+                              ? "bg-white/[0.10]" 
+                              : "hover:bg-white/[0.05]"
                           )}
                           data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
                         >
                           <div className={cn(
                             "relative w-10 h-10 rounded-xl flex items-center justify-center transition-all",
                             isActive 
-                              ? "bg-white/[0.2]" 
-                              : "bg-white/[0.08]"
+                              ? "bg-white/[0.12]" 
+                              : "bg-white/[0.05]"
                           )}>
                             {item.icon && (
                               <item.icon className={cn(
@@ -249,7 +249,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   {currentUser && (
                     <button
                       onClick={() => handleNavClick("/post")}
-                      className="m-3 mt-0 p-3.5 rounded-2xl bg-white/[0.2] hover:bg-white/[0.25] border border-white/[0.2] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                      className="m-3 mt-0 p-3.5 rounded-2xl bg-white/[0.10] hover:bg-white/[0.15] border border-white/[0.12] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                       data-testid="nav-item-drop-bar-main"
                     >
                       <Plus className="w-5 h-5 text-white" strokeWidth={2} />
@@ -281,7 +281,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-24 left-3 right-3 z-50 bg-gray-400/[0.3] backdrop-blur-3xl rounded-[20px] border border-white/[0.2] shadow-[0_8px_32px_rgba(0,0,0,0.25)] p-4"
+              className="fixed bottom-24 left-3 right-3 z-50 bg-white/[0.08] backdrop-blur-3xl rounded-[20px] border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.2)] p-4"
             >
               <SearchBar className="w-full" />
             </motion.div>
@@ -289,10 +289,10 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
         )}
       </AnimatePresence>
 
-      {/* Mobile Bottom Nav - Apple Vision Pro Style */}
+      {/* Mobile Bottom Nav - Super Transparent Apple Style */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] px-3 pb-2 safe-area-inset-bottom">
         <div className="relative">
-          <div className="relative bg-gray-400/[0.25] backdrop-blur-3xl rounded-[28px] border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+          <div className="relative bg-white/[0.08] backdrop-blur-3xl rounded-[28px] border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-around h-[72px] px-1">
               <button
                 onClick={() => setSearchOpen(true)}
@@ -330,12 +330,12 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   onClick={handleCenterClick}
                   className={cn(
                     "w-14 h-14 rounded-2xl",
-                    "bg-gradient-to-b from-white/[0.25] to-white/[0.12]",
+                    "bg-white/[0.12]",
                     "backdrop-blur-xl",
                     "flex items-center justify-center",
-                    "border border-white/[0.25]",
-                    "shadow-[0_4px_16px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.2)]",
-                    isOpen && "bg-white/[0.35] border-white/[0.35]"
+                    "border border-white/[0.15]",
+                    "shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]",
+                    isOpen && "bg-white/[0.18] border-white/[0.22]"
                   )}
                   whileTap={{ scale: 0.92 }}
                   data-testid="button-menu"

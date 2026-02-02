@@ -377,12 +377,12 @@ html.dark {
    GLASSMORPHISM UTILITIES - Apple Vision Pro Style
    ======================================== */
 
-/* Glass panel base - Apple Vision Pro style (bright gray glass) */
+/* Glass panel base - Super transparent Apple Vision Pro style */
 .glass-panel {
-  background: rgba(140, 140, 150, 0.28);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1.25rem;
 }
 
@@ -391,67 +391,67 @@ html.dark {
 }
 
 .glass-panel-hover:hover {
-  background: rgba(160, 160, 170, 0.32);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
-/* Glass card - bar cards */
+/* Glass card - bar cards - super transparent */
 .glass-card {
-  background: rgba(140, 140, 150, 0.15);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
 }
 
-/* Glass nav - navigation specific styling (bright gray glass) */
+/* Glass nav - navigation specific styling - super transparent */
 .glass-nav {
-  background: rgba(140, 140, 150, 0.25);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
 
-/* Glass button - Apple Vision Pro style */
+/* Glass button - super transparent */
 .glass-button {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   transition: all 0.15s ease;
 }
 
 .glass-button:hover {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .glass-button:active {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   transform: scale(0.98);
 }
 
-/* Glass input - Apple Vision Pro style */
+/* Glass input - super transparent */
 .glass-input {
-  background: rgba(140, 140, 150, 0.15) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
   border-radius: 9999px !important;
   transition: all 0.15s ease;
 }
 
 .glass-input:focus {
-  background: rgba(160, 160, 170, 0.20) !important;
+  background: rgba(255, 255, 255, 0.10) !important;
   border-color: rgba(168, 85, 247, 0.5) !important;
   box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
 }
 
 /* Glass modal/dialog overlay */
 .glass-overlay {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* Glass menu item - for nav items */
