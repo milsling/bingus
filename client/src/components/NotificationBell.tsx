@@ -10,9 +10,11 @@ import { api } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLocation } from "wouter";
+import { useBars } from "@/context/BarContext";
+import { playNotificationSound } from "@/lib/notificationSounds";
 
 interface NotificationActor {
   id: string;
@@ -36,6 +38,8 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { currentUser } = useBars();
+  const prevUnreadCountRef = useRef<number>(0);
 
   const handleNotificationClick = (notification: Notification) => {
     setOpen(false);
@@ -60,6 +64,25 @@ export function NotificationBell() {
     staleTime: 30000,
     refetchOnWindowFocus: false,
   });
+
+  // Play notification sound when new notifications arrive
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    // Skip initial load to avoid sound on page open
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      prevUnreadCountRef.current = unreadCount;
+      return;
+    }
+    // Play sound when count increases (including 0→1)
+    if (unreadCount > prevUnreadCountRef.current) {
+      const notificationSound = currentUser?.notificationSound || "chime";
+      if (notificationSound !== "none") {
+        playNotificationSound(notificationSound as any);
+      }
+    }
+    prevUnreadCountRef.current = unreadCount;
+  }, [unreadCount, currentUser?.notificationSound]);
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["notifications"],

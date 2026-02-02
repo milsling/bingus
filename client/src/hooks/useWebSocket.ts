@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useBars } from "@/context/BarContext";
+import { playNotificationSound } from "@/lib/notificationSounds";
 
 interface WebSocketMessage {
   type: string;
@@ -148,6 +149,11 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         queryClient.invalidateQueries({ queryKey: ["messages"] });
         if (message.message) {
           options.onNewMessage?.(message.message);
+          // Play message sound based on user preference
+          const messageSound = currentUser?.messageSound || "ding";
+          if (messageSound !== "none") {
+            playNotificationSound(messageSound as any);
+          }
         }
         break;
       case "typing":

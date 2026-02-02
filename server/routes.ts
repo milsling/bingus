@@ -1889,7 +1889,7 @@ export async function registerRoutes(
 
   app.patch("/api/users/me", isAuthenticated, async (req, res) => {
     try {
-      const { bio, location, avatarUrl, bannerUrl, messagePrivacy } = req.body;
+      const { bio, location, avatarUrl, bannerUrl, messagePrivacy, notificationSound, messageSound } = req.body;
       const updates: Record<string, any> = {};
       
       if (bio !== undefined) updates.bio = bio;
@@ -1901,6 +1901,18 @@ export async function registerRoutes(
           return res.status(400).json({ message: "Invalid privacy setting" });
         }
         updates.messagePrivacy = messagePrivacy;
+      }
+      if (notificationSound !== undefined) {
+        if (!["none", "chime", "pop", "bell", "whoosh"].includes(notificationSound)) {
+          return res.status(400).json({ message: "Invalid notification sound setting" });
+        }
+        updates.notificationSound = notificationSound;
+      }
+      if (messageSound !== undefined) {
+        if (!["none", "ding", "bubble", "soft", "alert"].includes(messageSound)) {
+          return res.status(400).json({ message: "Invalid message sound setting" });
+        }
+        updates.messageSound = messageSound;
       }
 
       const user = await storage.updateUser(req.user!.id, updates);

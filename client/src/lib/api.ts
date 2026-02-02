@@ -199,6 +199,8 @@ export const api = {
     avatarUrl?: string;
     bannerUrl?: string;
     messagePrivacy?: string;
+    notificationSound?: string;
+    messageSound?: string;
   }): Promise<User> => {
     const response = await apiFetch('/api/users/me', {
       method: 'PATCH',

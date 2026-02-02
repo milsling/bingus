@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Camera, Loader2, Lock, MessageCircle, ImageIcon, ZoomIn, ZoomOut, Palette } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, Lock, MessageCircle, ImageIcon, ZoomIn, ZoomOut, Palette, Volume2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +17,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { BackgroundSelector, useBackground } from "@/components/BackgroundSelector";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { playNotificationSound, notificationSoundLabels, messageSoundLabels } from "@/lib/notificationSounds";
 
 export default function EditProfile() {
   const { currentUser } = useBars();
@@ -38,6 +40,8 @@ export default function EditProfile() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [messagePrivacy, setMessagePrivacy] = useState(currentUser?.messagePrivacy || "friends_only");
+  const [notificationSound, setNotificationSound] = useState(currentUser?.notificationSound || "chime");
+  const [messageSound, setMessageSound] = useState(currentUser?.messageSound || "ding");
   
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -214,6 +218,24 @@ export default function EditProfile() {
       toast({
         title: "Update failed",
         description: error.message || "Could not update privacy setting",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateSoundMutation = useMutation({
+    mutationFn: (data: { notificationSound?: string; messageSound?: string }) => api.updateProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      toast({
+        title: "Sound updated",
+        description: "Your sound preference has been saved.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update failed",
+        description: error.message || "Could not update sound setting",
         variant: "destructive",
       });
     },
@@ -601,6 +623,83 @@ export default function EditProfile() {
             </RadioGroup>
             {updatePrivacyMutation.isPending && (
               <p className="text-xs text-muted-foreground mt-2">Saving...</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card/50 backdrop-blur-sm mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Volume2 className="h-5 w-5" />
+              Sound Settings
+            </CardTitle>
+            <CardDescription>Choose sounds for notifications and messages</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="notification-sound">Notification Sound</Label>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={notificationSound}
+                  onValueChange={(value) => {
+                    setNotificationSound(value);
+                    playNotificationSound(value as any);
+                    updateSoundMutation.mutate({ notificationSound: value });
+                  }}
+                >
+                  <SelectTrigger className="w-full" data-testid="select-notification-sound">
+                    <SelectValue placeholder="Select sound" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(notificationSoundLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => playNotificationSound(notificationSound as any)}
+                  data-testid="button-test-notification-sound"
+                >
+                  <Volume2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message-sound">Message Sound</Label>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={messageSound}
+                  onValueChange={(value) => {
+                    setMessageSound(value);
+                    playNotificationSound(value as any);
+                    updateSoundMutation.mutate({ messageSound: value });
+                  }}
+                >
+                  <SelectTrigger className="w-full" data-testid="select-message-sound">
+                    <SelectValue placeholder="Select sound" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(messageSoundLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => playNotificationSound(messageSound as any)}
+                  data-testid="button-test-message-sound"
+                >
+                  <Volume2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {updateSoundMutation.isPending && (
+              <p className="text-xs text-muted-foreground">Saving...</p>
             )}
           </CardContent>
         </Card>

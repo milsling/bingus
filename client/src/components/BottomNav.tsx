@@ -221,20 +221,16 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
       <AnimatePresence>
         {isOpen && (
           <div className="md:hidden">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="fixed inset-0 bg-black/70 z-40"
+            <div
+              className="fixed inset-0 bg-black/80 z-40"
               onClick={() => { playMenuCloseSound(); setIsOpen(false); }}
             />
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, delay: 0.05 }}
-              className="fixed inset-0 z-50 flex flex-col bg-white/[0.06] backdrop-blur-3xl"
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 flex flex-col bg-white/[0.08] backdrop-blur-2xl border-t border-white/[0.1]"
             >
               {/* Header with close button */}
               <div className="flex items-center justify-between px-6 pt-14 pb-4">

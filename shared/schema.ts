@@ -19,6 +19,8 @@ export const permissionStatusOptions = [
   "private",
 ] as const;
 export const messagePrivacyOptions = ["friends_only", "everyone"] as const;
+export const notificationSoundOptions = ["none", "chime", "pop", "bell", "whoosh"] as const;
+export const messageSoundOptions = ["none", "ding", "bubble", "soft", "alert"] as const;
 export const barTypeOptions = ["single_bar", "snippet", "half_verse"] as const;
 export const moderationStatusOptions = [
   "approved",
@@ -49,6 +51,8 @@ export const users = pgTable("users", {
   onlineStatus: text("online_status").notNull().default("offline"),
   lastSeenAt: timestamp("last_seen_at"),
   messagePrivacy: text("message_privacy").notNull().default("friends_only"),
+  notificationSound: text("notification_sound").notNull().default("chime"),
+  messageSound: text("message_sound").notNull().default("ding"),
   displayedBadges: text("displayed_badges").array(),
   xp: integer("xp").notNull().default(0),
   level: integer("level").notNull().default(1),
