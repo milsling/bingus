@@ -128,11 +128,11 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               onClick={() => setIsOpen(false)}
             />
             <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed inset-0 z-50 flex flex-col bg-white/[0.06] backdrop-blur-3xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-3xl"
             >
               {/* Header with close button */}
               <div className="flex items-center justify-between px-6 pt-14 pb-4">
