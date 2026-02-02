@@ -17,48 +17,71 @@ export default function AuthCallback() {
   useEffect(() => {
     async function handleCallback() {
       try {
+        console.log('[AuthCallback] Starting callback handling...');
+        console.log('[AuthCallback] Current URL:', window.location.href);
+        console.log('[AuthCallback] Hash:', window.location.hash);
+        
         const supabase = await getSupabase();
         if (!supabase) {
           setError("Authentication service unavailable");
           return;
         }
 
+        // First, let Supabase handle the hash fragment if present (OAuth redirects use hash)
+        if (window.location.hash) {
+          console.log('[AuthCallback] Hash detected, letting Supabase parse it...');
+          // Supabase auto-parses hash on page load, but we need to wait for it
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.log('[AuthCallback] Session result:', { session: !!session, error: sessionError?.message });
 
         if (sessionError) {
+          console.error('[AuthCallback] Session error:', sessionError);
           setError(sessionError.message);
           return;
         }
 
         if (session) {
+          console.log('[AuthCallback] Session found, calling backend...');
           const response = await fetch('/api/auth/supabase/oauth-callback', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${session.access_token}`,
             },
+            credentials: 'include',
             body: JSON.stringify({
               email: session.user.email,
               provider: session.user.app_metadata?.provider || 'oauth',
             }),
           });
 
+          console.log('[AuthCallback] Backend response status:', response.status);
+          
           if (!response.ok) {
             const errorData = await response.json();
+            console.error('[AuthCallback] Backend error:', errorData);
             setError(errorData.message || 'Failed to complete sign in');
             return;
           }
 
           const data = await response.json();
+          console.log('[AuthCallback] Backend data:', data);
+          
           if (data.needsUsername) {
             setNeedsUsername(true);
           } else {
-            setLocation("/");
+            // Force a page reload to refresh auth state
+            window.location.href = '/';
           }
         } else {
-          setError("No session found");
+          console.error('[AuthCallback] No session found');
+          setError("No session found. Please try signing in again.");
         }
       } catch (err: any) {
+        console.error('[AuthCallback] Error:', err);
         setError(err.message || "Something went wrong");
       }
     }
