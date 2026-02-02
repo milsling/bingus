@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -27,6 +27,35 @@ import AIAssistant from "@/components/AIAssistant";
 import orphanBarsMenuLogo from "@/assets/orphan-bars-menu-logo.png";
 import orphanageFullLogoWhite from "@/assets/orphanage-full-logo-white.png";
 import orphanageFullLogoDark from "@/assets/orphanage-full-logo-dark.png";
+
+// Modern UI sound effect using Web Audio API
+const playMenuSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Create a subtle "pop" sound
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Quick frequency sweep for a modern "pop" effect
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.08);
+    
+    // Volume envelope - quick attack, fast decay
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+    
+    oscillator.type = 'sine';
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.12);
+  } catch (e) {
+    // Silently fail if audio isn't supported
+  }
+};
 
 interface BottomNavProps {
   onNewMessage?: () => void;
@@ -110,6 +139,9 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
   };
 
   const handleCenterClick = () => {
+    if (!isOpen) {
+      playMenuSound();
+    }
     setIsOpen(!isOpen);
   };
 
