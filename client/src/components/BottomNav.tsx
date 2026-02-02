@@ -164,7 +164,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-3xl"
+              className="fixed inset-0 z-50 flex flex-col bg-black/80 backdrop-blur-3xl"
             >
               {/* Header with close button */}
               <div className="flex items-center justify-between px-6 pt-14 pb-4">
