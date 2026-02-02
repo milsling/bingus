@@ -199,50 +199,64 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 </nav>
 
                 {/* Section Switchers */}
-                <div className="mt-6 pt-6 border-t border-white/[0.08]">
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => {
-                        setMenuSection("orphanbars");
-                        handleNavClick("/");
-                      }}
-                      className={cn(
-                        "flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-[0.98]",
-                        menuSection === "orphanbars" 
-                          ? "bg-white/[0.12] border border-white/[0.15]" 
-                          : "bg-white/[0.05] hover:bg-white/[0.08]"
-                      )}
-                      data-testid="nav-section-orphanbars"
-                    >
+                <div className="mt-6 pt-6 border-t border-white/[0.08] space-y-1">
+                  <button
+                    onClick={() => {
+                      setMenuSection("orphanbars");
+                      handleNavClick("/");
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
+                      menuSection === "orphanbars" 
+                        ? "bg-white/[0.12] border border-white/[0.15]" 
+                        : "hover:bg-white/[0.06]"
+                    )}
+                    data-testid="nav-section-orphanbars"
+                  >
+                    <div className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center",
+                      menuSection === "orphanbars" ? "bg-white/[0.12]" : "bg-white/[0.06]"
+                    )}>
                       <img 
                         src={orphanBarsMenuLogo} 
                         alt="Orphan Bars" 
-                        className="h-6 w-auto brightness-0 invert opacity-80"
+                        className="h-6 w-auto brightness-0 invert"
                       />
-                      <span className="text-xs font-medium text-white/70">Orphan Bars</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        setMenuSection("orphanage");
-                        handleNavClick("/orphanage");
-                      }}
-                      className={cn(
-                        "flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-[0.98]",
-                        menuSection === "orphanage" 
-                          ? "bg-white/[0.12] border border-white/[0.15]" 
-                          : "bg-white/[0.05] hover:bg-white/[0.08]"
-                      )}
-                      data-testid="nav-section-orphanage"
-                    >
+                    </div>
+                    <span className={cn(
+                      "text-lg font-medium",
+                      menuSection === "orphanbars" ? "text-white" : "text-white/80"
+                    )}>Orphan Bars</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setMenuSection("orphanage");
+                      handleNavClick("/orphanage");
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
+                      menuSection === "orphanage" 
+                        ? "bg-white/[0.12] border border-white/[0.15]" 
+                        : "hover:bg-white/[0.06]"
+                    )}
+                    data-testid="nav-section-orphanage"
+                  >
+                    <div className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center",
+                      menuSection === "orphanage" ? "bg-white/[0.12]" : "bg-white/[0.06]"
+                    )}>
                       <img 
                         src={orphanageFullLogoWhite} 
                         alt="The Orphanage" 
-                        className="h-8 w-auto object-contain opacity-80"
+                        className="h-7 w-auto object-contain"
                       />
-                      <span className="text-xs font-medium text-white/70">The Orphanage</span>
-                    </button>
-                  </div>
+                    </div>
+                    <span className={cn(
+                      "text-lg font-medium",
+                      menuSection === "orphanage" ? "text-white" : "text-white/80"
+                    )}>The Orphanage</span>
+                  </button>
                 </div>
 
                 {/* Orphie AI Button */}
