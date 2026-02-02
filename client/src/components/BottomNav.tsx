@@ -152,16 +152,21 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               </div>
 
               {/* Navigation Items - Vertical List */}
-              <div className="flex-1 flex flex-col px-6 py-4 overflow-y-auto">
+              <motion.div 
+                className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1, duration: 0.2 }}
+              >
                 <nav className="space-y-1">
                   {navItems.map((item, index) => {
                     const isActive = item.path && location === item.path;
                     return (
                       <motion.button
                         key={item.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 + index * 0.03, duration: 0.2 }}
                         onClick={() => handleNavClick(item.path)}
                         className={cn(
                           "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
@@ -275,7 +280,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     <span className="text-lg font-medium text-white/90">Orphie AI</span>
                   </button>
                 )}
-              </div>
+              </motion.div>
 
               {/* Drop a Bar Button - Fixed at bottom */}
               {currentUser && (
