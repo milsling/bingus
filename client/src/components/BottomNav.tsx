@@ -28,28 +28,96 @@ import orphanBarsMenuLogo from "@/assets/orphan-bars-menu-logo.png";
 import orphanageFullLogoWhite from "@/assets/orphanage-full-logo-white.png";
 import orphanageFullLogoDark from "@/assets/orphanage-full-logo-dark.png";
 
-// Modern UI sound effect using Web Audio API
-const playMenuSound = () => {
+// Modern drawer slide sound effects using Web Audio API
+const playMenuOpenSound = () => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     
-    // Create a subtle "pop" sound
+    // Create a smooth "drawer slide open" whoosh
     const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.15, audioContext.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) {
+      noiseData[i] = (Math.random() * 2 - 1) * 0.3;
+    }
+    const noiseSource = audioContext.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    const noiseGain = audioContext.createGain();
+    const noiseFilter = audioContext.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(2000, audioContext.currentTime);
+    noiseFilter.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.12);
     
-    // Quick frequency sweep for a modern "pop" effect
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.08);
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioContext.destination);
     
-    // Volume envelope - quick attack, fast decay
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+    // Swoosh envelope - quick attack, smooth decay
+    noiseGain.gain.setValueAtTime(0, audioContext.currentTime);
+    noiseGain.gain.linearRampToValueAtTime(0.08, audioContext.currentTime + 0.02);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
     
+    // Add subtle tone underneath
+    const toneGain = audioContext.createGain();
+    oscillator.connect(toneGain);
+    toneGain.connect(audioContext.destination);
+    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(180, audioContext.currentTime + 0.12);
     oscillator.type = 'sine';
+    toneGain.gain.setValueAtTime(0, audioContext.currentTime);
+    toneGain.gain.linearRampToValueAtTime(0.04, audioContext.currentTime + 0.01);
+    toneGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+    
+    noiseSource.start(audioContext.currentTime);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.15);
+  } catch (e) {
+    // Silently fail if audio isn't supported
+  }
+};
+
+const playMenuCloseSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Create a softer "drawer slide close" sound - reverse characteristics
+    const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.12, audioContext.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) {
+      noiseData[i] = (Math.random() * 2 - 1) * 0.25;
+    }
+    const noiseSource = audioContext.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    
+    const noiseGain = audioContext.createGain();
+    const noiseFilter = audioContext.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(600, audioContext.currentTime);
+    noiseFilter.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.08);
+    
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioContext.destination);
+    
+    // Softer closing envelope
+    noiseGain.gain.setValueAtTime(0, audioContext.currentTime);
+    noiseGain.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.01);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+    
+    // Subtle closing tone - goes up slightly
+    const oscillator = audioContext.createOscillator();
+    const toneGain = audioContext.createGain();
+    oscillator.connect(toneGain);
+    toneGain.connect(audioContext.destination);
+    oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.08);
+    oscillator.type = 'sine';
+    toneGain.gain.setValueAtTime(0, audioContext.currentTime);
+    toneGain.gain.linearRampToValueAtTime(0.03, audioContext.currentTime + 0.01);
+    toneGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
+    
+    noiseSource.start(audioContext.currentTime);
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.12);
   } catch (e) {
@@ -140,7 +208,9 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
 
   const handleCenterClick = () => {
     if (!isOpen) {
-      playMenuSound();
+      playMenuOpenSound();
+    } else {
+      playMenuCloseSound();
     }
     setIsOpen(!isOpen);
   };
@@ -157,7 +227,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-2xl z-40"
-              onClick={() => setIsOpen(false)}
+              onClick={() => { playMenuCloseSound(); setIsOpen(false); }}
             />
             <motion.div
               initial={{ opacity: 0 }}
@@ -174,7 +244,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   className="h-8 w-auto brightness-0 invert opacity-90"
                 />
                 <motion.button
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => { playMenuCloseSound(); setIsOpen(false); }}
                   className="w-10 h-10 rounded-full bg-white/[0.08] border border-white/[0.12] flex items-center justify-center"
                   whileTap={{ scale: 0.9 }}
                   data-testid="button-close-menu"
