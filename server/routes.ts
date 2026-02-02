@@ -459,8 +459,14 @@ export async function registerRoutes(
         });
       }
 
-      const { password: _, ...userWithoutPassword } = appUser;
-      res.json(userWithoutPassword);
+      req.login(appUser, (err) => {
+        if (err) {
+          console.error('Login error:', err);
+          return res.status(500).json({ message: 'Failed to establish session' });
+        }
+        const { password: _, ...userWithoutPassword } = appUser;
+        res.json(userWithoutPassword);
+      });
     } catch (error: any) {
       console.error('OAuth callback error:', error);
       res.status(500).json({ message: error.message || 'Failed to complete sign in' });
@@ -496,8 +502,13 @@ export async function registerRoutes(
 
       const existingSupabaseUser = await storage.getUserBySupabaseId(supabaseUser.id);
       if (existingSupabaseUser) {
-        const { password: _, ...userWithoutPassword } = existingSupabaseUser;
-        return res.json(userWithoutPassword);
+        return req.login(existingSupabaseUser, (err) => {
+          if (err) {
+            return res.status(500).json({ message: 'Failed to establish session' });
+          }
+          const { password: _, ...userWithoutPassword } = existingSupabaseUser;
+          return res.json(userWithoutPassword);
+        });
       }
 
       const appUser = await storage.createUser({
@@ -507,8 +518,13 @@ export async function registerRoutes(
         supabaseId: supabaseUser.id,
       });
 
-      const { password: _, ...userWithoutPassword } = appUser;
-      res.json(userWithoutPassword);
+      req.login(appUser, (err) => {
+        if (err) {
+          return res.status(500).json({ message: 'Failed to establish session' });
+        }
+        const { password: _, ...userWithoutPassword } = appUser;
+        res.json(userWithoutPassword);
+      });
     } catch (error: any) {
       console.error('Complete signup error:', error);
       res.status(500).json({ message: error.message || 'Failed to create account' });
