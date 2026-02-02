@@ -699,13 +699,13 @@ export default function Auth() {
           <TabsList className="grid w-full grid-cols-2 bg-transparent p-0 h-14 border-b border-white/[0.06]">
             <TabsTrigger 
               value="login" 
-              className="h-full rounded-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
+              className="h-full rounded-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
             >
               Login
             </TabsTrigger>
             <TabsTrigger 
               value="signup" 
-              className="h-full rounded-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold"
+              className="h-full rounded-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
             >
               Create Account
             </TabsTrigger>

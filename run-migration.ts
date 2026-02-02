@@ -12,19 +12,19 @@ async function runMigration() {
     await client.connect();
     console.log('Connected to database');
     
-    // Verify columns exist
+    // Verify all user table columns
     const result = await client.query(`
       SELECT column_name, data_type, column_default 
       FROM information_schema.columns 
       WHERE table_name = 'users' 
-      AND column_name IN ('notification_sound', 'message_sound')
+      AND column_name IN ('notification_sound', 'message_sound', 'supabase_id')
       ORDER BY column_name;
     `);
     
-    console.log('✓ Migration verified successfully!');
-    console.log('\nColumns added:');
+    console.log('✓ Schema verified successfully!');
+    console.log('\nColumns in users table:');
     result.rows.forEach(row => {
-      console.log(`  - ${row.column_name}: ${row.data_type} (default: ${row.column_default})`);
+      console.log(`  - ${row.column_name}: ${row.data_type} (default: ${row.column_default || 'NULL'})`);
     });
   } catch (error) {
     console.error('Verification failed:', error);
