@@ -174,9 +174,16 @@
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
   }
   
-  /* Smooth scrolling */
+  /* Smooth scrolling with GPU acceleration */
   html {
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* GPU-accelerate scrollable containers */
+  body {
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   
   /* Better selection colors */
@@ -384,6 +391,8 @@ html.dark {
   -webkit-backdrop-filter: blur(40px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1.25rem;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .glass-panel-hover {
@@ -402,6 +411,8 @@ html.dark {
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Glass nav - navigation specific styling - super transparent */
@@ -410,6 +421,8 @@ html.dark {
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
   border: 1px solid rgba(255, 255, 255, 0.10);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Glass button - super transparent */
