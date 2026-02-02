@@ -261,7 +261,7 @@ export default function Orphanage() {
           </div>
 
           {!isLoading && topAdoptedBars.length > 0 && (
-            <div id="leaderboard" className="mb-8 p-4 rounded-xl border bg-card/50 scroll-mt-20" data-testid="leaderboard">
+            <div id="leaderboard" className="mb-8 p-4 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] scroll-mt-20" data-testid="leaderboard">
               <div className="flex items-center gap-2 mb-4">
                 <Trophy className="h-5 w-5 text-yellow-500" />
                 <h2 className="font-display font-bold text-lg">Most Adopted</h2>
@@ -300,7 +300,7 @@ export default function Orphanage() {
           )}
 
           {currentUser && myAdoptions.length > 0 && (
-            <div id="my-adoptions" className="mb-8 p-4 rounded-xl border bg-card/50 scroll-mt-20" data-testid="my-adoptions">
+            <div id="my-adoptions" className="mb-8 p-4 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] scroll-mt-20" data-testid="my-adoptions">
               <div className="flex items-center gap-2 mb-4">
                 <Heart className="h-5 w-5 text-pink-500" />
                 <h2 className="font-display font-bold text-lg">My Adoptions</h2>
@@ -343,7 +343,7 @@ export default function Orphanage() {
           ) : (
             <div className="space-y-6">
               {adoptableBars.map((bar: any) => (
-                <div key={bar.id} id={`bar-${bar.id}`} className="rounded-xl border bg-card overflow-hidden shadow-sm scroll-mt-20">
+                <div key={bar.id} id={`bar-${bar.id}`} className="rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] overflow-hidden scroll-mt-20">
                   <BarCard bar={bar} />
                   <AdoptionPanel bar={bar} />
                 </div>
