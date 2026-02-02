@@ -1,13 +1,12 @@
-const CACHE_NAME = 'orphan-bars-v1';
+const CACHE_NAME = 'orphan-bars-v2';
 const STATIC_ASSETS = [
-  '/',
   '/manifest.json',
   '/apple-touch-icon.png',
   '/logo.png',
   '/favicon.png',
 ];
 
-const API_CACHE_NAME = 'orphan-bars-api-v1';
+const API_CACHE_NAME = 'orphan-bars-api-v2';
 const API_CACHE_DURATION = 5 * 60 * 1000;
 
 self.addEventListener('install', (event) => {
