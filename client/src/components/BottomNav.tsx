@@ -53,21 +53,21 @@ const playMenuOpenSound = () => {
     noiseFilter.connect(noiseGain);
     noiseGain.connect(audioContext.destination);
     
-    // Swoosh envelope - quick attack, smooth decay
+    // Swoosh envelope - softer attack, smooth decay
     noiseGain.gain.setValueAtTime(0, audioContext.currentTime);
-    noiseGain.gain.linearRampToValueAtTime(0.08, audioContext.currentTime + 0.02);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+    noiseGain.gain.linearRampToValueAtTime(0.06, audioContext.currentTime + 0.06);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.18);
     
-    // Add subtle tone underneath
+    // Add subtle tone underneath - also softer attack
     const toneGain = audioContext.createGain();
     oscillator.connect(toneGain);
     toneGain.connect(audioContext.destination);
-    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(180, audioContext.currentTime + 0.12);
+    oscillator.frequency.setValueAtTime(280, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(160, audioContext.currentTime + 0.15);
     oscillator.type = 'sine';
     toneGain.gain.setValueAtTime(0, audioContext.currentTime);
-    toneGain.gain.linearRampToValueAtTime(0.04, audioContext.currentTime + 0.01);
-    toneGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+    toneGain.gain.linearRampToValueAtTime(0.03, audioContext.currentTime + 0.04);
+    toneGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
     
     noiseSource.start(audioContext.currentTime);
     oscillator.start(audioContext.currentTime);
