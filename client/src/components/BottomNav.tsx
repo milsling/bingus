@@ -115,7 +115,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
 
   return (
     <>
-      {/* Mobile Menu Popup - Glass Style */}
+      {/* Fullscreen Menu - Glass Style */}
       <AnimatePresence>
         {isOpen && (
           <div className="md:hidden">
@@ -123,144 +123,162 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-md z-40"
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-2xl z-40"
               onClick={() => setIsOpen(false)}
             />
             <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-              className="fixed bottom-24 left-3 right-3 z-50 bg-white/[0.08] backdrop-blur-3xl rounded-[24px] border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.2)] overflow-hidden"
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed inset-0 z-50 flex flex-col bg-white/[0.06] backdrop-blur-3xl"
             >
-              <div className="flex">
-                <div className="flex flex-col w-[120px] shrink-0 border-r border-white/[0.1]">
-                  <button
-                    onClick={() => {
-                      setMenuSection("orphanbars");
-                      handleNavClick("/");
-                    }}
-                    className={cn(
-                      "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95",
-                      menuSection === "orphanbars" 
-                        ? "bg-white/[0.10]" 
-                        : "hover:bg-white/[0.06]"
-                    )}
-                    data-testid="nav-section-orphanbars"
-                  >
-                    <img 
-                      src={orphanBarsMenuLogo} 
-                      alt="Orphan Bars" 
-                      className={cn(
-                        "h-8 w-auto transition-all mb-1 brightness-0 invert",
-                        menuSection === "orphanbars" ? "opacity-100" : "opacity-60"
-                      )}
-                    />
-                    <span 
-                      className={cn(
-                        "text-[10px] font-medium transition-colors",
-                        menuSection === "orphanbars" ? "text-white" : "text-white/60"
-                      )} 
-                      style={{ fontFamily: 'var(--font-logo)' }}
-                    >ORPHAN BARS</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      setMenuSection("orphanage");
-                      handleNavClick("/orphanage");
-                    }}
-                    className={cn(
-                      "flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 border-t border-white/[0.08]",
-                      menuSection === "orphanage" 
-                        ? "bg-white/[0.10]" 
-                        : "hover:bg-white/[0.06]"
-                    )}
-                    data-testid="nav-section-orphanage"
-                  >
-                    <img 
-                      src={orphanageFullLogoWhite} 
-                      alt="The Orphanage" 
-                      className={cn(
-                        "h-12 w-auto object-contain transition-all",
-                        menuSection !== "orphanage" && "opacity-60"
-                      )}
-                    />
-                  </button>
-                  
-                  {currentUser && (
+              {/* Header with close button */}
+              <div className="flex items-center justify-between px-6 pt-14 pb-4">
+                <img 
+                  src={orphanBarsMenuLogo} 
+                  alt="Orphan Bars" 
+                  className="h-8 w-auto brightness-0 invert opacity-90"
+                />
+                <motion.button
+                  onClick={() => setIsOpen(false)}
+                  className="w-10 h-10 rounded-full bg-white/[0.08] border border-white/[0.12] flex items-center justify-center"
+                  whileTap={{ scale: 0.9 }}
+                  data-testid="button-close-menu"
+                >
+                  <X className="w-5 h-5 text-white" strokeWidth={2} />
+                </motion.button>
+              </div>
+
+              {/* Navigation Items - Vertical List */}
+              <div className="flex-1 flex flex-col px-6 py-4 overflow-y-auto">
+                <nav className="space-y-1">
+                  {navItems.map((item, index) => {
+                    const isActive = item.path && location === item.path;
+                    return (
+                      <motion.button
+                        key={item.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        onClick={() => handleNavClick(item.path)}
+                        className={cn(
+                          "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
+                          isActive 
+                            ? "bg-white/[0.12] border border-white/[0.15]" 
+                            : "hover:bg-white/[0.06]"
+                        )}
+                        data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
+                      >
+                        <div className={cn(
+                          "w-12 h-12 rounded-xl flex items-center justify-center",
+                          isActive ? "bg-white/[0.12]" : "bg-white/[0.06]"
+                        )}>
+                          {item.icon && (
+                            <item.icon className={cn(
+                              "w-6 h-6",
+                              isActive ? "text-white" : "text-white/70"
+                            )} strokeWidth={1.8} />
+                          )}
+                        </div>
+                        <span className={cn(
+                          "text-lg font-medium",
+                          isActive ? "text-white" : "text-white/80"
+                        )}>
+                          {item.label}
+                        </span>
+                        {item.badge && item.badge > 0 && (
+                          <span className="ml-auto px-2.5 py-1 rounded-full bg-red-500/90 text-white text-xs font-medium">
+                            {item.badge}
+                          </span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </nav>
+
+                {/* Section Switchers */}
+                <div className="mt-6 pt-6 border-t border-white/[0.08]">
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => {
-                        setIsOpen(false);
-                        setOrphieOpen(true);
+                        setMenuSection("orphanbars");
+                        handleNavClick("/");
                       }}
-                      className="flex-1 flex flex-col items-center justify-center px-3 py-4 transition-all active:scale-95 bg-white/[0.05] hover:bg-white/[0.08] border-t border-white/[0.08]"
-                      data-testid="nav-section-orphie"
+                      className={cn(
+                        "flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-[0.98]",
+                        menuSection === "orphanbars" 
+                          ? "bg-white/[0.12] border border-white/[0.15]" 
+                          : "bg-white/[0.05] hover:bg-white/[0.08]"
+                      )}
+                      data-testid="nav-section-orphanbars"
                     >
-                      <Sparkles className="h-5 w-5 text-purple-300 mb-1" />
-                      <span className="text-[10px] font-medium text-white/80">Orphie AI</span>
+                      <img 
+                        src={orphanBarsMenuLogo} 
+                        alt="Orphan Bars" 
+                        className="h-6 w-auto brightness-0 invert opacity-80"
+                      />
+                      <span className="text-xs font-medium text-white/70">Orphan Bars</span>
                     </button>
-                  )}
-                </div>
-                
-                <div className="flex-1 flex flex-col">
-                  <div className="grid grid-cols-2 gap-2 p-3 flex-1">
-                    {navItems.map((item) => {
-                      const isActive = item.path && location === item.path;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleNavClick(item.path)}
-                          className={cn(
-                            "flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95",
-                            isActive 
-                              ? "bg-white/[0.10]" 
-                              : "hover:bg-white/[0.05]"
-                          )}
-                          data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
-                        >
-                          <div className={cn(
-                            "relative w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                            isActive 
-                              ? "bg-white/[0.12]" 
-                              : "bg-white/[0.05]"
-                          )}>
-                            {item.icon && (
-                              <item.icon className={cn(
-                                "w-5 h-5",
-                                isActive ? "text-white" : "text-white/70"
-                              )} strokeWidth={1.8} />
-                            )}
-                            {item.badge && item.badge > 0 && (
-                              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500" />
-                            )}
-                          </div>
-                          <span className={cn(
-                            "text-[11px] font-medium",
-                            isActive ? "text-white" : "text-white/60"
-                          )}>
-                            {item.label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  
-                  {currentUser && (
+                    
                     <button
-                      onClick={() => handleNavClick("/post")}
-                      className="m-3 mt-0 p-3.5 rounded-2xl bg-white/[0.10] hover:bg-white/[0.15] border border-white/[0.12] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                      data-testid="nav-item-drop-bar-main"
+                      onClick={() => {
+                        setMenuSection("orphanage");
+                        handleNavClick("/orphanage");
+                      }}
+                      className={cn(
+                        "flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-[0.98]",
+                        menuSection === "orphanage" 
+                          ? "bg-white/[0.12] border border-white/[0.15]" 
+                          : "bg-white/[0.05] hover:bg-white/[0.08]"
+                      )}
+                      data-testid="nav-section-orphanage"
                     >
-                      <Plus className="w-5 h-5 text-white" strokeWidth={2} />
-                      <span 
-                        className="text-base text-white font-medium"
-                        style={{ fontFamily: 'var(--font-logo)' }}
-                      >Drop a Bar</span>
+                      <img 
+                        src={orphanageFullLogoWhite} 
+                        alt="The Orphanage" 
+                        className="h-8 w-auto object-contain opacity-80"
+                      />
+                      <span className="text-xs font-medium text-white/70">The Orphanage</span>
                     </button>
-                  )}
+                  </div>
                 </div>
+
+                {/* Orphie AI Button */}
+                {currentUser && (
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      setOrphieOpen(true);
+                    }}
+                    className="mt-4 w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/20 transition-all active:scale-[0.98]"
+                    data-testid="nav-section-orphie"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                      <Sparkles className="h-6 w-6 text-purple-300" />
+                    </div>
+                    <span className="text-lg font-medium text-white/90">Orphie AI</span>
+                  </button>
+                )}
               </div>
+
+              {/* Drop a Bar Button - Fixed at bottom */}
+              {currentUser && (
+                <div className="px-6 pb-8 pt-4">
+                  <button
+                    onClick={() => handleNavClick("/post")}
+                    className="w-full p-4 rounded-2xl bg-white/[0.12] hover:bg-white/[0.16] border border-white/[0.15] transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                    data-testid="nav-item-drop-bar-main"
+                  >
+                    <Plus className="w-6 h-6 text-white" strokeWidth={2} />
+                    <span 
+                      className="text-lg text-white font-semibold"
+                      style={{ fontFamily: 'var(--font-logo)' }}
+                    >Drop a Bar</span>
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
         )}
@@ -329,7 +347,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 <motion.button
                   onClick={handleCenterClick}
                   className={cn(
-                    "w-14 h-14 rounded-2xl",
+                    "w-14 h-14 rounded-full",
                     "bg-white/[0.12]",
                     "backdrop-blur-xl",
                     "flex items-center justify-center",
