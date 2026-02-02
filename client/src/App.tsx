@@ -25,6 +25,7 @@ import Badges from "@/pages/Badges";
 import Apps from "@/pages/Apps";
 import Notebook from "@/pages/Notebook";
 import RhymeDictionary from "@/pages/RhymeDictionary";
+import AuthCallback from "@/pages/AuthCallback";
 import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
@@ -52,6 +53,7 @@ function Router() {
         <Switch location={location}>
           <Route path="/" component={Home} />
           <Route path="/auth" component={Auth} />
+          <Route path="/auth/callback" component={AuthCallback} />
           <Route path="/post" component={Post} />
           <Route path="/profile" component={Profile} />
           <Route path="/profile/edit" component={EditProfile} />
