@@ -56,6 +56,7 @@ export const users = pgTable("users", {
   dailyXpLikes: integer("daily_xp_likes").notNull().default(0),
   dailyXpComments: integer("daily_xp_comments").notNull().default(0),
   dailyXpBookmarks: integer("daily_xp_bookmarks").notNull().default(0),
+  supabaseId: text("supabase_id"),
 });
 
 export const verificationCodes = pgTable("verification_codes", {
