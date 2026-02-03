@@ -461,7 +461,7 @@ export async function registerRoutes(
 
       req.login(appUser, (err) => {
         if (err) {
-          console.error('Login error:', err);
+          console.error('OAuth callback - Login error:', err);
           return res.status(500).json({ message: 'Failed to establish session' });
         }
         const { password: _, ...userWithoutPassword } = appUser;
@@ -504,6 +504,7 @@ export async function registerRoutes(
       if (existingSupabaseUser) {
         return req.login(existingSupabaseUser, (err) => {
           if (err) {
+            console.error('Complete signup - Login error for existing user:', err);
             return res.status(500).json({ message: 'Failed to establish session' });
           }
           const { password: _, ...userWithoutPassword } = existingSupabaseUser;
@@ -520,6 +521,7 @@ export async function registerRoutes(
 
       req.login(appUser, (err) => {
         if (err) {
+          console.error('Complete signup - Login error for new user:', err);
           return res.status(500).json({ message: 'Failed to establish session' });
         }
         const { password: _, ...userWithoutPassword } = appUser;

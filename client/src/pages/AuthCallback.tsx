@@ -27,11 +27,28 @@ export default function AuthCallback() {
           return;
         }
 
-        // First, let Supabase handle the hash fragment if present (OAuth redirects use hash)
+        // Instead of waiting for a fixed timeout, listen for auth state change
         if (window.location.hash) {
-          console.log('[AuthCallback] Hash detected, letting Supabase parse it...');
-          // Supabase auto-parses hash on page load, but we need to wait for it
-          await new Promise(resolve => setTimeout(resolve, 500));
+          console.log('[AuthCallback] Hash detected, waiting for Supabase to parse it...');
+          
+          // Set up a listener for auth state changes with a timeout
+          const authPromise = new Promise<boolean>((resolve) => {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+              console.log('[AuthCallback] Auth state changed:', event, !!session);
+              if (event === 'SIGNED_IN' && session) {
+                subscription.unsubscribe();
+                resolve(true);
+              }
+            });
+            
+            // Fallback timeout in case the event doesn't fire
+            setTimeout(() => {
+              subscription.unsubscribe();
+              resolve(false);
+            }, 3000);
+          });
+          
+          await authPromise;
         }
 
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
