@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage, generateProofHash } from "./storage";
-import { setupAuth, isAuthenticated, hashPassword, sessionParser } from "./auth";
+import { setupAuth, isAuthenticated, hashPassword, sessionParser, OAUTH_ONLY_PASSWORD_SENTINEL } from "./auth";
 import { bars, likes, users } from "@shared/schema";
 import { db } from "./db";
 import { eq, count, sql } from "drizzle-orm";
@@ -513,7 +513,7 @@ export async function registerRoutes(
 
       const appUser = await storage.createUser({
         username,
-        password: '',
+        password: OAUTH_ONLY_PASSWORD_SENTINEL,
         email: supabaseUser.email || '',
         supabaseId: supabaseUser.id,
       });
@@ -556,7 +556,7 @@ export async function registerRoutes(
 
       const appUser = await storage.createUser({
         username,
-        password: '',
+        password: OAUTH_ONLY_PASSWORD_SENTINEL,
         email: supabaseUser.email || '',
         supabaseId: supabaseUser.id,
       });
@@ -584,7 +584,7 @@ export async function registerRoutes(
 
       const appUser = await storage.createUser({
         username,
-        password: '',
+        password: OAUTH_ONLY_PASSWORD_SENTINEL,
         email,
         supabaseId,
         isGuest: false,
