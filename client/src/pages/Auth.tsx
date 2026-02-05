@@ -154,7 +154,7 @@ export default function Auth() {
       const isEmail = username.includes('@');
       
       if (isEmail) {
-        // Use email-based login
+        // Use email-based login - navigate with setLocation for consistency
         const response = await fetch("/api/auth/login-with-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -173,8 +173,7 @@ export default function Auth() {
           title: "Welcome back!",
           description: `Logged in as ${user.username}`,
         });
-        // Force page reload to update user context
-        window.location.href = "/";
+        setLocation("/");
       } else {
         // Use regular username-based login
         await login(username, password, rememberMe);

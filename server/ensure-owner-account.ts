@@ -1,13 +1,29 @@
 /**
- * Script to ensure the owner account (Milsling) exists with the correct email
+ * Script to ensure the owner account exists with the correct email
+ * 
+ * Environment variables required:
+ * - OWNER_EMAIL: The owner's email address (default: from env or trevorjpiccone@gmail.com)
+ * - OWNER_USERNAME: The owner's username (default: Milsling)
  */
 import { db } from "./db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "./auth";
+import { randomBytes } from "crypto";
 
-const OWNER_USERNAME = "Milsling";
-const OWNER_EMAIL = "trevorjpiccone@gmail.com";
+const OWNER_USERNAME = process.env.OWNER_USERNAME || "Milsling";
+const OWNER_EMAIL = process.env.OWNER_EMAIL || "trevorjpiccone@gmail.com";
+
+// Generate a secure random password
+function generateSecurePassword(length: number = 16): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*';
+  const randomValues = randomBytes(length);
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += chars[randomValues[i] % chars.length];
+  }
+  return password;
+}
 
 async function ensureOwnerAccount() {
   try {
@@ -66,14 +82,15 @@ async function ensureOwnerAccount() {
     
     // Create new owner account
     console.log("Creating new owner account...");
-    const tempPassword = await hashPassword("ChangeMe123!"); // User must change on first login
+    const tempPassword = generateSecurePassword(16);
+    const hashedPassword = await hashPassword(tempPassword);
     
     const [newUser] = await db
       .insert(users)
       .values({
         username: OWNER_USERNAME,
         email: OWNER_EMAIL,
-        password: tempPassword,
+        password: hashedPassword,
         bio: "Creator of orphanbars.com!",
         location: "Seattle, WA",
         isOwner: true,
@@ -85,8 +102,9 @@ async function ensureOwnerAccount() {
     console.log("✓ Owner account created successfully");
     console.log(`  Username: ${newUser.username}`);
     console.log(`  Email: ${newUser.email}`);
-    console.log(`  Temporary password: ChangeMe123!`);
-    console.log("  IMPORTANT: Please change this password immediately!");
+    console.log(`  Temporary password: ${tempPassword}`);
+    console.log("  ⚠️  IMPORTANT: Save this password securely and change it immediately after first login!");
+    console.log("  ⚠️  This password will NOT be displayed again!");
     
   } catch (error) {
     console.error("Error ensuring owner account:", error);
