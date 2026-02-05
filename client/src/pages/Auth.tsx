@@ -150,8 +150,11 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      // Check if username field contains an email (has @ symbol)
-      const isEmail = username.includes('@');
+      // Check if username field contains an email
+      // Simple check: has @ and at least one character before and after it
+      const isEmail = username.includes('@') && 
+                      username.indexOf('@') > 0 && 
+                      username.indexOf('@') < username.length - 1;
       
       if (isEmail) {
         // Use email-based login - navigate with setLocation for consistency
@@ -778,9 +781,9 @@ export default function Auth() {
                     </div>
                   )}
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Username or Email</Label>
+                    <Label htmlFor="login-username-or-email">Username or Email</Label>
                     <Input 
-                      id="login-email" 
+                      id="login-username-or-email" 
                       data-testid="input-login-email"
                       type="text"
                       placeholder="username or email@example.com"

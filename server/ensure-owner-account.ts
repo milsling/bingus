@@ -2,8 +2,11 @@
  * Script to ensure the owner account exists with the correct email
  * 
  * Environment variables required:
- * - OWNER_EMAIL: The owner's email address (default: from env or trevorjpiccone@gmail.com)
+ * - OWNER_EMAIL: The owner's email address (REQUIRED for production use)
  * - OWNER_USERNAME: The owner's username (default: Milsling)
+ * 
+ * Note: A default email is provided for development/testing only.
+ * In production, always set OWNER_EMAIL environment variable.
  */
 import { db } from "./db";
 import { users } from "@shared/schema";
@@ -12,9 +15,17 @@ import { hashPassword } from "./auth";
 import { randomBytes } from "crypto";
 
 const OWNER_USERNAME = process.env.OWNER_USERNAME || "Milsling";
+// Default email for development only - MUST be overridden in production
 const OWNER_EMAIL = process.env.OWNER_EMAIL || "trevorjpiccone@gmail.com";
 
+if (!process.env.OWNER_EMAIL) {
+  console.warn("⚠️  OWNER_EMAIL not set. Using default development email.");
+  console.warn("⚠️  For production, set OWNER_EMAIL environment variable.");
+}
+
 // Generate a secure random password
+// Note: Excludes ambiguous characters (I, l, 1, O, 0) for better readability
+// while maintaining strong entropy (16 characters from 52-char set = ~94 bits)
 function generateSecurePassword(length: number = 16): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*';
   const randomValues = randomBytes(length);
