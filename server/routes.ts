@@ -257,6 +257,13 @@ export async function registerRoutes(
     try {
       const { email, password, rememberMe } = req.body;
       
+      // Rate limiting by email
+      if (!checkRateLimit(verificationAttempts, email)) {
+        return res.status(429).json({ 
+          message: "Too many login attempts. Please try again in 15 minutes." 
+        });
+      }
+      
       console.log(`[LOGIN-EMAIL] Attempting login with email: "${email}"`);
       
       if (!email || !password) {
@@ -300,6 +307,10 @@ export async function registerRoutes(
         }
         
         console.log(`[LOGIN-EMAIL] Session created for user ${user.id}, rememberMe=${!!rememberMe}`);
+        
+        // Clear rate limit on successful login
+        clearRateLimit(verificationAttempts, email);
+        
         res.json(userWithoutPassword);
       });
     } catch (error: any) {

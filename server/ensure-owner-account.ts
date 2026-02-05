@@ -23,16 +23,28 @@ if (!process.env.OWNER_EMAIL) {
   console.warn("⚠️  For production, set OWNER_EMAIL environment variable.");
 }
 
-// Generate a secure random password
+// Generate a secure random password without modulo bias
+// Uses rejection sampling to avoid biased distribution
 // Note: Excludes ambiguous characters (I, l, 1, O, 0) for better readability
 // while maintaining strong entropy (16 characters from 52-char set = ~94 bits)
 function generateSecurePassword(length: number = 16): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*';
-  const randomValues = randomBytes(length);
+  const charsetLength = chars.length;
   let password = '';
-  for (let i = 0; i < length; i++) {
-    password += chars[randomValues[i] % chars.length];
+  
+  // Use rejection sampling to avoid modulo bias
+  const maxValid = 256 - (256 % charsetLength);
+  
+  while (password.length < length) {
+    const randomBytes_ = randomBytes(1);
+    const randomValue = randomBytes_[0];
+    
+    // Reject values that would cause bias
+    if (randomValue < maxValid) {
+      password += chars[randomValue % charsetLength];
+    }
   }
+  
   return password;
 }
 
