@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import Navigation from "@/components/Navigation";
 
 const RAP_USERNAMES = [
   "SpitFire_99",
@@ -659,8 +660,10 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4">
-      <div className="flex-1 flex flex-col items-center justify-center">
+    <>
+      <Navigation />
+      <div className="min-h-screen flex flex-col p-4">
+        <div className="flex-1 flex flex-col items-center justify-center">
         <div className="mb-8 text-center space-y-2">
           <Link href="/">
             <div className="flex items-center justify-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
@@ -877,7 +880,8 @@ export default function Auth() {
       <p className="mt-8 text-center text-sm text-muted-foreground">
         By continuing, you agree to our <Link href="/terms" className="underline cursor-pointer hover:text-primary">Terms of Service</Link> and <Link href="/guidelines" className="underline cursor-pointer hover:text-primary">Community Guidelines</Link>.
       </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
