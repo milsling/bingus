@@ -150,13 +150,41 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      await login(username, password, rememberMe);
-      saveAccountToStorage(username);
-      toast({
-        title: "Welcome back!",
-        description: "You're now logged in.",
-      });
-      setLocation("/");
+      // Check if username field contains an email (has @ symbol)
+      const isEmail = username.includes('@');
+      
+      if (isEmail) {
+        // Use email-based login
+        const response = await fetch("/api/auth/login-with-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email: username, password, rememberMe }),
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Login failed");
+        }
+        
+        const user = await response.json();
+        saveAccountToStorage(user.username);
+        toast({
+          title: "Welcome back!",
+          description: `Logged in as ${user.username}`,
+        });
+        // Force page reload to update user context
+        window.location.href = "/";
+      } else {
+        // Use regular username-based login
+        await login(username, password, rememberMe);
+        saveAccountToStorage(username);
+        toast({
+          title: "Welcome back!",
+          description: "You're now logged in.",
+        });
+        setLocation("/");
+      }
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -751,12 +779,12 @@ export default function Auth() {
                     </div>
                   )}
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label htmlFor="login-email">Username or Email</Label>
                     <Input 
                       id="login-email" 
                       data-testid="input-login-email"
-                      type="email"
-                      placeholder="you@example.com"
+                      type="text"
+                      placeholder="username or email@example.com"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required 

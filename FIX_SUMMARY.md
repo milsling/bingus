@@ -40,11 +40,20 @@ NODE_ENV=production npx tsx server/ensure-owner-account.ts
 - Login uses Passport.js with LocalStrategy for username/password authentication
 - Sessions are stored in PostgreSQL with 30-day expiration
 - The production database already contains the Milsling user with email `trevorjpiccone@gmail.com`
+- **NEW:** Login form now accepts either username OR email for convenience
 
-**Password Hash in Production DB:**
-```
-2fae6c6290e6337804b5d62a52f70c043a8acee7eaeb8f4c6c25ab408af6577ce42a8253ec601108ced98cfeceb6bc15328a8df03eb184437ae8aebbbbddd74a.810ac0e93d4133ebebfa5734b6629e31
-```
+**New Feature: Email-Based Login**
+- Users can now log in using their email address instead of username
+- The system automatically detects whether you entered an email (contains @) or username
+- This is especially helpful if you forgot your username but remember your email
+
+**To log in with email:**
+1. Go to `/auth`
+2. In the "Username or Email" field, enter: `trevorjpiccone@gmail.com`
+3. Enter your password
+4. Click "Sign In"
+
+The system will automatically use the email-based login endpoint.
 
 ## Testing Instructions
 
@@ -101,6 +110,7 @@ Navigation.tsx (renders on all pages via page components)
 ### Authentication Endpoints
 
 - `POST /api/auth/login` - Username/password login
+- `POST /api/auth/login-with-email` - **NEW:** Email/password login
 - `POST /api/auth/signup` - Email verification signup flow
 - `POST /api/auth/signup-simple` - Quick signup without email verification
 - `POST /api/auth/supabase/complete-signup` - OAuth completion
@@ -118,8 +128,12 @@ Key fields for owner account:
 
 ## Files Modified
 
-1. `client/src/pages/Auth.tsx` - Added Navigation component
-2. `server/ensure-owner-account.ts` - New script for owner account management
+1. **client/src/pages/Auth.tsx** - Added Navigation component, email/username detection for login
+2. **client/src/lib/api.ts** - Added loginWithEmail function  
+3. **server/routes.ts** - Added /api/auth/login-with-email endpoint, imported comparePasswords
+4. **server/ensure-owner-account.ts** - New script for owner account management
+5. **server/email-login.ts** - Standalone email login module (reference only)
+6. **FIX_SUMMARY.md** - This documentation file
 
 ## Next Steps
 

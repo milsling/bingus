@@ -87,6 +87,15 @@ export const api = {
     return handleResponse<User>(response);
   },
 
+  loginWithEmail: async (email: string, password: string, rememberMe?: boolean): Promise<User> => {
+    const response = await apiFetch('/api/auth/login-with-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, rememberMe }),
+    });
+    return handleResponse<User>(response);
+  },
+
   logout: async (): Promise<{ message: string }> => {
     const response = await apiFetch('/api/auth/logout', {
       method: 'POST',
