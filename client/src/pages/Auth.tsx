@@ -748,12 +748,12 @@ export default function Auth() {
                     </div>
                   )}
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label htmlFor="login-email">Email or Username</Label>
                     <Input 
                       id="login-email" 
                       data-testid="input-login-email"
-                      type="email"
-                      placeholder="you@example.com"
+                      type="text"
+                      placeholder="you@example.com or username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required 

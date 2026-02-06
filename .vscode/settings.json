@@ -1,3 +1,57 @@
 {
-    "livePreview.tasks.runTaskWithExternalPreview": true
+    "livePreview.tasks.runTaskWithExternalPreview": true,
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "Supabase",
+            "connectString": "psql -h db.gcbfcbumlgfzzqioyotq.supabase.co -p 5432 -d postgres -U postgres"
+        },
+        {
+            "connectionTimeout": 15,
+            "mssqlOptions": {
+                "appName": "SQLTools",
+                "useUTC": true,
+                "encrypt": true,
+                "trustServerCertificate": false
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "MSSQL",
+            "connectString": "psql -h aws-1-us-east-1.pooler.supabase.com -p 5432 -d postgres -U postgres.gcbfcbumlgfzzqioyotq",
+            "name": "aws-1-us-east-1.pooler.supabase.com"
+        },
+        {
+            "connectionTimeout": 15,
+            "mssqlOptions": {
+                "appName": "SQLTools",
+                "useUTC": true,
+                "encrypt": true,
+                "trustServerCertificate": false
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "MSSQL",
+            "connectString": "postgresql://postgres.gcbfcbumlgfzzqioyotq:%5BFuckityShit56%5D@aws-1-us-east-1.pooler.supabase.com:5432/postgres",
+            "name": "Postgres"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "aws-1-us-east-1.pooler.supabase.com",
+            "port": 5432,
+            "driver": "MySQL",
+            "database": "postgres",
+            "username": "postgres.gcbfcbumlgfzzqioyotq",
+            "name": "supabase"
+        }
+    ]
 }
