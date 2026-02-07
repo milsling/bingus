@@ -60,7 +60,7 @@ ALTER TABLE ai_review_requests ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "ai_review_requests_select_own"
 ON ai_review_requests FOR SELECT
 USING (
-  auth.uid() = user_id
+  auth.uid()::text = user_id
   OR EXISTS (
     SELECT 1 FROM users
     WHERE users.id = auth.uid()::text
@@ -72,18 +72,18 @@ USING (
 CREATE POLICY "ai_review_requests_insert_own"
 ON ai_review_requests FOR INSERT
 WITH CHECK (
-  auth.uid() = user_id
+  auth.uid()::text = user_id
 );
 
 -- Users can update their own requests (before review)
 CREATE POLICY "ai_review_requests_update_own"
 ON ai_review_requests FOR UPDATE
 USING (
-  auth.uid() = user_id
+  auth.uid()::text = user_id
   AND status = 'pending'
 )
 WITH CHECK (
-  auth.uid() = user_id
+  auth.uid()::text = user_id
   AND status = 'pending'
 );
 
@@ -372,33 +372,9 @@ CREATE POLICY "sessions_delete_public"
 ON sessions FOR DELETE
 USING (true);
 
--- ============================================================================
--- 11. SITE_SETTINGS - Public read, owner only write
--- ============================================================================
-ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
-
--- Anyone can read site settings (affects public display)
-CREATE POLICY "site_settings_select_public"
-ON site_settings FOR SELECT
-USING (true);
-
--- Only owner can update site settings
-CREATE POLICY "site_settings_update_owner"
-ON site_settings FOR UPDATE
-USING (
-  EXISTS (
-    SELECT 1 FROM users
-    WHERE users.id = auth.uid()::text
-    AND users.is_owner
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM users
-    WHERE users.id = auth.uid()::text
-    AND users.is_owner
-  )
-);
+-- ==========================================================================
+-- 11. SITE_SETTINGS - Skipped (table not present in this schema)
+-- ==========================================================================
 
 -- ============================================================================
 -- 12. USERS - Public read, authenticated update own, admin full control
@@ -737,9 +713,121 @@ USING (
 -- ✅ likes (public read, user create own)
 -- ✅ maintenance_status (public read, owner write)
 -- ✅ notifications (user private)
+-- ============================================================================
+-- 21. ADOPTIONS - Backend only
+-- ============================================================================
+ALTER TABLE adoptions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "adoptions_select_public" ON adoptions FOR SELECT USING (true);
+CREATE POLICY "adoptions_insert_backend" ON adoptions FOR INSERT WITH CHECK (auth.role() = 'service_role');
+
+-- ============================================================================
+-- 22. COMMENT_LIKES - Users like/unlike comments
+-- ============================================================================
+ALTER TABLE comment_likes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "comment_likes_select_public" ON comment_likes FOR SELECT USING (true);
+CREATE POLICY "comment_likes_insert_own" ON comment_likes FOR INSERT WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "comment_likes_delete_own" ON comment_likes FOR DELETE USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 23. COMMENT_DISLIKES - Users dislike comments
+-- ============================================================================
+ALTER TABLE comment_dislikes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "comment_dislikes_select_public" ON comment_dislikes FOR SELECT USING (true);
+CREATE POLICY "comment_dislikes_insert_own" ON comment_dislikes FOR INSERT WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "comment_dislikes_delete_own" ON comment_dislikes FOR DELETE USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 24. DISLIKES - Users dislike bars  
+-- ============================================================================
+ALTER TABLE dislikes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "dislikes_select_public" ON dislikes FOR SELECT USING (true);
+CREATE POLICY "dislikes_insert_own" ON dislikes FOR INSERT WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "dislikes_delete_own" ON dislikes FOR DELETE USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 25. CUSTOM_ACHIEVEMENTS - Admin/owner only
+-- ============================================================================
+ALTER TABLE custom_achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "custom_achievements_select_admin" ON custom_achievements FOR SELECT USING (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid()::text AND (u.is_admin OR u.is_owner)) OR auth.role() = 'service_role');
+CREATE POLICY "custom_achievements_insert_admin" ON custom_achievements FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid()::text AND (u.is_admin OR u.is_owner)) OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 26. CUSTOM_TAGS - Admin only
+-- ============================================================================
+ALTER TABLE custom_tags ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "custom_tags_select_public" ON custom_tags FOR SELECT USING (true);
+CREATE POLICY "custom_tags_insert_admin" ON custom_tags FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid()::text AND (u.is_admin OR u.is_owner)) OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 27. CUSTOM_CATEGORIES - Admin only
+-- ============================================================================
+ALTER TABLE custom_categories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "custom_categories_select_public" ON custom_categories FOR SELECT USING (true);
+CREATE POLICY "custom_categories_insert_admin" ON custom_categories FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid()::text AND (u.is_admin OR u.is_owner)) OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 28. NOTEBOOKS - User private documents
+-- ============================================================================
+ALTER TABLE notebooks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "notebooks_select_own" ON notebooks FOR SELECT USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "notebooks_insert_own" ON notebooks FOR INSERT WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "notebooks_update_own" ON notebooks FOR UPDATE USING (auth.uid()::text = user_id OR auth.role() = 'service_role') WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "notebooks_delete_own" ON notebooks FOR DELETE USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 29. FRIENDSHIPS - Users manage friend requests
+-- ============================================================================
+ALTER TABLE friendships ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "friendships_select_own" ON friendships FOR SELECT USING (auth.uid()::text = requester_id OR auth.uid()::text = receiver_id OR auth.role() = 'service_role');
+CREATE POLICY "friendships_insert_own" ON friendships FOR INSERT WITH CHECK (auth.uid()::text = requester_id OR auth.role() = 'service_role');
+CREATE POLICY "friendships_update_own" ON friendships FOR UPDATE USING (auth.uid()::text = receiver_id OR auth.uid()::text = requester_id OR auth.role() = 'service_role') WITH CHECK (auth.uid()::text = receiver_id OR auth.uid()::text = requester_id OR auth.role() = 'service_role');
+CREATE POLICY "friendships_delete_own" ON friendships FOR DELETE USING (auth.uid()::text = requester_id OR auth.uid()::text = receiver_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 30. PUSH_SUBSCRIPTIONS - User private subscriptions
+-- ============================================================================
+ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "push_subscriptions_select_own" ON push_subscriptions FOR SELECT USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "push_subscriptions_insert_own" ON push_subscriptions FOR INSERT WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "push_subscriptions_delete_own" ON push_subscriptions FOR DELETE USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 31. PROFILE_BADGES - Public display, admins manage
+-- ============================================================================
+ALTER TABLE profile_badges ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "profile_badges_select_public" ON profile_badges FOR SELECT USING (true);
+CREATE POLICY "profile_badges_insert_admin" ON profile_badges FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid()::text AND (u.is_admin OR u.is_owner)) OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 32. REPORTS - Users report, admins review
+-- ============================================================================
+ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "reports_select_admin" ON reports FOR SELECT USING (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid()::text AND (u.is_admin OR u.is_owner)) OR auth.role() = 'service_role');
+CREATE POLICY "reports_insert_authenticated" ON reports FOR INSERT WITH CHECK (auth.uid()::text IS NOT NULL OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 33. USER_ACHIEVEMENTS - User private achievement records
+-- ============================================================================
+ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "user_achievements_select_own" ON user_achievements FOR SELECT USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+CREATE POLICY "user_achievements_insert_backend" ON user_achievements FOR INSERT WITH CHECK (auth.role() = 'service_role');
+
+-- ============================================================================
+-- 34. USER_BADGES - Public display, admin manage
+-- ============================================================================
+ALTER TABLE user_badges ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "user_badges_select_public" ON user_badges FOR SELECT USING (true);
+CREATE POLICY "user_badges_insert_admin" ON user_badges FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid()::text AND (u.is_admin OR u.is_owner)) OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 35. BAR_USAGES - Backend tracking of bar usage
+-- ============================================================================
+ALTER TABLE bar_usages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "bar_usages_select_public" ON bar_usages FOR SELECT USING (true);
+CREATE POLICY "bar_usages_insert_authenticated" ON bar_usages FOR INSERT WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
 -- ✅ password_reset_codes (public for reset flow)
 -- ✅ protected_bars (owner only)
 -- ✅ sessions (public for Passport)
--- ✅ site_settings (public read, owner write)
 -- ✅ users (public read, user update own, STRICT admin authorization, admin/owner modify)
 -- ✅ verification_codes (public for signup flow)
