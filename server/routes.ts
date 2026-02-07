@@ -3644,6 +3644,45 @@ export async function registerRoutes(
     }
   });
 
+  // Owner-only RLS sanity check
+  app.get("/api/owner/rls-status", isOwner, async (req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          tablename,
+          CASE WHEN rowsecurity THEN 'enabled' ELSE 'disabled' END as rls_status,
+          (
+            SELECT COUNT(*) 
+            FROM pg_policies 
+            WHERE pg_policies.tablename = pg_tables.tablename
+            AND pg_policies.schemaname = 'public'
+          ) as policy_count
+        FROM pg_tables
+        WHERE schemaname = 'public'
+        AND tablename IN (
+          'achievement_badge_images',
+          'ai_review_requests',
+          'ai_settings',
+          'bar_sequence',
+          'debug_logs',
+          'flagged_phrases',
+          'maintenance_status',
+          'password_reset_codes',
+          'protected_bars',
+          'sessions',
+          'site_settings',
+          'users',
+          'verification_codes'
+        )
+        ORDER BY tablename;
+      `);
+
+      res.json({ tables: result.rows });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Debug endpoint to check user's likes (owner only)
   app.get("/api/debug/my-likes", isAuthenticated, async (req, res) => {
     try {

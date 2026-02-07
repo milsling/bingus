@@ -72,13 +72,15 @@ export function getSupabaseClient(): SupabaseClient | null {
 
 export async function validateSupabaseToken(token: string): Promise<{ id: string; email?: string } | null> {
   const admin = getSupabaseAdmin();
-  if (!admin) {
-    console.warn('Supabase admin not configured, cannot validate token');
+  const client = admin ? null : getSupabaseClient();
+  if (!admin && !client) {
+    console.warn('Supabase credentials not configured, cannot validate token');
     return null;
   }
 
   try {
-    const { data: { user }, error } = await admin.auth.getUser(token);
+    const supabase = admin ?? client!;
+    const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error) {
       console.error('Supabase token validation error:', error.message);
       return null;
