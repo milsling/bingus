@@ -20,43 +20,76 @@ export default function AuthCallback() {
         console.log('[AuthCallback] Starting callback handling...');
         console.log('[AuthCallback] Current URL:', window.location.href);
         console.log('[AuthCallback] Hash:', window.location.hash);
+        console.log('[AuthCallback] Search params:', window.location.search);
+        
+        // Check for error parameters first (from failed OAuth)
+        const params = new URLSearchParams(window.location.search);
+        const errorParam = params.get('error');
+        const errorDescription = params.get('error_description');
+        
+        if (errorParam) {
+          console.error('[AuthCallback] OAuth error in URL:', { errorParam, errorDescription });
+          const decodedDescription = errorDescription 
+            ? decodeURIComponent(errorDescription.replace(/\+/g, ' '))
+            : errorParam;
+          setError(decodedDescription);
+          return;
+        }
         
         const supabase = await getSupabase();
         if (!supabase) {
-          setError("Authentication service unavailable");
+          setError("Authentication service unavailable. Please check your configuration.");
           return;
         }
 
-        // Instead of waiting for a fixed timeout, listen for auth state change
-        if (window.location.hash) {
-          console.log('[AuthCallback] Hash detected, waiting for Supabase to parse it...');
+        // Check if we have a hash to parse (OAuth callback) or try to get existing session
+        const hasHash = window.location.hash && window.location.hash.includes('access_token');
+        
+        if (hasHash) {
+          console.log('[AuthCallback] Hash with access_token detected, waiting for Supabase to parse it...');
           
-          // Set up a listener for auth state changes with a timeout
+          // Set up a listener for auth state changes with increased timeout
           const authPromise = new Promise<boolean>((resolve) => {
+            let resolved = false;
             const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
               console.log('[AuthCallback] Auth state changed:', event, !!session);
-              if (event === 'SIGNED_IN' && session) {
+              if (!resolved && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+                resolved = true;
                 subscription.unsubscribe();
                 resolve(true);
               }
             });
             
-            // Fallback timeout in case the event doesn't fire
+            // Increased timeout for slower connections
             setTimeout(() => {
-              subscription.unsubscribe();
-              resolve(false);
-            }, 3000);
+              if (!resolved) {
+                resolved = true;
+                subscription.unsubscribe();
+                console.log('[AuthCallback] Auth state change timeout');
+                resolve(false);
+              }
+            }, 5000);
           });
           
-          await authPromise;
+          const authSuccess = await authPromise;
+          console.log('[AuthCallback] Auth promise resolved:', authSuccess);
+        } else {
+          console.log('[AuthCallback] No hash detected, checking for existing session...');
+          // Small delay to let Supabase initialize
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
 
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.log('[AuthCallback] Session result:', { session: !!session, error: sessionError?.message });
+        console.log('[AuthCallback] Session result:', { 
+          hasSession: !!session, 
+          userId: session?.user?.id,
+          email: session?.user?.email,
+          error: sessionError?.message 
+        });
 
         if (sessionError) {
           console.error('[AuthCallback] Session error:', sessionError);
-          setError(sessionError.message);
+          setError(`Session error: ${sessionError.message}`);
           return;
         }
 
@@ -94,8 +127,8 @@ export default function AuthCallback() {
             window.location.href = '/';
           }
         } else {
-          console.error('[AuthCallback] No session found');
-          setError("No session found. Please try signing in again.");
+          console.error('[AuthCallback] No session found after all attempts');
+          setError(`No session found. The redirect URL (${window.location.origin}/auth/callback) may not be configured in Supabase. Please check your Supabase authentication settings.`);
         }
       } catch (err: any) {
         console.error('[AuthCallback] Error:', err);

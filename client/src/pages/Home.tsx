@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch, Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -43,6 +44,39 @@ export default function Home() {
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const tagFilter = params.get("tag");
+  const { toast } = useToast();
+
+  // Handle OAuth errors that redirect to the root URL
+  useEffect(() => {
+    const error = params.get("error");
+    const errorDescription = params.get("error_description");
+    
+    if (error) {
+      console.error('OAuth error:', { error, errorDescription });
+      
+      let message = "Authentication failed. Please try again.";
+      
+      if (errorDescription) {
+        const decodedDescription = decodeURIComponent(errorDescription.replace(/\+/g, ' '));
+        
+        if (decodedDescription.includes("Unable to exchange external code")) {
+          message = "Apple Sign In configuration error. Please contact support or try another login method.";
+        } else {
+          message = decodedDescription;
+        }
+      }
+      
+      toast({
+        title: "Sign In Failed",
+        description: message,
+        variant: "destructive",
+      });
+      
+      // Clean up URL by removing error parameters
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [searchString, toast, params]);
 
   const { data: tagBars = [], isLoading: isLoadingTagBars } = useQuery({
     queryKey: ['bars-by-tag', tagFilter],
