@@ -209,7 +209,7 @@ export default function Badges() {
 
   if (!currentUser) {
     return (
-      <div className="container max-w-4xl mx-auto py-8 px-4 pt-14 pb-20 md:pb-4 md:pt-24">
+      <div className="container max-w-4xl mx-auto px-4 pt-14 pb-20 md:pb-4 md:pt-24">
         <Navigation />
         <Card>
           <CardContent className="py-12 text-center">
@@ -225,7 +225,7 @@ export default function Badges() {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4 pb-24 pt-14 md:pt-24">
+    <div className="container max-w-4xl mx-auto px-4 pt-14 pb-24 md:pt-24">
       <Navigation />
       <div className="flex items-center gap-4 mb-6">
         <Link href={`/u/${currentUser.username}`}>
