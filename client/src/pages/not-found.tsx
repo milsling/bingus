@@ -1,10 +1,12 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background text-foreground p-4">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background text-foreground p-4 pt-14 pb-20 md:pb-4 md:pt-24">
+      <Navigation />
       <div className="flex flex-col items-center text-center space-y-6 max-w-md">
         <AlertTriangle className="h-24 w-24 text-primary animate-pulse" />
         
