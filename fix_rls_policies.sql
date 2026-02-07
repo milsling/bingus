@@ -466,7 +466,226 @@ USING (
 );
 
 -- ============================================================================
--- 13. VERIFICATION_CODES - Public (no auth required for signup/verification)
+-- 12b. USERS - Authorization constraint (only Milsling & authorized emails as admin/owner)
+-- ============================================================================
+-- Block unauthorized admin/owner field modifications
+CREATE POLICY "users_prevent_unauthorized_admin"
+ON users FOR UPDATE
+USING (true)
+WITH CHECK (
+  -- If trying to set is_admin or is_owner to true, enforce authorization
+  CASE
+    WHEN (is_admin = true OR is_owner = true)
+    THEN
+      -- Only Milsling and authorized emails can be admin/owner
+      username = 'Milsling' 
+      OR email = 'trevorjpiccone@gmail.com'
+      OR email = 'picconetrevor@gmail.com'
+      OR email = 'support@orphanbars.com'
+    ELSE true  -- Can set to false without restriction
+  END
+);
+
+-- ============================================================================
+-- 13. BARS - Users own their bars, authenticated users can create
+-- ============================================================================
+ALTER TABLE bars ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read bars
+CREATE POLICY "bars_select_public"
+ON bars FOR SELECT
+USING (true);
+
+-- Authenticated users can insert (create their own bars)
+CREATE POLICY "bars_insert_authenticated"
+ON bars FOR INSERT
+WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- Users can update their own bars, admins can update any
+CREATE POLICY "bars_update_own_or_admin"
+ON bars FOR UPDATE
+USING (
+  auth.uid()::text = user_id
+  OR EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = auth.uid()::text
+    AND (u.is_admin OR u.is_owner)
+  )
+  OR auth.role() = 'service_role'
+)
+WITH CHECK (
+  auth.uid()::text = user_id
+  OR EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = auth.uid()::text
+    AND (u.is_admin OR u.is_owner)
+  )
+  OR auth.role() = 'service_role'
+);
+
+-- Users can delete their own bars, admins can delete any
+CREATE POLICY "bars_delete_own_or_admin"
+ON bars FOR DELETE
+USING (
+  auth.uid()::text = user_id
+  OR EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = auth.uid()::text
+    AND (u.is_admin OR u.is_owner)
+  )
+  OR auth.role() = 'service_role'
+);
+
+-- ============================================================================
+-- 14. COMMENTS - Users own their comments, authenticated can create
+-- ============================================================================
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read comments
+CREATE POLICY "comments_select_public"
+ON comments FOR SELECT
+USING (true);
+
+-- Authenticated users can insert comments
+CREATE POLICY "comments_insert_authenticated"
+ON comments FOR INSERT
+WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- Users can update/delete their own comments, admins can modify any
+CREATE POLICY "comments_modify_own_or_admin"
+ON comments FOR UPDATE
+USING (
+  auth.uid()::text = user_id
+  OR EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = auth.uid()::text
+    AND (u.is_admin OR u.is_owner)
+  )
+  OR auth.role() = 'service_role'
+);
+
+CREATE POLICY "comments_delete_own_or_admin"
+ON comments FOR DELETE
+USING (
+  auth.uid()::text = user_id
+  OR EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = auth.uid()::text
+    AND (u.is_admin OR u.is_owner)
+  )
+  OR auth.role() = 'service_role'
+);
+
+-- ============================================================================
+-- 15. LIKES - Users own their likes, authenticated can create
+-- ============================================================================
+ALTER TABLE likes ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read likes
+CREATE POLICY "likes_select_public"
+ON likes FOR SELECT
+USING (true);
+
+-- Authenticated users can insert likes
+CREATE POLICY "likes_insert_authenticated"
+ON likes FOR INSERT
+WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- Users can delete their own likes
+CREATE POLICY "likes_delete_own"
+ON likes FOR DELETE
+USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 16. DIRECT_MESSAGES - Users can only see/modify their own messages
+-- ============================================================================
+ALTER TABLE direct_messages ENABLE ROW LEVEL SECURITY;
+
+-- Users can read messages they're involved in
+CREATE POLICY "direct_messages_select_own"
+ON direct_messages FOR SELECT
+USING (
+  (SELECT id FROM users WHERE users.id = auth.uid()::text LIMIT 1) = sender_id
+  OR (SELECT id FROM users WHERE users.id = auth.uid()::text LIMIT 1) = receiver_id
+  OR EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = auth.uid()::text
+    AND (u.is_admin OR u.is_owner)
+  )
+  OR auth.role() = 'service_role'
+);
+
+-- Authenticated users can send messages
+CREATE POLICY "direct_messages_insert_authenticated"
+ON direct_messages FOR INSERT
+WITH CHECK (auth.uid()::text = sender_id OR auth.role() = 'service_role');
+
+-- Users can delete their own sent messages
+CREATE POLICY "direct_messages_delete_own"
+ON direct_messages FOR DELETE
+USING (
+  auth.uid()::text = sender_id
+  OR EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = auth.uid()::text
+    AND (u.is_admin OR u.is_owner)
+  )
+  OR auth.role() = 'service_role'
+);
+
+-- ============================================================================
+-- 17. NOTIFICATIONS - Users can only see their own
+-- ============================================================================
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "notifications_select_own"
+ON notifications FOR SELECT
+USING (auth.uid()::text = user_id);
+
+CREATE POLICY "notifications_insert_backend"
+ON notifications FOR INSERT
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "notifications_delete_own"
+ON notifications FOR DELETE
+USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 18. FOLLOWS - Users manage their own follows
+-- ============================================================================
+ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "follows_select_public"
+ON follows FOR SELECT
+USING (true);
+
+CREATE POLICY "follows_insert_own"
+ON follows FOR INSERT
+WITH CHECK (auth.uid()::text = follower_id OR auth.role() = 'service_role');
+
+CREATE POLICY "follows_delete_own"
+ON follows FOR DELETE
+USING (auth.uid()::text = follower_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 19. BOOKMARKS - Users manage their own bookmarks
+-- ============================================================================
+ALTER TABLE bookmarks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "bookmarks_select_own"
+ON bookmarks FOR SELECT
+USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+CREATE POLICY "bookmarks_insert_own"
+ON bookmarks FOR INSERT
+WITH CHECK (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+CREATE POLICY "bookmarks_delete_own"
+ON bookmarks FOR DELETE
+USING (auth.uid()::text = user_id OR auth.role() = 'service_role');
+
+-- ============================================================================
+-- 20. VERIFICATION_CODES - Public (no auth required for signup/verification)
 -- ============================================================================
 ALTER TABLE verification_codes ENABLE ROW LEVEL SECURITY;
 
@@ -492,19 +711,35 @@ USING (
 );
 
 -- ============================================================================
+-- AUTHORIZATION RULE
+-- ============================================================================
+-- CRITICAL: Only these identities can be admin/owner:
+--   - Username: Milsling
+--   - Emails: trevorjpiccone@gmail.com, picconetrevor@gmail.com, support@orphanbars.com
+-- Any attempt to promote other users to admin/owner will be blocked at the RLS level.
+-- Backend server (service_role) can bypass for trusted operations.
+
+-- ============================================================================
 -- SUMMARY
 -- ============================================================================
--- This migration enables RLS and creates appropriate policies for:
+-- This migration enables RLS and creates appropriate policies:
 -- ✅ achievement_badge_images (public read, admin write)
 -- ✅ ai_review_requests (user read own, admin review)
 -- ✅ ai_settings (public read, owner write)
 -- ✅ bar_sequence (authenticated read)
+-- ✅ bars (public read, user create/modify own, admin modify any)
+-- ✅ bookmarks (user private, authenticated create/modify own)
+-- ✅ comments (public read, user create/modify own, admin modify any)
 -- ✅ debug_logs (admin only)
+-- ✅ direct_messages (user private, authenticated send)
 -- ✅ flagged_phrases (public read, admin write)
+-- ✅ follows (public read, user manage own)
+-- ✅ likes (public read, user create own)
 -- ✅ maintenance_status (public read, owner write)
+-- ✅ notifications (user private)
 -- ✅ password_reset_codes (public for reset flow)
 -- ✅ protected_bars (owner only)
 -- ✅ sessions (public for Passport)
 -- ✅ site_settings (public read, owner write)
--- ✅ users (public read, user update own, admin/owner modify)
+-- ✅ users (public read, user update own, STRICT admin authorization, admin/owner modify)
 -- ✅ verification_codes (public for signup flow)
