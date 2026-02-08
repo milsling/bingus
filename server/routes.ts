@@ -10,12 +10,14 @@ import { insertUserSchema, insertBarSchema, updateBarSchema, ACHIEVEMENTS } from
 import { fromError } from "zod-validation-error";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { registerAIRoutes } from "./replit_integrations/ai";
+import appleNotifications from "./appleNotifications";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
 import { analyzeContent, normalizeText, type FlaggedPhraseRule } from "./moderation";
 import { moderateContent } from "./replit_integrations/ai/barAssistant";
 import { aiReviewRequests } from "@shared/schema";
 import { validateSupabaseToken } from "./supabaseAuth";
+import appleNotifications from "./appleNotifications";
 
 const verificationAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const passwordResetAttempts = new Map<string, { count: number; lastAttempt: number }>();
@@ -59,6 +61,8 @@ export async function registerRoutes(
   registerObjectStorageRoutes(app);
   registerAIRoutes(app);
   setupWebSocket(httpServer, sessionParser);
+  app.use(appleNotifications);
+  app.use(appleNotifications);
 
   // Version check endpoint - forces clients to refresh when version changes
   app.get("/api/version", (req, res) => {
@@ -1780,9 +1784,7 @@ export async function registerRoutes(
         ? await storage.hasUserBookmarked(req.user.id, req.params.id)
         : false;
       res.json({ bookmarked });
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
-    }
+    } catch (error:
   });
 
   app.get("/api/bookmarks", isAuthenticated, async (req, res) => {
