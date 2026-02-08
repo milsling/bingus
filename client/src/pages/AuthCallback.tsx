@@ -29,10 +29,20 @@ export default function AuthCallback() {
         
         if (errorParam) {
           console.error('[AuthCallback] OAuth error in URL:', { errorParam, errorDescription });
-          const decodedDescription = errorDescription 
-            ? decodeURIComponent(errorDescription.replace(/\+/g, ' '))
-            : errorParam;
-          setError(decodedDescription);
+          let errorMessage = errorParam;
+          
+          if (errorDescription) {
+            const decodedDescription = decodeURIComponent(errorDescription.replace(/\+/g, ' '));
+            
+            // Handle specific Apple OAuth errors with user-friendly messages
+            if (decodedDescription.includes("Unable to exchange external code")) {
+              errorMessage = "Apple Sign In is currently unavailable. This may be due to a configuration issue. Please try signing in with a different method or contact support.";
+            } else {
+              errorMessage = decodedDescription;
+            }
+          }
+          
+          setError(errorMessage);
           return;
         }
         
