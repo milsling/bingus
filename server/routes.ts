@@ -1784,7 +1784,7 @@ export async function registerRoutes(
         ? await storage.hasUserBookmarked(req.user.id, req.params.id)
         : false;
       res.json({ bookmarked });
-    } catch (error:
+    } catch (error: any) {
   });
 
   app.get("/api/bookmarks", isAuthenticated, async (req, res) => {
