@@ -118,7 +118,7 @@ export default function Terms() {
               <section>
                 <h2 className="text-xl font-bold mb-3">12. Contact</h2>
                 <p className="leading-relaxed text-muted-foreground">
-                  For questions about these Terms, contact us at support@orphanbars.com.
+                  For questions about these Terms, contact us at support@orphanbars.space.
                 </p>
               </section>
 

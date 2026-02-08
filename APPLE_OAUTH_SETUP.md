@@ -33,19 +33,19 @@ SUPABASE_SERVICE_ROLE_KEY="your-service-role-key-here"
 1. Go to: https://supabase.com/dashboard/project/gcbfcbumlgfzzqioyotq/auth/url-configuration
 2. Under **Redirect URLs**, add the following URLs:
    ```
-   https://orphanbars.com/auth/callback
+   https://orphanbars.space/auth/callback
    https://orphan-bars.onrender.com/auth/callback
    http://localhost:5000/auth/callback
    ```
    
    ⚠️ **Important**: Add ALL domains where your app runs:
-   - Production domain (`orphanbars.com`)
+   - Production domain (`orphanbars.space`)
    - Onrender deployment domain (`orphan-bars.onrender.com`)
    - Local development (`localhost:5000`)
 
 3. Under **Site URL**, set your primary domain:
    ```
-   https://orphanbars.com
+   https://orphanbars.space
    ```
 
 ## Step 3: Configure Apple Sign In
@@ -61,7 +61,7 @@ SUPABASE_SERVICE_ROLE_KEY="your-service-role-key-here"
 
 4. The **Domains** field should include:
    ```
-   orphanbars.com
+   orphanbars.space
    gcbfcbumlgfzzqioyotq.supabase.co
    ```
 
@@ -88,7 +88,7 @@ npm run dev
 
 ## Testing the Fix
 
-1. Clear your browser cache and cookies for `orphanbars.com`
+1. Clear your browser cache and cookies for `orphanbars.space`
 2. Try signing in with Apple again
 3. You should now be redirected to `/auth/callback` instead of seeing an error on the root page
 4. If you still see an error, check the browser console for detailed error messages
@@ -112,7 +112,7 @@ This happens when Supabase redirects to your app, but your app's domain isn't in
 
 ### Still getting "Unable to exchange external code"
 - Verify the Apple Developer Console return URLs match exactly: `https://gcbfcbumlgfzzqioyotq.supabase.co/auth/v1/callback`
-- Check that orphanbars.com is listed in the Apple Developer Console domains
+- Check that orphanbars.space is listed in the Apple Developer Console domains
 - Ensure Apple Sign In is enabled in the Supabase Dashboard
 
 ## Architecture Overview
@@ -125,7 +125,7 @@ Here's how the authentication flow works:
 4. User authenticates with Apple
 5. **Apple redirects back to Supabase**: `https://gcbfcbumlgfzzqioyotq.supabase.co/auth/v1/callback`
 6. Supabase exchanges the Apple code for user info
-7. **Supabase redirects to your app**: `https://orphanbars.com/auth/callback`
+7. **Supabase redirects to your app**: `https://orphanbars.space/auth/callback`
 8. Your app receives the session and completes sign-in
 
 The "Unable to exchange external code" error happens at step 6, which means Apple's callback to Supabase is failing. This is why the Supabase URL must be configured in Apple Developer Console.

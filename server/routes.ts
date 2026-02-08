@@ -325,7 +325,7 @@ export async function registerRoutes(
       const guestUser = {
         id: guestId,
         username: `Guest_${Math.random().toString(36).substr(2, 6)}`,
-        email: `${guestId}@guest.orphanbars.com`,
+        email: `${guestId}@guest.orphanbars.space`,
         emailVerified: false,
         bio: null,
         location: null,

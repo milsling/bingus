@@ -86,7 +86,7 @@ async function ogMiddleware(req: Request, res: Response, next: NextFunction) {
   try {
     let title = "Orphan Bars";
     let description = "Share your bars, one-liners, punchlines, and entendres";
-    let url = `https://orphanbars.com${req.path}`;
+    let url = `https://orphanbars.space${req.path}`;
 
     if (barMatch) {
       const barId = barMatch[1];

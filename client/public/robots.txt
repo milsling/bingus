@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://orphanbars.com/sitemap.xml
+Sitemap: https://orphanbars.space/sitemap.xml

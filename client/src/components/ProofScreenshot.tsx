@@ -161,7 +161,7 @@ export default function ProofScreenshot({ bar, open, onOpenChange }: ProofScreen
             </div>
 
             <div className="text-center text-[10px] text-gray-600 pt-2">
-              orphanbars.com • Immutable Proof of Lyrical Origin
+              orphanbars.space • Immutable Proof of Lyrical Origin
             </div>
           </div>
         </div>
