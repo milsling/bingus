@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { api } from "@/lib/api";
-import Navigation from "@/components/Navigation";
 import BarCard from "@/components/BarCard";
 import { UserProfileBadges } from "@/components/UserProfileBadges";
 import { Button } from "@/components/ui/button";
@@ -204,7 +203,6 @@ export default function UserProfile() {
   if (userLoading || (!user && isFetching)) {
     return (
       <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-        <Navigation />
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -215,7 +213,6 @@ export default function UserProfile() {
   if (error || !user) {
     return (
       <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-        <Navigation />
         <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-6">
           <Button
             variant="ghost"
@@ -235,7 +232,6 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-      <Navigation />
       <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-6">
         <Button
           variant="ghost"

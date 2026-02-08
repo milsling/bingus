@@ -1,4 +1,3 @@
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Lock, Trophy } from "lucide-react";
@@ -46,7 +45,6 @@ export default function Achievements() {
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-      <Navigation />
       
       <main className="max-w-2xl mx-auto p-4 md:p-8">
         <div className="mb-6 flex items-center gap-4">

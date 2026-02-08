@@ -1,4 +1,3 @@
-import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import BarCard from "@/components/BarCard";
@@ -158,7 +157,6 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
-      <Navigation />
       
       <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-3 md:px-0">
         {/* Profile Header */}

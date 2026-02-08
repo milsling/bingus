@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -331,7 +330,6 @@ export default function Messages() {
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
-      <Navigation />
 
       <main className="max-w-5xl mx-auto h-[calc(100vh-80px)] md:h-[calc(100vh-64px)] md:p-4">
         <div className="h-full md:rounded-2xl glass-panel overflow-hidden flex">

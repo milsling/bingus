@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback } from "react";
-import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -367,7 +366,6 @@ export default function EditProfile() {
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-      <Navigation />
       
       <main className="max-w-2xl mx-auto p-4 md:p-8">
         <div className="mb-6 flex items-center gap-4">

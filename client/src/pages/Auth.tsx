@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import Navigation from "@/components/Navigation";
 
 const RAP_USERNAMES = [
   "SpitFire_99",
@@ -691,7 +690,6 @@ export default function Auth() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen flex flex-col p-4">
         <div className="flex-1 flex flex-col items-center justify-center">
         <div className="mb-8 text-center space-y-2">

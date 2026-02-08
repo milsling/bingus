@@ -33,6 +33,7 @@ import { VersionCheck } from "@/components/VersionCheck";
 import { SwipeBackNavigation } from "@/components/SwipeBackNavigation";
 import AIAssistant from "@/components/AIAssistant";
 import { useBackground } from "@/components/BackgroundSelector";
+import Navigation from "@/components/Navigation";
 
 function Router() {
   const [location] = useLocation();
@@ -99,6 +100,7 @@ function App() {
           <VersionCheck />
           <BackgroundInitializer />
           <MaintenanceBanner />
+          <Navigation />
           <Toaster />
           <SwipeBackNavigation>
             <Router />

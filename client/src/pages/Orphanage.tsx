@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Home, Users, ExternalLink, ChevronDown, ChevronUp, Send, Trophy, Heart } from "lucide-react";
-import Navigation from "@/components/Navigation";
 import BarCard from "@/components/BarCard";
 import { BarSkeletonList } from "@/components/BarSkeleton";
 import { Button } from "@/components/ui/button";
@@ -244,7 +243,6 @@ export default function Orphanage() {
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-      <Navigation />
       
       <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
         <div className="px-4 py-8">

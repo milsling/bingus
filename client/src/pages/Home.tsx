@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import Navigation from "@/components/Navigation";
 import BarCard from "@/components/BarCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import { BarSkeletonList } from "@/components/BarSkeleton";
@@ -222,8 +221,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background md:h-screen md:overflow-hidden">
-      <Navigation />
-      
       {/* Mobile search */}
       <div className="md:hidden sticky top-[72px] z-40 px-3 py-2">
         <div className="glass-panel p-3">
