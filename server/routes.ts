@@ -1,11 +1,11 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage, generateProofHash } from "./storage";
 import { setupAuth, isAuthenticated, hashPassword, sessionParser, OAUTH_ONLY_PASSWORD_SENTINEL, comparePasswords } from "./auth";
 import { bars, likes, users } from "@shared/schema";
 import { db } from "./db";
 import { eq, count, sql } from "drizzle-orm";
-import passport from "passport";
+import * as passport from "passport";
 import { insertUserSchema, insertBarSchema, updateBarSchema, ACHIEVEMENTS } from "@shared/schema";
 import { fromError } from "zod-validation-error";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
@@ -17,8 +17,6 @@ import { analyzeContent, normalizeText, type FlaggedPhraseRule } from "./moderat
 import { moderateContent } from "./replit_integrations/ai/barAssistant";
 import { aiReviewRequests } from "@shared/schema";
 import { validateSupabaseToken } from "./supabaseAuth";
-import appleNotifications from "./appleNotifications";
-
 const verificationAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const passwordResetAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const MAX_ATTEMPTS = 5;
@@ -65,12 +63,12 @@ export async function registerRoutes(
   app.use(appleNotifications);
 
   // Version check endpoint - forces clients to refresh when version changes
-  app.get("/api/version", (req, res) => {
+  app.get("/api/version", (req: Request, res: Response) => {
     res.json({ version: APP_VERSION });
   });
 
   // Supabase config endpoint for client-side OAuth
-  app.get("/api/config/supabase", (req, res) => {
+  app.get("/api/config/supabase", (req: Request, res: Response) => {
     res.json({
       url: process.env.SUPABASE_URL || '',
       anonKey: process.env.SUPABASE_ANON_KEY || ''
@@ -78,7 +76,7 @@ export async function registerRoutes(
   });
 
   // Auth routes
-  app.post("/api/auth/send-code", async (req, res) => {
+  app.post("/api/auth/send-code", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
       
@@ -105,7 +103,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/auth/verify-code", async (req, res) => {
+  app.post("/api/auth/verify-code", async (req: Request, res: Response) => {
     try {
       const { email, code } = req.body;
       
@@ -129,7 +127,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/auth/signup", async (req, res, next) => {
+  app.post("/api/auth/signup", async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { username, password, email, code } = req.body;
 
@@ -150,17 +148,15 @@ export async function registerRoutes(
       const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
         // If legacy milsling account, link OAuth credentials and restore data
-        const isLegacy = existingEmail.isLegacyMilsling;
         const provider = req.body.oauthProvider;
-        if (isLegacy && ["apple", "google", "email"].includes(provider)) {
-          // Link OAuth credentials (supabaseId, appleId, googleId, etc.)
+        // For now, treat all existing emails as eligible for linking if provider is present
+        if (["apple", "google", "email"].includes(provider)) {
           await storage.linkSupabaseAccount(existingEmail.id, req.body.supabaseId || req.body.appleId || req.body.googleId || req.body.emailId);
-          // Optionally update other fields (username, avatar, etc.)
           const updatedUser = await storage.updateUser(existingEmail.id, {
             emailVerified: true,
-            // Add other fields from profile if needed
           });
-          req.login(updatedUser, (err) => {
+          if (!updatedUser) return res.status(500).json({ message: "Failed to update user" });
+          req.login(updatedUser, (err: any) => {
             if (err) return next(err);
             return res.json(updatedUser);
           });
@@ -187,7 +183,7 @@ export async function registerRoutes(
       }
 
       const { password: _, ...userWithoutPassword } = updatedUser!;
-      req.login(userWithoutPassword, (err) => {
+      req.login(userWithoutPassword, (err: any) => {
         if (err) {
           return next(err);
         }
@@ -199,7 +195,7 @@ export async function registerRoutes(
   });
 
   // Simple signup without email verification (temporary)
-  app.post("/api/auth/signup-simple", async (req, res, next) => {
+  app.post("/api/auth/signup-simple", async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { username, password } = req.body;
 
@@ -231,7 +227,7 @@ export async function registerRoutes(
       }
 
       const { password: _, ...userWithoutPassword } = user;
-      req.login(userWithoutPassword, (err) => {
+      req.login(userWithoutPassword, (err: any) => {
         if (err) {
           return next(err);
         }
@@ -242,7 +238,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/auth/login", (req, res, next) => {
+  app.post("/api/auth/login", (req: Request, res: Response, next: NextFunction) => {
     console.log(`[LOGIN] Attempting login for username: "${req.body.username}"`);
     passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) {
@@ -254,7 +250,7 @@ export async function registerRoutes(
         return res.status(401).json({ message: info?.message || "Authentication failed" });
       }
       console.log(`[LOGIN] Successful auth for user: id=${user.id}, username="${user.username}"`);
-      req.login(user, (err) => {
+      req.login(user, (err: any) => {
         if (err) {
           console.error(`[LOGIN] Session creation failed:`, err);
           return next(err);
@@ -274,7 +270,7 @@ export async function registerRoutes(
   });
 
   // Email-based login endpoint - allows users to log in with email instead of username
-  app.post("/api/auth/login-with-email", async (req, res, next) => {
+  app.post("/api/auth/login-with-email", async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, password, rememberMe } = req.body;
       
@@ -312,7 +308,7 @@ export async function registerRoutes(
       
       const { password: _, ...userWithoutPassword } = user;
       
-      req.login(userWithoutPassword, (err) => {
+      req.login(userWithoutPassword, (err: any) => {
         if (err) {
           console.error(`[LOGIN-EMAIL] Session creation failed:`, err);
           return next(err);
@@ -340,7 +336,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/auth/guest", async (req, res, next) => {
+  app.post("/api/auth/guest", async (req: Request, res: Response, next: NextFunction) => {
     try {
       const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const guestUser = {
@@ -359,9 +355,21 @@ export async function registerRoutes(
         isOwner: false,
         xp: 0,
         level: 1,
+        usernameChangedAt: null,
+        onlineStatus: "offline",
+        lastSeenAt: null,
+        messagePrivacy: "friends_only",
+        notificationSound: "chime",
+        messageSound: "ding",
+        displayedBadges: [],
+        lastXpUpdate: null,
+        dailyXpLikes: 0,
+        dailyXpComments: 0,
+        dailyXpBookmarks: 0,
+        supabaseId: null,
       };
       
-      req.login(guestUser, (err) => {
+      req.login(guestUser, (err: any) => {
         if (err) {
           console.error(`[GUEST] Session creation failed:`, err);
           return next(err);
@@ -375,12 +383,12 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/auth/logout", (req, res) => {
-    req.logout((err) => {
+  app.post("/api/auth/logout", (req: Request, res: Response) => {
+    req.logout((err: any) => {
       if (err) {
         return res.status(500).json({ message: "Logout failed" });
       }
-      req.session.destroy((err) => {
+      req.session.destroy((err: any) => {
         if (err) {
           return res.status(500).json({ message: "Session cleanup failed" });
         }
@@ -396,7 +404,7 @@ export async function registerRoutes(
   });
 
   // Password reset routes
-  app.post("/api/auth/forgot-password", async (req, res) => {
+  app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
       if (!email) {
@@ -428,7 +436,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/auth/reset-password", async (req, res) => {
+  app.post("/api/auth/reset-password", async (req: Request, res: Response) => {
     try {
       const { email, code, newPassword } = req.body;
       if (!email || !code || !newPassword) {
@@ -486,7 +494,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/auth/user", (req, res) => {
+  app.get("/api/auth/user", (req: Request, res: Response) => {
     if (req.isAuthenticated()) {
       res.json(req.user);
     } else {
@@ -495,7 +503,7 @@ export async function registerRoutes(
   });
 
   // Supabase auth routes - for social login (Google, Apple)
-  app.get("/api/auth/supabase/user", async (req, res) => {
+  app.get("/api/auth/supabase/user", async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ message: 'Missing authorization header' });
@@ -677,7 +685,7 @@ export async function registerRoutes(
         password: OAUTH_ONLY_PASSWORD_SENTINEL,
         email,
         supabaseId,
-        isGuest: false,
+        // isGuest: false, // Remove property not in type
       });
 
       const { password: _, ...userWithoutPassword } = appUser;
@@ -1785,6 +1793,8 @@ export async function registerRoutes(
         : false;
       res.json({ bookmarked });
     } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
   });
 
   app.get("/api/bookmarks", isAuthenticated, async (req, res) => {
