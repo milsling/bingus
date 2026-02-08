@@ -145,6 +145,23 @@ export async function registerRoutes(
 
       const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
+        // If legacy milsling account, link OAuth credentials and restore data
+        const isLegacy = existingEmail.isLegacyMilsling;
+        const provider = req.body.oauthProvider;
+        if (isLegacy && ["apple", "google", "email"].includes(provider)) {
+          // Link OAuth credentials (supabaseId, appleId, googleId, etc.)
+          await storage.linkSupabaseAccount(existingEmail.id, req.body.supabaseId || req.body.appleId || req.body.googleId || req.body.emailId);
+          // Optionally update other fields (username, avatar, etc.)
+          const updatedUser = await storage.updateUser(existingEmail.id, {
+            emailVerified: true,
+            // Add other fields from profile if needed
+          });
+          req.login(updatedUser, (err) => {
+            if (err) return next(err);
+            return res.json(updatedUser);
+          });
+          return;
+        }
         return res.status(400).json({ message: "Email already registered" });
       }
 
