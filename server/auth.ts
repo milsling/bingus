@@ -11,6 +11,22 @@ import { promisify } from "util";
 const scryptAsync = promisify(scrypt);
 const PgStore = connectPgSimple(session);
 
+// Sentinel value for OAuth-only users - impossible to match via comparePasswords
+const OAUTH_ONLY_PASSWORD_SENTINEL = "__OAUTH_ONLY_NO_PASSWORD__";
+
+// Generate a secure session secret if not provided
+function getOrGenerateSessionSecret(): string {
+  if (process.env.SESSION_SECRET) {
+    return process.env.SESSION_SECRET;
+  }
+  
+  console.warn("⚠️  SESSION_SECRET not set in environment. Generating a random secret.");
+  console.warn("⚠️  Sessions will be invalidated when the server restarts.");
+  console.warn("⚠️  Set SESSION_SECRET in your .env file for production use.");
+  
+  return randomBytes(32).toString("hex");
+}
+
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
@@ -21,14 +37,41 @@ export async function comparePasswords(
   suppliedPassword: string,
   storedPassword: string
 ): Promise<boolean> {
+  // OAuth-only users have no password and cannot login with username/password
+  if (!storedPassword || storedPassword === OAUTH_ONLY_PASSWORD_SENTINEL) {
+    return false;
+  }
+  
+  // Handle malformed passwords (missing salt separator)
+  if (!storedPassword.includes(".")) {
+    return false;
+  }
+  
   const [hashedPassword, salt] = storedPassword.split(".");
-  const hashedPasswordBuf = Buffer.from(hashedPassword, "hex");
-  const suppliedPasswordBuf = (await scryptAsync(
-    suppliedPassword,
-    salt,
-    64
-  )) as Buffer;
-  return timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
+  
+  // Validate hex format
+  if (!hashedPassword || !salt) {
+    return false;
+  }
+  
+  try {
+    const hashedPasswordBuf = Buffer.from(hashedPassword, "hex");
+    const suppliedPasswordBuf = (await scryptAsync(
+      suppliedPassword,
+      salt,
+      64
+    )) as Buffer;
+    
+    // Ensure buffers are the same length before comparison
+    if (hashedPasswordBuf.length !== suppliedPasswordBuf.length) {
+      return false;
+    }
+    
+    return timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
+  } catch (error) {
+    console.error("Password comparison error:", error);
+    return false;
+  }
 }
 
 declare global {
@@ -50,7 +93,7 @@ declare global {
 }
 
 export const sessionParser = session({
-  secret: process.env.SESSION_SECRET || "orphan-bars-secret-key-change-in-production",
+  secret: getOrGenerateSessionSecret(),
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -121,3 +164,6 @@ export function isAuthenticated(req: any, res: any, next: any) {
   }
   res.status(401).json({ message: "Unauthorized" });
 }
+
+// Export sentinel value for use in routes
+export { OAUTH_ONLY_PASSWORD_SENTINEL };

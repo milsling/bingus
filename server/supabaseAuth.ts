@@ -9,6 +9,40 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 let supabaseAdmin: SupabaseClient | null = null;
 let supabaseClient: SupabaseClient | null = null;
 
+// Rate limiting for token validation attempts
+const tokenValidationAttempts = new Map<string, { count: number; lastAttempt: number }>();
+const MAX_TOKEN_VALIDATION_ATTEMPTS = 10;
+const TOKEN_VALIDATION_WINDOW_MS = 60 * 1000; // 1 minute
+
+function checkTokenValidationRateLimit(ipOrToken: string): boolean {
+  const now = Date.now();
+  const attempts = tokenValidationAttempts.get(ipOrToken);
+  
+  if (!attempts) {
+    tokenValidationAttempts.set(ipOrToken, { count: 1, lastAttempt: now });
+    return true;
+  }
+  
+  // Reset if window expired
+  if (now - attempts.lastAttempt > TOKEN_VALIDATION_WINDOW_MS) {
+    tokenValidationAttempts.set(ipOrToken, { count: 1, lastAttempt: now });
+    return true;
+  }
+  
+  // Check if rate limit exceeded
+  if (attempts.count >= MAX_TOKEN_VALIDATION_ATTEMPTS) {
+    return false;
+  }
+  
+  attempts.count++;
+  attempts.lastAttempt = now;
+  return true;
+}
+
+function clearTokenValidationRateLimit(ipOrToken: string): void {
+  tokenValidationAttempts.delete(ipOrToken);
+}
+
 export function getSupabaseAdmin(): SupabaseClient | null {
   if (!supabaseUrl || !supabaseServiceKey) {
     console.warn('Supabase admin credentials not configured');
@@ -36,16 +70,28 @@ export function getSupabaseClient(): SupabaseClient | null {
   return supabaseClient;
 }
 
-export async function validateSupabaseToken(token: string): Promise<any | null> {
+export async function validateSupabaseToken(token: string): Promise<{ id: string; email?: string } | null> {
   const admin = getSupabaseAdmin();
-  if (!admin) return null;
+  const client = admin ? null : getSupabaseClient();
+  if (!admin && !client) {
+    console.warn('Supabase credentials not configured, cannot validate token');
+    return null;
+  }
 
   try {
-    const { data: { user }, error } = await admin.auth.getUser(token);
-    if (error || !user) return null;
+    const supabase = admin ?? client!;
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error) {
+      console.error('Supabase token validation error:', error.message);
+      return null;
+    }
+    if (!user) {
+      console.warn('Supabase token validation returned no user');
+      return null;
+    }
     return user;
   } catch (error) {
-    console.error('Error validating Supabase token:', error);
+    console.error('Exception during Supabase token validation:', error);
     return null;
   }
 }
@@ -55,6 +101,12 @@ export async function supabaseAuthMiddleware(req: Request, res: Response, next: 
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Missing or invalid authorization header' });
+  }
+
+  // Rate limit by IP address to prevent brute force token attempts
+  const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+  if (!checkTokenValidationRateLimit(clientIp)) {
+    return res.status(429).json({ message: 'Too many authentication attempts. Please try again later.' });
   }
 
   const token = authHeader.substring(7);
@@ -69,6 +121,9 @@ export async function supabaseAuthMiddleware(req: Request, res: Response, next: 
   if (!appUser) {
     return res.status(401).json({ message: 'User not found in app database' });
   }
+
+  // Clear rate limit on successful authentication
+  clearTokenValidationRateLimit(clientIp);
 
   const { password: _, ...userWithoutPassword } = appUser;
   (req as any).user = userWithoutPassword;

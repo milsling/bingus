@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { BookText, Search, ArrowLeft, Loader2, Copy, Volume2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Navigation from "@/components/Navigation";
 
 interface RhymeWord {
   word: string;
@@ -96,7 +97,8 @@ export default function RhymeDictionary() {
   const syllableGroups = groupBySyllables(results);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+      <Navigation />
       <div className="container max-w-4xl mx-auto p-4">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/apps')}>

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage, generateProofHash } from "./storage";
-import { setupAuth, isAuthenticated, hashPassword, sessionParser } from "./auth";
+import { setupAuth, isAuthenticated, hashPassword, sessionParser, OAUTH_ONLY_PASSWORD_SENTINEL, comparePasswords } from "./auth";
 import { bars, likes, users } from "@shared/schema";
 import { db } from "./db";
 import { eq, count, sql } from "drizzle-orm";
@@ -252,6 +252,73 @@ export async function registerRoutes(
     })(req, res, next);
   });
 
+  // Email-based login endpoint - allows users to log in with email instead of username
+  app.post("/api/auth/login-with-email", async (req, res, next) => {
+    try {
+      const { email, password, rememberMe } = req.body;
+      
+      // Rate limiting by email
+      if (!checkRateLimit(verificationAttempts, email)) {
+        return res.status(429).json({ 
+          message: "Too many login attempts. Please try again in 15 minutes." 
+        });
+      }
+      
+      console.log(`[LOGIN-EMAIL] Attempting login with email: "${email}"`);
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      // Look up user by email
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        console.log(`[LOGIN-EMAIL] No user found with email: "${email}"`);
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Verify password
+      const isValid = await comparePasswords(password, user.password);
+      
+      if (!isValid) {
+        console.log(`[LOGIN-EMAIL] Invalid password for email: "${email}"`);
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Log the user in
+      console.log(`[LOGIN-EMAIL] Successful auth for user: id=${user.id}, username="${user.username}", email="${email}"`);
+      
+      const { password: _, ...userWithoutPassword } = user;
+      
+      req.login(userWithoutPassword, (err) => {
+        if (err) {
+          console.error(`[LOGIN-EMAIL] Session creation failed:`, err);
+          return next(err);
+        }
+        
+        // Handle Remember Me
+        if (req.session) {
+          if (rememberMe) {
+            req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+          } else {
+            req.session.cookie.maxAge = undefined; // Session cookie
+          }
+        }
+        
+        console.log(`[LOGIN-EMAIL] Session created for user ${user.id}, rememberMe=${!!rememberMe}`);
+        
+        // Clear rate limit on successful login
+        clearRateLimit(verificationAttempts, email);
+        
+        res.json(userWithoutPassword);
+      });
+    } catch (error: any) {
+      console.error('[LOGIN-EMAIL] Error:', error);
+      res.status(500).json({ message: "An error occurred during login" });
+    }
+  });
+
   app.post("/api/auth/guest", async (req, res, next) => {
     try {
       const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -461,7 +528,7 @@ export async function registerRoutes(
 
       req.login(appUser, (err) => {
         if (err) {
-          console.error('Login error:', err);
+          console.error('OAuth callback - Login error:', err);
           return res.status(500).json({ message: 'Failed to establish session' });
         }
         const { password: _, ...userWithoutPassword } = appUser;
@@ -504,6 +571,7 @@ export async function registerRoutes(
       if (existingSupabaseUser) {
         return req.login(existingSupabaseUser, (err) => {
           if (err) {
+            console.error('Complete signup - Login error for existing user:', err);
             return res.status(500).json({ message: 'Failed to establish session' });
           }
           const { password: _, ...userWithoutPassword } = existingSupabaseUser;
@@ -513,13 +581,14 @@ export async function registerRoutes(
 
       const appUser = await storage.createUser({
         username,
-        password: '',
+        password: OAUTH_ONLY_PASSWORD_SENTINEL,
         email: supabaseUser.email || '',
         supabaseId: supabaseUser.id,
       });
 
       req.login(appUser, (err) => {
         if (err) {
+          console.error('Complete signup - Login error for new user:', err);
           return res.status(500).json({ message: 'Failed to establish session' });
         }
         const { password: _, ...userWithoutPassword } = appUser;
@@ -556,7 +625,7 @@ export async function registerRoutes(
 
       const appUser = await storage.createUser({
         username,
-        password: '',
+        password: OAUTH_ONLY_PASSWORD_SENTINEL,
         email: supabaseUser.email || '',
         supabaseId: supabaseUser.id,
       });
@@ -584,7 +653,7 @@ export async function registerRoutes(
 
       const appUser = await storage.createUser({
         username,
-        password: '',
+        password: OAUTH_ONLY_PASSWORD_SENTINEL,
         email,
         supabaseId,
         isGuest: false,
@@ -3570,6 +3639,45 @@ export async function registerRoutes(
         onlineNow,
         timestamp: new Date().toISOString(),
       });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Owner-only RLS sanity check
+  app.get("/api/owner/rls-status", isOwner, async (req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          tablename,
+          CASE WHEN rowsecurity THEN 'enabled' ELSE 'disabled' END as rls_status,
+          (
+            SELECT COUNT(*) 
+            FROM pg_policies 
+            WHERE pg_policies.tablename = pg_tables.tablename
+            AND pg_policies.schemaname = 'public'
+          ) as policy_count
+        FROM pg_tables
+        WHERE schemaname = 'public'
+        AND tablename IN (
+          'achievement_badge_images',
+          'ai_review_requests',
+          'ai_settings',
+          'bar_sequence',
+          'debug_logs',
+          'flagged_phrases',
+          'maintenance_status',
+          'password_reset_codes',
+          'protected_bars',
+          'sessions',
+          'site_settings',
+          'users',
+          'verification_codes'
+        )
+        ORDER BY tablename;
+      `);
+
+      res.json({ tables: result.rows });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

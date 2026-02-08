@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import Navigation from "@/components/Navigation";
 
 const RAP_USERNAMES = [
   "SpitFire_99",
@@ -149,13 +150,43 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      await login(username, password, rememberMe);
-      saveAccountToStorage(username);
-      toast({
-        title: "Welcome back!",
-        description: "You're now logged in.",
-      });
-      setLocation("/");
+      // Check if username field contains an email
+      // Simple check: has @ and at least one character before and after it
+      const isEmail = username.includes('@') && 
+                      username.indexOf('@') > 0 && 
+                      username.indexOf('@') < username.length - 1;
+      
+      if (isEmail) {
+        // Use email-based login - navigate with setLocation for consistency
+        const response = await fetch("/api/auth/login-with-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email: username, password, rememberMe }),
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Login failed");
+        }
+        
+        const user = await response.json();
+        saveAccountToStorage(user.username);
+        toast({
+          title: "Welcome back!",
+          description: `Logged in as ${user.username}`,
+        });
+        setLocation("/");
+      } else {
+        // Use regular username-based login
+        await login(username, password, rememberMe);
+        saveAccountToStorage(username);
+        toast({
+          title: "Welcome back!",
+          description: "You're now logged in.",
+        });
+        setLocation("/");
+      }
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -659,8 +690,10 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4">
-      <div className="flex-1 flex flex-col items-center justify-center">
+    <>
+      <Navigation />
+      <div className="min-h-screen flex flex-col p-4">
+        <div className="flex-1 flex flex-col items-center justify-center">
         <div className="mb-8 text-center space-y-2">
           <Link href="/">
             <div className="flex items-center justify-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
@@ -748,12 +781,12 @@ export default function Auth() {
                     </div>
                   )}
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email or Username</Label>
+                    <Label htmlFor="login-username-or-email">Username or Email</Label>
                     <Input 
-                      id="login-email" 
+                      id="login-username-or-email" 
                       data-testid="input-login-email"
                       type="text"
-                      placeholder="you@example.com or username"
+                      placeholder="username or email@example.com"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required 
@@ -877,7 +910,8 @@ export default function Auth() {
       <p className="mt-8 text-center text-sm text-muted-foreground">
         By continuing, you agree to our <Link href="/terms" className="underline cursor-pointer hover:text-primary">Terms of Service</Link> and <Link href="/guidelines" className="underline cursor-pointer hover:text-primary">Community Guidelines</Link>.
       </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
