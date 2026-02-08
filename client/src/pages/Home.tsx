@@ -59,8 +59,9 @@ export default function Home() {
       if (errorDescription) {
         const decodedDescription = decodeURIComponent(errorDescription.replace(/\+/g, ' '));
         
+        // Handle specific Apple OAuth errors with user-friendly messages
         if (decodedDescription.includes("Unable to exchange external code")) {
-          message = "Apple Sign In configuration error. Please contact support or try another login method.";
+          message = "Apple Sign In is currently unavailable. This may be due to a configuration issue. Please try signing in with a different method or contact support.";
         } else {
           message = decodedDescription;
         }
