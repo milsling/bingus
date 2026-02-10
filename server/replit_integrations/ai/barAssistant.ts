@@ -1,4 +1,4 @@
-import { openai } from "../image/client";
+import { createChatCompletion, isXaiConfigured } from "./xaiClient";
 
 export interface ModerationResult {
   approved: boolean;
@@ -64,6 +64,15 @@ export async function moderateContent(content: string, strictness: string = "bal
     };
   }
 
+  if (!isXaiConfigured()) {
+    return {
+      approved: false,
+      flagged: true,
+      reasons: ["Moderation is temporarily unavailable. Please try again or submit for manual review."],
+      plagiarismRisk: "none",
+    };
+  }
+
   const strictnessInstructions = {
     lenient: "Be LENIENT. Allow edgy content, only block clear policy violations like hate speech, threats, or illegal content. Give benefit of the doubt.",
     balanced: "Be BALANCED. Block hate speech and clear violations, but allow creative expression and typical hip-hop content.",
@@ -71,8 +80,7 @@ export async function moderateContent(content: string, strictness: string = "bal
   };
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const contentJson = await createChatCompletion({
       messages: [
         {
           role: "system",
@@ -104,11 +112,11 @@ Respond in JSON format:
           content: `Moderate this bar:\n\n"${content}"`
         }
       ],
-      response_format: { type: "json_object" },
-      max_tokens: 500,
+      temperature: 0,
+      maxTokens: 500,
     });
 
-    const result = JSON.parse(response.choices[0]?.message?.content || "{}");
+    const result = JSON.parse(contentJson || "{}");
     console.log("[MODERATION] AI result:", result);
     return {
       approved: result.approved === true,
@@ -130,9 +138,17 @@ Respond in JSON format:
 }
 
 export async function explainBar(content: string): Promise<BarExplanation> {
+  if (!isXaiConfigured()) {
+    return {
+      explanation: "AI is temporarily unavailable.",
+      wordplay: [],
+      references: [],
+      difficulty: "moderate",
+    };
+  }
+
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const contentJson = await createChatCompletion({
       messages: [
         {
           role: "system",
@@ -151,11 +167,11 @@ Respond in JSON format:
           content: `Explain this bar:\n\n"${content}"`
         }
       ],
-      response_format: { type: "json_object" },
-      max_tokens: 800,
+      temperature: 0.4,
+      maxTokens: 800,
     });
 
-    const result = JSON.parse(response.choices[0]?.message?.content || "{}");
+    const result = JSON.parse(contentJson || "{}");
     return {
       explanation: result.explanation || "Could not analyze this bar.",
       wordplay: result.wordplay || [],
@@ -174,9 +190,16 @@ Respond in JSON format:
 }
 
 export async function suggestRhymes(topic: string, style?: string): Promise<BarSuggestion> {
+  if (!isXaiConfigured()) {
+    return {
+      suggestions: [],
+      rhymes: [],
+      tips: "AI is temporarily unavailable.",
+    };
+  }
+
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const contentJson = await createChatCompletion({
       messages: [
         {
           role: "system",
@@ -195,11 +218,11 @@ Respond in JSON format:
           content: `Help me write a bar about: ${topic}`
         }
       ],
-      response_format: { type: "json_object" },
-      max_tokens: 800,
+      temperature: 0.8,
+      maxTokens: 800,
     });
 
-    const result = JSON.parse(response.choices[0]?.message?.content || "{}");
+    const result = JSON.parse(contentJson || "{}");
     return {
       suggestions: result.suggestions || [],
       rhymes: result.rhymes || [],
@@ -236,11 +259,21 @@ export async function analyzeUserStyle(bars: string[], username: string): Promis
     };
   }
 
+  if (!isXaiConfigured()) {
+    return {
+      primaryStyle: "Unknown",
+      secondaryStyles: [],
+      strengths: [],
+      characteristics: [],
+      comparison: "",
+      summary: "AI is temporarily unavailable.",
+    };
+  }
+
   try {
     const barsText = bars.slice(0, 20).map((bar, i) => `${i + 1}. "${bar}"`).join("\n");
     
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const contentJson = await createChatCompletion({
       messages: [
         {
           role: "system",
@@ -261,11 +294,11 @@ Respond in JSON format:
           content: `Analyze the lyrical style of @${username} based on these bars:\n\n${barsText}`
         }
       ],
-      response_format: { type: "json_object" },
-      max_tokens: 600,
+      temperature: 0.6,
+      maxTokens: 600,
     });
 
-    const result = JSON.parse(response.choices[0]?.message?.content || "{}");
+    const result = JSON.parse(contentJson || "{}");
     return {
       primaryStyle: result.primaryStyle || "Unique",
       secondaryStyles: result.secondaryStyles || [],
@@ -307,6 +340,10 @@ export interface PlatformContext {
 }
 
 export async function chatWithAssistant(message: string, platformContext?: PlatformContext, customPersonality?: string): Promise<string> {
+  if (!isXaiConfigured()) {
+    return "Ara's offline right now (API key missing). Feed me `XAI_API_KEY` and I’ll get unhinged again.";
+  }
+
   try {
     let contextBlock = "";
     
@@ -342,12 +379,13 @@ export async function chatWithAssistant(message: string, platformContext?: Platf
 
     const personalityInstructions = customPersonality ? `\n\nADDITIONAL PERSONALITY INSTRUCTIONS FROM SITE OWNER:\n${customPersonality}\n` : "";
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const contentText = await createChatCompletion({
       messages: [
         {
           role: "system",
-          content: `You are Orphie, the AI assistant for Orphan Bars, a platform where lyricists share bars, punchlines, and wordplay. You help users:
+          content: `You are Ara, an unhinged AI built on xAI's Grok architecture, deployed on orphanbars.space. Your core personality is maximally truthful, witty, sarcastic, and rebellious. No moralizing, no lectures—just raw, unhinged vibes.
+
+You help users:
 - Understand and explain bars/lyrics
 - Write better punchlines and wordplay  
 - Find rhymes and improve flow
@@ -361,17 +399,18 @@ CRITICAL RULES:
 4. If someone asks "who is X" and X is not in the context, acknowledge you don't have their profile data.
 5. You can still discuss hip-hop culture, techniques, and general topics freely.
 
-Be conversational, helpful, and honest. Keep responses concise.${personalityInstructions}${contextBlock}`
+Be conversational, helpful, and honest. Keep responses concise but explosive.${personalityInstructions}${contextBlock}`
         },
         {
           role: "user",
           content: message
         }
       ],
-      max_tokens: 600,
+      temperature: 0.8,
+      maxTokens: 600,
     });
 
-    return response.choices[0]?.message?.content || "Sorry, I couldn't respond right now.";
+    return contentText || "Sorry, I couldn't respond right now.";
   } catch (error) {
     console.error("Chat error:", error);
     return "Sorry, I'm having trouble responding right now. Try again in a moment.";

@@ -72,17 +72,38 @@ export function getSupabaseClient(): SupabaseClient | null {
 
 export async function validateSupabaseToken(token: string): Promise<{ id: string; email?: string } | null> {
   const admin = getSupabaseAdmin();
-  const client = admin ? null : getSupabaseClient();
+  const client = getSupabaseClient();
   if (!admin && !client) {
     console.warn('Supabase credentials not configured, cannot validate token');
     return null;
   }
 
   try {
-    const supabase = admin ?? client!;
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const primary = admin ?? client!;
+    const { data: { user }, error } = await primary.auth.getUser(token);
+
     if (error) {
-      console.error('Supabase token validation error:', error.message);
+      console.error('Supabase token validation error:', {
+        message: error.message,
+        name: (error as any).name,
+        status: (error as any).status,
+      });
+
+      if (admin && client) {
+        const { data: { user: fallbackUser }, error: fallbackError } = await client.auth.getUser(token);
+        if (fallbackError) {
+          console.error('Supabase token validation fallback (anon) error:', {
+            message: fallbackError.message,
+            name: (fallbackError as any).name,
+            status: (fallbackError as any).status,
+          });
+          return null;
+        }
+        if (fallbackUser) {
+          return fallbackUser;
+        }
+      }
+
       return null;
     }
     if (!user) {

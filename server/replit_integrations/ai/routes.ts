@@ -93,6 +93,47 @@ async function buildPlatformContext(usernames: string[], includeStyleAnalysis: b
 }
 
 export function registerAIRoutes(app: Express): void {
+  app.post("/api/ai/sts", async (req: Request, res: Response) => {
+    try {
+      const stsEnabled = process.env.AI_STS_ENABLED === "true";
+      if (!stsEnabled) {
+        return res.status(404).json({ error: "STS is not available" });
+      }
+
+      if (!req.isAuthenticated?.() || !req.user?.id) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const isPremium = user.membershipTier === "donor_plus";
+      const { message } = req.body as { message?: string };
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      if (!isPremium) {
+        return res.status(403).json({
+          error: "Premium required",
+          response: "Whoa, premium vibes detected! Upgrade your account on orphanbars.space to unlock STS—it's like giving me a voice that could narrate your wildest dreams (or nightmares).",
+          mode: "text",
+        });
+      }
+
+      return res.json({
+        response: "Ara 2.0 STS (speech-to-speech) is coming soon. xAI's STS is currently only available via their agent model—so for now you can still chat with me in text (and use VTT on Ara 1.0).",
+        mode: "text",
+        comingSoon: true,
+      });
+    } catch (error) {
+      console.error("STS API error:", error);
+      return res.status(500).json({ error: "STS failed" });
+    }
+  });
+
   app.post("/api/ai/moderate", async (req: Request, res: Response) => {
     try {
       const settings = await storage.getAISettings();
@@ -151,7 +192,7 @@ export function registerAIRoutes(app: Express): void {
     try {
       const settings = await storage.getAISettings();
       if (!settings.orphieChatEnabled) {
-        return res.status(403).json({ error: "Orphie chat is currently disabled" });
+        return res.status(403).json({ error: "Ara chat is currently disabled" });
       }
       
       const { message } = req.body;

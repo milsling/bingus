@@ -3587,7 +3587,7 @@ export default function Admin() {
                     AI Settings
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Control Orphie and AI features across the platform.
+                    Control Ara and AI features across the platform.
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -3611,7 +3611,7 @@ export default function Admin() {
                           </div>
                           <div className="flex items-center justify-between p-3 border border-border rounded-lg">
                             <div>
-                              <p className="font-medium">Orphie Chat</p>
+                              <p className="font-medium">Ara Chat</p>
                               <p className="text-sm text-muted-foreground">Allow users to chat with the AI assistant</p>
                             </div>
                             <Switch
@@ -3623,7 +3623,7 @@ export default function Admin() {
                           <div className="flex items-center justify-between p-3 border border-border rounded-lg">
                             <div>
                               <p className="font-medium">Style Analysis</p>
-                              <p className="text-sm text-muted-foreground">Let Orphie analyze user writing styles</p>
+                              <p className="text-sm text-muted-foreground">Let Ara analyze user writing styles</p>
                             </div>
                             <Switch
                               checked={aiSettings?.styleAnalysisEnabled ?? true}
@@ -3685,13 +3685,13 @@ export default function Admin() {
                       </div>
 
                       <div className="space-y-4">
-                        <h3 className="font-semibold text-lg border-b pb-2">Orphie Customization</h3>
+                        <h3 className="font-semibold text-lg border-b pb-2">Ara Customization</h3>
                         <div className="space-y-4">
                           <div>
                             <Label htmlFor="orphie-greeting">Custom Greeting</Label>
                             <Input
                               id="orphie-greeting"
-                              placeholder="What's good! I'm Orphie..."
+                              placeholder="What's good! I'm Ara..."
                               defaultValue={aiSettings?.orphieGreeting || ""}
                               onBlur={(e) => {
                                 if (e.target.value !== (aiSettings?.orphieGreeting || "")) {
@@ -3700,13 +3700,13 @@ export default function Admin() {
                               }}
                               data-testid="input-orphie-greeting"
                             />
-                            <p className="text-xs text-muted-foreground mt-1">Custom message Orphie shows when users open the chat</p>
+                            <p className="text-xs text-muted-foreground mt-1">Custom message Ara shows when users open the chat</p>
                           </div>
                           <div>
                             <Label htmlFor="orphie-personality">Custom Personality/Instructions</Label>
                             <Textarea
                               id="orphie-personality"
-                              placeholder="Additional instructions for Orphie's personality..."
+                              placeholder="Additional instructions for Ara's personality..."
                               defaultValue={aiSettings?.orphiePersonality || ""}
                               onBlur={(e) => {
                                 if (e.target.value !== (aiSettings?.orphiePersonality || "")) {
@@ -3716,7 +3716,7 @@ export default function Admin() {
                               className="min-h-[100px]"
                               data-testid="input-orphie-personality"
                             />
-                            <p className="text-xs text-muted-foreground mt-1">Add personality traits or special instructions for how Orphie should respond</p>
+                            <p className="text-xs text-muted-foreground mt-1">Add personality traits or special instructions for how Ara should respond</p>
                           </div>
                         </div>
                       </div>
@@ -4089,7 +4089,7 @@ export default function Admin() {
                             <span className="text-xs text-muted-foreground">Jan 2026</span>
                           </div>
                           <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-                            <li>• Orphie AI assistant with content moderation</li>
+                            <li>• Ara AI assistant with content moderation</li>
                             <li>• AI-powered bar suggestions and feedback</li>
                             <li>• Three-tier moderation system</li>
                             <li>• Report handling with action tracking</li>

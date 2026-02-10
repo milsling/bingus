@@ -63,7 +63,7 @@ async function ensureOwnerAccount() {
       console.log(`✓ User found with email ${OWNER_EMAIL}: ${existingByEmail.username}`);
       
       // Update to ensure they're marked as owner and admin
-      if (!existingByEmail.isOwner || !existingByEmail.isAdmin) {
+      if (!existingByEmail.isOwner || !existingByEmail.isAdmin || existingByEmail.membershipTier !== "donor_plus") {
         console.log("Updating user to be owner and admin...");
         await db
           .update(users)
@@ -71,6 +71,7 @@ async function ensureOwnerAccount() {
             isOwner: true,
             isAdmin: true,
             username: OWNER_USERNAME, // Ensure username is correct
+            membershipTier: "donor_plus",
           })
           .where(eq(users.id, existingByEmail.id));
         console.log("✓ User updated successfully");
@@ -97,6 +98,7 @@ async function ensureOwnerAccount() {
           isOwner: true,
           isAdmin: true,
           emailVerified: true,
+          membershipTier: "donor_plus",
         })
         .where(eq(users.id, existingByUsername.id));
       console.log("✓ User updated successfully");
@@ -119,6 +121,7 @@ async function ensureOwnerAccount() {
         isOwner: true,
         isAdmin: true,
         emailVerified: true,
+        membershipTier: "donor_plus",
       })
       .returning();
     

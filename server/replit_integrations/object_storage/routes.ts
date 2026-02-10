@@ -44,12 +44,36 @@ export function registerObjectStorageRoutes(app: Express): void {
    */
   app.post("/api/uploads/request-url", isAuthenticated, async (req, res) => {
     try {
-      const { name, size, contentType } = req.body;
+      const { name, size, contentType, purpose } = req.body as {
+        name?: string;
+        size?: number;
+        contentType?: string;
+        purpose?: string;
+      };
 
       if (!name) {
         return res.status(400).json({
           error: "Missing required field: name",
         });
+      }
+
+      if (typeof contentType === "string" && contentType.toLowerCase().startsWith("video/")) {
+        return res.status(400).json({ error: "Video uploads are not supported" });
+      }
+
+      if (purpose === "message_image") {
+        const user = req.user as any;
+        const isOwner = !!user?.isOwner;
+        const membershipTier = user?.membershipTier;
+        const isPremium = membershipTier === "donor_plus";
+
+        if (!isOwner && !isPremium) {
+          return res.status(403).json({ error: "Premium required" });
+        }
+
+        if (typeof contentType !== "string" || !contentType.toLowerCase().startsWith("image/")) {
+          return res.status(400).json({ error: "Only image uploads are allowed" });
+        }
       }
 
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
@@ -61,7 +85,7 @@ export function registerObjectStorageRoutes(app: Express): void {
         uploadURL,
         objectPath,
         // Echo back the metadata for client convenience
-        metadata: { name, size, contentType },
+        metadata: { name, size, contentType, purpose },
       });
     } catch (error) {
       console.error("Error generating upload URL:", error);

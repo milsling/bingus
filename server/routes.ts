@@ -2286,7 +2286,7 @@ export async function registerRoutes(
         return res.status(403).json({ message: "Cannot modify owner's privileges" });
       }
       const { membershipTier } = req.body;
-      const validTiers = ["free", "basic", "premium"];
+      const validTiers = ["free", "donor", "donor_plus"];
       if (!validTiers.includes(membershipTier)) {
         return res.status(400).json({ message: "Invalid membership tier" });
       }

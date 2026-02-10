@@ -132,7 +132,7 @@ interface BottomNavProps {
 export function BottomNav({ onNewMessage }: BottomNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [orphieOpen, setOrphieOpen] = useState(false);
+  const [araOpen, setAraOpen] = useState(false);
   const [location, setLocation] = useLocation();
   const [menuSection, setMenuSection] = useState<"orphanbars" | "orphanage">(
     location.startsWith("/orphanage") ? "orphanage" : "orphanbars"
@@ -362,20 +362,20 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   </button>
                 </div>
 
-                {/* Orphie AI Button */}
+                {/* Ara AI Button */}
                 {currentUser && (
                   <button
                     onClick={() => {
                       setIsOpen(false);
-                      setOrphieOpen(true);
+                      setAraOpen(true);
                     }}
                     className="mt-4 w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/20 transition-all active:scale-[0.98]"
-                    data-testid="nav-section-orphie"
+                    data-testid="nav-section-ara"
                   >
                     <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
                       <Sparkles className="h-6 w-6 text-purple-300" />
                     </div>
-                    <span className="text-lg font-medium text-white/90">Orphie AI</span>
+                    <span className="text-lg font-medium text-white/90">Ara</span>
                   </button>
                 )}
               </motion.div>
@@ -534,7 +534,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
       </div>
 
       
-      <AIAssistant open={orphieOpen} onOpenChange={setOrphieOpen} hideFloatingButton />
+      <AIAssistant open={araOpen} onOpenChange={setAraOpen} hideFloatingButton />
     </>
   );
 }

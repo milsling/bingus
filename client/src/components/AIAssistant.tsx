@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sparkles, Send, Loader2 } from "lucide-react";
+import { Mic, MicOff, Sparkles, Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -28,10 +28,48 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
   const [isLoading, setIsLoading] = useState(false);
   const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const supported = !!SpeechRecognition;
+    setIsVoiceSupported(supported);
+    if (!supported) {
+      recognitionRef.current = null;
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onresult = (event: any) => {
+      const transcript = event?.results?.[0]?.[0]?.transcript;
+      if (typeof transcript === "string" && transcript.trim()) {
+        setInput((prev) => {
+          const next = `${prev}${prev.trim() ? " " : ""}${transcript.trim()}`;
+          return next;
+        });
+      }
+    };
+
+    recognition.onerror = () => {
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognitionRef.current = recognition;
+  }, []);
 
   useEffect(() => {
     if (isOpen && initialPrompt && !hasProcessedInitialPrompt && !isLoading) {
@@ -75,6 +113,26 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     await sendMessageWithContent(input);
   };
 
+  const toggleRecording = () => {
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    if (isRecording) {
+      try {
+        recognition.stop();
+      } finally {
+        setIsRecording(false);
+      }
+      return;
+    }
+
+    try {
+      setIsRecording(true);
+      recognition.start();
+    } catch {
+      setIsRecording(false);
+    }
+  };
+
   return (
     <>
       {!hideFloatingButton && (
@@ -95,7 +153,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
           <DialogHeader className="px-4 py-3 border-b">
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-500" />
-              Orphie
+              Ara
             </DialogTitle>
           </DialogHeader>
 
@@ -103,7 +161,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
             {messages.length === 0 && (
               <div className="text-center py-8">
                 <Sparkles className="h-10 w-10 mx-auto mb-3 text-purple-500/50" />
-                <p className="text-sm font-medium mb-2">Hey, I'm Orphie!</p>
+                <p className="text-sm font-medium mb-2">Hey, I'm Ara!</p>
                 <p className="text-xs text-muted-foreground max-w-[250px] mx-auto">
                   Ask me to explain bars, help you write punchlines, find rhymes, or chat about hip-hop.
                 </p>
@@ -132,10 +190,25 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
           </ScrollArea>
 
           <div className="p-4 border-t flex gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={toggleRecording}
+              disabled={isLoading || !isVoiceSupported}
+              title={isVoiceSupported ? (isRecording ? "Stop recording" : "Voice input") : "Voice input not supported"}
+              data-testid="button-ai-voice"
+            >
+              {isRecording ? (
+                <MicOff className="h-4 w-4" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Orphie anything..."
+              placeholder={isVoiceSupported ? "Ask Ara anything (or use the mic)..." : "Ask Ara anything..."}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               disabled={isLoading}
               data-testid="input-ai-chat"
