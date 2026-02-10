@@ -1,4 +1,4 @@
-const CACHE_NAME = 'orphan-bars-v6';
+const CACHE_NAME = 'orphan-bars-v7';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/apple-touch-icon.png',
@@ -6,7 +6,7 @@ const STATIC_ASSETS = [
   '/favicon.png',
 ];
 
-const API_CACHE_NAME = 'orphan-bars-api-v6';
+const API_CACHE_NAME = 'orphan-bars-api-v7';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -47,7 +47,14 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() =>
+          caches.match(event.request).then((cached) =>
+            cached || new Response(JSON.stringify({ error: 'offline' }), {
+              status: 503,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          )
+        )
     );
     return;
   }
@@ -63,7 +70,11 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() =>
+        caches.match(event.request).then((cached) =>
+          cached || new Response('Offline', { status: 503 })
+        )
+      )
   );
 });
 
