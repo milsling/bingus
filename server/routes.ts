@@ -90,6 +90,10 @@ export async function registerRoutes(
     res.json({ version: APP_VERSION });
   });
 
+  app.get("/api/motd", async (_req: Request, res: Response) => {
+    res.json({ isActive: false });
+  });
+
   // Supabase config endpoint for client-side OAuth
   app.get("/api/config/supabase", (req: Request, res: Response) => {
     res.json({
