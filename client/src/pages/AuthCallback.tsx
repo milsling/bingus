@@ -173,6 +173,7 @@ export default function AuthCallback() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ username }),
       });
 

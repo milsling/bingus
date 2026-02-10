@@ -56,6 +56,29 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   setupAuth(app);
+
+  // Hybrid auth: populate req.user from Supabase Bearer token when no passport session exists.
+  // This ensures likes/comments/bookmarks work for OAuth users even if session cookie is missing.
+  app.use(async (req: Request, _res: Response, next: NextFunction) => {
+    if ((req as any).user) return next(); // Already authenticated via session
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return next();
+    try {
+      const token = authHeader.substring(7);
+      const supabaseUser = await validateSupabaseToken(token);
+      if (supabaseUser) {
+        const appUser = await storage.getUserBySupabaseId(supabaseUser.id);
+        if (appUser) {
+          const { password: _, ...userWithoutPassword } = appUser;
+          (req as any).user = userWithoutPassword;
+        }
+      }
+    } catch (e) {
+      // Silently continue - auth is optional at this layer
+    }
+    next();
+  });
+
   registerObjectStorageRoutes(app);
   registerAIRoutes(app);
   setupWebSocket(httpServer, sessionParser);

@@ -483,3 +483,21 @@ html.dark {
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
+/* ========================================
+   HIDE DESKTOP SCROLLBARS / SCROLL INDICATORS
+   Keep scroll functionality, just hide the bars.
+   ======================================== */
+@media (min-width: 768px) {
+  /* Firefox */
+  *,
+  html,
+  body {
+    scrollbar-width: none;
+  }
+
+  /* Chrome / Safari / Edge */
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+

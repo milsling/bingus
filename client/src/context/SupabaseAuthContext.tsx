@@ -41,6 +41,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
       });
       
       if (response.ok) {

@@ -53,5 +53,10 @@
             "username": "postgres.gcbfcbumlgfzzqioyotq",
             "name": "supabase"
         }
-    ]
+    ],
+    "terminal.integrated.automationProfile.linux": {
+
+    },
+    "merge-conflict.autoNavigateNextConflict.enabled": true,
+    "workbench.reduceMotion": "on"
 }
