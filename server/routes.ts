@@ -94,6 +94,14 @@ export async function registerRoutes(
     res.json({ isActive: false });
   });
 
+  // Owner-only middleware
+  const isOwner: typeof isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated() && req.user?.isOwner) {
+      return next();
+    }
+    return res.status(403).json({ message: "Owner access required" });
+  };
+
   // Supabase config endpoint for client-side OAuth
   app.get("/api/config/supabase", (req: Request, res: Response) => {
     res.json({
@@ -2728,14 +2736,6 @@ export async function registerRoutes(
       res.status(500).json({ message: error.message });
     }
   });
-
-  // Custom achievement routes (owner only)
-  const isOwner: typeof isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated() && req.user?.isOwner) {
-      return next();
-    }
-    return res.status(403).json({ message: "Owner access required" });
-  };
 
   // Admin+ middleware - for elevated admins (between admin and owner)
   const isAdminPlus: typeof isAuthenticated = (req, res, next) => {
