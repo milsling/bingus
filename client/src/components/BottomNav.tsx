@@ -230,7 +230,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 flex flex-col bg-white/[0.08] backdrop-blur-2xl border-t border-white/[0.1]"
+              className="fixed inset-0 z-50 flex flex-col bg-card/10 backdrop-blur-2xl border-t border-border"
             >
               {/* Header with close button */}
               <div className="flex items-center justify-between px-6 pt-14 pb-4">
@@ -416,7 +416,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-24 left-3 right-3 z-50 bg-white/[0.08] backdrop-blur-3xl rounded-[20px] border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.2)] p-4"
+              className="fixed bottom-24 left-3 right-3 z-50 bg-card/40 backdrop-blur-3xl rounded-[20px] border border-border shadow-[0_8px_32px_rgba(0,0,0,0.2)] p-4"
             >
               <SearchBar className="w-full" />
             </motion.div>
@@ -427,7 +427,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
       {/* Mobile Bottom Nav - Super Transparent Apple Style */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[999] px-3 pb-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
         <div className="relative">
-          <div className="relative bg-card/40 backdrop-blur-3xl rounded-[28px] border border-border/12 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+          <div className="relative bg-card/40 backdrop-blur-3xl rounded-[28px] border border-border/12 shadow-lg">
             <div className="flex items-center justify-around h-[72px] px-1">
               <button
                 onClick={() => setSearchOpen(true)}

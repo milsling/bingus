@@ -39,7 +39,7 @@ export default function Navigation() {
       <BottomNav onNewMessage={() => setNewMessageOpen(true)} />
       
       {/* Desktop Floating Top Bar - Gmail/YouTube style */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl bg-background/70 border border-border backdrop-blur-lg shadow-lg shadow-card">
+      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl bg-background/70 border border-border backdrop-blur-lg shadow-lg">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -172,7 +172,7 @@ export default function Navigation() {
 
       {/* Mobile Top Bar - Apple Glass Style */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-[999] p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-        <div className="bg-background/40 backdrop-blur-2xl rounded-2xl h-12 flex items-center justify-between px-4 shadow-lg shadow-card/30 border border-border/20">
+        <div className="bg-background/40 backdrop-blur-2xl rounded-2xl h-12 flex items-center justify-between px-4 shadow-lg border border-border/20">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
               <img src={headerLogo} alt="" className="h-6 w-6" />

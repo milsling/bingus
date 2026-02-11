@@ -236,17 +236,17 @@ export default function Home() {
           {currentUser ? (
             <div className="glass-panel p-4">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-foreground font-bold text-lg">
                   {currentUser.username?.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-white">@{currentUser.username}</p>
-                  <p className="text-xs text-white/50">Level {currentUser.level || 1}</p>
+                  <p className="font-semibold text-foreground">@{currentUser.username}</p>
+                  <p className="text-xs text-foreground/50">Level {currentUser.level || 1}</p>
                 </div>
               </div>
-              <div className="flex gap-4 text-sm text-white/60 mb-3">
-                <div><span className="text-white font-semibold">{currentUser.xp || 0}</span> XP</div>
-                <div><span className="text-white font-semibold">{currentUser.barCount || 0}</span> Bars</div>
+              <div className="flex gap-4 text-sm text-foreground/60 mb-3">
+                <div><span className="text-foreground font-semibold">{currentUser.xp || 0}</span> XP</div>
+                <div><span className="text-foreground font-semibold">{currentUser.barCount || 0}</span> Bars</div>
               </div>
               {currentUser.badges && currentUser.badges.length > 0 && (
                 <div className="flex flex-wrap gap-1">
@@ -260,8 +260,8 @@ export default function Home() {
             </div>
           ) : (
             <div className="glass-panel p-4 text-center">
-              <p className="text-white/60 text-sm mb-3">Join the community</p>
-              <a href="/auth" className="block w-full py-2 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 transition-colors">
+              <p className="text-foreground/60 text-sm mb-3">Join the community</p>
+              <a href="/auth" className="block w-full py-2 rounded-lg bg-primary text-foreground font-medium text-sm hover:bg-primary/90 transition-colors">
                 Login / Sign Up
               </a>
             </div>
@@ -269,13 +269,13 @@ export default function Home() {
           
           {/* Tags / Categories Pane */}
           <div className="glass-panel p-4">
-            <h3 className="text-sm font-semibold text-white/80 mb-3">Popular Tags</h3>
+            <h3 className="text-sm font-semibold text-foreground/80 mb-3">Popular Tags</h3>
             <div className="flex flex-wrap gap-2">
               {["wordplay", "punchline", "metaphor", "storytelling", "battle", "conscious"].map((tag) => (
                 <button
                   key={tag}
                   onClick={() => setLocation(`/?tag=${tag}`)}
-                  className="text-xs px-2.5 py-1 rounded-full bg-white/[0.04] text-white/60 hover:bg-white/[0.08] hover:text-white transition-colors border border-white/[0.06]"
+                  className="text-xs px-2.5 py-1 rounded-full bg-card/04 text-foreground/60 hover:bg-card/08 hover:text-foreground transition-colors border-border/06"
                 >
                   #{tag}
                 </button>
@@ -302,8 +302,8 @@ export default function Home() {
               <div className="glass-panel p-4">
                 <div className="flex items-start gap-2">
                   <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-white/60">
-                    <span className="font-semibold text-white">How it works:</span> Drop your best bars, tag them with style (wordplay, punchline, metaphor), and add a breakdown to explain the entendre. Explore, like, and save your favorites from the community.{" "}
+                  <p className="text-sm text-foreground/60">
+                    <span className="font-semibold text-foreground">How it works:</span> Drop your best bars, tag them with style (wordplay, punchline, metaphor), and add a breakdown to explain the entendre. Explore, like, and save your favorites from the community.{" "}
                     <a href="/guidelines" className="text-primary hover:underline font-medium">Read the rules</a>
                   </p>
                 </div>
@@ -314,12 +314,12 @@ export default function Home() {
               <div className="mb-4">
                 <div className="glass-panel flex items-center gap-2 p-3">
                   <Hash className="h-4 w-4 text-primary" />
-                  <span className="text-sm text-white/70">Showing bars tagged with</span>
+                  <span className="text-sm text-foreground/70">Showing bars tagged with</span>
                   <Badge variant="secondary" className="font-semibold bg-primary/20 text-primary border-primary/30">#{tagFilter}</Badge>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="ml-auto h-7 text-white/50 hover:text-white hover:bg-white/10"
+                    className="ml-auto h-7 text-foreground/50 hover:text-foreground hover:bg-card/10"
                     onClick={clearTagFilter}
                     data-testid="button-clear-tag"
                   >
@@ -442,7 +442,7 @@ export default function Home() {
         <aside className="w-56 shrink-0 space-y-4 overflow-y-auto py-4">
           {/* Leaderboard - Real data */}
           <div className="glass-panel p-4">
-            <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">
               <Trophy className="h-4 w-4 text-yellow-500" />
               Top Lyricists
             </h3>
@@ -450,8 +450,8 @@ export default function Home() {
               {leaderboard.length > 0 ? (
                 leaderboard.map((user: any, index: number) => (
                   <Link key={user.id} href={`/user/${user.username}`}>
-                    <div className="flex items-center gap-2 text-sm hover:bg-white/[0.04] rounded-lg p-1 -m-1 transition-colors cursor-pointer">
-                      <span className="w-5 text-white/40">
+                    <div className="flex items-center gap-2 text-sm hover:bg-card/04 rounded-lg p-1 -m-1 transition-colors cursor-pointer">
+                      <span className="w-5 text-foreground/40">
                         {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1}
                       </span>
                       {user.avatarUrl ? (
@@ -461,29 +461,29 @@ export default function Home() {
                           {user.username?.charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <span className="flex-1 text-white/80 truncate">{user.username}</span>
+                      <span className="flex-1 text-foreground/80 truncate">{user.username}</span>
                       <span className="text-primary text-xs">{(user.xp || 0).toLocaleString()} XP</span>
                     </div>
                   </Link>
                 ))
               ) : (
-                <p className="text-white/40 text-xs">No users yet</p>
+                <p className="text-foreground/40 text-xs">No users yet</p>
               )}
             </div>
           </div>
           
           {/* Challenge of the Day - Coming Soon placeholder */}
           <div className="glass-panel p-4">
-            <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">
               <Flame className="h-4 w-4 text-orange-500" />
               Challenge of the Day
             </h3>
-            <p className="text-xs text-white/40 text-center py-4">Coming soon...</p>
+            <p className="text-xs text-foreground/40 text-center py-4">Coming soon...</p>
           </div>
           
           {/* Recent Activity - Real data */}
           <div className="glass-panel p-4">
-            <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">
               <Clock className="h-4 w-4 text-blue-400" />
               Recent Activity
             </h3>
@@ -491,11 +491,11 @@ export default function Home() {
               {recentActivity.length > 0 ? (
                 recentActivity.slice(0, 6).map((activity: any, i: number) => (
                   <Link key={`${activity.type}-${activity.id}-${i}`} href={`/bar/${activity.barId}`}>
-                    <div className="flex items-start gap-2 hover:bg-white/[0.04] rounded-lg p-1 -m-1 transition-colors cursor-pointer">
+                    <div className="flex items-start gap-2 hover:bg-card/04 rounded-lg p-1 -m-1 transition-colors cursor-pointer">
                       {activity.actorAvatar ? (
                         <img src={activity.actorAvatar} alt="" className="w-6 h-6 rounded-full object-cover" />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-white/40">
+                        <div className="w-6 h-6 rounded-full bg-card/06 flex items-center justify-center text-[10px] text-foreground/40">
                           {activity.actorUsername?.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -504,20 +504,20 @@ export default function Home() {
                           {activity.type === 'like' && <Heart className="h-3 w-3 text-red-400" />}
                           {activity.type === 'comment' && <MessageCircle className="h-3 w-3 text-blue-400" />}
                           {activity.type === 'post' && <PenLine className="h-3 w-3 text-green-400" />}
-                          <span className="text-white/70 truncate">{activity.actorUsername}</span>
+                          <span className="text-foreground/70 truncate">{activity.actorUsername}</span>
                         </div>
-                        <span className="text-white/40">
+                        <span className="text-foreground/40">
                           {activity.type === 'like' && 'liked a bar'}
                           {activity.type === 'comment' && 'commented on a bar'}
                           {activity.type === 'post' && 'dropped a new bar'}
                         </span>
-                        <p className="text-white/30">{formatTimeAgo(activity.createdAt)}</p>
+                        <p className="text-foreground/30">{formatTimeAgo(activity.createdAt)}</p>
                       </div>
                     </div>
                   </Link>
                 ))
               ) : (
-                <p className="text-white/40 text-center py-2">No recent activity</p>
+                <p className="text-foreground/40 text-center py-2">No recent activity</p>
               )}
             </div>
           </div>
@@ -543,8 +543,8 @@ export default function Home() {
               <div className="glass-panel p-3">
                 <div className="flex items-start gap-2">
                   <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-white/60">
-                    <span className="font-semibold text-white">How it works:</span> Drop your bars, tag them, and add breakdowns.{" "}
+                  <p className="text-xs text-foreground/60">
+                    <span className="font-semibold text-foreground">How it works:</span> Drop your bars, tag them, and add breakdowns.{" "}
                     <a href="/guidelines" className="text-primary hover:underline font-medium">Read the rules</a>
                   </p>
                 </div>
@@ -555,12 +555,12 @@ export default function Home() {
               <div className="mb-4">
                 <div className="glass-panel flex items-center gap-2 p-3">
                   <Hash className="h-4 w-4 text-primary" />
-                  <span className="text-xs text-white/70">Tag:</span>
+                  <span className="text-xs text-foreground/70">Tag:</span>
                   <Badge variant="secondary" className="font-semibold bg-primary/20 text-primary border-primary/30 text-xs">#{tagFilter}</Badge>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="ml-auto h-6 text-white/50 hover:text-white hover:bg-white/10"
+                    className="ml-auto h-6 text-foreground/50 hover:text-foreground hover:bg-card/10"
                     onClick={clearTagFilter}
                   >
                     <X className="h-3 w-3" />

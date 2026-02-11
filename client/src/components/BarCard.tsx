@@ -59,7 +59,7 @@ function getAnimationClasses(animation: string | undefined): string {
     case 'sparkle':
       return 'animate-pulse hover:brightness-125';
     case 'gradient':
-      return 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white hover:from-red-500 hover:via-pink-500 hover:to-purple-500 transition-all duration-500';
+      return 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-foreground hover:from-red-500 hover:via-pink-500 hover:to-purple-500 transition-all duration-500';
     default:
       return '';
   }
@@ -661,11 +661,11 @@ export default function BarCard({ bar }: BarCardProps) {
             <Bookmark className="h-8 w-8 fill-current" />
           </div>
         )}
-        <Card className="glass-card border-white/[0.08] overflow-hidden hover:border-white/[0.15] hover:bg-white/[0.06] transition-all duration-300">
+        <Card className="glass-card border-border/08 overflow-hidden hover:border-border/15 hover:bg-card/06 transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-3">
               <Link href={`/u/${bar.user.username}`}>
-                <Avatar className="h-10 w-10 border border-white/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+                <Avatar className="h-10 w-10 border border-border/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
                   <AvatarImage src={bar.user.avatarUrl || undefined} alt={bar.user.username} />
                   <AvatarFallback>{bar.user.username[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
@@ -691,17 +691,17 @@ export default function BarCard({ bar }: BarCardProps) {
                     <span className="text-[10px] text-primary">✓</span>
                   )}
                   {bar.user.username.toLowerCase() === "milsling" && (
-                    <Badge className="ml-1 badge-founder-electric text-white text-[9px] px-1.5 py-0 h-4">
+                    <Badge className="ml-1 badge-founder-electric text-foreground text-[9px] px-1.5 py-0 h-4">
                       OB FOUNDER
                     </Badge>
                   )}
                   {(bar.user as any).isAdminPlus && (
-                    <Badge className="ml-1 bg-red-600/90 text-white text-[9px] px-1.5 py-0 h-4 shadow-[0_0_10px_rgba(255,0,0,0.6)] animate-pulse">
+                    <Badge className="ml-1 bg-red-600/90 text-foreground text-[9px] px-1.5 py-0 h-4 shadow-[0_0_10px_rgba(255,0,0,0.6)] animate-pulse">
                       Admin+
                     </Badge>
                   )}
                   {(bar.user as any).isAdmin && !(bar.user as any).isAdminPlus && !(bar.user as any).isOwner && (
-                    <Badge className="ml-1 bg-blue-600/90 text-white text-[9px] px-1.5 py-0 h-4">
+                    <Badge className="ml-1 bg-blue-600/90 text-foreground text-[9px] px-1.5 py-0 h-4">
                       Admin
                     </Badge>
                   )}
@@ -867,7 +867,7 @@ export default function BarCard({ bar }: BarCardProps) {
                 </Badge>
               )}
               {bar.feedbackWanted && (
-                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs gap-1" data-testid={`badge-feedback-${bar.id}`}>
+                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-foreground text-xs gap-1" data-testid={`badge-feedback-${bar.id}`}>
                   <MessageSquarePlus className="h-3 w-3" />
                   Breakdown Requested
                 </Badge>
