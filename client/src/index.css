@@ -453,13 +453,9 @@ html.dark {
   box-shadow: var(--shadow-card-hover);
 }
 
-/* Light mode specific enhancements for main content */
+/* Keep main background stable in light mode (prevents scroll tint drift) */
 :root:not(.dark) main {
-  background: linear-gradient(
-    180deg,
-    hsl(var(--background)) 0%,
-    hsl(40 15% 97%) 100%
-  );
+  background: transparent;
 }
 
 /* Light mode input fields - subtle inset shadow */
