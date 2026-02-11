@@ -427,13 +427,13 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
       {/* Mobile Bottom Nav - Super Transparent Apple Style */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] px-3 pb-2 safe-area-inset-bottom">
         <div className="relative">
-          <div className="relative bg-white/[0.08] backdrop-blur-3xl rounded-[28px] border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+          <div className="relative bg-card/40 backdrop-blur-3xl rounded-[28px] border border-border/12 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-around h-[72px] px-1">
               <button
                 onClick={() => setSearchOpen(true)}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200",
-                  "text-white/50 active:scale-90 active:bg-white/[0.08]"
+                  "text-foreground/50 active:scale-90 active:bg-secondary/80"
                 )}
                 data-testid="button-search"
               >
@@ -447,7 +447,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/" 
                     ? "text-white" 
-                    : "text-white/50 active:bg-white/[0.08]"
+                    : "text-foreground active:bg-secondary/80"
                 )}
                 data-testid="nav-feed"
               >
@@ -497,7 +497,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/saved" 
                     ? "text-white" 
-                    : "text-white/50 active:bg-white/[0.08]"
+                    : "text-foreground active:bg-secondary/80"
                 )}
                 data-testid="nav-saved"
               >
@@ -516,7 +516,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/profile" 
                     ? "text-white" 
-                    : "text-white/50 active:bg-white/[0.08]"
+                    : "text-foreground active:bg-secondary/80"
                 )}
                 data-testid="nav-profile"
               >
