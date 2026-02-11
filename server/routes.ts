@@ -2697,6 +2697,38 @@ export async function registerRoutes(
     }
   });
 
+  // Owner-only: Link a Supabase OAuth identity to an existing app user
+  app.post("/api/admin/link-supabase", isOwner, async (req, res) => {
+    try {
+      const { username, supabaseId } = req.body;
+      if (!username || !supabaseId) {
+        return res.status(400).json({ message: "username and supabaseId are required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if supabaseId is already linked to another user
+      const existingBySupabaseId = await storage.getUserBySupabaseId(supabaseId);
+      if (existingBySupabaseId && existingBySupabaseId.id !== user.id) {
+        return res.status(409).json({ message: "Supabase ID is already linked to another user" });
+      }
+
+      await storage.linkSupabaseAccount(user.id, supabaseId);
+      const updatedUser = await storage.getUser(user.id);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update user" });
+      }
+
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json({ user: userWithoutPassword, message: `Supabase account linked to ${username}` });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Custom achievement routes (owner only)
   const isOwner: typeof isAuthenticated = (req, res, next) => {
     if (req.isAuthenticated() && req.user?.isOwner) {
