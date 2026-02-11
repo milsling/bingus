@@ -35,6 +35,9 @@ export default function Navigation() {
 
   return (
     <>
+      {/* Mobile Bottom Nav - Fixed to screen bottom */}
+      <BottomNav onNewMessage={() => setNewMessageOpen(true)} />
+      
       {/* Desktop Floating Top Bar - Gmail/YouTube style */}
       <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl bg-background/70 border border-border backdrop-blur-lg shadow-lg shadow-card">
         {/* Left: Hamburger + Logo */}
@@ -168,7 +171,7 @@ export default function Navigation() {
       </header>
 
       {/* Mobile Top Bar - Apple Glass Style */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-[999] p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
         <div className="bg-background/40 backdrop-blur-2xl rounded-2xl h-12 flex items-center justify-between px-4 shadow-lg shadow-card/30 border border-border/20">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
@@ -183,9 +186,6 @@ export default function Navigation() {
           </div>
         </div>
       </div>
-
-      {/* Bottom Nav - Mobile only */}
-      <BottomNav onNewMessage={() => setNewMessageOpen(true)} />
       
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
     </>
