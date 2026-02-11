@@ -232,36 +232,40 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
         {isOpen && (
           <div className="md:hidden">
             <div
-              className="fixed inset-0 bg-black/55 dark:bg-black/75 z-[1100]"
+              className="fixed inset-0 bg-black/42 dark:bg-black/72 z-[1100]"
               onClick={() => { playMenuCloseSound(); setIsOpen(false); }}
             />
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[1110] flex flex-col bg-background/72 backdrop-blur-2xl border-t border-border/50"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="fixed inset-x-0 bottom-0 z-[1110] flex flex-col rounded-t-[2rem] glass-sheet border-x border-t border-b-0 border-border/55 shadow-[0_-28px_56px_rgba(15,23,42,0.22)] dark:shadow-[0_-28px_56px_rgba(0,0,0,0.55)]"
+              style={{ top: "max(4.25rem, calc(env(safe-area-inset-top) + 3rem))" }}
             >
               {/* Header with close button */}
-              <div className="flex items-center justify-between px-6 pt-14 pb-4">
-                <img 
-                  src={orphanBarsMenuLogo} 
-                  alt="Orphan Bars" 
-                  className="h-8 w-auto opacity-90 dark:brightness-0 dark:invert"
-                />
-                <motion.button
-                  onClick={() => { playMenuCloseSound(); setIsOpen(false); }}
-                  className="w-10 h-10 rounded-full bg-background/70 hover:bg-accent border border-border/60 flex items-center justify-center transition-colors"
-                  whileTap={{ scale: 0.9 }}
-                  data-testid="button-close-menu"
-                >
-                  <X className="w-5 h-5 text-foreground" strokeWidth={2} />
-                </motion.button>
+              <div className="sticky top-0 z-20 px-6 pt-3 pb-4 bg-gradient-to-b from-background/95 to-background/40 backdrop-blur-xl border-b border-border/45">
+                <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-foreground/20" />
+                <div className="flex items-center justify-between">
+                  <img 
+                    src={orphanBarsMenuLogo} 
+                    alt="Orphan Bars" 
+                    className="h-8 w-auto opacity-90 dark:brightness-0 dark:invert"
+                  />
+                  <motion.button
+                    onClick={() => { playMenuCloseSound(); setIsOpen(false); }}
+                    className="w-10 h-10 rounded-full bg-background/70 hover:bg-accent border border-border/60 flex items-center justify-center transition-colors"
+                    whileTap={{ scale: 0.9 }}
+                    data-testid="button-close-menu"
+                  >
+                    <X className="w-5 h-5 text-foreground" strokeWidth={2} />
+                  </motion.button>
+                </div>
               </div>
 
               {/* Navigation Items - Vertical List */}
               <motion.div 
-                className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
+                className="flex-1 flex flex-col px-6 py-4 overflow-y-auto overscroll-contain"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.2 }}
@@ -397,10 +401,10 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
 
               {/* Drop a Bar Button - Fixed at bottom */}
               {currentUser && (
-                <div className="px-6 pb-8 pt-4">
+                <div className="sticky bottom-0 px-6 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 bg-gradient-to-t from-background/95 to-background/15 backdrop-blur-xl border-t border-border/45">
                   <button
                     onClick={() => handleNavClick("/post")}
-                    className="w-full p-4 rounded-2xl bg-primary/14 hover:bg-primary/22 border border-primary/28 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                    className="w-full p-4 rounded-2xl bg-primary/14 hover:bg-primary/22 border border-primary/28 transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-[0_10px_24px_rgba(99,102,241,0.24)] dark:shadow-[0_10px_24px_rgba(0,0,0,0.45)]"
                     data-testid="nav-item-drop-bar-main"
                   >
                     <Plus className="w-6 h-6 text-primary" strokeWidth={2} />
@@ -431,7 +435,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-24 left-3 right-3 z-50 bg-card/40 backdrop-blur-3xl rounded-[20px] border border-border shadow-[0_8px_32px_rgba(0,0,0,0.2)] p-4"
+              className="fixed bottom-24 left-3 right-3 z-[1120] glass-surface-strong rounded-[20px] border border-border/55 p-4"
             >
               <SearchBar className="w-full" />
             </motion.div>

@@ -157,6 +157,24 @@
   --floating-bar-shadow:
     0 12px 28px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(15, 23, 42, 0.08);
+
+  /* Unified glass system (light) */
+  --glass-surface-bg: rgba(255, 255, 255, 0.58);
+  --glass-surface-bg-strong: rgba(255, 255, 255, 0.76);
+  --glass-surface-border: rgba(255, 255, 255, 0.72);
+  --glass-surface-border-strong: rgba(148, 163, 184, 0.34);
+  --glass-surface-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.08);
+
+  --glass-field-bg: rgba(255, 255, 255, 0.65);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.88);
+  --glass-field-border: rgba(148, 163, 184, 0.35);
+  --glass-field-border-focus: rgba(129, 140, 248, 0.55);
+  --glass-field-placeholder: rgba(71, 85, 105, 0.62);
+
+  --sheet-bg: rgba(248, 250, 252, 0.78);
+  --sheet-border: rgba(148, 163, 184, 0.34);
 }
 
 .dark {
@@ -231,6 +249,24 @@
   --floating-bar-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.28);
+
+  /* Unified glass system (dark) */
+  --glass-surface-bg: rgba(15, 23, 42, 0.52);
+  --glass-surface-bg-strong: rgba(15, 23, 42, 0.76);
+  --glass-surface-border: rgba(255, 255, 255, 0.12);
+  --glass-surface-border-strong: rgba(255, 255, 255, 0.18);
+  --glass-surface-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.42),
+    0 3px 10px rgba(0, 0, 0, 0.3);
+
+  --glass-field-bg: rgba(15, 23, 42, 0.5);
+  --glass-field-bg-focus: rgba(15, 23, 42, 0.72);
+  --glass-field-border: rgba(255, 255, 255, 0.16);
+  --glass-field-border-focus: rgba(167, 139, 250, 0.6);
+  --glass-field-placeholder: rgba(226, 232, 240, 0.5);
+
+  --sheet-bg: rgba(2, 6, 23, 0.72);
+  --sheet-border: rgba(255, 255, 255, 0.16);
 }
 
 @layer base {
@@ -472,12 +508,12 @@ html.dark {
 
 /* Glass panel base - Theme-aware glass style */
 .glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-surface-bg);
+  backdrop-filter: blur(32px) saturate(130%);
+  -webkit-backdrop-filter: blur(32px) saturate(130%);
+  border: 1px solid var(--glass-surface-border);
   border-radius: 1rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-surface-shadow);
   will-change: transform;
 }
 
@@ -486,29 +522,31 @@ html.dark {
 }
 
 .glass-panel-hover:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-hover);
+  background: var(--glass-surface-bg-strong);
+  border-color: var(--glass-surface-border-strong);
 }
 
 /* Glass card - bar cards - theme-aware */
 .glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-surface-bg);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  border: 1px solid var(--glass-surface-border);
   border-radius: 1rem;
   transform: translateZ(0);
   will-change: transform;
+  box-shadow: var(--glass-surface-shadow);
 }
 
 /* Glass nav - navigation specific styling - theme-aware */
 .glass-nav {
-  background: var(--glass-bg);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-surface-bg);
+  backdrop-filter: blur(36px) saturate(140%);
+  -webkit-backdrop-filter: blur(36px) saturate(140%);
+  border: 1px solid var(--glass-surface-border);
   transform: translateZ(0);
   will-change: transform;
+  box-shadow: var(--glass-surface-shadow);
 }
 
 /* Floating top/bottom bars (theme-aware) */
@@ -518,6 +556,49 @@ html.dark {
   -webkit-backdrop-filter: blur(28px) saturate(140%);
   border: 1px solid var(--floating-bar-border);
   box-shadow: var(--floating-bar-shadow);
+}
+
+.glass-surface {
+  background: var(--glass-surface-bg);
+  border: 1px solid var(--glass-surface-border);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  box-shadow: var(--glass-surface-shadow);
+}
+
+.glass-surface-strong {
+  background: var(--glass-surface-bg-strong);
+  border: 1px solid var(--glass-surface-border-strong);
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+  box-shadow: var(--glass-surface-shadow);
+}
+
+.glass-field {
+  background: var(--glass-field-bg);
+  border: 1px solid var(--glass-field-border);
+  color: hsl(var(--foreground));
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.glass-field::placeholder {
+  color: var(--glass-field-placeholder);
+}
+
+.glass-field:focus,
+.glass-field:focus-visible {
+  background: var(--glass-field-bg-focus);
+  border-color: var(--glass-field-border-focus);
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+}
+
+.glass-sheet {
+  background: var(--sheet-bg);
+  border: 1px solid var(--sheet-border);
+  backdrop-filter: blur(36px) saturate(145%);
+  -webkit-backdrop-filter: blur(36px) saturate(145%);
 }
 
 /* Glass button - theme-aware */
@@ -541,18 +622,19 @@ html.dark {
 
 /* Glass input - super transparent */
 .glass-input {
-  background: rgba(255, 255, 255, 0.06) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: var(--glass-field-bg) !important;
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid var(--glass-field-border) !important;
   border-radius: 9999px !important;
+  color: hsl(var(--foreground));
   transition: all 0.15s ease;
 }
 
 .glass-input:focus {
-  background: rgba(255, 255, 255, 0.10) !important;
-  border-color: rgba(168, 85, 247, 0.5) !important;
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+  background: var(--glass-field-bg-focus) !important;
+  border-color: var(--glass-field-border-focus) !important;
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
 }
 
 /* Glass modal/dialog overlay */
