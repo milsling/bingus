@@ -1242,6 +1242,7 @@ export async function registerRoutes(
   // Like routes
   app.post("/api/bars/:id/like", isAuthenticated, async (req, res) => {
     const startTime = Date.now();
+    console.log(`[LIKE] Request received for bar ${req.params.id} from user ${req.user?.id} (${req.user?.username})`);
     const logDetails: any = {
       barId: req.params.id,
       userId: req.user!.id,
