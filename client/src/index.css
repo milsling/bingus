@@ -141,6 +141,22 @@
     0 4px 16px rgba(0, 0, 0, 0.08),
     0 12px 32px rgba(0, 0, 0, 0.06),
     0 0 0 1px rgba(168, 85, 247, 0.15);
+
+  /* App backdrop (light) */
+  --app-bg-1: rgba(168, 85, 247, 0.14);
+  --app-bg-2: rgba(139, 69, 180, 0.12);
+  --app-bg-3: rgba(59, 130, 246, 0.12);
+  --app-bg-4: rgba(236, 72, 153, 0.09);
+  --app-bg-5: rgba(99, 102, 241, 0.08);
+  --app-bg-base-start: #fcfdff;
+  --app-bg-base-end: #eef3ff;
+
+  /* Floating bars */
+  --floating-bar-bg: rgba(255, 255, 255, 0.62);
+  --floating-bar-border: rgba(255, 255, 255, 0.72);
+  --floating-bar-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 .dark {
@@ -199,6 +215,22 @@
     0 4px 16px rgba(0, 0, 0, 0.5),
     0 12px 32px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(168, 85, 247, 0.2);
+
+  /* App backdrop (dark) */
+  --app-bg-1: rgba(168, 85, 247, 0.35);
+  --app-bg-2: rgba(139, 69, 180, 0.4);
+  --app-bg-3: rgba(59, 130, 246, 0.35);
+  --app-bg-4: rgba(236, 72, 153, 0.25);
+  --app-bg-5: rgba(99, 102, 241, 0.3);
+  --app-bg-base-start: #1a1a2e;
+  --app-bg-base-end: #0f0f1a;
+
+  /* Floating bars */
+  --floating-bar-bg: rgba(15, 23, 42, 0.56);
+  --floating-bar-border: rgba(255, 255, 255, 0.12);
+  --floating-bar-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.42),
+    0 3px 10px rgba(0, 0, 0, 0.28);
 }
 
 @layer base {
@@ -208,13 +240,15 @@
   body {
     @apply font-sans antialiased text-foreground;
     background: 
-      radial-gradient(ellipse at 50% 50%, rgba(168, 85, 247, 0.35) 0%, transparent 40%),
-      radial-gradient(ellipse at 30% 30%, rgba(139, 69, 180, 0.4) 0%, transparent 45%),
-      radial-gradient(ellipse at 70% 70%, rgba(59, 130, 246, 0.35) 0%, transparent 45%),
-      radial-gradient(ellipse at 20% 80%, rgba(236, 72, 153, 0.25) 0%, transparent 40%),
-      radial-gradient(ellipse at 80% 20%, rgba(99, 102, 241, 0.3) 0%, transparent 40%),
-      radial-gradient(ellipse at center, #3d2066 0%, #1a1a2e 35%, #0f0f1a 100%);
+      radial-gradient(ellipse at 50% 50%, var(--app-bg-1) 0%, transparent 40%),
+      radial-gradient(ellipse at 30% 30%, var(--app-bg-2) 0%, transparent 45%),
+      radial-gradient(ellipse at 70% 70%, var(--app-bg-3) 0%, transparent 45%),
+      radial-gradient(ellipse at 20% 80%, var(--app-bg-4) 0%, transparent 40%),
+      radial-gradient(ellipse at 80% 20%, var(--app-bg-5) 0%, transparent 40%),
+      linear-gradient(180deg, var(--app-bg-base-start) 0%, var(--app-bg-base-end) 100%);
     background-attachment: fixed;
+    min-height: 100dvh;
+    overflow-x: hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -236,12 +270,6 @@
   html {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-  }
-  
-  /* GPU-accelerate scrollable containers */
-  body {
-    transform: translateZ(0);
-    backface-visibility: hidden;
   }
   
   /* Better selection colors */
@@ -481,6 +509,15 @@ html.dark {
   border: 1px solid var(--glass-border);
   transform: translateZ(0);
   will-change: transform;
+}
+
+/* Floating top/bottom bars (theme-aware) */
+.floating-bar {
+  background: var(--floating-bar-bg);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  border: 1px solid var(--floating-bar-border);
+  box-shadow: var(--floating-bar-shadow);
 }
 
 /* Glass button - theme-aware */

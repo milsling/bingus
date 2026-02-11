@@ -424,10 +424,10 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
         )}
       </AnimatePresence>
 
-      {/* Mobile Bottom Nav - Super Transparent Apple Style */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[999] px-3 pb-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
-        <div className="relative">
-          <div className="relative bg-card/40 backdrop-blur-3xl rounded-[28px] border border-border/12 shadow-lg">
+      {/* Mobile Bottom Nav - Fixed floating glass pill */}
+      <div className="md:hidden fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] z-[999] px-3 pointer-events-none">
+        <div className="relative mx-auto max-w-md pointer-events-auto">
+          <div className="relative floating-bar rounded-[28px] shadow-[0_18px_36px_rgba(15,23,42,0.18),0_2px_8px_rgba(15,23,42,0.08)] dark:shadow-[0_18px_36px_rgba(0,0,0,0.45),0_2px_8px_rgba(0,0,0,0.2)]">
             <div className="flex items-center justify-around h-[72px] px-1">
               <button
                 onClick={() => setSearchOpen(true)}
@@ -446,14 +446,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/" 
-                    ? "text-white" 
-                    : "text-foreground active:bg-secondary/80"
+                    ? "text-primary"
+                    : "text-foreground/75 active:bg-secondary/80"
                 )}
                 data-testid="nav-feed"
               >
                 <div className={cn(
                   "p-2 rounded-xl transition-all duration-200",
-                  location === "/" && "bg-white/[0.12]"
+                  location === "/" && "bg-primary/12"
                 )}>
                   <Home className="w-[22px] h-[22px]" strokeWidth={1.8} />
                 </div>
@@ -465,12 +465,12 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                   onClick={handleCenterClick}
                   className={cn(
                     "w-14 h-14 rounded-full",
-                    "bg-white/[0.12]",
+                    "bg-primary/15",
                     "backdrop-blur-xl",
                     "flex items-center justify-center",
-                    "border border-white/[0.15]",
-                    "shadow-[0_4px_16px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]",
-                    isOpen && "bg-white/[0.18] border-white/[0.22]"
+                    "border border-primary/25",
+                    "shadow-[0_10px_22px_rgba(99,102,241,0.35),inset_0_1px_0_rgba(255,255,255,0.35)] dark:shadow-[0_10px_22px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]",
+                    isOpen && "bg-primary/22 border-primary/35"
                   )}
                   whileTap={{ scale: 0.92 }}
                   data-testid="button-menu"
@@ -480,14 +480,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     transition={{ duration: 0.2 }}
                   >
                     {isOpen ? (
-                      <X className="w-6 h-6 text-white" strokeWidth={2} />
+                      <X className="w-6 h-6 text-foreground" strokeWidth={2} />
                     ) : (
-                      <Grid3X3 className="w-6 h-6 text-white" strokeWidth={1.8} />
+                      <Grid3X3 className="w-6 h-6 text-foreground" strokeWidth={1.8} />
                     )}
                   </motion.div>
                 </motion.button>
                 {!isOpen && (unreadCount > 0 || pendingFriendRequests > 0) && (
-                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 border border-black/30" />
+                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 border border-background/80" />
                 )}
               </div>
 
@@ -496,14 +496,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/saved" 
-                    ? "text-white" 
-                    : "text-foreground active:bg-secondary/80"
+                    ? "text-primary"
+                    : "text-foreground/75 active:bg-secondary/80"
                 )}
                 data-testid="nav-saved"
               >
                 <div className={cn(
                   "p-2 rounded-xl transition-all duration-200",
-                  location === "/saved" && "bg-white/[0.12]"
+                  location === "/saved" && "bg-primary/12"
                 )}>
                   <Bookmark className="w-[22px] h-[22px]" strokeWidth={1.8} />
                 </div>
@@ -515,14 +515,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-2xl transition-all duration-200 active:scale-90",
                   location === "/profile" 
-                    ? "text-white" 
-                    : "text-foreground active:bg-secondary/80"
+                    ? "text-primary"
+                    : "text-foreground/75 active:bg-secondary/80"
                 )}
                 data-testid="nav-profile"
               >
                 <div className={cn(
                   "p-2 rounded-xl transition-all duration-200",
-                  location === "/profile" && "bg-white/[0.12]"
+                  location === "/profile" && "bg-primary/12"
                 )}>
                   <User className="w-[22px] h-[22px]" strokeWidth={1.8} />
                 </div>

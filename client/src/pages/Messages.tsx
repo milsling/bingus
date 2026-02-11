@@ -181,7 +181,7 @@ export default function Messages() {
   const ConversationList = () => (
     <div className="flex flex-col h-full">
       <Tabs defaultValue="chats" className="flex-1 flex flex-col">
-        <TabsList className="w-full rounded-none bg-transparent border-b border-white/[0.08] shrink-0">
+        <TabsList className="w-full rounded-none bg-transparent border-b border-border/40 shrink-0">
           <TabsTrigger value="chats" className="flex-1 gap-1.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
             <MessageCircle className="h-3.5 w-3.5" />
             Chats
@@ -334,11 +334,11 @@ export default function Messages() {
       <main className="max-w-5xl mx-auto h-[calc(100vh-80px)] md:h-[calc(100vh-64px)] md:p-4">
         <div className="h-full md:rounded-2xl glass-panel overflow-hidden flex">
           
-          <div className="hidden md:flex w-80 border-r border-white/[0.08] flex-col">
-            <div className="p-4 border-b border-white/[0.08] flex items-center justify-between">
+          <div className="hidden md:flex w-80 border-r border-border/40 flex-col">
+            <div className="p-4 border-b border-border/40 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
-                <h1 className="font-display font-bold text-lg text-white">Messages</h1>
+                <h1 className="font-display font-bold text-lg text-foreground">Messages</h1>
               </div>
               <button
                 onClick={() => !isConnected && forceReconnect()}
@@ -363,7 +363,7 @@ export default function Messages() {
           </div>
 
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="md:hidden flex items-center gap-3 p-3 border-b border-white/[0.08] glass-nav">
+            <div className="md:hidden flex items-center gap-3 p-3 border-b border-border/40 glass-nav">
               {selectedUserId && selectedUser ? (
                 <>
                   <Button
