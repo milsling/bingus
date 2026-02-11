@@ -22,6 +22,7 @@ import {
 import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import AIAssistant from "@/components/AIAssistant";
 import orphanBarsMenuLogo from "@/assets/orphan-bars-menu-logo.png";
@@ -138,6 +139,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
     location.startsWith("/orphanage") ? "orphanage" : "orphanbars"
   );
   const { currentUser } = useBars();
+  const { resolvedTheme } = useTheme();
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
 
@@ -180,6 +182,18 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
 
   const navItems = getNavItems();
 
+  const scrollToHashTarget = (hash: string, attempt = 0) => {
+    const target = document.getElementById(hash);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (attempt < 12) {
+      window.setTimeout(() => scrollToHashTarget(hash, attempt + 1), 100);
+    }
+  };
+
   const handleNavClick = (path: string) => {
     setIsOpen(false);
     
@@ -187,13 +201,9 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
     if (path.includes('#')) {
       const [basePath, hash] = path.split('#');
       setLocation(basePath);
-      // Wait for navigation then scroll to element
-      setTimeout(() => {
-        const element = document.getElementById(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+      window.setTimeout(() => {
+        scrollToHashTarget(hash);
+      }, 120);
     } else {
       setLocation(path);
     }
@@ -222,7 +232,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
         {isOpen && (
           <div className="md:hidden">
             <div
-              className="fixed inset-0 bg-black/80 z-40"
+              className="fixed inset-0 bg-black/55 dark:bg-black/75 z-[1100]"
               onClick={() => { playMenuCloseSound(); setIsOpen(false); }}
             />
             <motion.div
@@ -230,22 +240,22 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 flex flex-col bg-card/10 backdrop-blur-2xl border-t border-border"
+              className="fixed inset-0 z-[1110] flex flex-col bg-background/72 backdrop-blur-2xl border-t border-border/50"
             >
               {/* Header with close button */}
               <div className="flex items-center justify-between px-6 pt-14 pb-4">
                 <img 
                   src={orphanBarsMenuLogo} 
                   alt="Orphan Bars" 
-                  className="h-8 w-auto brightness-0 invert opacity-90"
+                  className="h-8 w-auto opacity-90 dark:brightness-0 dark:invert"
                 />
                 <motion.button
                   onClick={() => { playMenuCloseSound(); setIsOpen(false); }}
-                  className="w-10 h-10 rounded-full bg-white/[0.08] border border-white/[0.12] flex items-center justify-center"
+                  className="w-10 h-10 rounded-full bg-background/70 hover:bg-accent border border-border/60 flex items-center justify-center transition-colors"
                   whileTap={{ scale: 0.9 }}
                   data-testid="button-close-menu"
                 >
-                  <X className="w-5 h-5 text-white" strokeWidth={2} />
+                  <X className="w-5 h-5 text-foreground" strokeWidth={2} />
                 </motion.button>
               </div>
 
@@ -269,25 +279,25 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         className={cn(
                           "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
                           isActive 
-                            ? "bg-white/[0.12] border border-white/[0.15]" 
-                            : "hover:bg-white/[0.06]"
+                            ? "bg-primary/12 border border-primary/25 shadow-[0_6px_16px_rgba(99,102,241,0.15)]"
+                            : "hover:bg-accent/55 border border-transparent"
                         )}
                         data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
                       >
                         <div className={cn(
                           "w-12 h-12 rounded-xl flex items-center justify-center",
-                          isActive ? "bg-white/[0.12]" : "bg-white/[0.06]"
+                          isActive ? "bg-primary/12" : "bg-muted/35"
                         )}>
                           {item.icon && (
                             <item.icon className={cn(
                               "w-6 h-6",
-                              isActive ? "text-white" : "text-white/70"
+                              isActive ? "text-primary" : "text-foreground/70"
                             )} strokeWidth={1.8} />
                           )}
                         </div>
                         <span className={cn(
                           "text-lg font-medium",
-                          isActive ? "text-white" : "text-white/80"
+                          isActive ? "text-foreground" : "text-foreground/85"
                         )}>
                           {item.label}
                         </span>
@@ -299,10 +309,15 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       </motion.button>
                     );
                   })}
+                  {navItems.length === 0 && (
+                    <p className="px-4 py-3 text-sm text-muted-foreground">
+                      No navigation items available.
+                    </p>
+                  )}
                 </nav>
 
                 {/* Section Switchers */}
-                <div className="mt-6 pt-6 border-t border-white/[0.08] space-y-1">
+                <div className="mt-6 pt-6 border-t border-border/50 space-y-1">
                   <button
                     onClick={() => {
                       setMenuSection("orphanbars");
@@ -311,24 +326,24 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     className={cn(
                       "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
                       menuSection === "orphanbars" 
-                        ? "bg-white/[0.12] border border-white/[0.15]" 
-                        : "hover:bg-white/[0.06]"
+                        ? "bg-primary/12 border border-primary/25" 
+                        : "hover:bg-accent/55"
                     )}
                     data-testid="nav-section-orphanbars"
                   >
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center",
-                      menuSection === "orphanbars" ? "bg-white/[0.12]" : "bg-white/[0.06]"
+                      menuSection === "orphanbars" ? "bg-primary/12" : "bg-muted/35"
                     )}>
                       <img 
                         src={orphanBarsMenuLogo} 
                         alt="Orphan Bars" 
-                        className="h-6 w-auto brightness-0 invert"
+                        className="h-6 w-auto dark:brightness-0 dark:invert"
                       />
                     </div>
                     <span className={cn(
                       "text-lg font-medium",
-                      menuSection === "orphanbars" ? "text-white" : "text-white/80"
+                      menuSection === "orphanbars" ? "text-foreground" : "text-foreground/85"
                     )}>Orphan Bars</span>
                   </button>
                   
@@ -340,24 +355,24 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     className={cn(
                       "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
                       menuSection === "orphanage" 
-                        ? "bg-white/[0.12] border border-white/[0.15]" 
-                        : "hover:bg-white/[0.06]"
+                        ? "bg-primary/12 border border-primary/25" 
+                        : "hover:bg-accent/55"
                     )}
                     data-testid="nav-section-orphanage"
                   >
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center",
-                      menuSection === "orphanage" ? "bg-white/[0.12]" : "bg-white/[0.06]"
+                      menuSection === "orphanage" ? "bg-primary/12" : "bg-muted/35"
                     )}>
                       <img 
-                        src={orphanageFullLogoWhite} 
+                        src={resolvedTheme === "dark" ? orphanageFullLogoWhite : orphanageFullLogoDark}
                         alt="The Orphanage" 
                         className="h-7 w-auto object-contain"
                       />
                     </div>
                     <span className={cn(
                       "text-lg font-medium",
-                      menuSection === "orphanage" ? "text-white" : "text-white/80"
+                      menuSection === "orphanage" ? "text-foreground" : "text-foreground/85"
                     )}>The Orphanage</span>
                   </button>
                 </div>
@@ -369,13 +384,13 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       setIsOpen(false);
                       setAraOpen(true);
                     }}
-                    className="mt-4 w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/20 transition-all active:scale-[0.98]"
+                    className="mt-4 w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-gradient-to-r from-purple-500/18 to-pink-500/16 border border-purple-400/35 transition-all active:scale-[0.98] hover:from-purple-500/24 hover:to-pink-500/20"
                     data-testid="nav-section-ara"
                   >
                     <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                      <Sparkles className="h-6 w-6 text-purple-300" />
+                      <Sparkles className="h-6 w-6 text-purple-500 dark:text-purple-300" />
                     </div>
-                    <span className="text-lg font-medium text-white/90">Ara</span>
+                    <span className="text-lg font-medium text-foreground">Ara</span>
                   </button>
                 )}
               </motion.div>
@@ -385,12 +400,12 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                 <div className="px-6 pb-8 pt-4">
                   <button
                     onClick={() => handleNavClick("/post")}
-                    className="w-full p-4 rounded-2xl bg-white/[0.12] hover:bg-white/[0.16] border border-white/[0.15] transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                    className="w-full p-4 rounded-2xl bg-primary/14 hover:bg-primary/22 border border-primary/28 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                     data-testid="nav-item-drop-bar-main"
                   >
-                    <Plus className="w-6 h-6 text-white" strokeWidth={2} />
+                    <Plus className="w-6 h-6 text-primary" strokeWidth={2} />
                     <span 
-                      className="text-lg text-white font-semibold"
+                      className="text-lg text-foreground font-semibold"
                       style={{ fontFamily: 'var(--font-logo)' }}
                     >Drop a Bar</span>
                   </button>
