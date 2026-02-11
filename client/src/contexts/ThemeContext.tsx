@@ -23,25 +23,29 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Resolve system theme
-    let resolved: 'light' | 'dark' = 'dark';
-    if (theme === 'system') {
-      resolved = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    } else {
-      resolved = theme;
-    }
-    setResolvedTheme(resolved);
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
 
-    // Apply theme to document
-    const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(resolvedTheme);
-    
-    // Save preference
+    const applyTheme = () => {
+      const resolved: 'light' | 'dark' =
+        theme === 'system' ? (mediaQuery.matches ? 'light' : 'dark') : theme;
+
+      setResolvedTheme(resolved);
+
+      const root = document.documentElement;
+      root.classList.remove('light', 'dark');
+      root.classList.add(resolved);
+    };
+
+    applyTheme();
     localStorage.setItem('theme', theme);
-    
-    console.log('Theme applied:', resolvedTheme); // Debug log
-  }, [theme, resolvedTheme]);
+
+    if (theme === 'system') {
+      mediaQuery.addEventListener('change', applyTheme);
+      return () => mediaQuery.removeEventListener('change', applyTheme);
+    }
+
+    return undefined;
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
