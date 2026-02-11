@@ -14,14 +14,22 @@ export function VersionCheck() {
         if (currentVersion.current === null) {
           currentVersion.current = data.version;
         } else if (currentVersion.current !== data.version) {
-          window.location.reload();
+          // Clear all caches and force hard reload
+          if ('caches' in window) {
+            caches.keys().then(names => {
+              names.forEach(name => {
+                caches.delete(name);
+              });
+            });
+          }
+          window.location.href = window.location.href; // Force bypass cache
         }
       } catch (e) {
       }
     }
 
     checkVersion();
-    const interval = setInterval(checkVersion, 30000);
+    const interval = setInterval(checkVersion, 10000);
     return () => clearInterval(interval);
   }, []);
 
