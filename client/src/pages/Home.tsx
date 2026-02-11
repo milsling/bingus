@@ -220,7 +220,7 @@ export default function Home() {
     isLoadingBars;
 
   return (
-    <div className="min-h-screen bg-background md:h-screen md:overflow-hidden">
+    <div className="min-h-screen bg-background pt-12 pb-20 md:pt-0 md:pb-0 md:h-screen md:overflow-hidden">
       {/* Mobile search */}
       <div className="md:hidden sticky top-[72px] z-40 px-3 py-2">
         <div className="glass-panel p-3">

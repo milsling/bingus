@@ -177,14 +177,46 @@ export default function Navigation() {
             </div>
           </Link>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             {currentUser && <NotificationBell />}
             <OnlineStatusIndicator />
           </div>
         </div>
       </div>
 
-      {/* Bottom Nav - Mobile only */}
-      <BottomNav onNewMessage={() => setNewMessageOpen(true)} />
+      {/* Mobile Bottom Navigation - Fixed to screen bottom */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+        <div className="bg-background/40 backdrop-blur-2xl rounded-2xl h-14 flex items-center justify-around px-4 shadow-lg shadow-card/30 border border-border/20">
+          <Link href="/" className="flex flex-col items-center gap-1 text-foreground/70 hover:text-foreground transition-colors">
+            <Home className="h-5 w-5" />
+            <span className="text-xs">Home</span>
+          </Link>
+          {currentUser ? (
+            <>
+              <Link href="/post" className="flex flex-col items-center gap-1 text-foreground/70 hover:text-foreground transition-colors">
+                <Plus className="h-5 w-5" />
+                <span className="text-xs">Post</span>
+              </Link>
+              <Link href="/profile" className="flex flex-col items-center gap-1 text-foreground/70 hover:text-foreground transition-colors">
+                <User className="h-5 w-5" />
+                <span className="text-xs">Profile</span>
+              </Link>
+              <Link href="/messages" className="flex flex-col items-center gap-1 text-foreground/70 hover:text-foreground transition-colors relative">
+                <MessageCircle className="h-5 w-5" />
+                <span className="text-xs">Messages</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>
+                )}
+              </Link>
+            </>
+          ) : (
+            <Link href="/auth" className="flex flex-col items-center gap-1 text-foreground/70 hover:text-foreground transition-colors">
+              <LogIn className="h-5 w-5" />
+              <span className="text-xs">Login</span>
+            </Link>
+          )}
+        </div>
+      </div>
       
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
     </>
