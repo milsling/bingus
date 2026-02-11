@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, Bell, Settings } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, Bell, Settings, LogOut } from "lucide-react";
 import headerLogo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
@@ -19,13 +19,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function Navigation() {
-  const [location] = useLocation();
-  const { currentUser } = useBars();
+  const [location, setLocation] = useLocation();
+  const { currentUser, logout } = useBars();
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   
   const isOnMessagesPage = location.startsWith("/messages");
+
+  const handleLogout = async () => {
+    await logout();
+    setLocation("/");
+  };
 
   return (
     <>
@@ -95,6 +100,18 @@ export default function Navigation() {
                       </DropdownMenuItem>
                     </>
                   )}
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      void handleLogout();
+                    }}
+                    className="flex items-center gap-3 cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
                 </>
               )}
             </DropdownMenuContent>
