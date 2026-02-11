@@ -525,7 +525,7 @@ export default function Home() {
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden pt-20 pb-24">
+      <div className="md:hidden pt-20 pb-4">
         <main className="px-4">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
