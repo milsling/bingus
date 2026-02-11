@@ -425,7 +425,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
       </AnimatePresence>
 
       {/* Mobile Bottom Nav - Super Transparent Apple Style */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] px-3 pb-2 safe-area-inset-bottom">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[999] px-3 pb-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
         <div className="relative">
           <div className="relative bg-card/40 backdrop-blur-3xl rounded-[28px] border border-border/12 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-around h-[72px] px-1">
