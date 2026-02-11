@@ -1368,7 +1368,7 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full mb-6 ${currentUser?.isOwner ? 'grid-cols-10' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
+          <TabsList className={`grid w-full mb-6 ${currentUser?.isOwner ? 'grid-cols-11' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
@@ -1438,6 +1438,12 @@ export default function Admin() {
               <TabsTrigger value="ai-settings" className="gap-1 text-xs px-2">
                 <Bot className="h-4 w-4" />
                 <span className="hidden sm:inline">AI</span>
+              </TabsTrigger>
+            )}
+            {currentUser?.isOwner && (
+              <TabsTrigger value="oauth" className="gap-1 text-xs px-2">
+                <Shield className="h-4 w-4" />
+                <span className="hidden sm:inline">OAuth</span>
               </TabsTrigger>
             )}
           </TabsList>
@@ -4185,6 +4191,66 @@ export default function Admin() {
           </DialogContent>
         </Dialog>
       </main>
+
+      {/* OAuth Linking Tab */}
+      {currentUser?.isOwner && (
+        <TabsContent value="oauth">
+          <Card className="border-border bg-card/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-purple-500" />
+                Link Supabase OAuth Identity
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="link-username">Username</Label>
+                <Input
+                  id="link-username"
+                  placeholder="Milsling"
+                  value={actionUsername}
+                  onChange={(e) => setActionUsername(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="link-supabase-id">Supabase User ID</Label>
+                <Input
+                  id="link-supabase-id"
+                  placeholder="847ab629-8ffc-4a3a-84f3-d849d78b23dc"
+                  onChange={(e) => setConsoleQuery(e.target.value)}
+                />
+              </div>
+              <Button
+                onClick={async () => {
+                  if (!actionUsername.trim() || !consoleQuery.trim()) {
+                    toast({ title: "Missing fields", description: "Enter both username and Supabase ID", variant: "destructive" });
+                    return;
+                  }
+                  try {
+                    const res = await fetch('/api/admin/link-supabase', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({ username: actionUsername.trim(), supabaseId: consoleQuery.trim() }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Failed to link');
+                    toast({ title: "Success", description: data.message });
+                    setActionUsername('');
+                    setConsoleQuery('');
+                  } catch (e: any) {
+                    toast({ title: "Error", description: e.message, variant: "destructive" });
+                  }
+                }}
+                disabled={!actionUsername.trim() || !consoleQuery.trim()}
+                className="w-full"
+              >
+                Link OAuth Account
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      )}
     </div>
   );
 }
