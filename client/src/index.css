@@ -87,7 +87,65 @@
 
 :root {
   /* ========================================
-     ORPHANBARS - Apple Vision Pro Glass (Dark Only)
+     ORPHANBARS - Light Mode
+     ======================================== */
+  --background: 0 0% 100%;
+  --foreground: 230 10% 15%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 230 10% 15%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 230 10% 15%;
+
+  --primary: 265 70% 60%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 230 30% 96%;
+  --secondary-foreground: 230 10% 20%;
+
+  --muted: 230 20% 94%;
+  --muted-foreground: 230 8% 45%;
+
+  --accent: 265 70% 60%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 230 20% 88%;
+  --input: 230 20% 88%;
+  --ring: 265 70% 60%;
+
+  --radius: 0.5rem;
+  
+  /* Glass panel variables - subtle glass effect */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-hover: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-hover: rgba(0, 0, 0, 0.12);
+  
+  /* Shadows - subtle and modern */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  
+  --shadow-card: 
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  
+  --shadow-card-hover: 
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 12px 32px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(168, 85, 247, 0.15);
+}
+
+.dark {
+  /* ========================================
+     ORPHANBARS - Dark Mode (Apple Vision Pro Glass)
      ======================================== */
   --background: 230 25% 10%;
   --foreground: 0 0% 98%;
@@ -384,14 +442,14 @@ html.dark {
    GLASSMORPHISM UTILITIES - Apple Vision Pro Style
    ======================================== */
 
-/* Glass panel base - Super transparent Apple Vision Pro style */
+/* Glass panel base - Theme-aware glass style */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-bg);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 1.25rem;
-  transform: translateZ(0);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
   will-change: transform;
 }
 
@@ -400,47 +458,47 @@ html.dark {
 }
 
 .glass-panel-hover:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
 }
 
-/* Glass card - bar cards - super transparent */
+/* Glass card - bar cards - theme-aware */
 .glass-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   border-radius: 1rem;
   transform: translateZ(0);
   will-change: transform;
 }
 
-/* Glass nav - navigation specific styling - super transparent */
+/* Glass nav - navigation specific styling - theme-aware */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid var(--glass-border);
   transform: translateZ(0);
   will-change: transform;
 }
 
-/* Glass button - super transparent */
+/* Glass button - theme-aware */
 .glass-button {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--glass-border);
   transition: all 0.15s ease;
 }
 
 .glass-button:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
 }
 
 .glass-button:active {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
   transform: scale(0.98);
 }
 

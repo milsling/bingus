@@ -10,6 +10,7 @@ import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import { NewMessageDialog } from "@/components/NewMessageDialog";
 import { BottomNav } from "@/components/BottomNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,13 +36,13 @@ export default function Navigation() {
   return (
     <>
       {/* Desktop Floating Top Bar - Gmail/YouTube style */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl bg-[#1c1c1f]/70 border border-[#2a2a2d] backdrop-blur-lg shadow-lg">
+      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl bg-card/70 border border-border backdrop-blur-lg shadow-lg shadow-card">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-2.5 rounded-xl hover:bg-white/[0.06] transition-colors">
-                <Menu className="h-5 w-5 text-white/70" />
+              <button className="p-2.5 rounded-xl hover:bg-secondary/80 transition-colors">
+                <Menu className="h-5 w-5 text-foreground/70" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -120,7 +121,7 @@ export default function Navigation() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               <img src={headerLogo} alt="" className="h-7 w-7" />
-              <span className="font-logo text-xl text-white">ORPHAN BARS</span>
+              <span className="font-logo text-xl text-foreground">ORPHAN BARS</span>
             </div>
           </Link>
         </div>
@@ -132,6 +133,7 @@ export default function Navigation() {
         
         {/* Right: Actions */}
         <div className="flex items-center gap-1">
+          <ThemeToggle />
           {currentUser ? (
             <>
               {isOnMessagesPage ? (
@@ -167,11 +169,11 @@ export default function Navigation() {
 
       {/* Mobile Top Bar - Apple Glass Style */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-        <div className="bg-black/40 backdrop-blur-2xl rounded-2xl h-12 flex items-center justify-between px-4 shadow-lg shadow-black/30 border border-white/[0.05]">
+        <div className="bg-card/40 backdrop-blur-2xl rounded-2xl h-12 flex items-center justify-between px-4 shadow-lg shadow-card/30 border border-border/20">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
               <img src={headerLogo} alt="" className="h-6 w-6" />
-              <span className="font-logo text-base text-white">ORPHAN BARS</span>
+              <span className="font-logo text-base text-foreground">ORPHAN BARS</span>
             </div>
           </Link>
           <div className="flex items-center gap-2">

@@ -34,6 +34,7 @@ import { SwipeBackNavigation } from "@/components/SwipeBackNavigation";
 import AIAssistant from "@/components/AIAssistant";
 import { useBackground } from "@/components/BackgroundSelector";
 import Navigation from "@/components/Navigation";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 function Router() {
   const [location] = useLocation();
@@ -95,19 +96,21 @@ function BackgroundInitializer() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BarProvider>
-        <TooltipProvider>
-          <VersionCheck />
-          <BackgroundInitializer />
-          <MaintenanceBanner />
-          <Navigation />
-          <Toaster />
-          <SwipeBackNavigation>
-            <Router />
-          </SwipeBackNavigation>
-          <AIAssistant hideFloatingButton />
-        </TooltipProvider>
-      </BarProvider>
+      <ThemeProvider>
+        <BarProvider>
+          <TooltipProvider>
+            <VersionCheck />
+            <BackgroundInitializer />
+            <MaintenanceBanner />
+            <Navigation />
+            <Toaster />
+            <SwipeBackNavigation>
+              <Router />
+            </SwipeBackNavigation>
+            <AIAssistant hideFloatingButton />
+          </TooltipProvider>
+        </BarProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
