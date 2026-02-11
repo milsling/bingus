@@ -315,25 +315,28 @@ export default function Post() {
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
       
-      <main className="max-w-2xl mx-auto p-4 md:p-8">
-        <div className="mb-6 flex items-center gap-4">
+      <main className="max-w-4xl mx-auto p-4 md:p-8">
+        <div className="mb-8 flex items-center gap-4">
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-full">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-3xl font-display font-bold">Drop a Bar</h1>
+          <div>
+            <h1 className="text-3xl font-display font-bold">Drop a Bar</h1>
+            <p className="text-muted-foreground">Share your lyrics with the community</p>
+          </div>
         </div>
 
-        <div className="mb-4 space-y-2">
-          <div className="flex gap-2">
+        <div className="mb-6 space-y-3">
+          <div className="flex gap-3">
             {BAR_TYPES.map((type) => (
               <button
                 key={type.value}
                 type="button"
                 onClick={() => !type.disabled && setBarType(type.value)}
                 disabled={type.disabled}
-                className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all relative ${
+                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all relative ${
                   type.disabled 
                     ? 'border-border/30 bg-secondary/10 text-muted-foreground/50 cursor-not-allowed' 
                     : barType === type.value 
@@ -357,291 +360,250 @@ export default function Post() {
           </p>
         </div>
 
-        <Card className="border-border bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-6 space-y-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-lg">The Bars</Label>
-                <div className="flex gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 hover:bg-primary/20 hover:text-primary"
-                    onClick={() => applyFormat('bold')}
-                    title="Bold"
-                    type="button"
-                  >
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 hover:bg-primary/20 hover:text-primary"
-                    onClick={() => applyFormat('italic')}
-                    title="Italic"
-                    type="button"
-                  >
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 hover:bg-primary/20 hover:text-primary"
-                    onClick={() => applyFormat('underline')}
-                    title="Underline"
-                    type="button"
-                  >
-                    <Underline className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div
-                ref={editorRef}
-                contentEditable
-                className="min-h-[150px] p-3 bg-secondary/50 border border-border/50 rounded-md font-display text-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary whitespace-pre-wrap"
-                data-placeholder="Type your lyrics here... Use line breaks for flow."
-                data-testid="input-content"
-              />
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  Tip: Highlight text and click formatting buttons to style your bars.
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={checkOriginality}
-                  disabled={isChecking}
-                  className={`gap-1.5 ${originalityChecked ? (similarBars.length > 0 ? 'border-orange-500 text-orange-500 hover:bg-orange-500/10' : 'border-green-500 text-green-500 hover:bg-green-500/10') : ''}`}
-                  data-testid="button-check-originality"
-                >
-                  {isChecking ? (
-                    <>Checking...</>
-                  ) : originalityChecked ? (
-                    similarBars.length > 0 ? (
-                      <><AlertTriangle className="h-3.5 w-3.5" /> {similarBars.length} Match{similarBars.length > 1 ? 'es' : ''}</>
-                    ) : (
-                      <><CheckCircle className="h-3.5 w-3.5" /> Original</>
-                    )
-                  ) : (
-                    <><Search className="h-3.5 w-3.5" /> Check Originality</>
-                  )}
-                </Button>
-              </div>
-
-              {showOriginalityReport && (
-                <div className={`p-3 rounded-lg border ${similarBars.length > 0 ? 'bg-orange-500/10 border-orange-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
-                  {similarBars.length > 0 ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-orange-500 flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        Similar content found on Orphan Bars
-                      </p>
-                      <div className="space-y-2">
-                        {similarBars.map((bar) => (
-                          <div key={bar.id} className="flex justify-between items-center text-sm bg-background/50 p-2 rounded">
-                            <div>
-                              <span className="font-mono text-primary">{bar.proofBarId}</span>
-                              <span className="text-muted-foreground ml-2">by @{bar.username}</span>
-                            </div>
-                            <span className="font-bold text-orange-500">{bar.similarity}%</span>
-                          </div>
-                        ))}
-                      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="border-border bg-card/50 backdrop-blur-sm">
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-lg">The Bars</Label>
+                    <div className="flex gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-9 w-9 hover:bg-primary/20 hover:text-primary"
+                        onClick={() => applyFormat('bold')}
+                        title="Bold"
+                        type="button"
+                      >
+                        <Bold className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-9 w-9 hover:bg-primary/20 hover:text-primary"
+                        onClick={() => applyFormat('italic')}
+                        title="Italic"
+                        type="button"
+                      >
+                        <Italic className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-9 w-9 hover:bg-primary/20 hover:text-primary"
+                        onClick={() => applyFormat('underline')}
+                        title="Underline"
+                        type="button"
+                      >
+                        <Underline className="h-4 w-4" />
+                      </Button>
                     </div>
-                  ) : (
-                    <p className="text-sm font-medium text-green-500 flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4" />
-                      No similar content found - looks original!
+                  </div>
+                  <div
+                    ref={editorRef}
+                    contentEditable
+                    className="min-h-[180px] p-4 bg-secondary/50 border border-border/50 rounded-xl font-display text-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 whitespace-pre-wrap"
+                    data-placeholder="Type your lyrics here... Use line breaks for flow."
+                    data-testid="input-content"
+                  />
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      Tip: Highlight text and click formatting buttons to style your bars.
                     </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={checkOriginality}
+                      disabled={isChecking}
+                      className={`gap-1.5 ${originalityChecked ? (similarBars.length > 0 ? 'border-orange-500 text-orange-500 hover:bg-orange-500/10' : 'border-green-500 text-green-500 hover:bg-green-500/10') : ''}`}
+                      data-testid="button-check-originality"
+                    >
+                      {isChecking ? (
+                        <>Checking...</>
+                      ) : originalityChecked ? (
+                        similarBars.length > 0 ? (
+                          <><AlertTriangle className="h-3.5 w-3.5" /> {similarBars.length} Match{similarBars.length > 1 ? 'es' : ''}</>
+                        ) : (
+                          <><CheckCircle className="h-3.5 w-3.5" /> Original</>
+                        )
+                      ) : (
+                        <><Search className="h-3.5 w-3.5" /> Check Originality</>
+                      )}
+                    </Button>
+                  </div>
+
+                  {showOriginalityReport && (
+                    <div className={`p-4 rounded-xl border ${similarBars.length > 0 ? 'bg-orange-500/10 border-orange-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
+                      {similarBars.length > 0 ? (
+                        <div className="space-y-3">
+                          <p className="text-sm font-medium text-orange-500 flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4" />
+                            Similar content found on Orphan Bars
+                          </p>
+                          <div className="space-y-2">
+                            {similarBars.map((bar) => (
+                              <div key={bar.id} className="flex justify-between items-center text-sm bg-background/50 p-3 rounded-lg">
+                                <div>
+                                  <span className="font-mono text-primary">{bar.proofBarId}</span>
+                                  <span className="text-muted-foreground ml-2">by @{bar.username}</span>
+                                </div>
+                                <span className="font-bold text-orange-500">{bar.similarity}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm font-medium text-green-500 flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4" />
+                          No similar content found - looks original!
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="explanation">Breakdown (Optional)</Label>
-              <Textarea 
-                id="explanation" 
-                value={explanation}
-                onChange={(e) => setExplanation(e.target.value)}
-                placeholder="Break down the entendre, metaphor, or context..." 
-                className="min-h-[80px] bg-secondary/30 border-border/50 text-sm focus:border-primary resize-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select value={category} onValueChange={(val: Category) => setCategory(val)}>
-                  <SelectTrigger className="bg-secondary/30 border-border/50">
-                    <SelectValue placeholder="Select style" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tags">Tags</Label>
-                <Input 
-                  id="tags" 
-                  value={tags}
-                  onChange={(e) => setTags(e.target.value)}
-                  placeholder="e.g. funny, freestyle, diss" 
-                  className="bg-secondary/30 border-border/50"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="fullRapLink">Full Rap Link (Optional)</Label>
-              <Input 
-                id="fullRapLink" 
-                type="url"
-                value={fullRapLink}
-                onChange={(e) => setFullRapLink(e.target.value)}
-                placeholder="https://soundcloud.com/... or YouTube link to full track" 
-                className="bg-secondary/30 border-border/50"
-                data-testid="input-full-rap-link"
-              />
-              <p className="text-xs text-muted-foreground">
-                Link to your full song if this bar is from a larger work
-              </p>
-              {fullRapLink.trim() && (
-                <div className="flex items-center gap-2 mt-2">
-                  <Switch
-                    id="isRecorded"
-                    checked={isRecorded}
-                    onCheckedChange={setIsRecorded}
-                    data-testid="switch-is-recorded"
+                <div className="space-y-3">
+                  <Label htmlFor="explanation">Breakdown (Optional)</Label>
+                  <Textarea 
+                    id="explanation" 
+                    value={explanation}
+                    onChange={(e) => setExplanation(e.target.value)}
+                    placeholder="Break down the entendre, metaphor, or context..." 
+                    className="min-h-[100px] bg-secondary/30 border-border/50 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none rounded-lg"
                   />
-                  <Label htmlFor="isRecorded" className="text-sm cursor-pointer">
-                    This track is recorded
-                  </Label>
                 </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="beatLink">Beat/Instrumental Link (Optional)</Label>
-              <Input 
-                id="beatLink" 
-                type="url"
-                value={beatLink}
-                onChange={(e) => setBeatLink(e.target.value)}
-                placeholder="https://youtube.com/... or SoundCloud/Spotify link to the beat" 
-                className={`bg-secondary/30 border-border/50 ${beatLink.trim() && !validateBeatUrl(beatLink).valid ? 'border-red-500' : ''}`}
-                data-testid="input-beat-link"
-              />
-              {beatLink.trim() ? (
-                validateBeatUrl(beatLink).valid ? (
-                  <div className="flex items-center gap-1.5 text-xs text-green-500">
-                    <Music className="h-3 w-3" />
-                    <span>{validateBeatUrl(beatLink).provider} detected - will embed player</span>
-                  </div>
-                ) : (
-                  <p className="text-xs text-red-500">
-                    {validateBeatUrl(beatLink).error}
-                  </p>
-                )
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  Link the beat/instrumental so readers can hear what this bar could ride to. Works with YouTube, SoundCloud, and Spotify.
-                </p>
-              )}
-            </div>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <Card className="border-border bg-card/50 backdrop-blur-sm">
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-3">
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={category} onValueChange={(val: Category) => setCategory(val)}>
+                    <SelectTrigger className="bg-secondary/30 border-border/50">
+                      <SelectValue placeholder="Select style" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-primary" />
-                Sharing Permission
-              </Label>
-              <Select value={permissionStatus} onValueChange={(val: PermissionStatus) => setPermissionStatus(val)}>
-                <SelectTrigger className="bg-secondary/30 border-border/50" data-testid="select-permission">
-                  <SelectValue placeholder="Select permission" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PERMISSIONS.map(perm => (
-                    <SelectItem key={perm.value} value={perm.value}>
-                      <div className="flex items-center gap-2">
+                <div className="space-y-3">
+                  <Label htmlFor="tags">Tags</Label>
+                  <Input 
+                    id="tags" 
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                    placeholder="e.g. funny, freestyle, diss" 
+                    className="bg-secondary/30 border-border/50"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="fullRapLink">Full Rap Link</Label>
+                  <Input 
+                    id="fullRapLink" 
+                    value={fullRapLink}
+                    onChange={(e) => setFullRapLink(e.target.value)}
+                    placeholder="https://youtube.com/watch?v=..." 
+                    className="bg-secondary/30 border-border/50"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="beatLink">Beat Link</Label>
+                  <Input 
+                    id="beatLink" 
+                    value={beatLink}
+                    onChange={(e) => setBeatLink(e.target.value)}
+                    placeholder="https://youtube.com/watch?v=..." 
+                    className="bg-secondary/30 border-border/50"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card/50 backdrop-blur-sm">
+              <CardContent className="p-6 space-y-4">
+                <div className="space-y-3">
+                  <Label>Permissions</Label>
+                  <div className="space-y-2">
+                    {PERMISSIONS.map((perm) => (
+                      <button
+                        key={perm.value}
+                        type="button"
+                        onClick={() => setPermissionStatus(perm.value)}
+                        className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                          permissionStatus === perm.value 
+                            ? 'border-primary bg-primary/10 text-primary' 
+                            : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
+                        }`}
+                      >
                         {perm.icon}
-                        <span>{perm.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {PERMISSIONS.find(p => p.value === permissionStatus)?.description}
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-primary bg-primary/20 px-1.5 py-0.5 rounded">OC</span>
-                <div>
-                  <Label htmlFor="original" className="cursor-pointer">Original Content</Label>
-                  <p className="text-xs text-muted-foreground">This is my own work, not someone else's bars</p>
-                </div>
-              </div>
-              <Switch
-                id="original"
-                checked={isOriginal}
-                onCheckedChange={(checked) => {
-                  setIsOriginal(checked);
-                  if (!checked) setLockImmediately(false);
-                }}
-                data-testid="switch-original"
-              />
-            </div>
-
-            {isOriginal && (
-              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/30">
-                <div className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-primary" />
-                  <div>
-                    <Label htmlFor="lockImmediately" className="cursor-pointer">Lock & Authenticate on Drop</Label>
-                    <p className="text-xs text-muted-foreground">Get your proof ID immediately - bar cannot be edited after</p>
+                        <div className="text-left">
+                          <div className="font-medium text-sm">{perm.label}</div>
+                          <div className="text-xs opacity-70">{perm.description}</div>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <Switch
-                  id="lockImmediately"
-                  checked={lockImmediately}
-                  onCheckedChange={setLockImmediately}
-                  data-testid="switch-lock-immediately"
-                />
-              </div>
-            )}
 
-            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-primary" />
-                <div>
-                  <Label htmlFor="feedback" className="cursor-pointer">Breakdown Requested</Label>
-                  <p className="text-xs text-muted-foreground">Let the community know you want feedback or critique</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="feedback" className="text-sm">Want Feedback?</Label>
+                    <Switch 
+                      id="feedback" 
+                      checked={feedbackWanted} 
+                      onCheckedChange={setFeedbackWanted} 
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="original" className="text-sm">Original Work</Label>
+                    <Switch 
+                      id="original" 
+                      checked={isOriginal} 
+                      onCheckedChange={setIsOriginal} 
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="recorded" className="text-sm">Recorded?</Label>
+                    <Switch 
+                      id="recorded" 
+                      checked={isRecorded} 
+                      onCheckedChange={setIsRecorded} 
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="lock" className="text-sm">Lock Immediately</Label>
+                    <Switch 
+                      id="lock" 
+                      checked={lockImmediately} 
+                      onCheckedChange={setLockImmediately} 
+                    />
+                  </div>
                 </div>
-              </div>
-              <Switch
-                id="feedback"
-                checked={feedbackWanted}
-                onCheckedChange={setFeedbackWanted}
-                data-testid="switch-feedback"
-              />
-            </div>
+              </CardContent>
+            </Card>
 
-            <Button 
-              className="w-full text-lg font-bold py-6 bg-primary text-primary-foreground hover:bg-primary/90 mt-4"
+            <Button
               onClick={handleSubmit}
-              disabled={isSubmitting || isChecking}
-              data-testid="button-post"
+              disabled={isSubmitting}
+              className="w-full py-3 text-lg font-semibold rounded-xl"
+              data-testid="button-submit"
             >
-              {isChecking ? "Checking..." : isSubmitting ? "Posting..." : "Post to Orphan Bars"}
+              {isSubmitting ? "Dropping..." : "Drop Bar"}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
 
       <Dialog open={showSimilarWarning} onOpenChange={setShowSimilarWarning}>
