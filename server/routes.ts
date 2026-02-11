@@ -2706,6 +2706,62 @@ export async function registerRoutes(
     }
   });
 
+  // Owner-only: Reset bar authentication sequence
+  app.post("/api/admin/reset-bar-sequence", isOwner, async (req, res) => {
+    try {
+      console.log("🔄 Starting bar sequence reset...");
+      
+      // Get all locked bars ordered by creation date
+      const lockedBars = await db
+        .select()
+        .from(bars)
+        .where(eq(bars.isLocked, true))
+        .orderBy(asc(bars.createdAt));
+      
+      if (lockedBars.length === 0) {
+        return res.json({ message: "No locked bars found", count: 0 });
+      }
+      
+      // Reset sequence counter
+      await db
+        .update(barSequence)
+        .set({ currentValue: 0 })
+        .where(eq(barSequence.id, "singleton"));
+      
+      // Renumber all bars
+      for (let i = 0; i < lockedBars.length; i++) {
+        const bar = lockedBars[i];
+        const sequenceNum = i + 1;
+        const proofBarId = `orphanbars-#${sequenceNum.toString().padStart(5, '0')}`;
+        const proofHash = generateProofHash(bar.content, bar.createdAt, bar.userId, proofBarId);
+        
+        await db
+          .update(bars)
+          .set({ 
+            proofBarId,
+            proofHash,
+          })
+          .where(eq(bars.id, bar.id));
+      }
+      
+      // Update sequence to final number
+      await db
+        .update(barSequence)
+        .set({ currentValue: lockedBars.length })
+        .where(eq(barSequence.id, "singleton"));
+      
+      res.json({ 
+        message: `Renumbered ${lockedBars.length} bars`, 
+        count: lockedBars.length,
+        nextId: `orphanbars-#${(lockedBars.length + 1).toString().padStart(5, '0')}`
+      });
+      
+    } catch (error: any) {
+      console.error("❌ Failed to reset sequence:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Owner-only: Link a Supabase OAuth identity to an existing app user
   app.post("/api/admin/link-supabase", isOwner, async (req, res) => {
     try {

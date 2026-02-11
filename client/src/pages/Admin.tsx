@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, FileText, Trash2, Crown, CheckCircle, XCircle, Ban, Flag, AlertTriangle, Eye, Wrench, Archive, RotateCcw, Trophy, Plus, Pencil, Power, Clock, Check, X, Upload, Image, Star, Bot, FileQuestion, Lock, History } from "lucide-react";
+import { ArrowLeft, Bold, Italic, Underline, MessageSquare, Shield, Share2, Users, Lock, AlertTriangle, Search, CheckCircle, Music, AlertCircle, FileQuestion, RefreshCw } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
@@ -4246,6 +4246,47 @@ export default function Admin() {
                 className="w-full"
               >
                 Link OAuth Account
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-card/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Reset Bar Authentication Sequence
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                This will renumber all locked bars based on their creation date (oldest gets #00001, next gets #00002, etc.). 
+                This action cannot be undone.
+              </p>
+              <Button
+                onClick={async () => {
+                  if (!confirm("Are you sure? This will renumber all locked bars and cannot be undone.")) {
+                    return;
+                  }
+                  try {
+                    const res = await fetch('/api/admin/reset-bar-sequence', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Failed to reset sequence');
+                    toast({ 
+                      title: "Success", 
+                      description: `${data.message}. Next bar will be ${data.nextId}` 
+                    });
+                  } catch (e: any) {
+                    toast({ title: "Error", description: e.message, variant: "destructive" });
+                  }
+                }}
+                variant="destructive"
+                className="w-full"
+              >
+                Reset Bar Sequence
               </Button>
             </CardContent>
           </Card>
