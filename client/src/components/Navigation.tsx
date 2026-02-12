@@ -25,6 +25,7 @@ export default function Navigation() {
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const canOpenAdmin = !!(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
   
   const isOnMessagesPage = location.startsWith("/messages");
 
@@ -117,7 +118,7 @@ export default function Navigation() {
                       <span>The Orphanage</span>
                     </Link>
                   </DropdownMenuItem>
-                  {currentUser.isAdmin && (
+                  {canOpenAdmin && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>

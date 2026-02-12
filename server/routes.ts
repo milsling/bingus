@@ -161,7 +161,7 @@ export async function registerRoutes(
 
   // Owner-only middleware
   const isOwner: typeof isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated() && req.user?.isOwner) {
+    if ((req.isAuthenticated() || !!req.user) && req.user?.isOwner) {
       return next();
     }
     return res.status(403).json({ message: "Owner access required" });
@@ -595,7 +595,7 @@ export async function registerRoutes(
   });
 
   app.get("/api/auth/user", (req: Request, res: Response) => {
-    if (req.isAuthenticated()) {
+    if (req.isAuthenticated() || !!req.user) {
       res.json(req.user);
     } else {
       res.status(401).json({ message: "Not authenticated" });
@@ -2231,7 +2231,10 @@ export async function registerRoutes(
 
   // Admin routes
   const isAdmin: typeof isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated() && req.user?.isAdmin) {
+    if (
+      (req.isAuthenticated() || !!req.user) &&
+      (req.user?.isAdmin || req.user?.isAdminPlus || req.user?.isOwner)
+    ) {
       return next();
     }
     return res.status(403).json({ message: "Admin access required" });
@@ -2870,7 +2873,7 @@ export async function registerRoutes(
 
   // Admin+ middleware - for elevated admins (between admin and owner)
   const isAdminPlus: typeof isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated() && req.user?.isAdminPlus) {
+    if ((req.isAuthenticated() || !!req.user) && req.user?.isAdminPlus) {
       return next();
     }
     return res.status(403).json({ message: "Admin+ access required" });
@@ -2878,7 +2881,7 @@ export async function registerRoutes(
 
   // Admin+ or Owner middleware - for features accessible to both
   const isAdminPlusOrOwner: typeof isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated() && (req.user?.isAdminPlus || req.user?.isOwner)) {
+    if ((req.isAuthenticated() || !!req.user) && (req.user?.isAdminPlus || req.user?.isOwner)) {
       return next();
     }
     return res.status(403).json({ message: "Admin+ or owner access required" });
@@ -3475,7 +3478,7 @@ export async function registerRoutes(
 
   // Debug log routes (admin or owner)
   const isAdminOrOwner: typeof isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated() && (req.user?.isAdmin || req.user?.isAdminPlus || req.user?.isOwner)) {
+    if ((req.isAuthenticated() || !!req.user) && (req.user?.isAdmin || req.user?.isAdminPlus || req.user?.isOwner)) {
       return next();
     }
     return res.status(403).json({ message: "Admin or owner access required" });

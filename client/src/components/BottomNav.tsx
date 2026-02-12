@@ -180,7 +180,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
       { icon: LayoutGrid, label: "Apps", path: "/apps", id: "main-apps" },
     ];
 
-    if (currentUser.isAdmin) {
+    if (currentUser.isAdmin || currentUser.isAdminPlus || currentUser.isOwner) {
       items.push({ icon: Shield, label: "Admin", path: "/admin", id: "main-admin" });
     }
 

@@ -70,6 +70,7 @@ export default function Admin() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const hasAdminAccess = !!(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
   const [moderateBarId, setModerateBarId] = useState<string | null>(null);
   const [moderateReason, setModerateReason] = useState("");
   
@@ -112,7 +113,7 @@ export default function Admin() {
   const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ['admin', 'users'],
     queryFn: () => api.getAllUsers(),
-    enabled: !!currentUser?.isAdmin,
+    enabled: hasAdminAccess,
   });
 
   const deleteBarMutation = useMutation({
@@ -206,7 +207,7 @@ export default function Admin() {
       if (!res.ok) throw new Error('Failed to fetch reports');
       return res.json();
     },
-    enabled: !!currentUser?.isAdmin,
+    enabled: hasAdminAccess,
   });
 
   const updateReportMutation = useMutation({
@@ -240,7 +241,7 @@ export default function Admin() {
       if (!res.ok) throw new Error('Failed to fetch phrases');
       return res.json();
     },
-    enabled: !!currentUser?.isAdmin,
+    enabled: hasAdminAccess,
   });
 
   const { data: pendingBars = [], isLoading: isLoadingPending } = useQuery<any[]>({
@@ -250,7 +251,7 @@ export default function Admin() {
       if (!res.ok) throw new Error('Failed to fetch pending bars');
       return res.json();
     },
-    enabled: !!currentUser?.isAdmin,
+    enabled: hasAdminAccess,
   });
 
   const createPhraseMutation = useMutation({
@@ -338,7 +339,7 @@ export default function Admin() {
       if (!res.ok) throw new Error('Failed to fetch AI review requests');
       return res.json();
     },
-    enabled: !!currentUser?.isAdmin,
+    enabled: hasAdminAccess,
   });
 
   const [selectedAiReview, setSelectedAiReview] = useState<any | null>(null);
@@ -393,7 +394,7 @@ export default function Admin() {
 
   const { data: maintenanceStatus } = useQuery<{ isActive: boolean; message?: string }>({
     queryKey: ['/api/maintenance'],
-    enabled: !!currentUser?.isAdmin,
+    enabled: hasAdminAccess,
   });
 
   const activateMaintenanceMutation = useMutation({
@@ -1291,7 +1292,7 @@ export default function Admin() {
       if (!res.ok) throw new Error('Failed to fetch archive');
       return res.json();
     },
-    enabled: !!currentUser?.isAdmin,
+    enabled: hasAdminAccess,
   });
 
   const restoreBarMutation = useMutation({
@@ -1324,10 +1325,10 @@ export default function Admin() {
     if (isLoadingUser) return;
     if (!currentUser) {
       setLocation("/auth");
-    } else if (!currentUser.isAdmin) {
+    } else if (!hasAdminAccess) {
       setLocation("/");
     }
-  }, [currentUser, isLoadingUser, setLocation]);
+  }, [currentUser, hasAdminAccess, isLoadingUser, setLocation]);
 
   if (isLoadingUser) {
     return (
@@ -1336,7 +1337,7 @@ export default function Admin() {
       </div>
     );
   }
-  if (!currentUser || !currentUser.isAdmin) {
+  if (!currentUser || !hasAdminAccess) {
     return (
       <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
         <div className="text-muted-foreground">Redirecting...</div>
