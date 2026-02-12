@@ -12,7 +12,46 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Bold, Italic, Underline, MessageSquare, Shield, Share2, Users, Lock, AlertTriangle, Search, CheckCircle, Music, AlertCircle, FileQuestion, FileText, RefreshCw, Crown, Trophy, XCircle, Trash2, Plus, X } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Archive,
+  ArrowLeft,
+  Ban,
+  Bold,
+  Bot,
+  Check,
+  CheckCircle,
+  Clock,
+  Crown,
+  Eye,
+  FileQuestion,
+  FileText,
+  Flag,
+  History,
+  Image,
+  Italic,
+  Lock,
+  MessageSquare,
+  Music,
+  Pencil,
+  Plus,
+  Power,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Share2,
+  Shield,
+  Star,
+  Trash2,
+  Trophy,
+  Underline,
+  Upload,
+  Users,
+  Wrench,
+  X,
+  XCircle,
+} from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
