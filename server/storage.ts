@@ -2010,12 +2010,12 @@ export class DatabaseStorage implements IStorage {
     
     // Days without violations (since last action_taken report or account creation)
     const user = await this.getUser(userId);
-    const accountCreated = user?.createdAt || new Date();
+    const accountCreated = (user as any)?.createdAt ? new Date((user as any).createdAt) : new Date();
     const [lastViolation] = await db
       .select({ createdAt: reports.createdAt })
       .from(reports)
       .where(and(
-        eq(reports.reportedUserId, userId),
+        eq(reports.userId, userId),
         eq(reports.status, 'action_taken')
       ))
       .orderBy(desc(reports.createdAt))

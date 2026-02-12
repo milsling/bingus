@@ -31,7 +31,7 @@ async function auditSequence() {
         const match = b.proofBarId?.match(/#(\d+)/);
         return match ? Number(match[1]) : null;
       })
-      .filter(Boolean);
+      .filter((n): n is number => typeof n === "number" && Number.isFinite(n));
     
     console.log("Extracted numbers:", numbers);
     

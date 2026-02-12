@@ -49,9 +49,9 @@ export function calculateSimilarity(text1: string, text2: string): number {
   if (set1.size === 0 || set2.size === 0) return 0;
   
   let intersection = 0;
-  for (const word of set1) {
+  set1.forEach((word) => {
     if (set2.has(word)) intersection++;
-  }
+  });
   
   const union = set1.size + set2.size - intersection;
   return Math.round((intersection / union) * 100);

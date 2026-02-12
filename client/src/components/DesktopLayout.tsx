@@ -168,7 +168,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
 
                 {/* Online Status Toggle */}
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <OnlineStatusIndicator showLabel />
+                  <OnlineStatusIndicator />
                 </div>
               </div>
             ) : (

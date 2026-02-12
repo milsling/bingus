@@ -316,11 +316,11 @@ export default function Home() {
               </div>
               <div className="flex gap-4 text-sm text-foreground/60 mb-3">
                 <div><span className="text-foreground font-semibold">{currentUser.xp || 0}</span> XP</div>
-                <div><span className="text-foreground font-semibold">{currentUser.barCount || 0}</span> Bars</div>
+                  <div><span className="text-foreground font-semibold">{(currentUser as any).barCount || 0}</span> Bars</div>
               </div>
-              {currentUser.badges && currentUser.badges.length > 0 && (
+              {(currentUser as any).badges && (currentUser as any).badges.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {currentUser.badges.slice(0, 4).map((badge: string, i: number) => (
+                  {(currentUser as any).badges.slice(0, 4).map((badge: string, i: number) => (
                     <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
                       {badge}
                     </span>

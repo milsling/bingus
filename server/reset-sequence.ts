@@ -61,9 +61,9 @@ async function resetBarSequence() {
     console.log(`\n✅ Complete! Renumbered ${allBars.length} bars`);
     console.log(`🎯 Next bar will be: orphanbars-#${(allBars.length + 1).toString().padStart(5, '0')}`);
     
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Failed to reset sequence:", error);
-    console.error("Stack:", error.stack);
+    console.error("Stack:", error?.stack);
     process.exit(1);
   }
 }
