@@ -153,18 +153,18 @@
   --app-bg-base-start: #f2f2f5;
   --app-bg-base-end: #e6e6eb;
 
-  /* Floating bars - off-white tint, more transparent so feed shows through */
-  --floating-bar-bg: rgba(242, 242, 245, 0.5);
-  --floating-bar-border: rgba(0, 0, 0, 0.08);
+  /* Floating bars - frosted glass */
+  --floating-bar-bg: rgba(248, 248, 250, 0.9);
+  --floating-bar-border: rgba(0, 0, 0, 0.1);
   --floating-bar-shadow:
     0 12px 28px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(15, 23, 42, 0.08);
 
-  /* Unified glass system (light) - off-white tint */
-  --glass-surface-bg: rgba(245, 245, 247, 0.72);
-  --glass-surface-bg-strong: rgba(250, 250, 252, 0.88);
-  --glass-surface-border: rgba(0, 0, 0, 0.06);
-  --glass-surface-border-strong: rgba(0, 0, 0, 0.1);
+  /* Unified glass system (light) - frosted glass, opaque enough to prevent text overlap */
+  --glass-surface-bg: rgba(248, 248, 250, 0.92);
+  --glass-surface-bg-strong: rgba(250, 250, 252, 0.96);
+  --glass-surface-border: rgba(0, 0, 0, 0.08);
+  --glass-surface-border-strong: rgba(0, 0, 0, 0.12);
   --glass-surface-shadow:
     0 12px 28px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(15, 23, 42, 0.08);
@@ -238,9 +238,9 @@
   --color-accent: hsl(265 70% 60%);
   --color-accent-soft: rgba(168, 85, 247, 0.15);
 
-  /* Glass panel variables - neutral dark, low saturation */
-  --glass-bg: rgba(18, 18, 24, 0.7);
-  --glass-bg-hover: rgba(18, 18, 24, 0.85);
+  /* Glass panel variables - frosted, opaque */
+  --glass-bg: rgba(18, 18, 24, 0.88);
+  --glass-bg-hover: rgba(20, 20, 28, 0.95);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-border-hover: rgba(255, 255, 255, 0.14);
 
@@ -270,24 +270,24 @@
   --app-bg-base-start: #050509;
   --app-bg-base-end: #0a0a12;
 
-  /* Floating bars - glass style */
-  --floating-bar-bg: rgba(18, 18, 24, 0.75);
-  --floating-bar-border: rgba(255, 255, 255, 0.08);
+  /* Floating bars - frosted glass */
+  --floating-bar-bg: rgba(18, 18, 24, 0.9);
+  --floating-bar-border: rgba(255, 255, 255, 0.12);
   --floating-bar-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.28);
 
-  /* Unified glass system - tweak: blur, transparency, borders */
-  --glass-surface-bg: rgba(18, 18, 24, 0.7);
-  --glass-surface-bg-strong: rgba(18, 18, 24, 0.85);
-  --glass-surface-border: rgba(255, 255, 255, 0.08);
-  --glass-surface-border-strong: rgba(255, 255, 255, 0.14);
+  /* Unified glass system - frosted glass, opaque enough to prevent text overlap */
+  --glass-surface-bg: rgba(18, 18, 24, 0.88);
+  --glass-surface-bg-strong: rgba(20, 20, 28, 0.95);
+  --glass-surface-border: rgba(255, 255, 255, 0.1);
+  --glass-surface-border-strong: rgba(255, 255, 255, 0.16);
   --glass-surface-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.3);
 
-  --glass-field-bg: rgba(18, 18, 24, 0.6);
-  --glass-field-bg-focus: rgba(18, 18, 24, 0.85);
+  --glass-field-bg: rgba(18, 18, 24, 0.85);
+  --glass-field-bg-focus: rgba(22, 22, 30, 0.95);
   --glass-field-border: rgba(255, 255, 255, 0.1);
   --glass-field-border-focus: rgba(167, 139, 250, 0.5);
   --glass-field-placeholder: rgba(142, 142, 147, 0.7);
@@ -307,11 +307,15 @@
   * {
     @apply border-border;
   }
-  /* Ensure app content stacks above background layers */
+  /* Ensure app content stacks above background layers, fills viewport */
+  html, body {
+    width: 100%;
+  }
   #root {
     position: relative;
     z-index: 1;
     min-height: 100dvh;
+    width: 100%;
   }
   /* Background image must stay behind all content */
   #app-background-image {
@@ -585,11 +589,11 @@ html.dark {
    Tweak: blur (10-20px), transparency, borders
    ======================================== */
 
-/* Glass panel base - Theme-aware glass style */
+/* Glass panel base - Frosted glass, theme-aware */
 .glass-panel {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid var(--glass-surface-border);
   border-radius: 1rem;
   box-shadow: var(--glass-surface-shadow);
@@ -605,11 +609,11 @@ html.dark {
   border-color: var(--glass-surface-border-strong);
 }
 
-/* Glass card - bar cards - theme-aware */
+/* Glass card - bar cards - frosted glass */
 .glass-card {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid var(--glass-surface-border);
   border-radius: 1rem;
   transform: translateZ(0);
@@ -628,11 +632,11 @@ html.dark {
   box-shadow: var(--glass-surface-shadow);
 }
 
-/* Floating top/bottom bars (theme-aware) */
+/* Floating top/bottom bars - frosted glass */
 .floating-bar {
   background: var(--floating-bar-bg);
-  backdrop-filter: blur(16px) saturate(130%);
-  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid var(--floating-bar-border);
   box-shadow: var(--floating-bar-shadow);
   overflow: visible;
@@ -641,8 +645,8 @@ html.dark {
 .glass-surface {
   background: var(--glass-surface-bg);
   border: 1px solid var(--glass-surface-border);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   box-shadow: var(--glass-surface-shadow);
 }
 

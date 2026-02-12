@@ -690,26 +690,47 @@ export default function Auth() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col p-4">
-        <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="mb-8 text-center space-y-2">
-          <Link href="/">
-            <div className="flex items-center justify-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
-              <img src={iconUrl} alt="Orphan Bars" className="h-10 w-10" />
-              <span className="font-logo text-3xl">ORPHAN BARS</span>
-            </div>
-          </Link>
-          <p className="text-muted-foreground max-w-sm mx-auto">
-            No home for your fire bars? Orphan 'em, cuh.
-          </p>
+      <div className="min-h-screen flex flex-col md:flex-row pt-14 pb-20 md:pt-20 md:pb-8 w-full">
+        {/* Desktop: split layout - left branding, right form */}
+        <div className="hidden md:flex md:flex-1 md:items-center md:justify-center md:min-w-0 md:p-8 lg:p-12">
+          <div className="glass-panel rounded-3xl p-8 lg:p-10 max-w-md">
+            <Link href="/">
+              <div className="flex items-center gap-3 mb-6 cursor-pointer hover:opacity-80 transition-opacity">
+                <img src={iconUrl} alt="Orphan Bars" className="h-12 w-12" />
+                <span className="font-logo text-3xl">ORPHAN BARS</span>
+              </div>
+            </Link>
+            <p className="text-muted-foreground text-lg md:text-xl">
+              No home for your fire bars? Orphan 'em, cuh.
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground/80">
+              A focused place to share loose bars, discover sharp writing, and keep the culture moving.
+            </p>
+          </div>
+        </div>
+
+        {/* Mobile: centered; Desktop: form panel */}
+        <div className="flex-1 flex flex-col items-center justify-center w-full min-w-0 px-4 md:px-8 lg:px-12">
+        <div className="mb-6 md:mb-8 text-center space-y-2 w-full max-w-md">
+          <div className="md:hidden">
+            <Link href="/">
+              <div className="flex items-center justify-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
+                <img src={iconUrl} alt="Orphan Bars" className="h-10 w-10" />
+                <span className="font-logo text-3xl">ORPHAN BARS</span>
+              </div>
+            </Link>
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              No home for your fire bars? Orphan 'em, cuh.
+            </p>
+          </div>
         </div>
         
         {motd?.isActive && motd?.message && (
-          <div className="w-full max-w-md mb-6 p-4 rounded-xl bg-white/[0.03] border border-white/[0.1] backdrop-blur-sm">
+          <div className="w-full max-w-md mb-6 p-4 rounded-xl glass-surface border border-border/60">
             <div className="flex items-start gap-3">
               <span className="text-xl">📢</span>
               <div className="flex-1">
-                <p className="text-sm font-medium text-white/90">{motd.message}</p>
+                <p className="text-sm font-medium text-foreground">{motd.message}</p>
                 {motd.linkUrl && motd.linkText && (
                   <a 
                     href={motd.linkUrl} 
@@ -725,7 +746,7 @@ export default function Auth() {
           </div>
         )}
 
-      <Card className="w-full max-w-md bg-white/5 backdrop-blur-2xl border-white/10 rounded-[32px] overflow-hidden shadow-[0_0_120px_rgba(139,92,246,0.4),0_8px_40px_rgba(0,0,0,0.4)]">
+      <Card className="w-full max-w-md md:max-w-lg glass-surface-strong rounded-[32px] overflow-hidden shadow-[0_0_120px_rgba(139,92,246,0.2),0_8px_40px_rgba(0,0,0,0.3)]">
         <Tabs defaultValue="login" className="w-full" onValueChange={() => resetSignup()}>
           <TabsList className="grid w-full grid-cols-2 bg-transparent p-0 h-14 border-b border-white/[0.06]">
             <TabsTrigger 
@@ -905,7 +926,7 @@ export default function Auth() {
         </Tabs>
       </Card>
       
-      <p className="mt-8 text-center text-sm text-muted-foreground">
+      <p className="mt-8 text-center text-sm text-muted-foreground max-w-md">
         By continuing, you agree to our <Link href="/terms" className="underline cursor-pointer hover:text-primary">Terms of Service</Link> and <Link href="/guidelines" className="underline cursor-pointer hover:text-primary">Community Guidelines</Link>.
       </p>
         </div>
