@@ -331,7 +331,7 @@ export default function Messages() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
 
-      <main className="max-w-5xl mx-auto h-[calc(100vh-80px)] md:h-[calc(100vh-64px)] md:p-4">
+      <main className="w-full max-w-5xl xl:max-w-6xl mx-auto h-[calc(100vh-80px)] md:h-[calc(100vh-64px)] md:p-4">
         <div className="h-full md:rounded-2xl glass-panel overflow-hidden flex">
           
           <div className="hidden md:flex w-80 border-r border-border/40 flex-col">

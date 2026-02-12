@@ -43,13 +43,85 @@ export default function Navigation() {
         onSearchOpenChange={setSearchOpen}
       />
       
-      {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar overflow-visible">
-        {/* Left: Hamburger + Logo */}
-        <div className="flex items-center gap-2">
+      {/* Desktop Floating Top Bar - full-width nav with visible links */}
+      <header className="hidden md:flex fixed top-4 left-4 right-4 lg:left-6 lg:right-6 xl:left-8 xl:right-8 h-14 z-50 items-center justify-between px-4 rounded-2xl floating-bar overflow-visible">
+        {/* Left: Logo + Nav links */}
+        <div className="flex items-center gap-1 lg:gap-2 min-w-0">
+          <Link href="/" className="flex-shrink-0">
+            <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+              <img src={headerLogo} alt="" className="h-7 w-7" />
+              <span className="font-logo text-xl text-foreground whitespace-nowrap">ORPHAN BARS</span>
+            </div>
+          </Link>
+          <nav className="hidden lg:flex items-center gap-0.5 ml-4">
+            <Link href="/">
+              <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location === "/" || location === "/discover" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                Explore
+              </span>
+            </Link>
+            <Link href="/prompts">
+              <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location.startsWith("/prompts") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                Prompts
+              </span>
+            </Link>
+            <Link href="/challenges">
+              <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location.startsWith("/challenges") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                Challenges
+              </span>
+            </Link>
+            <Link href="/apps/notebook">
+              <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location.startsWith("/apps/notebook") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                Notebook
+              </span>
+            </Link>
+            <Link href="/orphanstudio">
+              <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location.startsWith("/orphanstudio") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                OrphanStudio
+              </span>
+            </Link>
+            {currentUser && (
+              <>
+                <Link href="/profile">
+                  <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location === "/profile" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                    My Bars
+                  </span>
+                </Link>
+                <Link href="/messages">
+                  <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5", location.startsWith("/messages") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                    Messages
+                    {unreadCount > 0 && <span className="text-xs bg-primary text-white px-1.5 rounded-full min-w-[1.25rem] text-center">{unreadCount}</span>}
+                  </span>
+                </Link>
+                <Link href="/friends">
+                  <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5", location === "/friends" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                    Friends
+                    {pendingFriendRequests > 0 && <span className="text-xs bg-primary text-white px-1.5 rounded-full min-w-[1.25rem] text-center">{pendingFriendRequests}</span>}
+                  </span>
+                </Link>
+                <Link href="/saved">
+                  <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location === "/saved" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                    Saved
+                  </span>
+                </Link>
+                <Link href="/orphanage">
+                  <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location === "/orphanage" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                    Orphanage
+                  </span>
+                </Link>
+                {currentUser.isAdmin && (
+                  <Link href="/admin">
+                    <span className={cn("px-3 py-2 rounded-lg text-sm font-medium transition-colors", location === "/admin" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.06]")}>
+                      Admin
+                    </span>
+                  </Link>
+                )}
+              </>
+            )}
+          </nav>
+          {/* More dropdown for md only (when nav links hidden) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-2.5 rounded-xl hover:bg-secondary/80 transition-colors">
+              <button className="lg:hidden p-2.5 rounded-xl hover:bg-secondary/80 transition-colors">
                 <Menu className="h-5 w-5 text-foreground/70" />
               </button>
             </DropdownMenuTrigger>
@@ -75,7 +147,7 @@ export default function Navigation() {
               <DropdownMenuItem asChild>
                 <Link href="/orphanstudio" className="flex items-center gap-3 cursor-pointer">
                   <NotebookPen className="h-4 w-4" />
-                  <span>Open OrphanStudio</span>
+                  <span>OrphanStudio</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -149,17 +221,10 @@ export default function Navigation() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          
-          <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <img src={headerLogo} alt="" className="h-7 w-7" />
-              <span className="font-logo text-xl text-foreground">ORPHAN BARS</span>
-            </div>
-          </Link>
         </div>
         
         {/* Center: Search Bar */}
-        <div className="flex-1 max-w-xl mx-8">
+        <div className="flex-1 max-w-xl mx-4 lg:mx-8 min-w-0">
           <SearchBar className="w-full" />
         </div>
         

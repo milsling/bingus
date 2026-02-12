@@ -6,7 +6,7 @@ export default function Guidelines() {
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
       
-      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-8">
+      <main className="w-full max-w-3xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 py-8">
         <div className="mb-6">
           <Link href="/">
             <Button variant="ghost" className="gap-2 -ml-2" data-testid="button-back">

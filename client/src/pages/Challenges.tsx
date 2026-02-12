@@ -25,7 +25,7 @@ export default function Challenges() {
 
   return (
     <div className="min-h-screen bg-background pt-16 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-24 md:pb-8">
-      <main className="mx-auto max-w-7xl px-4 md:px-6 space-y-5">
+      <main className="mx-auto w-full max-w-7xl xl:max-w-[1600px] px-4 md:px-6 lg:px-8 space-y-5">
         <section className="rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/12 via-card/80 to-background p-6 md:p-8">
           <Badge className="mb-3 bg-primary/15 text-primary hover:bg-primary/20">
             Battles & responses

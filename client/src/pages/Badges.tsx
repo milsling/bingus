@@ -208,7 +208,7 @@ export default function Badges() {
 
   if (!currentUser) {
     return (
-      <div className="container max-w-4xl mx-auto px-4 pt-14 pb-20 md:pb-4 md:pt-24">
+      <div className="w-full max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 pt-14 pb-20 md:pb-4 md:pt-24">
         <Card>
           <CardContent className="py-12 text-center">
             <Trophy className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -223,7 +223,7 @@ export default function Badges() {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 pt-14 pb-24 md:pt-24">
+    <div className="w-full max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 pt-14 pb-24 md:pt-24">
       <div className="flex items-center gap-4 mb-6">
         <Link href={`/u/${currentUser.username}`}>
           <Button variant="ghost" size="icon" className="rounded-full">

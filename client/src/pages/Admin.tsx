@@ -1347,7 +1347,7 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
       
-      <main className="max-w-4xl mx-auto p-4 md:p-8">
+      <main className="w-full max-w-4xl xl:max-w-6xl mx-auto p-4 md:p-8">
         <div className="flex items-center gap-3 mb-6">
           <Shield className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-display font-bold">Admin Dashboard</h1>
