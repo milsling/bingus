@@ -17,7 +17,8 @@ import {
   Heart,
   BarChart3,
   Sparkles,
-  LayoutGrid
+  LayoutGrid,
+  Swords
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
@@ -162,6 +163,8 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
 
     const items = [
       { icon: Home, label: "Feed", path: "/", id: "main-feed" },
+      { icon: Sparkles, label: "Prompts", path: "/prompts", id: "main-prompts" },
+      { icon: Swords, label: "Challenges", path: "/challenges", id: "main-challenges" },
       { icon: MessageCircle, label: "Messages", path: "/messages", id: "main-messages" },
       { icon: Users, label: "Friends", path: "/friends", id: "main-friends" },
       { icon: Bookmark, label: "Saved", path: "/saved", id: "main-saved" },

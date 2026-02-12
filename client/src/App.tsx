@@ -13,6 +13,8 @@ import EditProfile from "@/pages/EditProfile";
 import Auth from "@/pages/Auth";
 import Admin from "@/pages/Admin";
 import BarDetail from "@/pages/BarDetail";
+import Prompts from "@/pages/Prompts";
+import Challenges from "@/pages/Challenges";
 import UserProfile from "@/pages/UserProfile";
 import Saved from "@/pages/Saved";
 import Friends from "@/pages/Friends";
@@ -57,6 +59,8 @@ function Router() {
           <Route path="/auth" component={Auth} />
           <Route path="/auth/callback" component={AuthCallback} />
           <Route path="/post" component={Post} />
+          <Route path="/prompts" component={Prompts} />
+          <Route path="/challenges" component={Challenges} />
           <Route path="/profile" component={Profile} />
           <Route path="/profile/edit" component={EditProfile} />
           <Route path="/admin" component={Admin} />
