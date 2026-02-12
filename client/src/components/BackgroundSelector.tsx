@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Check, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 import abstractWaves from '@/assets/backgrounds/abstract-waves.webp';
 import purpleCosmos from '@/assets/backgrounds/purple-cosmos.jpeg';
@@ -50,6 +51,7 @@ export const IMAGE_BACKGROUNDS: Background[] = [
 const STORAGE_KEY = "orphanbars-background";
 
 export function useBackground() {
+  const { resolvedTheme } = useTheme();
   const [selectedId, setSelectedId] = useState<string>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem(STORAGE_KEY) || "default";
@@ -67,9 +69,15 @@ export function useBackground() {
       existingBgElement.remove();
     }
 
+    // Reset any previous inline overrides and let theme CSS drive defaults.
+    document.body.style.removeProperty('background');
+    document.body.style.removeProperty('background-attachment');
+    document.body.style.removeProperty('background-color');
+
     if (selectedBackground.image) {
       const bgElement = document.createElement('div');
       bgElement.id = 'app-background-image';
+      const isLight = resolvedTheme === "light";
       bgElement.style.cssText = `
         position: fixed;
         top: 0;
@@ -81,16 +89,20 @@ export function useBackground() {
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-        filter: blur(8px) brightness(0.6);
-        transform: scale(1.1);
+        filter: blur(8px) ${isLight ? 'brightness(0.92) saturate(1.05)' : 'brightness(0.62) saturate(1.05)'};
+        transform: scale(1.08);
+        opacity: ${isLight ? '0.82' : '0.95'};
+        pointer-events: none;
       `;
       document.body.prepend(bgElement);
-      document.body.style.background = '#0a0a0f';
-    } else {
-      document.body.style.background = selectedBackground.fallbackGradient || '#0a0a0f';
-      document.body.style.backgroundAttachment = 'fixed';
+
+      // Keep image visible while preserving readable contrast per theme.
+      document.body.style.background = isLight
+        ? "linear-gradient(180deg, rgba(255,255,255,0.58) 0%, rgba(248,250,252,0.74) 100%)"
+        : "linear-gradient(180deg, rgba(15,23,42,0.64) 0%, rgba(2,6,23,0.8) 100%)";
+      document.body.style.backgroundAttachment = "fixed";
     }
-  }, [selectedId, selectedBackground]);
+  }, [selectedId, selectedBackground, resolvedTheme]);
 
   const setBackground = (id: string) => {
     setSelectedId(id);
