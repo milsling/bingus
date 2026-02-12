@@ -402,25 +402,25 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - modern pill-style indicator */}
         <div className="px-4 md:px-8">
           <Tabs defaultValue="bars" className="w-full">
-            <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-6">
+            <TabsList className="w-full justify-start bg-muted/40 border-0 rounded-2xl h-auto p-1 gap-1">
               <TabsTrigger 
                 value="bars" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-3 text-muted-foreground data-[state=active]:text-foreground font-display font-bold tracking-wide"
+                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
               >
                 BARS
               </TabsTrigger>
               <TabsTrigger 
                 value="likes" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-3 text-muted-foreground data-[state=active]:text-foreground font-display font-bold tracking-wide"
+                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
               >
                 LIKES
               </TabsTrigger>
               <TabsTrigger 
                 value="saved" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-3 text-muted-foreground data-[state=active]:text-foreground font-display font-bold tracking-wide"
+                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
               >
                 SAVED
               </TabsTrigger>

@@ -887,7 +887,7 @@ export default function BarCard({ bar }: BarCardProps) {
           </CardContent>
 
           <CardFooter className="border-t border-white/5 py-3 flex-col px-2 sm:px-4">
-            <div className="flex w-full items-center justify-center gap-1 sm:gap-2 text-muted-foreground">
+            <div className="flex w-full items-center justify-start gap-1 sm:gap-2 text-muted-foreground">
               <Button 
                 variant="ghost" 
                 size="sm" 

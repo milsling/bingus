@@ -1298,7 +1298,11 @@ export default function Admin() {
     );
   }
   if (!currentUser || !currentUser.isAdmin) {
-    return null;
+    return (
+      <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
+        <div className="text-muted-foreground">Redirecting...</div>
+      </div>
+    );
   }
 
   return (
