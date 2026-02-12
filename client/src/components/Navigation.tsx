@@ -49,7 +49,11 @@ export default function Navigation() {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-2.5 rounded-xl hover:bg-secondary/80 transition-colors">
+              <button
+                type="button"
+                className="p-2.5 rounded-xl hover:bg-secondary/80 transition-colors"
+                aria-label="Open menu"
+              >
                 <Menu className="h-5 w-5 text-foreground/70" />
               </button>
             </DropdownMenuTrigger>
