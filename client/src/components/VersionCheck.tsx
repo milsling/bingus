@@ -1,35 +1,40 @@
 import { useEffect, useRef } from "react";
 
+const MIN_UPTIME_BEFORE_RELOAD_MS = 30000;
+
 export function VersionCheck() {
   const currentVersion = useRef<string | null>(null);
+  const mountTime = useRef<number>(Date.now());
 
   useEffect(() => {
     async function checkVersion() {
       try {
         const res = await fetch("/api/version");
         if (!res.ok) return;
-        
+
         const data = await res.json();
-        
+        const newVersion = data?.version;
+
         if (currentVersion.current === null) {
-          currentVersion.current = data.version;
-        } else if (currentVersion.current !== data.version) {
-          // Clear all caches and force hard reload
-          if ('caches' in window) {
-            caches.keys().then(names => {
-              names.forEach(name => {
-                caches.delete(name);
-              });
-            });
-          }
-          window.location.href = window.location.href; // Force bypass cache
+          currentVersion.current = newVersion;
+          return;
         }
-      } catch (e) {
+        if (!newVersion || currentVersion.current === newVersion) return;
+
+        const uptime = Date.now() - mountTime.current;
+        if (uptime < MIN_UPTIME_BEFORE_RELOAD_MS) return;
+
+        if ("caches" in window) {
+          caches.keys().then((names) => names.forEach((n) => caches.delete(n)));
+        }
+        window.location.href = window.location.href;
+      } catch {
+        /* ignore */
       }
     }
 
     checkVersion();
-    const interval = setInterval(checkVersion, 10000);
+    const interval = setInterval(checkVersion, 60000);
     return () => clearInterval(interval);
   }, []);
 

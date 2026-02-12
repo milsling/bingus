@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mic, MicOff, Sparkles, Send, Loader2 } from "lucide-react";
+import { Mic, MicOff, Sparkles, Send, Loader2, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const ARA_AUTOSPEAK_KEY = "ara-autospeak";
 
 interface Message {
   role: "user" | "assistant";
@@ -29,8 +31,52 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
   const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const sendMessageRef = useRef<(content: string) => void>(() => {});
   const [isVoiceSupported, setIsVoiceSupported] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const stored = localStorage.getItem(ARA_AUTOSPEAK_KEY);
+    return stored === null ? true : stored === "true";
+  });
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [ttsSupported, setTtsSupported] = useState(false);
+
+  useEffect(() => {
+    setTtsSupported(typeof window !== "undefined" && "speechSynthesis" in window);
+  }, []);
+
+  const speakTTS = useCallback((text: string) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.lang = "en-US";
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  }, []);
+
+  const stopTTS = useCallback(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  }, []);
+
+  const toggleAutoSpeak = useCallback(() => {
+    setAutoSpeak((prev) => {
+      const next = !prev;
+      localStorage.setItem(ARA_AUTOSPEAK_KEY, String(next));
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) stopTTS();
+  }, [isOpen, stopTTS]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,10 +99,9 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     recognition.onresult = (event: any) => {
       const transcript = event?.results?.[0]?.[0]?.transcript;
       if (typeof transcript === "string" && transcript.trim()) {
-        setInput((prev) => {
-          const next = `${prev}${prev.trim() ? " " : ""}${transcript.trim()}`;
-          return next;
-        });
+        const text = transcript.trim();
+        setInput("");
+        sendMessageRef.current(text);
       }
     };
 
@@ -84,7 +129,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     }
   }, [isOpen]);
 
-  const sendMessageWithContent = async (content: string) => {
+  const sendMessageWithContent = useCallback(async (content: string) => {
     if (!content.trim() || isLoading) return;
     
     const userMessage = content.trim();
@@ -99,13 +144,21 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
         body: JSON.stringify({ message: userMessage }),
       });
       const data = await res.json();
-      setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+      const responseText = data.response || "Sorry, I couldn't respond.";
+      setMessages(prev => [...prev, { role: "assistant", content: responseText }]);
+      if (autoSpeak && window.speechSynthesis) {
+        speakTTS(responseText);
+      }
     } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I couldn't respond. Try again." }]);
+      const fallback = "Sorry, I couldn't respond. Try again.";
+      setMessages(prev => [...prev, { role: "assistant", content: fallback }]);
+      if (autoSpeak && window.speechSynthesis) {
+        speakTTS(fallback);
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [autoSpeak, speakTTS]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -150,11 +203,27 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-md h-[70vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-4 py-3 border-b">
+          <DialogHeader className="px-4 py-3 border-b flex flex-row items-center justify-between gap-4">
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-500" />
               Ara
             </DialogTitle>
+            {ttsSupported && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={toggleAutoSpeak}
+                className={cn(
+                  "shrink-0",
+                  autoSpeak && "text-primary bg-primary/10"
+                )}
+                title={autoSpeak ? "Ara speaks responses (click to turn off)" : "Ara speaks responses (click to turn on)"}
+                data-testid="button-ara-autospeak"
+              >
+                {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+            )}
           </DialogHeader>
 
           <ScrollArea className="flex-1 p-4">
@@ -170,12 +239,30 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
             {messages.map((msg, i) => (
               <div key={i} className={cn("mb-3", msg.role === "user" ? "text-right" : "text-left")}>
                 <div className={cn(
-                  "inline-block max-w-[85%] px-3 py-2 rounded-lg text-sm whitespace-pre-wrap",
-                  msg.role === "user" 
-                    ? "bg-purple-600 text-white" 
-                    : "bg-secondary text-foreground"
+                  "inline-flex items-end gap-2 max-w-[85%]",
+                  msg.role === "user" && "flex-row-reverse ml-auto"
                 )}>
-                  {msg.content}
+                  <div className={cn(
+                    "inline-block px-3 py-2 rounded-lg text-sm whitespace-pre-wrap",
+                    msg.role === "user" 
+                      ? "bg-purple-600 text-white" 
+                      : "bg-secondary text-foreground"
+                  )}>
+                    {msg.content}
+                  </div>
+                  {msg.role === "assistant" && ttsSupported && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0"
+                      onClick={() => (isSpeaking ? stopTTS() : speakTTS(msg.content))}
+                      title={isSpeaking ? "Stop speaking" : "Speak this response"}
+                      data-testid={`button-speak-msg-${i}`}
+                    >
+                      {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

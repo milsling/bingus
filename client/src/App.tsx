@@ -111,21 +111,23 @@ function BackgroundInitializer() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <BarProvider>
-          <TooltipProvider>
-            <VersionCheck />
-            <BackgroundInitializer />
-            <MaintenanceBanner />
-            <Navigation />
-            <Toaster />
-            <SwipeBackNavigation>
-              <Router />
-            </SwipeBackNavigation>
-            <AIAssistant hideFloatingButton />
-          </TooltipProvider>
-        </BarProvider>
-      </ThemeProvider>
+      <ErrorBoundary minimal>
+        <ThemeProvider>
+          <BarProvider>
+            <TooltipProvider>
+              <VersionCheck />
+              <BackgroundInitializer />
+              <MaintenanceBanner />
+              <Navigation />
+              <Toaster />
+              <SwipeBackNavigation>
+                <Router />
+              </SwipeBackNavigation>
+              <AIAssistant hideFloatingButton />
+            </TooltipProvider>
+          </BarProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }
