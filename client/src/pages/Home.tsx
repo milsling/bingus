@@ -1,43 +1,29 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
-import BarCard from "@/components/BarCard";
-import CategoryFilter from "@/components/CategoryFilter";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { BarWithUser } from "@shared/schema";
+import { Link, useLocation, useSearch } from "wouter";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Search, PenLine, Flame, Sparkles, Trophy, Hash, X, Compass } from "lucide-react";
+import { useBars } from "@/context/BarContext";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { BarSkeletonList } from "@/components/BarSkeleton";
 import { SearchBar } from "@/components/SearchBar";
-import { PullToRefresh } from "@/components/PullToRefresh";
-import { Clock, Flame, Trophy, Grid3X3, Hash, X, Lightbulb, Laugh, Palette, HelpCircle, Star, BadgeCheck, Heart, MessageCircle, PenLine } from "lucide-react";
-import iconUrl from "@/assets/icon.png";
-import { useBars } from "@/context/BarContext";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { useLocation, useSearch, Link } from "wouter";
-import { useToast } from "@/hooks/use-toast";
+import FeedBarCard from "@/components/FeedBarCard";
+import ActivityStrip from "@/components/ActivityStrip";
+import CommunitySpotlight from "@/components/CommunitySpotlight";
 
-function formatTimeAgo(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+type FeedTab = "latest" | "top" | "trending" | "challenges";
+
+function formatCompact(value: number) {
+  return new Intl.NumberFormat("en-US").format(value);
 }
-
-type Category = "Funny" | "Serious" | "Wordplay" | "Storytelling" | "Battle" | "Freestyle";
-type FeedTab = "featured" | "latest" | "top" | "trending" | "categories";
-type SortFilter = "all" | "technical" | "funny" | "imagery";
 
 export default function Home() {
   const { bars, isLoadingBars, refetchBars, currentUser } = useBars();
-  const [selectedCategory, setSelectedCategory] = useState<Category | "All">("All");
   const [activeTab, setActiveTab] = useState<FeedTab>("latest");
-  const [sortFilter, setSortFilter] = useState<SortFilter>("all");
-  const [originalOnly, setOriginalOnly] = useState(false);
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const searchString = useSearch();
@@ -45,576 +31,433 @@ export default function Home() {
   const tagFilter = params.get("tag");
   const { toast } = useToast();
 
-  // Handle OAuth errors that redirect to the root URL
   useEffect(() => {
     const error = params.get("error");
     const errorDescription = params.get("error_description");
-    
-    if (error) {
-      console.error('OAuth error:', { error, errorDescription });
-      
-      let message = "Authentication failed. Please try again.";
-      
-      if (errorDescription) {
-        const decodedDescription = decodeURIComponent(errorDescription.replace(/\+/g, ' '));
-        
-        // Handle specific Apple OAuth errors with user-friendly messages
-        if (decodedDescription.includes("Unable to exchange external code")) {
-          message = "Apple Sign In is currently unavailable. This may be due to a configuration issue. Please try signing in with a different method or contact support.";
-        } else {
-          message = decodedDescription;
-        }
-      }
-      
-      toast({
-        title: "Sign In Failed",
-        description: message,
-        variant: "destructive",
-      });
-      
-      // Clean up URL by removing error parameters
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, cleanUrl);
+    if (!error) {
+      return;
     }
-  }, [searchString, toast, params]);
 
-  const { data: tagBars = [], isLoading: isLoadingTagBars } = useQuery({
-    queryKey: ['bars-by-tag', tagFilter],
+    const message = errorDescription
+      ? decodeURIComponent(errorDescription.replace(/\+/g, " "))
+      : "Authentication failed. Please try again.";
+
+    toast({
+      title: "Sign In Failed",
+      description: message,
+      variant: "destructive",
+    });
+
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }, [params, toast]);
+
+  const { data: communityStats } = useQuery({
+    queryKey: ["community-stats"],
+    queryFn: () => api.getCommunityStats(),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: activityItems = [] } = useQuery({
+    queryKey: ["community-now"],
+    queryFn: () => api.getNowActivity(8),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: spotlight } = useQuery({
+    queryKey: ["community-spotlight"],
+    queryFn: () => api.getCommunitySpotlight(),
+    staleTime: 120_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: currentPrompt } = useQuery({
+    queryKey: ["current-prompt"],
+    queryFn: () => api.getCurrentPrompt(),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: leaderboard = [] } = useQuery({
+    queryKey: ["leaderboard"],
+    queryFn: async () => {
+      const res = await fetch("/api/leaderboard?limit=8", { credentials: "include" });
+      return res.json();
+    },
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: topBars = [], isLoading: isTopLoading } = useQuery({
+    queryKey: ["bars-top"],
+    queryFn: async () => {
+      const res = await fetch("/api/bars/feed/top", { credentials: "include" });
+      return res.json();
+    },
+    enabled: !tagFilter && activeTab === "top",
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: trendingBars = [], isLoading: isTrendingLoading } = useQuery({
+    queryKey: ["bars-trending"],
+    queryFn: async () => {
+      const res = await fetch("/api/bars/feed/trending", { credentials: "include" });
+      return res.json();
+    },
+    enabled: !tagFilter && activeTab === "trending",
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: challengeBars = [], isLoading: isChallengesLoading } = useQuery({
+    queryKey: ["bars-challenges"],
+    queryFn: () => api.getChallenges(30),
+    enabled: !tagFilter && activeTab === "challenges",
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: tagBars = [], isLoading: isTagBarsLoading } = useQuery({
+    queryKey: ["bars-by-tag", tagFilter],
     queryFn: async () => {
       if (!tagFilter) return [];
-      const res = await fetch(`/api/bars/by-tag/${encodeURIComponent(tagFilter)}`, { credentials: 'include' });
+      const res = await fetch(`/api/bars/by-tag/${encodeURIComponent(tagFilter)}`, {
+        credentials: "include",
+      });
       return res.json();
     },
     enabled: !!tagFilter,
-    staleTime: 30000,
+    staleTime: 30_000,
     refetchOnWindowFocus: false,
   });
 
-  const { data: featuredBars = [], isLoading: isLoadingFeatured, refetch: refetchFeatured } = useQuery({
-    queryKey: ['bars-featured'],
-    queryFn: async () => {
-      const res = await fetch('/api/bars/feed/featured', { credentials: 'include' });
-      return res.json();
-    },
-    enabled: activeTab === "featured",
-    staleTime: 60000,
-    refetchOnWindowFocus: false,
-  });
+  const visibleBars = useMemo<BarWithUser[]>(() => {
+    if (tagFilter) return tagBars;
+    if (activeTab === "top") return topBars;
+    if (activeTab === "trending") return trendingBars;
+    if (activeTab === "challenges") return challengeBars as BarWithUser[];
+    return bars;
+  }, [tagFilter, tagBars, activeTab, topBars, trendingBars, challengeBars, bars]);
 
-  const { data: topBars = [], isLoading: isLoadingTop, refetch: refetchTop } = useQuery({
-    queryKey: ['bars-top'],
-    queryFn: async () => {
-      const res = await fetch('/api/bars/feed/top', { credentials: 'include' });
-      return res.json();
-    },
-    enabled: activeTab === "top",
-    staleTime: 60000,
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: trendingBars = [], isLoading: isLoadingTrending, refetch: refetchTrending } = useQuery({
-    queryKey: ['bars-trending'],
-    queryFn: async () => {
-      const res = await fetch('/api/bars/feed/trending', { credentials: 'include' });
-      return res.json();
-    },
-    enabled: activeTab === "trending",
-    staleTime: 30000,
-    refetchOnWindowFocus: false,
-  });
-
-  // Leaderboard query - real data from database
-  const { data: leaderboard = [] } = useQuery({
-    queryKey: ['leaderboard'],
-    queryFn: async () => {
-      const res = await fetch('/api/leaderboard?limit=5', { credentials: 'include' });
-      return res.json();
-    },
-    staleTime: 60000,
-    refetchOnWindowFocus: false,
-  });
-
-  // Recent activity query - real data from database
-  const { data: recentActivity = [] } = useQuery({
-    queryKey: ['recent-activity'],
-    queryFn: async () => {
-      const res = await fetch('/api/activity/recent?limit=6', { credentials: 'include' });
-      return res.json();
-    },
-    staleTime: 30000,
-    refetchOnWindowFocus: false,
-  });
+  const isLoading = tagFilter
+    ? isTagBarsLoading
+    : activeTab === "top"
+      ? isTopLoading
+      : activeTab === "trending"
+        ? isTrendingLoading
+        : activeTab === "challenges"
+          ? isChallengesLoading
+          : isLoadingBars;
 
   const handleRefresh = useCallback(async () => {
     await refetchBars();
-    queryClient.invalidateQueries({ queryKey: ['likes'] });
-    if (tagFilter) {
-      queryClient.invalidateQueries({ queryKey: ['bars-by-tag', tagFilter] });
-    }
-    if (activeTab === "featured") refetchFeatured();
-    if (activeTab === "top") refetchTop();
-    if (activeTab === "trending") refetchTrending();
-  }, [refetchBars, queryClient, tagFilter, activeTab, refetchFeatured, refetchTop, refetchTrending]);
+    queryClient.invalidateQueries({ queryKey: ["bars-top"] });
+    queryClient.invalidateQueries({ queryKey: ["bars-trending"] });
+    queryClient.invalidateQueries({ queryKey: ["bars-challenges"] });
+    queryClient.invalidateQueries({ queryKey: ["bars-by-tag", tagFilter] });
+    queryClient.invalidateQueries({ queryKey: ["community-now"] });
+    queryClient.invalidateQueries({ queryKey: ["community-spotlight"] });
+    queryClient.invalidateQueries({ queryKey: ["community-stats"] });
+  }, [queryClient, refetchBars, tagFilter]);
 
-  const clearTagFilter = () => {
-    setLocation("/");
+  const stats = {
+    totalBars: communityStats?.totalBars ?? bars.length,
+    barsThisWeek: communityStats?.barsThisWeek ?? 0,
+    activeWritersMonth: communityStats?.activeWritersMonth ?? 0,
   };
 
-  const filteredBars = useMemo(() => {
-    let result: any[];
-    
-    if (tagFilter) {
-      result = [...tagBars];
-    } else {
-      switch (activeTab) {
-        case "featured":
-          result = [...featuredBars];
-          break;
-        case "top":
-          result = [...topBars];
-          break;
-        case "trending":
-          result = [...trendingBars];
-          break;
-        case "categories":
-          result = selectedCategory === "All" ? [...bars] : bars.filter(bar => bar.category === selectedCategory);
-          break;
-        case "latest":
-        default:
-          result = [...bars];
-          break;
-      }
+  const showFeed = () => {
+    const feed = document.getElementById("feed-start");
+    if (feed) {
+      feed.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
 
-    if (sortFilter !== "all") {
-      const technicalTags = ["wordplay", "metaphor", "entendre", "scheme", "technical", "multis"];
-      const funnyTags = ["funny", "comedy", "humor", "joke", "hilarious"];
-      const imageryTags = ["imagery", "visual", "cinematic", "vivid", "crazy", "wild"];
-
-      result = result.filter(bar => {
-        const barTags = (bar.tags || []).map((t: string) => t.toLowerCase());
-        if (sortFilter === "technical") {
-          return barTags.some((t: string) => technicalTags.includes(t)) || bar.category === "Wordplay";
-        }
-        if (sortFilter === "funny") {
-          return barTags.some((t: string) => funnyTags.includes(t)) || bar.category === "Funny";
-        }
-        if (sortFilter === "imagery") {
-          return barTags.some((t: string) => imageryTags.includes(t)) || bar.category === "Storytelling";
-        }
-        return true;
-      });
-    }
-
-    if (originalOnly) {
-      result = result.filter(bar => bar.isOriginal);
-    }
-
-    return result;
-  }, [bars, tagBars, tagFilter, activeTab, selectedCategory, sortFilter, originalOnly, featuredBars, topBars, trendingBars]);
-
-  const isLoading = tagFilter ? isLoadingTagBars : 
-    activeTab === "featured" ? isLoadingFeatured :
-    activeTab === "top" ? isLoadingTop :
-    activeTab === "trending" ? isLoadingTrending :
-    isLoadingBars;
+  const clearTagFilter = () => setLocation("/");
 
   return (
-    <div className="min-h-screen bg-background pt-12 pb-20 md:pt-0 md:pb-0 md:h-screen md:overflow-hidden">
-      {/* Mobile search */}
-      <div className="md:hidden sticky top-[72px] z-40 px-3 py-2">
-        <div className="glass-panel p-3">
-          <SearchBar />
-        </div>
-      </div>
+    <div className="min-h-screen bg-background pt-14 pb-24 md:pt-20 md:pb-8">
+      <main className="mx-auto max-w-7xl px-4 md:px-6">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <section className="space-y-5">
+            <div className="md:hidden">
+              <div className="glass-panel p-3">
+                <SearchBar />
+              </div>
+            </div>
 
-      {/* Desktop: Three column layout - fixed height, only center scrolls */}
-      <div className="hidden md:flex h-screen pt-16 px-6 gap-6">
-        {/* Left Column - Fixed, non-scrolling - pr so panel shadows extend past scrollbar */}
-        <aside className="w-56 shrink-0 space-y-4 overflow-y-auto py-4 pr-3">
-          {/* User Profile Preview Pane */}
-          {currentUser ? (
-            <div className="glass-panel p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-foreground font-bold text-lg">
-                  {currentUser.username?.charAt(0).toUpperCase()}
+            <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/12 via-card/80 to-background p-6 md:p-8">
+              <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+              <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl pointer-events-none" />
+
+              <div className="relative">
+                <Badge className="mb-3 bg-primary/15 text-primary hover:bg-primary/20">
+                  Modern writer room
+                </Badge>
+                <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-tight md:text-5xl">
+                  Drop the lines that do not fit anywhere else.
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm text-muted-foreground md:text-base">
+                  Orphan Bars is a focused place to share loose bars, discover sharp writing,
+                  and keep the culture moving through reactions and responses.
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Button
+                    size="lg"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => setLocation("/post")}
+                    data-testid="button-hero-write"
+                  >
+                    Write a bar
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={showFeed}
+                    data-testid="button-hero-browse"
+                  >
+                    Browse latest
+                  </Button>
                 </div>
-                <div>
-                  <p className="font-semibold text-foreground">@{currentUser.username}</p>
-                  <p className="text-xs text-foreground/50">Level {currentUser.level || 1}</p>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-border/60 bg-background/60 p-3">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Total bars
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-primary">
+                      {formatCompact(stats.totalBars)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/60 bg-background/60 p-3">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Bars this week
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-primary">
+                      {formatCompact(stats.barsThisWeek)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/60 bg-background/60 p-3">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Active writers (month)
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-primary">
+                      {formatCompact(stats.activeWritersMonth)}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-4 text-sm text-foreground/60 mb-3">
-                <div><span className="text-foreground font-semibold">{currentUser.xp || 0}</span> XP</div>
-                <div><span className="text-foreground font-semibold">{currentUser.barCount || 0}</span> Bars</div>
+            </section>
+
+            <ActivityStrip items={activityItems} />
+            <CommunitySpotlight spotlight={spotlight} />
+
+            {currentPrompt && (
+              <section className="rounded-2xl border border-primary/25 bg-primary/6 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+                  Current prompt
+                </p>
+                <p className="mt-2 text-xl font-semibold">{currentPrompt.text}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => setLocation(`/post?prompt=${currentPrompt.slug}`)}
+                    data-testid="button-write-prompt"
+                  >
+                    Write to this prompt
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setLocation(`/prompts/${currentPrompt.slug}`)}
+                  >
+                    View prompt page
+                  </Button>
+                </div>
+              </section>
+            )}
+
+            <section className="rounded-2xl border border-border/60 bg-card/60 p-4 md:p-5">
+              <p className="mb-3 text-sm font-semibold">How it works</p>
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+                  <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
+                    <Search className="h-4 w-4" />
+                  </div>
+                  <p className="text-sm font-semibold">1. Browse orphan bars.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Explore what writers are dropping right now.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+                  <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
+                    <PenLine className="h-4 w-4" />
+                  </div>
+                  <p className="text-sm font-semibold">2. Drop your own lines.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Post one-liners, snippets, or challenge bars.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+                  <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
+                    <Flame className="h-4 w-4" />
+                  </div>
+                  <p className="text-sm font-semibold">3. React and respond.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Give quick feedback and jump into call-and-response threads.
+                  </p>
+                </div>
               </div>
-              {currentUser.badges && currentUser.badges.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {currentUser.badges.slice(0, 4).map((badge: string, i: number) => (
-                    <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
-                      {badge}
-                    </span>
+            </section>
+
+            {tagFilter && (
+              <div className="rounded-xl border border-border/60 bg-card/60 p-3 flex items-center gap-2">
+                <Hash className="h-4 w-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Filtering by</span>
+                <Badge variant="secondary">#{tagFilter}</Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto"
+                  onClick={clearTagFilter}
+                  data-testid="button-clear-tag"
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Clear
+                </Button>
+              </div>
+            )}
+
+            {!tagFilter && (
+              <div className="rounded-2xl border border-border/60 bg-card/60 p-2 flex flex-wrap gap-2">
+                {(
+                  [
+                    { id: "latest", label: "Latest" },
+                    { id: "top", label: "Top" },
+                    { id: "trending", label: "Trending" },
+                    { id: "challenges", label: "Challenges" },
+                  ] as Array<{ id: FeedTab; label: string }>
+                ).map((tab) => (
+                  <Button
+                    key={tab.id}
+                    variant={activeTab === tab.id ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={activeTab === tab.id ? "bg-primary text-primary-foreground" : ""}
+                    data-testid={`feed-tab-${tab.id}`}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            <PullToRefresh onRefresh={handleRefresh}>
+              <div id="feed-start" className="space-y-4 pb-4">
+                {isLoading ? (
+                  <BarSkeletonList count={5} />
+                ) : visibleBars.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-border/70 bg-card/40 p-10 text-center">
+                    <p className="text-base font-medium">
+                      {tagFilter
+                        ? `No bars found for #${tagFilter} yet.`
+                        : activeTab === "challenges"
+                          ? "No active challenges yet."
+                          : "No bars yet."}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Start the energy with your first post.
+                    </p>
+                    <Button
+                      className="mt-4"
+                      onClick={() => setLocation("/post")}
+                      data-testid="button-empty-state-post"
+                    >
+                      Drop your first orphan bar
+                    </Button>
+                  </div>
+                ) : (
+                  visibleBars.map((bar) => <FeedBarCard key={bar.id} bar={bar} />)
+                )}
+              </div>
+            </PullToRefresh>
+          </section>
+
+          <aside className="hidden xl:block">
+            <div className="sticky top-20 space-y-4">
+              <section className="rounded-2xl border border-border/60 bg-card/70 p-4">
+                <p className="mb-3 text-sm font-semibold flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-yellow-500" />
+                  Top lyricists
+                </p>
+                <div className="space-y-2">
+                  {leaderboard.length === 0 && (
+                    <p className="text-xs text-muted-foreground">No ranking yet.</p>
+                  )}
+                  {leaderboard.slice(0, 6).map((user: any, index: number) => (
+                    <Link key={user.id} href={`/u/${user.username}`}>
+                      <a className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
+                        <span className="w-5 text-xs text-muted-foreground">
+                          {index + 1}
+                        </span>
+                        <div className="h-7 w-7 rounded-full bg-primary/15 flex items-center justify-center text-xs text-primary overflow-hidden">
+                          {user.avatarUrl ? (
+                            <img
+                              src={user.avatarUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            user.username?.[0]?.toUpperCase()
+                          )}
+                        </div>
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                          @{user.username}
+                        </span>
+                        <span className="text-xs text-primary">
+                          {formatCompact(user.xp || 0)}
+                        </span>
+                      </a>
+                    </Link>
                   ))}
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="glass-panel p-4 text-center">
-              <p className="text-foreground/60 text-sm mb-3">Join the community</p>
-              <a href="/auth" className="block w-full py-2 rounded-lg bg-primary text-foreground font-medium text-sm hover:bg-primary/90 transition-colors">
-                Login / Sign Up
-              </a>
-            </div>
-          )}
-          
-          {/* Tags / Categories Pane */}
-          <div className="glass-panel p-4">
-            <h3 className="text-sm font-semibold text-foreground/80 mb-3">Popular Tags</h3>
-            <div className="flex flex-wrap gap-2">
-              {["wordplay", "punchline", "metaphor", "storytelling", "battle", "conscious"].map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setLocation(`/?tag=${tag}`)}
-                  className="text-xs px-2.5 py-1 rounded-full bg-card/04 text-foreground/60 hover:bg-card/08 hover:text-foreground transition-colors border-border/06"
-                >
-                  #{tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </aside>
-        
-        {/* Center Column - Feed (scrollable) - pr so card shadows extend into scrollbar area */}
-        <main className="flex-1 overflow-y-auto py-4 pr-6">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
-            
-            <div className="py-6 space-y-2 text-center">
-              <h1 className="text-4xl lg:text-5xl font-display font-black uppercase tracking-tighter text-foreground" style={{fontWeight: 900}}>
-                Drop Your <span className="text-foreground font-black italic" style={{fontWeight: 900}}>Bars</span>
-              </h1>
-              <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                No home for your fire bars? Orphan 'em, cuh.
-              </p>
-            </div>
+              </section>
 
-            <div className="mb-4">
-              <div className="glass-panel p-4">
-                <div className="flex items-start gap-2">
-                  <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-foreground/60">
-                    <span className="font-semibold text-foreground">How it works:</span> Drop your best bars, tag them with style (wordplay, punchline, metaphor), and add a breakdown to explain the entendre. Explore, like, and save your favorites from the community.{" "}
-                    <a href="/guidelines" className="text-primary hover:underline font-medium">Read the rules</a>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {tagFilter && (
-              <div className="mb-4">
-                <div className="glass-panel flex items-center gap-2 p-3">
-                  <Hash className="h-4 w-4 text-primary" />
-                  <span className="text-sm text-foreground/70">Showing bars tagged with</span>
-                  <Badge variant="secondary" className="font-semibold bg-primary/20 text-primary border-primary/30">#{tagFilter}</Badge>
+              <section className="rounded-2xl border border-border/60 bg-card/70 p-4">
+                <p className="mb-2 text-sm font-semibold flex items-center gap-2">
+                  <Compass className="h-4 w-4 text-primary" />
+                  Explore
+                </p>
+                <div className="space-y-2">
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-auto h-7 text-foreground/50 hover:text-foreground hover:bg-card/10"
-                    onClick={clearTagFilter}
-                    data-testid="button-clear-tag"
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => setLocation("/prompts")}
                   >
-                    <X className="h-3 w-3 mr-1" />
-                    Clear
+                    Prompts
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => setLocation("/challenges")}
+                  >
+                    Challenges
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => setLocation(currentUser ? "/profile" : "/auth")}
+                  >
+                    My Bars
                   </Button>
                 </div>
-              </div>
-            )}
-
-            {!tagFilter && (
-              <>
-                <div className="mb-4">
-                  <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FeedTab)} className="w-full">
-                    <TabsList className="w-full grid grid-cols-5 glass-panel p-1 h-auto">
-                      <TabsTrigger value="featured" className="gap-1 text-xs sm:text-sm" data-testid="tab-featured">
-                        <Star className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Featured</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="latest" className="gap-1 text-xs sm:text-sm" data-testid="tab-latest">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Latest</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="top" className="gap-1 text-xs sm:text-sm" data-testid="tab-top">
-                        <Trophy className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Top</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="trending" className="gap-1 text-xs sm:text-sm" data-testid="tab-trending">
-                        <Flame className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Trending</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="categories" className="gap-1 text-xs sm:text-sm" data-testid="tab-categories">
-                        <Grid3X3 className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Categories</span>
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-
-                <div className="mb-4">
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      variant={sortFilter === "all" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSortFilter("all")}
-                      className="text-xs"
-                      data-testid="filter-all"
-                    >
-                      All
-                    </Button>
-                    <Button
-                      variant={sortFilter === "technical" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSortFilter("technical")}
-                      className="text-xs gap-1"
-                      data-testid="filter-technical"
-                    >
-                      <Lightbulb className="h-3 w-3" />
-                      Most Technical
-                    </Button>
-                    <Button
-                      variant={sortFilter === "funny" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSortFilter("funny")}
-                      className="text-xs gap-1"
-                      data-testid="filter-funny"
-                    >
-                      <Laugh className="h-3 w-3" />
-                      Funniest
-                    </Button>
-                    <Button
-                      variant={sortFilter === "imagery" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSortFilter("imagery")}
-                      className="text-xs gap-1"
-                      data-testid="filter-imagery"
-                    >
-                      <Palette className="h-3 w-3" />
-                      Craziest Imagery
-                    </Button>
-                    <div className="border-l border-border mx-1" />
-                    <Button
-                      variant={originalOnly ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setOriginalOnly(!originalOnly)}
-                      className={`text-xs gap-1 ${originalOnly ? "bg-primary" : ""}`}
-                      data-testid="filter-original"
-                    >
-                      <BadgeCheck className="h-3 w-3" />
-                      OC Only
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {activeTab === "categories" && !tagFilter && (
-              <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
-            )}
-
-            <PullToRefresh onRefresh={handleRefresh}>
-              <div className="py-6 space-y-6">
-                {isLoading ? (
-                  <BarSkeletonList count={5} />
-                ) : filteredBars.length === 0 ? (
-                  <div className="text-center py-20 text-muted-foreground">
-                    <p>No bars found{tagFilter ? ` with tag #${tagFilter}` : activeTab === "trending" ? " trending right now" : activeTab === "featured" ? " featured yet" : activeTab === "categories" ? " in this category" : sortFilter !== "all" ? " matching this filter" : ""}.</p>
-                  </div>
-                ) : (
-                  filteredBars.map((bar) => (
-                    <BarCard key={bar.id} bar={bar} />
-                  ))
-                )}
-              </div>
-            </PullToRefresh>
-          </div>
-        </main>
-        
-        {/* Right Column - Leaderboard, Challenge, Activity - pr so panel shadows extend past scrollbar */}
-        <aside className="w-56 shrink-0 space-y-4 overflow-y-auto py-4 pr-3">
-          {/* Leaderboard - Real data */}
-          <div className="glass-panel p-4">
-            <h3 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-yellow-500" />
-              Top Lyricists
-            </h3>
-            <div className="space-y-2">
-              {leaderboard.length > 0 ? (
-                leaderboard.map((user: any, index: number) => (
-                  <Link key={user.id} href={`/user/${user.username}`}>
-                    <div className="flex items-center gap-2 text-sm hover:bg-card/04 rounded-lg p-1 -m-1 transition-colors cursor-pointer">
-                      <span className="w-5 text-foreground/40">
-                        {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1}
-                      </span>
-                      {user.avatarUrl ? (
-                        <img src={user.avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary">
-                          {user.username?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span className="flex-1 text-foreground/80 truncate">{user.username}</span>
-                      <span className="text-primary text-xs">{(user.xp || 0).toLocaleString()} XP</span>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-foreground/40 text-xs">No users yet</p>
-              )}
+              </section>
             </div>
-          </div>
-          
-          {/* Challenge of the Day - Coming Soon placeholder */}
-          <div className="glass-panel p-4">
-            <h3 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">
-              <Flame className="h-4 w-4 text-orange-500" />
-              Challenge of the Day
-            </h3>
-            <p className="text-xs text-foreground/40 text-center py-4">Coming soon...</p>
-          </div>
-          
-          {/* Recent Activity - Real data */}
-          <div className="glass-panel p-4">
-            <h3 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-400" />
-              Recent Activity
-            </h3>
-            <div className="space-y-3 text-xs">
-              {recentActivity.length > 0 ? (
-                recentActivity.slice(0, 6).map((activity: any, i: number) => (
-                  <Link key={`${activity.type}-${activity.id}-${i}`} href={`/bar/${activity.barId}`}>
-                    <div className="flex items-start gap-2 hover:bg-card/04 rounded-lg p-1 -m-1 transition-colors cursor-pointer">
-                      {activity.actorAvatar ? (
-                        <img src={activity.actorAvatar} alt="" className="w-6 h-6 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-card/06 flex items-center justify-center text-[10px] text-foreground/40">
-                          {activity.actorUsername?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1">
-                          {activity.type === 'like' && <Heart className="h-3 w-3 text-red-400" />}
-                          {activity.type === 'comment' && <MessageCircle className="h-3 w-3 text-blue-400" />}
-                          {activity.type === 'post' && <PenLine className="h-3 w-3 text-green-400" />}
-                          <span className="text-foreground/70 truncate">{activity.actorUsername}</span>
-                        </div>
-                        <span className="text-foreground/40">
-                          {activity.type === 'like' && 'liked a bar'}
-                          {activity.type === 'comment' && 'commented on a bar'}
-                          {activity.type === 'post' && 'dropped a new bar'}
-                        </span>
-                        <p className="text-foreground/30">{formatTimeAgo(activity.createdAt)}</p>
-                      </div>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-foreground/40 text-center py-2">No recent activity</p>
-              )}
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      {/* Mobile Layout */}
-      <div className="md:hidden pt-20 pb-4">
-        <main className="px-4">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
-            
-            <div className="py-6 space-y-2 text-center">
-              <h1 className="text-3xl font-display font-black uppercase tracking-tighter text-foreground" style={{fontWeight: 900}}>
-                Drop Your <span className="text-foreground font-black italic" style={{fontWeight: 900}}>Bars</span>
-              </h1>
-              <p className="text-muted-foreground text-base">
-                No home for your fire bars? Orphan 'em, cuh.
-              </p>
-            </div>
-
-            <div className="mb-4">
-              <div className="glass-panel p-3">
-                <div className="flex items-start gap-2">
-                  <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-foreground/60">
-                    <span className="font-semibold text-foreground">How it works:</span> Drop your bars, tag them, and add breakdowns.{" "}
-                    <a href="/guidelines" className="text-primary hover:underline font-medium">Read the rules</a>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {tagFilter && (
-              <div className="mb-4">
-                <div className="glass-panel flex items-center gap-2 p-3">
-                  <Hash className="h-4 w-4 text-primary" />
-                  <span className="text-xs text-foreground/70">Tag:</span>
-                  <Badge variant="secondary" className="font-semibold bg-primary/20 text-primary border-primary/30 text-xs">#{tagFilter}</Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-auto h-6 text-foreground/50 hover:text-foreground hover:bg-card/10"
-                    onClick={clearTagFilter}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {!tagFilter && (
-              <div className="mb-4">
-                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FeedTab)} className="w-full">
-                  <TabsList className="w-full grid grid-cols-5 glass-panel p-1 h-auto">
-                    <TabsTrigger value="featured" className="text-xs p-2" data-testid="tab-featured-mobile">
-                      <Star className="h-4 w-4" />
-                    </TabsTrigger>
-                    <TabsTrigger value="latest" className="text-xs p-2" data-testid="tab-latest-mobile">
-                      <Clock className="h-4 w-4" />
-                    </TabsTrigger>
-                    <TabsTrigger value="top" className="text-xs p-2" data-testid="tab-top-mobile">
-                      <Trophy className="h-4 w-4" />
-                    </TabsTrigger>
-                    <TabsTrigger value="trending" className="text-xs p-2" data-testid="tab-trending-mobile">
-                      <Flame className="h-4 w-4" />
-                    </TabsTrigger>
-                    <TabsTrigger value="categories" className="text-xs p-2" data-testid="tab-categories-mobile">
-                      <Grid3X3 className="h-4 w-4" />
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            )}
-
-            {activeTab === "categories" && !tagFilter && (
-              <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
-            )}
-
-            <PullToRefresh onRefresh={handleRefresh}>
-              <div className="py-4 space-y-4">
-                {isLoading ? (
-                  <BarSkeletonList count={5} />
-                ) : filteredBars.length === 0 ? (
-                  <div className="text-center py-16 text-muted-foreground">
-                    <p className="text-sm">No bars found.</p>
-                  </div>
-                ) : (
-                  filteredBars.map((bar) => (
-                    <BarCard key={bar.id} bar={bar} />
-                  ))
-                )}
-              </div>
-            </PullToRefresh>
-          </div>
-        </main>
-      </div>
+          </aside>
+        </div>
+      </main>
     </div>
   );
 }

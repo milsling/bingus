@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
+import {
   Home, 
   Plus, 
   User, 
@@ -17,7 +17,8 @@ import {
   Heart,
   BarChart3,
   Sparkles,
-  LayoutGrid
+  LayoutGrid,
+  Swords
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
@@ -146,7 +147,9 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
   const getNavItems = () => {
     if (!currentUser) {
       return [
-        { icon: Home, label: "Feed", path: "/", id: "guest-feed" },
+        { icon: Home, label: "Explore", path: "/", id: "guest-explore" },
+        { icon: Sparkles, label: "Prompts", path: "/prompts", id: "guest-prompts" },
+        { icon: Swords, label: "Challenges", path: "/challenges", id: "guest-challenges" },
         { icon: LogIn, label: "Login", path: "/auth", id: "guest-login" },
       ];
     }
@@ -161,12 +164,14 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
     }
 
     const items = [
-      { icon: Home, label: "Feed", path: "/", id: "main-feed" },
+      { icon: Home, label: "Explore", path: "/", id: "main-explore" },
+      { icon: Sparkles, label: "Prompts", path: "/prompts", id: "main-prompts" },
+      { icon: Swords, label: "Challenges", path: "/challenges", id: "main-challenges" },
+      { icon: User, label: "My Bars", path: "/profile", id: "main-my-bars" },
       { icon: MessageCircle, label: "Messages", path: "/messages", id: "main-messages" },
       { icon: Users, label: "Friends", path: "/friends", id: "main-friends" },
       { icon: Bookmark, label: "Saved", path: "/saved", id: "main-saved" },
       { icon: LayoutGrid, label: "Apps", path: "/apps", id: "main-apps" },
-      { icon: User, label: "Profile", path: "/profile", id: "main-profile" },
     ];
 
     if (currentUser.isAdmin) {

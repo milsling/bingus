@@ -404,4 +404,102 @@ export const api = {
     const response = await apiFetch('/api/notifications/read-all', { method: 'POST' });
     return handleResponse<{ success: boolean }>(response);
   },
+
+  // Community surface
+  getCommunityStats: async (): Promise<{ totalBars: number; barsThisWeek: number; activeWritersMonth: number }> => {
+    const response = await apiFetch('/api/community/stats');
+    return handleResponse(response);
+  },
+
+  getCommunitySpotlight: async (): Promise<{
+    id: string;
+    author: string;
+    avatarUrl: string | null;
+    snippet: string;
+    lines: string[];
+    titleLine: string;
+    reactionCount: number;
+    theme: string;
+    href: string;
+  } | null> => {
+    const response = await apiFetch('/api/community/spotlight');
+    return handleResponse(response);
+  },
+
+  getNowActivity: async (limit = 8): Promise<Array<{
+    id: string;
+    type: string;
+    text: string;
+    href: string;
+    createdAt: string;
+  }>> => {
+    const response = await apiFetch(`/api/community/now?limit=${limit}`);
+    return handleResponse(response);
+  },
+
+  // Prompts
+  getPrompts: async (): Promise<Array<{ slug: string; text: string; tag: string; isCurrent: boolean; barsCount: number }>> => {
+    const response = await apiFetch('/api/prompts');
+    return handleResponse(response);
+  },
+
+  getCurrentPrompt: async (): Promise<{ slug: string; text: string; tag: string; barsCount: number; href: string }> => {
+    const response = await apiFetch('/api/prompts/current');
+    return handleResponse(response);
+  },
+
+  getPromptBars: async (slug: string): Promise<{
+    prompt: { slug: string; text: string; tag: string };
+    bars: BarWithUser[];
+  }> => {
+    const response = await apiFetch(`/api/prompts/${slug}/bars`);
+    return handleResponse(response);
+  },
+
+  // Challenges
+  getChallenges: async (limit = 30): Promise<Array<BarWithUser & { responseCount?: number }>> => {
+    const response = await apiFetch(`/api/challenges?limit=${limit}`);
+    return handleResponse(response);
+  },
+
+  toggleChallenge: async (barId: string, active: boolean): Promise<any> => {
+    const response = await apiFetch(`/api/bars/${barId}/challenge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active }),
+    });
+    return handleResponse(response);
+  },
+
+  submitChallengeResponse: async (barId: string, responseBarId: string): Promise<any> => {
+    const response = await apiFetch(`/api/bars/${barId}/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ responseBarId }),
+    });
+    return handleResponse(response);
+  },
+
+  getChallengeResponses: async (barId: string): Promise<Array<BarWithUser & { respondedAt?: string }>> => {
+    const response = await apiFetch(`/api/bars/${barId}/responses`);
+    return handleResponse(response);
+  },
+
+  // Quick reactions
+  getQuickReactions: async (barId: string): Promise<Record<string, { count: number; reacted: boolean }>> => {
+    const response = await apiFetch(`/api/bars/${barId}/reactions`);
+    return handleResponse(response);
+  },
+
+  toggleQuickReaction: async (barId: string, reactionType: "fire" | "clever" | "deep"): Promise<{
+    type: string;
+    reacted: boolean;
+    count: number;
+    reactions: Record<string, { count: number; reacted: boolean }>;
+  }> => {
+    const response = await apiFetch(`/api/bars/${barId}/reactions/${reactionType}`, {
+      method: 'POST',
+    });
+    return handleResponse(response);
+  },
 };
