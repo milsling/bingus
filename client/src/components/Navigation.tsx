@@ -25,6 +25,7 @@ export default function Navigation() {
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   
   const isOnMessagesPage = location.startsWith("/messages");
 
@@ -36,7 +37,11 @@ export default function Navigation() {
   return (
     <>
       {/* Mobile Bottom Nav - Fixed to screen bottom */}
-      <BottomNav onNewMessage={() => setNewMessageOpen(true)} />
+      <BottomNav
+        onNewMessage={() => setNewMessageOpen(true)}
+        searchOpen={searchOpen}
+        onSearchOpenChange={setSearchOpen}
+      />
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
       <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar overflow-visible">
@@ -182,8 +187,8 @@ export default function Navigation() {
         </div>
       </header>
 
-      {/* Mobile Top Bar - Floating glass - overflow-visible so bar isn't clipped */}
-      <div className="md:hidden fixed top-[calc(env(safe-area-inset-top)+0.5rem)] left-3 right-3 z-[999] overflow-visible">
+      {/* Mobile Top Bar - Slim glass bar: logo, search, notifications, online */}
+      <div className="md:hidden fixed top-[calc(env(safe-area-inset-top)+0.5rem)] left-3 right-3 z-[998] overflow-visible">
         <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-4 overflow-visible">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
@@ -192,6 +197,14 @@ export default function Navigation() {
             </div>
           </Link>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-foreground/80"
+              aria-label="Search"
+              data-testid="button-search-top"
+            >
+              <Search className="h-5 w-5" />
+            </button>
             <ThemeToggle />
             {currentUser && <NotificationBell />}
             <OnlineStatusIndicator />

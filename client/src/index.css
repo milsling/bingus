@@ -183,104 +183,123 @@
   --glass-input-in-bar-border: rgba(0, 0, 0, 0.1);
   --glass-input-in-bar-bg-focus: rgba(0, 0, 0, 0.1);
   --glass-input-in-bar-border-focus: rgba(129, 140, 248, 0.4);
+
+  /* Animation timings - tweak: durations, easing for FAB/transitions */
+  --duration-interaction: 200ms;
+  --duration-transition: 280ms;
+  --duration-modal: 350ms;
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-ios: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .dark {
   /* ========================================
-     ORPHANBARS - Dark Mode (Apple Vision Pro Glass)
+     ORPHANBARS - Modern Dark Mode (neutral desaturated base)
+     Design tokens: background, surface, accent, text, border
+     Tweak here: dark-mode colors, gradients, blur
      ======================================== */
-  --background: 230 25% 10%;
-  --foreground: 0 0% 98%;
+  /* Primary text: off-white, secondary: muted gray */
+  --background: 250 15% 4%;
+  --foreground: 0 0% 96%;
 
-  --card: 0 0% 6%;
-  --card-foreground: 0 0% 98%;
+  --card: 250 12% 7%;
+  --card-foreground: 0 0% 96%;
 
-  --popover: 0 0% 6%;
-  --popover-foreground: 0 0% 98%;
+  --popover: 250 12% 7%;
+  --popover-foreground: 0 0% 96%;
 
-  --primary: 265 70% 60%; 
+  --primary: 265 70% 60%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 0 0% 10%;
-  --secondary-foreground: 0 0% 98%;
+  --secondary: 250 10% 12%;
+  --secondary-foreground: 0 0% 96%;
 
-  --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 65%;
+  --muted: 250 8% 14%;
+  --muted-foreground: 220 8% 58%;
 
-  --accent: 265 70% 60%; 
+  --accent: 265 70% 60%;
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 0% 15%;
-  --input: 0 0% 12%;
+  --border: 250 8% 18%;
+  --input: 250 8% 14%;
   --ring: 265 70% 60%;
 
-  --radius: 0rem;
-  
-  /* Glass panel variables - more transparent */
-  --glass-bg: rgba(255, 255, 255, 0.02);
-  --glass-bg-hover: rgba(255, 255, 255, 0.04);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-border-hover: rgba(255, 255, 255, 0.1);
-  
+  --radius: 0.75rem;
+
+  /* Design tokens (semantic) - tweak: color system */
+  --color-background-app: #050509;
+  --color-background-gradient-end: #0a0a12;
+  --color-text-primary: #F5F5F7;
+  --color-text-secondary: #8E8E93;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-accent: hsl(265 70% 60%);
+  --color-accent-soft: rgba(168, 85, 247, 0.15);
+
+  /* Glass panel variables - neutral dark, low saturation */
+  --glass-bg: rgba(18, 18, 24, 0.7);
+  --glass-bg-hover: rgba(18, 18, 24, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.14);
+
   /* Shadows - subtle glow effect */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6), 0 10px 10px rgba(0, 0, 0, 0.45);
-  
-  --shadow-card: 
+
+  --shadow-card:
     0 2px 8px rgba(0, 0, 0, 0.4),
     0 8px 24px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.05);
-  
-  --shadow-card-hover: 
+
+  --shadow-card-hover:
     0 4px 16px rgba(0, 0, 0, 0.5),
     0 12px 32px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(168, 85, 247, 0.2);
 
-  /* App backdrop (dark) */
-  --app-bg-1: rgba(168, 85, 247, 0.35);
-  --app-bg-2: rgba(139, 69, 180, 0.4);
-  --app-bg-3: rgba(59, 130, 246, 0.35);
-  --app-bg-4: rgba(236, 72, 153, 0.25);
-  --app-bg-5: rgba(99, 102, 241, 0.3);
-  --app-bg-base-start: #1a1a2e;
-  --app-bg-base-end: #0f0f1a;
+  /* App backdrop - neutral desaturated, slight purple tint */
+  --app-bg-1: rgba(168, 85, 247, 0.08);
+  --app-bg-2: rgba(139, 69, 180, 0.06);
+  --app-bg-3: rgba(99, 102, 241, 0.05);
+  --app-bg-4: rgba(236, 72, 153, 0.04);
+  --app-bg-5: rgba(168, 85, 247, 0.05);
+  --app-bg-base-start: #050509;
+  --app-bg-base-end: #0a0a12;
 
-  /* Floating bars - more transparent so feed shows through */
-  --floating-bar-bg: rgba(15, 23, 42, 0.36);
-  --floating-bar-border: rgba(255, 255, 255, 0.1);
+  /* Floating bars - glass style */
+  --floating-bar-bg: rgba(18, 18, 24, 0.75);
+  --floating-bar-border: rgba(255, 255, 255, 0.08);
   --floating-bar-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.28);
 
-  /* Unified glass system (dark) */
-  --glass-surface-bg: rgba(15, 23, 42, 0.52);
-  --glass-surface-bg-strong: rgba(15, 23, 42, 0.76);
-  --glass-surface-border: rgba(255, 255, 255, 0.12);
-  --glass-surface-border-strong: rgba(255, 255, 255, 0.18);
+  /* Unified glass system - tweak: blur, transparency, borders */
+  --glass-surface-bg: rgba(18, 18, 24, 0.7);
+  --glass-surface-bg-strong: rgba(18, 18, 24, 0.85);
+  --glass-surface-border: rgba(255, 255, 255, 0.08);
+  --glass-surface-border-strong: rgba(255, 255, 255, 0.14);
   --glass-surface-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.3);
 
-  --glass-field-bg: rgba(15, 23, 42, 0.5);
-  --glass-field-bg-focus: rgba(15, 23, 42, 0.72);
-  --glass-field-border: rgba(255, 255, 255, 0.16);
-  --glass-field-border-focus: rgba(167, 139, 250, 0.6);
-  --glass-field-placeholder: rgba(226, 232, 240, 0.5);
+  --glass-field-bg: rgba(18, 18, 24, 0.6);
+  --glass-field-bg-focus: rgba(18, 18, 24, 0.85);
+  --glass-field-border: rgba(255, 255, 255, 0.1);
+  --glass-field-border-focus: rgba(167, 139, 250, 0.5);
+  --glass-field-placeholder: rgba(142, 142, 147, 0.7);
 
-  --sheet-bg: rgba(2, 6, 23, 0.72);
-  --sheet-border: rgba(255, 255, 255, 0.16);
+  --sheet-bg: rgba(18, 18, 24, 0.92);
+  --sheet-border: rgba(255, 255, 255, 0.1);
 
-  /* Search input inside floating bar - slightly lighter for contrast */
-  --glass-input-in-bar-bg: rgba(255, 255, 255, 0.08);
-  --glass-input-in-bar-border: rgba(255, 255, 255, 0.14);
-  --glass-input-in-bar-bg-focus: rgba(255, 255, 255, 0.12);
-  --glass-input-in-bar-border-focus: rgba(167, 139, 250, 0.5);
+  /* Search input inside floating bar */
+  --glass-input-in-bar-bg: rgba(255, 255, 255, 0.06);
+  --glass-input-in-bar-border: rgba(255, 255, 255, 0.1);
+  --glass-input-in-bar-bg-focus: rgba(255, 255, 255, 0.1);
+  --glass-input-in-bar-border-focus: rgba(167, 139, 250, 0.45);
 }
 
 @layer base {
@@ -329,11 +348,14 @@
   }
 }
 
-/* Reduced motion support - only affects non-essential animations, preserves transitions */
+/* Reduced motion support - disables non-essential transitions */
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee,
-  [data-animate] {
+  [data-animate],
+  .fab-transition,
+  .page-transition {
     animation: none !important;
+    transition: none !important;
   }
 }
 
@@ -513,14 +535,15 @@ html.dark {
 }
 
 /* ========================================
-   GLASSMORPHISM UTILITIES - Apple Vision Pro Style
+   GLASSMORPHISM UTILITIES - Modern glass style
+   Tweak: blur (10-20px), transparency, borders
    ======================================== */
 
 /* Glass panel base - Theme-aware glass style */
 .glass-panel {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(32px) saturate(130%);
-  -webkit-backdrop-filter: blur(32px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
   border: 1px solid var(--glass-surface-border);
   border-radius: 1rem;
   box-shadow: var(--glass-surface-shadow);
@@ -539,8 +562,8 @@ html.dark {
 /* Glass card - bar cards - theme-aware */
 .glass-card {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(24px) saturate(130%);
-  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
   border: 1px solid var(--glass-surface-border);
   border-radius: 1rem;
   transform: translateZ(0);
@@ -551,8 +574,8 @@ html.dark {
 /* Glass nav - navigation specific styling - theme-aware */
 .glass-nav {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(36px) saturate(140%);
-  -webkit-backdrop-filter: blur(36px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
   border: 1px solid var(--glass-surface-border);
   transform: translateZ(0);
   will-change: transform;
@@ -562,8 +585,8 @@ html.dark {
 /* Floating top/bottom bars (theme-aware) */
 .floating-bar {
   background: var(--floating-bar-bg);
-  backdrop-filter: blur(28px) saturate(140%);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
   border: 1px solid var(--floating-bar-border);
   box-shadow: var(--floating-bar-shadow);
   overflow: visible;
@@ -572,16 +595,16 @@ html.dark {
 .glass-surface {
   background: var(--glass-surface-bg);
   border: 1px solid var(--glass-surface-border);
-  backdrop-filter: blur(24px) saturate(130%);
-  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
   box-shadow: var(--glass-surface-shadow);
 }
 
 .glass-surface-strong {
   background: var(--glass-surface-bg-strong);
   border: 1px solid var(--glass-surface-border-strong);
-  backdrop-filter: blur(30px) saturate(140%);
-  -webkit-backdrop-filter: blur(30px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
   box-shadow: var(--glass-surface-shadow);
 }
 
@@ -605,11 +628,12 @@ html.dark {
   box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
 }
 
+/* Glass bottom sheet - compact overlay, rounded top corners */
 .glass-sheet {
   background: var(--sheet-bg);
   border: 1px solid var(--sheet-border);
-  backdrop-filter: blur(36px) saturate(145%);
-  -webkit-backdrop-filter: blur(36px) saturate(145%);
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
 }
 
 /* Glass button - theme-aware */

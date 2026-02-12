@@ -159,18 +159,18 @@ export default function Profile() {
     <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
       
       <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-3 md:px-0">
-        {/* Profile Header */}
-        <div className="relative glass-panel overflow-hidden">
+        {/* Profile Header - Glass card on neutral dark */}
+        <div className="relative glass-panel overflow-hidden rounded-2xl">
           {currentUser.bannerUrl ? (
             <div className="h-32 md:h-48 w-full overflow-hidden">
-              <img 
-                src={currentUser.bannerUrl} 
+              <img
+                src={currentUser.bannerUrl}
                 alt="Profile banner"
                 className="w-full h-full object-cover"
               />
             </div>
           ) : (
-            <div className="h-32 md:h-48 bg-gradient-to-r from-purple-900/30 via-zinc-900 to-zinc-800 w-full" />
+            <div className="h-32 md:h-48 bg-gradient-to-r from-primary/5 via-zinc-900/80 to-zinc-800/80 w-full" />
           )}
           
           <div className="px-4 md:px-8 -mt-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">

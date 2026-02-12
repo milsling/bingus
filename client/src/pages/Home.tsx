@@ -184,12 +184,12 @@ export default function Home() {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="space-y-5">
             <div className="md:hidden">
-              <div className="glass-panel p-3">
+              <div className="glass-panel p-3 rounded-2xl">
                 <SearchBar />
               </div>
             </div>
 
-            <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/12 via-card/80 to-background p-6 md:p-8">
+            <section className="relative overflow-hidden rounded-3xl glass-panel border border-white/[0.08] p-6 md:p-8">
               <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
               <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl pointer-events-none" />
 

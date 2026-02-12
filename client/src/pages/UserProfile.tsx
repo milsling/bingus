@@ -243,7 +243,7 @@ export default function UserProfile() {
           Back to Feed
         </Button>
 
-        <div className="bg-card rounded-lg overflow-hidden mb-6 border">
+        <div className="glass-panel rounded-2xl overflow-hidden mb-6">
           {user.bannerUrl && (
             <div className="w-full h-32 md:h-40">
               <img 
