@@ -163,7 +163,14 @@ export default function FeedBarCard({ bar }: { bar: BarWithUser }) {
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-2xl border border-border/60 bg-card/70 backdrop-blur-sm p-5 transition-all duration-200 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_18px_40px_rgba(15,23,42,0.12)] ${THEME_CLASSES[theme]}`}
+      className={cn(
+        "group relative overflow-hidden rounded-2xl glass-card p-5",
+        "transition-all duration-200",
+        "hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.25)]",
+        "active:translate-y-0.5 active:scale-[0.99]",
+        "md:hover:scale-[1.01]",
+        THEME_CLASSES[theme]
+      )}
       data-testid={`feed-bar-card-${bar.id}`}
     >
       <div className="mb-3 flex items-center gap-3">
