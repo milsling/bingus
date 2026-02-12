@@ -180,7 +180,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8">
-      <main className="mx-auto max-w-7xl px-4 md:px-6">
+      <main className="mx-auto w-full max-w-7xl xl:max-w-[1600px] px-4 md:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="space-y-5">
             <div className="md:hidden sticky top-[calc(env(safe-area-inset-top)+3.4rem)] z-30">

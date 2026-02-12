@@ -213,7 +213,7 @@ export default function UserProfile() {
   if (error || !user) {
     return (
       <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-        <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-6">
+        <main className="w-full max-w-3xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 py-6">
           <Button
             variant="ghost"
             className="mb-4"
@@ -232,7 +232,7 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-6">
+      <main className="w-full max-w-3xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 py-6">
         <Button
           variant="ghost"
           className="mb-4"

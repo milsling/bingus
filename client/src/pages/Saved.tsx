@@ -30,7 +30,7 @@ export default function Saved() {
   if (isLoadingUser) {
     return (
       <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-        <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-8">
+        <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 py-8">
           <BarSkeletonList count={3} />
         </div>
       </div>
@@ -40,7 +40,7 @@ export default function Saved() {
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
       
-      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
+      <main className="w-full max-w-3xl lg:max-w-4xl xl:max-w-6xl mx-auto">
         <div className="px-4 py-8">
           <div className="flex items-center gap-3 mb-6">
             <Bookmark className="h-6 w-6 text-primary" />

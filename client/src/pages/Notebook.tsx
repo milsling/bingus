@@ -161,7 +161,7 @@ export default function NotebookPage() {
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-      <div className="container max-w-6xl mx-auto p-4">
+      <div className="w-full max-w-6xl mx-auto p-4 md:p-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/apps')}>
             <ArrowLeft className="h-5 w-5" />

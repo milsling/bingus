@@ -158,7 +158,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
       
-      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-3 md:px-0">
+      <main className="w-full max-w-3xl lg:max-w-4xl xl:max-w-6xl mx-auto px-3 md:px-6">
         {/* Profile Header - Glass card on neutral dark */}
         <div className="relative glass-panel overflow-hidden rounded-2xl">
           {currentUser.bannerUrl ? (

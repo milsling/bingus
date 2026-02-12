@@ -390,7 +390,7 @@ export default function Post() {
   return (
     <div className="min-h-screen bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-8 md:pt-24">
       
-      <main className="max-w-5xl mx-auto p-4 md:p-8">
+      <main className="w-full max-w-5xl xl:max-w-6xl mx-auto p-4 md:p-8">
         <div className="mb-8 flex items-center gap-4">
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-full">
