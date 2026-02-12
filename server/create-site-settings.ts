@@ -10,6 +10,7 @@ async function createSiteSettings() {
       message_of_the_day TEXT,
       motd_enabled BOOLEAN NOT NULL DEFAULT false,
       motd_style TEXT NOT NULL DEFAULT 'info',
+      home_hero_headline TEXT,
       updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_by VARCHAR REFERENCES users(id)
     )

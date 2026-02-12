@@ -145,6 +145,19 @@ export default function Home() {
     refetchOnWindowFocus: false,
   });
 
+  const { data: siteSettings } = useQuery<{ homeHeroHeadline: string | null }>({
+    queryKey: ['site-settings-public'],
+    queryFn: async () => {
+      const res = await fetch('/api/site-settings-public', { credentials: 'include' });
+      if (!res.ok) return { homeHeroHeadline: null };
+      return res.json();
+    },
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+  });
+
+  const customHeroHeadline = siteSettings?.homeHeroHeadline?.trim() || "";
+
   const handleRefresh = useCallback(async () => {
     await refetchBars();
     queryClient.invalidateQueries({ queryKey: ['likes'] });
@@ -291,7 +304,13 @@ export default function Home() {
             
             <div className="py-6 space-y-2 text-center">
               <h1 className="text-4xl lg:text-5xl font-display font-black uppercase tracking-tighter text-foreground" style={{fontWeight: 900}}>
-                Drop Your <span className="text-foreground font-black italic" style={{fontWeight: 900}}>Bars</span>
+                {customHeroHeadline ? (
+                  customHeroHeadline
+                ) : (
+                  <>
+                    Drop Your <span className="text-foreground font-black italic" style={{fontWeight: 900}}>Bars</span>
+                  </>
+                )}
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl mx-auto">
                 No home for your fire bars? Orphan 'em, cuh.
@@ -532,7 +551,13 @@ export default function Home() {
             
             <div className="py-6 space-y-2 text-center">
               <h1 className="text-3xl font-display font-black uppercase tracking-tighter text-foreground" style={{fontWeight: 900}}>
-                Drop Your <span className="text-foreground font-black italic" style={{fontWeight: 900}}>Bars</span>
+                {customHeroHeadline ? (
+                  customHeroHeadline
+                ) : (
+                  <>
+                    Drop Your <span className="text-foreground font-black italic" style={{fontWeight: 900}}>Bars</span>
+                  </>
+                )}
               </h1>
               <p className="text-muted-foreground text-base">
                 No home for your fire bars? Orphan 'em, cuh.

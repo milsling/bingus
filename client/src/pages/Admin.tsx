@@ -42,6 +42,7 @@ export default function Admin() {
   
   // Tab navigation state
   const [activeTab, setActiveTab] = useState("moderation");
+  const [homeHeroHeadlineDraft, setHomeHeroHeadlineDraft] = useState("");
   
   // Custom Tags state
   const [showTagDialog, setShowTagDialog] = useState(false);
@@ -1156,6 +1157,51 @@ export default function Admin() {
     },
   });
 
+  // Site copy settings (owner only)
+  const { data: siteSettings, isLoading: isLoadingSiteSettings } = useQuery<{
+    homeHeroHeadline: string | null;
+    updatedAt?: string | null;
+    updatedBy?: string | null;
+  }>({
+    queryKey: ['site-settings'],
+    queryFn: async () => {
+      const res = await fetch('/api/site-settings', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch site settings');
+      return res.json();
+    },
+    enabled: !!currentUser?.isOwner,
+  });
+
+  const updateSiteSettingsMutation = useMutation({
+    mutationFn: async (updates: { homeHeroHeadline: string | null }) => {
+      const res = await fetch('/api/site-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to update site settings');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['site-settings-public'] });
+      toast({ title: "Site copy updated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  useEffect(() => {
+    if (typeof siteSettings?.homeHeroHeadline !== "undefined") {
+      setHomeHeroHeadlineDraft(siteSettings.homeHeroHeadline || "");
+    }
+  }, [siteSettings?.homeHeroHeadline]);
+
   const resetBadgeForm = () => {
     setBadgeName("");
     setBadgeDisplayName("");
@@ -1368,7 +1414,7 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full mb-6 ${currentUser?.isOwner ? 'grid-cols-11' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
+          <TabsList className={`grid w-full mb-6 ${currentUser?.isOwner ? 'grid-cols-12' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
@@ -1438,6 +1484,12 @@ export default function Admin() {
               <TabsTrigger value="ai-settings" className="gap-1 text-xs px-2">
                 <Bot className="h-4 w-4" />
                 <span className="hidden sm:inline">AI</span>
+              </TabsTrigger>
+            )}
+            {currentUser?.isOwner && (
+              <TabsTrigger value="site-settings" className="gap-1 text-xs px-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Site</span>
               </TabsTrigger>
             )}
             {currentUser?.isOwner && (
@@ -3579,6 +3631,84 @@ export default function Admin() {
                       </div>
                     )}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
+          {currentUser?.isOwner && (
+            <TabsContent value="site-settings">
+              <Card className="border-border bg-card/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    Site Copy Settings
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Owner-only text controls for your Home hero section.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isLoadingSiteSettings ? (
+                    <p className="text-muted-foreground">Loading site settings...</p>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="home-hero-headline">Home headline text</Label>
+                        <Textarea
+                          id="home-hero-headline"
+                          value={homeHeroHeadlineDraft}
+                          onChange={(e) => setHomeHeroHeadlineDraft(e.target.value)}
+                          placeholder="Drop the lines that do not fit anywhere else."
+                          className="min-h-[90px]"
+                          maxLength={180}
+                          data-testid="input-home-hero-headline"
+                        />
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>
+                            Leave blank to use the default app headline.
+                          </span>
+                          <span>{homeHeroHeadlineDraft.length}/180</span>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-border/60 bg-secondary/20 p-3">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Preview</p>
+                        <p className="text-xl font-display font-bold text-foreground">
+                          {homeHeroHeadlineDraft.trim() || "Drop Your Bars"}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setHomeHeroHeadlineDraft(siteSettings?.homeHeroHeadline || "")}
+                          data-testid="button-reset-home-hero-headline"
+                        >
+                          Reset
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => updateSiteSettingsMutation.mutate({ homeHeroHeadline: null })}
+                          disabled={updateSiteSettingsMutation.isPending}
+                          data-testid="button-clear-home-hero-headline"
+                        >
+                          Clear Custom
+                        </Button>
+                        <Button
+                          onClick={() =>
+                            updateSiteSettingsMutation.mutate({
+                              homeHeroHeadline: homeHeroHeadlineDraft.trim() || null,
+                            })
+                          }
+                          disabled={updateSiteSettingsMutation.isPending}
+                          data-testid="button-save-home-hero-headline"
+                        >
+                          {updateSiteSettingsMutation.isPending ? "Saving..." : "Save Headline"}
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

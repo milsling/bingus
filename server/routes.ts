@@ -102,6 +102,115 @@ export async function registerRoutes(
     return res.status(403).json({ message: "Owner access required" });
   };
 
+  // Site settings helpers (owner-configurable copy)
+  const ensureSiteSettings = async () => {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        id VARCHAR PRIMARY KEY DEFAULT 'default',
+        message_of_the_day TEXT,
+        motd_enabled BOOLEAN NOT NULL DEFAULT false,
+        motd_style TEXT NOT NULL DEFAULT 'info',
+        home_hero_headline TEXT,
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_by VARCHAR REFERENCES users(id)
+      )
+    `);
+
+    // Backfill column for older deployments where table already exists.
+    await db.execute(sql`
+      ALTER TABLE site_settings
+      ADD COLUMN IF NOT EXISTS home_hero_headline TEXT
+    `);
+
+    await db.execute(sql`
+      INSERT INTO site_settings (id)
+      VALUES ('default')
+      ON CONFLICT (id) DO NOTHING
+    `);
+  };
+
+  const readSiteSettings = async () => {
+    await ensureSiteSettings();
+    const result = await db.execute(sql`
+      SELECT home_hero_headline, updated_at, updated_by
+      FROM site_settings
+      WHERE id = 'default'
+      LIMIT 1
+    `);
+    const row = (result.rows?.[0] || {}) as {
+      home_hero_headline?: string | null;
+      updated_at?: string | Date | null;
+      updated_by?: string | null;
+    };
+    return {
+      homeHeroHeadline: row.home_hero_headline ?? null,
+      updatedAt: row.updated_at ?? null,
+      updatedBy: row.updated_by ?? null,
+    };
+  };
+
+  // Ensure table/row exists at startup without blocking app boot on failure.
+  void ensureSiteSettings().catch((error) => {
+    console.error("Failed to ensure site_settings table:", error);
+  });
+
+  app.get("/api/site-settings-public", async (_req: Request, res: Response) => {
+    try {
+      const settings = await readSiteSettings();
+      res.json({ homeHeroHeadline: settings.homeHeroHeadline });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/site-settings", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      if (!req.user?.isOwner) {
+        return res.status(403).json({ message: "Owner access required" });
+      }
+      const settings = await readSiteSettings();
+      res.json(settings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/site-settings", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      if (!req.user?.isOwner) {
+        return res.status(403).json({ message: "Owner access required" });
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(req.body ?? {}, "homeHeroHeadline")) {
+        return res.status(400).json({ message: "homeHeroHeadline is required" });
+      }
+
+      const rawHeadline = req.body.homeHeroHeadline;
+      if (rawHeadline !== null && rawHeadline !== undefined && typeof rawHeadline !== "string") {
+        return res.status(400).json({ message: "homeHeroHeadline must be a string or null" });
+      }
+
+      const normalizedHeadline = typeof rawHeadline === "string"
+        ? rawHeadline.trim().slice(0, 180)
+        : null;
+
+      await ensureSiteSettings();
+      await db.execute(sql`
+        UPDATE site_settings
+        SET
+          home_hero_headline = ${normalizedHeadline || null},
+          updated_at = NOW(),
+          updated_by = ${req.user.id}
+        WHERE id = 'default'
+      `);
+
+      const updated = await readSiteSettings();
+      res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Supabase config endpoint for client-side OAuth
   app.get("/api/config/supabase", (req: Request, res: Response) => {
     res.json({
