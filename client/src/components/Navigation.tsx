@@ -38,8 +38,8 @@ export default function Navigation() {
       {/* Mobile Bottom Nav - Fixed to screen bottom */}
       <BottomNav onNewMessage={() => setNewMessageOpen(true)} />
       
-      {/* Desktop Floating Top Bar */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar">
+      {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
+      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar overflow-visible">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -170,9 +170,9 @@ export default function Navigation() {
         </div>
       </header>
 
-      {/* Mobile Top Bar - Floating glass */}
-      <div className="md:hidden fixed top-[calc(env(safe-area-inset-top)+0.5rem)] left-3 right-3 z-[999]">
-        <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-4">
+      {/* Mobile Top Bar - Floating glass - overflow-visible so bar isn't clipped */}
+      <div className="md:hidden fixed top-[calc(env(safe-area-inset-top)+0.5rem)] left-3 right-3 z-[999] overflow-visible">
+        <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-4 overflow-visible">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
               <img src={headerLogo} alt="" className="h-6 w-6" />

@@ -230,8 +230,8 @@ export default function Home() {
 
       {/* Desktop: Three column layout - fixed height, only center scrolls */}
       <div className="hidden md:flex h-screen pt-16 px-6 gap-6">
-        {/* Left Column - Fixed, non-scrolling */}
-        <aside className="w-56 shrink-0 space-y-4 overflow-y-auto py-4">
+        {/* Left Column - Fixed, non-scrolling - pr so panel shadows extend past scrollbar */}
+        <aside className="w-56 shrink-0 space-y-4 overflow-y-auto py-4 pr-3">
           {/* User Profile Preview Pane */}
           {currentUser ? (
             <div className="glass-panel p-4">
@@ -284,8 +284,8 @@ export default function Home() {
           </div>
         </aside>
         
-        {/* Center Column - Feed (scrollable) */}
-        <main className="flex-1 overflow-y-auto py-4">
+        {/* Center Column - Feed (scrollable) - pr so card shadows extend into scrollbar area */}
+        <main className="flex-1 overflow-y-auto py-4 pr-6">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent h-48 pointer-events-none" />
             
@@ -438,8 +438,8 @@ export default function Home() {
           </div>
         </main>
         
-        {/* Right Column - Leaderboard, Challenge, Activity (fixed, scrollable if needed) */}
-        <aside className="w-56 shrink-0 space-y-4 overflow-y-auto py-4">
+        {/* Right Column - Leaderboard, Challenge, Activity - pr so panel shadows extend past scrollbar */}
+        <aside className="w-56 shrink-0 space-y-4 overflow-y-auto py-4 pr-3">
           {/* Leaderboard - Real data */}
           <div className="glass-panel p-4">
             <h3 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">

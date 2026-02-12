@@ -87,25 +87,26 @@
 
 :root {
   /* ========================================
-     ORPHANBARS - Light Mode
+     ORPHANBARS - Light Mode (off-white, reduced glare)
      ======================================== */
-  --background: 0 0% 100%;
-  --foreground: 230 10% 15%;
+  /* Off-white base like Facebook/Google - not pure white */
+  --background: 220 14% 96%;
+  --foreground: 220 12% 18%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 230 10% 15%;
+  --card: 0 0% 99%;
+  --card-foreground: 220 12% 18%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 230 10% 15%;
+  --popover: 0 0% 99%;
+  --popover-foreground: 220 12% 18%;
 
   --primary: 265 70% 60%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 230 30% 96%;
-  --secondary-foreground: 230 10% 20%;
+  --secondary: 220 14% 92%;
+  --secondary-foreground: 220 12% 20%;
 
-  --muted: 230 20% 94%;
-  --muted-foreground: 230 8% 45%;
+  --muted: 220 12% 91%;
+  --muted-foreground: 220 8% 42%;
 
   --accent: 265 70% 60%;
   --accent-foreground: 0 0% 100%;
@@ -113,17 +114,17 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 230 20% 88%;
-  --input: 230 20% 88%;
+  --border: 220 12% 88%;
+  --input: 220 12% 88%;
   --ring: 265 70% 60%;
 
   --radius: 0.5rem;
   
-  /* Glass panel variables - subtle glass effect */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-bg-hover: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-border-hover: rgba(0, 0, 0, 0.12);
+  /* Glass panel variables - off-white, subtle */
+  --glass-bg: rgba(250, 250, 252, 0.75);
+  --glass-bg-hover: rgba(252, 252, 254, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-border-hover: rgba(0, 0, 0, 0.1);
   
   /* Shadows - subtle and modern */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -148,34 +149,40 @@
   --app-bg-3: rgba(59, 130, 246, 0.12);
   --app-bg-4: rgba(236, 72, 153, 0.09);
   --app-bg-5: rgba(99, 102, 241, 0.08);
-  /* Light variant of multicolor modern gradient (soft purple/blue) */
-  --app-bg-base-start: #f8f5ff;
-  --app-bg-base-end: #e8e6f7;
+  /* Off-white gradient - soft gray, no glare (Facebook/Google style) */
+  --app-bg-base-start: #f2f2f5;
+  --app-bg-base-end: #e6e6eb;
 
-  /* Floating bars - more transparent so feed shows through */
-  --floating-bar-bg: rgba(255, 255, 255, 0.42);
-  --floating-bar-border: rgba(255, 255, 255, 0.52);
+  /* Floating bars - off-white tint, more transparent so feed shows through */
+  --floating-bar-bg: rgba(242, 242, 245, 0.5);
+  --floating-bar-border: rgba(0, 0, 0, 0.08);
   --floating-bar-shadow:
     0 12px 28px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(15, 23, 42, 0.08);
 
-  /* Unified glass system (light) */
-  --glass-surface-bg: rgba(255, 255, 255, 0.58);
-  --glass-surface-bg-strong: rgba(255, 255, 255, 0.76);
-  --glass-surface-border: rgba(255, 255, 255, 0.72);
-  --glass-surface-border-strong: rgba(148, 163, 184, 0.34);
+  /* Unified glass system (light) - off-white tint */
+  --glass-surface-bg: rgba(245, 245, 247, 0.72);
+  --glass-surface-bg-strong: rgba(250, 250, 252, 0.88);
+  --glass-surface-border: rgba(0, 0, 0, 0.06);
+  --glass-surface-border-strong: rgba(0, 0, 0, 0.1);
   --glass-surface-shadow:
     0 12px 28px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(15, 23, 42, 0.08);
 
-  --glass-field-bg: rgba(255, 255, 255, 0.65);
-  --glass-field-bg-focus: rgba(255, 255, 255, 0.88);
-  --glass-field-border: rgba(148, 163, 184, 0.35);
+  --glass-field-bg: rgba(250, 250, 252, 0.8);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.95);
+  --glass-field-border: rgba(0, 0, 0, 0.08);
   --glass-field-border-focus: rgba(129, 140, 248, 0.55);
-  --glass-field-placeholder: rgba(71, 85, 105, 0.62);
+  --glass-field-placeholder: rgba(71, 85, 105, 0.55);
 
-  --sheet-bg: rgba(248, 250, 252, 0.78);
-  --sheet-border: rgba(148, 163, 184, 0.34);
+  --sheet-bg: rgba(245, 245, 247, 0.92);
+  --sheet-border: rgba(0, 0, 0, 0.08);
+
+  /* Search input inside floating bar - slightly darker for contrast */
+  --glass-input-in-bar-bg: rgba(0, 0, 0, 0.06);
+  --glass-input-in-bar-border: rgba(0, 0, 0, 0.1);
+  --glass-input-in-bar-bg-focus: rgba(0, 0, 0, 0.1);
+  --glass-input-in-bar-border-focus: rgba(129, 140, 248, 0.4);
 }
 
 .dark {
@@ -268,6 +275,12 @@
 
   --sheet-bg: rgba(2, 6, 23, 0.72);
   --sheet-border: rgba(255, 255, 255, 0.16);
+
+  /* Search input inside floating bar - slightly lighter for contrast */
+  --glass-input-in-bar-bg: rgba(255, 255, 255, 0.08);
+  --glass-input-in-bar-border: rgba(255, 255, 255, 0.14);
+  --glass-input-in-bar-bg-focus: rgba(255, 255, 255, 0.12);
+  --glass-input-in-bar-border-focus: rgba(167, 139, 250, 0.5);
 }
 
 @layer base {
@@ -553,6 +566,7 @@ html.dark {
   -webkit-backdrop-filter: blur(28px) saturate(140%);
   border: 1px solid var(--floating-bar-border);
   box-shadow: var(--floating-bar-shadow);
+  overflow: visible;
 }
 
 .glass-surface {
@@ -632,6 +646,16 @@ html.dark {
   background: var(--glass-field-bg-focus) !important;
   border-color: var(--glass-field-border-focus) !important;
   box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+}
+
+/* Search input inside nav bar - slightly different shade for contrast */
+.floating-bar .glass-input {
+  background: var(--glass-input-in-bar-bg) !important;
+  border-color: var(--glass-input-in-bar-border) !important;
+}
+.floating-bar .glass-input:focus {
+  background: var(--glass-input-in-bar-bg-focus) !important;
+  border-color: var(--glass-input-in-bar-border-focus) !important;
 }
 
 /* Glass modal/dialog overlay */

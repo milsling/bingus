@@ -23,7 +23,6 @@ import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import AIAssistant from "@/components/AIAssistant";
 import orphanBarsMenuLogo from "@/assets/orphan-bars-menu-logo.png";
 import orphanageFullLogoWhite from "@/assets/orphanage-full-logo-white.png";
@@ -140,9 +139,6 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
   );
   const { currentUser } = useBars();
   const { resolvedTheme } = useTheme();
-  const unreadCount = useUnreadMessagesCount();
-  const pendingFriendRequests = usePendingFriendRequestsCount();
-
   useEffect(() => {
     setMenuSection(location.startsWith("/orphanage") ? "orphanage" : "orphanbars");
   }, [location]);
@@ -166,8 +162,8 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
 
     const items = [
       { icon: Home, label: "Feed", path: "/", id: "main-feed" },
-      { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount, id: "main-messages" },
-      { icon: Users, label: "Friends", path: "/friends", badge: pendingFriendRequests, id: "main-friends" },
+      { icon: MessageCircle, label: "Messages", path: "/messages", id: "main-messages" },
+      { icon: Users, label: "Friends", path: "/friends", id: "main-friends" },
       { icon: Bookmark, label: "Saved", path: "/saved", id: "main-saved" },
       { icon: LayoutGrid, label: "Apps", path: "/apps", id: "main-apps" },
       { icon: User, label: "Profile", path: "/profile", id: "main-profile" },
@@ -281,35 +277,27 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         transition={{ delay: 0.15 + index * 0.03, duration: 0.2 }}
                         onClick={() => handleNavClick(item.path)}
                         className={cn(
-                          "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
+                          "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98]",
                           isActive 
-                            ? "bg-primary/12 border border-primary/25 shadow-[0_6px_16px_rgba(99,102,241,0.15)]"
-                            : "hover:bg-accent/55 border border-transparent"
+                            ? "bg-primary/10 text-foreground"
+                            : "hover:bg-muted/40 text-foreground/90"
                         )}
                         data-testid={`nav-item-${item.label.toLowerCase().replace(' ', '-')}`}
                       >
                         <div className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center",
-                          isActive ? "bg-primary/12" : "bg-muted/35"
+                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                          isActive ? "bg-primary/15" : "bg-muted/30"
                         )}>
                           {item.icon && (
                             <item.icon className={cn(
-                              "w-6 h-6",
-                              isActive ? "text-primary" : "text-foreground/70"
+                              "w-5 h-5",
+                              isActive ? "text-primary" : "text-muted-foreground"
                             )} strokeWidth={1.8} />
                           )}
                         </div>
-                        <span className={cn(
-                          "text-lg font-medium",
-                          isActive ? "text-foreground" : "text-foreground/85"
-                        )}>
+                        <span className="text-base font-medium">
                           {item.label}
                         </span>
-                        {item.badge && item.badge > 0 && (
-                          <span className="ml-auto px-2.5 py-1 rounded-full bg-red-500/90 text-white text-xs font-medium">
-                            {item.badge}
-                          </span>
-                        )}
                       </motion.button>
                     );
                   })}
@@ -328,16 +316,16 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       handleNavClick("/");
                     }}
                     className={cn(
-                      "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
+                      "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98]",
                       menuSection === "orphanbars" 
-                        ? "bg-primary/12 border border-primary/25" 
-                        : "hover:bg-accent/55"
+                        ? "bg-primary/10" 
+                        : "hover:bg-muted/40"
                     )}
                     data-testid="nav-section-orphanbars"
                   >
                     <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center",
-                      menuSection === "orphanbars" ? "bg-primary/12" : "bg-muted/35"
+                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                      menuSection === "orphanbars" ? "bg-primary/15" : "bg-muted/30"
                     )}>
                       <img 
                         src={orphanBarsMenuLogo} 
@@ -345,10 +333,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         className="h-6 w-auto dark:brightness-0 dark:invert"
                       />
                     </div>
-                    <span className={cn(
-                      "text-lg font-medium",
-                      menuSection === "orphanbars" ? "text-foreground" : "text-foreground/85"
-                    )}>Orphan Bars</span>
+                    <span className="text-base font-medium">Orphan Bars</span>
                   </button>
                   
                   <button
@@ -357,16 +342,16 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       handleNavClick("/orphanage");
                     }}
                     className={cn(
-                      "w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]",
+                      "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98]",
                       menuSection === "orphanage" 
-                        ? "bg-primary/12 border border-primary/25" 
-                        : "hover:bg-accent/55"
+                        ? "bg-primary/10" 
+                        : "hover:bg-muted/40"
                     )}
                     data-testid="nav-section-orphanage"
                   >
                     <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center",
-                      menuSection === "orphanage" ? "bg-primary/12" : "bg-muted/35"
+                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                      menuSection === "orphanage" ? "bg-primary/15" : "bg-muted/30"
                     )}>
                       <img 
                         src={resolvedTheme === "dark" ? orphanageFullLogoWhite : orphanageFullLogoDark}
@@ -374,10 +359,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                         className="h-7 w-auto object-contain"
                       />
                     </div>
-                    <span className={cn(
-                      "text-lg font-medium",
-                      menuSection === "orphanage" ? "text-foreground" : "text-foreground/85"
-                    )}>The Orphanage</span>
+                    <span className="text-base font-medium">The Orphanage</span>
                   </button>
                 </div>
 
@@ -388,13 +370,13 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                       setIsOpen(false);
                       setAraOpen(true);
                     }}
-                    className="mt-4 w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-gradient-to-r from-purple-500/18 to-pink-500/16 border border-purple-400/35 transition-all active:scale-[0.98] hover:from-purple-500/24 hover:to-pink-500/20"
+                    className="mt-4 w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-all active:scale-[0.98]"
                     data-testid="nav-section-ara"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                      <Sparkles className="h-6 w-6 text-purple-500 dark:text-purple-300" />
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Sparkles className="h-5 w-5 text-primary" />
                     </div>
-                    <span className="text-lg font-medium text-foreground">Ara</span>
+                    <span className="text-base font-medium text-foreground">Ara</span>
                   </button>
                 )}
               </motion.div>
@@ -505,9 +487,6 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
                     )}
                   </motion.div>
                 </motion.button>
-                {!isOpen && (unreadCount > 0 || pendingFriendRequests > 0) && (
-                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 border border-background/80" />
-                )}
               </div>
 
               <button
