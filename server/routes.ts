@@ -51,6 +51,71 @@ function clearRateLimit(attemptsMap: Map<string, { count: number; lastAttempt: n
 
 const APP_VERSION = Date.now().toString();
 
+const QUICK_REACTION_TYPES = ["fire", "clever", "deep"] as const;
+type QuickReactionType = (typeof QUICK_REACTION_TYPES)[number];
+
+const QUICK_REACTION_EMOJIS: Record<QuickReactionType, string> = {
+  fire: "🔥",
+  clever: "💡",
+  deep: "🧠",
+};
+
+const quickReactionStore = new Map<string, Set<string>>();
+
+const PROMPT_LIBRARY = [
+  { slug: "neon-nightmares", text: "Neon nightmares" },
+  { slug: "rust-on-the-halo", text: "Rust on the halo" },
+  { slug: "midnight-static", text: "Midnight static" },
+  { slug: "church-bells-and-sirens", text: "Church bells and sirens" },
+  { slug: "glass-jaw-prophecies", text: "Glass jaw prophecies" },
+  { slug: "cold-gold-cadence", text: "Cold gold cadence" },
+] as const;
+
+function getCurrentPrompt() {
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const epochWeek = Date.UTC(2025, 0, 6); // Monday
+  const weekOffset = Math.floor((Date.now() - epochWeek) / msPerWeek);
+  const normalizedIndex =
+    ((weekOffset % PROMPT_LIBRARY.length) + PROMPT_LIBRARY.length) %
+    PROMPT_LIBRARY.length;
+  return {
+    ...PROMPT_LIBRARY[normalizedIndex],
+    index: normalizedIndex,
+    tag: `prompt:${PROMPT_LIBRARY[normalizedIndex].slug}`,
+  };
+}
+
+function stripHtmlToSnippet(input: string, maxLength = 140): string {
+  const plain = input
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+
+  if (plain.length <= maxLength) {
+    return plain;
+  }
+
+  return `${plain.slice(0, maxLength).trimEnd()}...`;
+}
+
+function getQuickReactionSummary(barId: string, userId?: string) {
+  return QUICK_REACTION_TYPES.reduce(
+    (acc, type) => {
+      const key = `${barId}:${type}`;
+      const voters = quickReactionStore.get(key) ?? new Set<string>();
+      acc[type] = {
+        count: voters.size,
+        reacted: userId ? voters.has(userId) : false,
+      };
+      return acc;
+    },
+    {} as Record<QuickReactionType, { count: number; reacted: boolean }>,
+  );
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -4121,6 +4186,552 @@ export async function registerRoutes(
       res.json(allActivity);
     } catch (error: any) {
       console.error("Recent activity error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/community/stats", async (_req, res) => {
+    try {
+      const statsResult = await db.execute(sql`
+        SELECT
+          COUNT(*)::int AS "totalBars",
+          COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days')::int AS "barsThisWeek",
+          COUNT(DISTINCT user_id) FILTER (WHERE created_at >= NOW() - INTERVAL '30 days')::int AS "activeWritersMonth"
+        FROM bars
+        WHERE deleted_at IS NULL
+          AND moderation_status = 'approved'
+      `);
+
+      const row = (statsResult.rows?.[0] as any) || {};
+
+      res.json({
+        totalBars: Number(row.totalBars) || 0,
+        barsThisWeek: Number(row.barsThisWeek) || 0,
+        activeWritersMonth: Number(row.activeWritersMonth) || 0,
+      });
+    } catch (error: any) {
+      console.error("Community stats error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/community/spotlight", async (_req, res) => {
+    try {
+      const spotlightResult = await db.execute(sql`
+        SELECT
+          b.id,
+          b.content,
+          b.tags,
+          b.created_at AS "createdAt",
+          u.username,
+          u.avatar_url AS "avatarUrl",
+          COALESCE(COUNT(l.id), 0)::int AS "reactionCount"
+        FROM bars b
+        JOIN users u ON b.user_id = u.id
+        LEFT JOIN likes l
+          ON l.bar_id = b.id
+          AND l.created_at >= NOW() - INTERVAL '7 days'
+        WHERE b.deleted_at IS NULL
+          AND b.permission_status != 'private'
+          AND b.moderation_status = 'approved'
+        GROUP BY b.id, u.username, u.avatar_url
+        ORDER BY "reactionCount" DESC, b.created_at DESC
+        LIMIT 1
+      `);
+
+      const row = (spotlightResult.rows?.[0] as any) || null;
+      if (!row) {
+        return res.json(null);
+      }
+
+      const snippet = stripHtmlToSnippet(String(row.content || ""), 180);
+      const lines = snippet
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(0, 2);
+      const tags = Array.isArray(row.tags) ? row.tags : [];
+      const themeTag = tags.find((tag: string) => tag.startsWith("theme:"));
+
+      res.json({
+        id: row.id,
+        author: row.username,
+        avatarUrl: row.avatarUrl,
+        snippet,
+        lines,
+        titleLine: lines[0] || snippet,
+        reactionCount: Number(row.reactionCount) || 0,
+        theme: themeTag ? String(themeTag).replace("theme:", "") : "minimal",
+        href: `/bars/${row.id}`,
+      });
+    } catch (error: any) {
+      console.error("Community spotlight error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/community/now", async (req, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit as string) || 8, 20);
+      const queryLimit = Math.max(limit, 8);
+
+      const recentLikes = await db.execute(sql`
+        SELECT
+          l.id,
+          l.created_at AS "createdAt",
+          u.username AS "actorUsername",
+          b.id AS "barId",
+          SUBSTRING(b.content, 1, 80) AS "barPreview"
+        FROM likes l
+        JOIN users u ON l.user_id = u.id
+        JOIN bars b ON l.bar_id = b.id
+        WHERE b.deleted_at IS NULL
+          AND b.moderation_status = 'approved'
+        ORDER BY l.created_at DESC
+        LIMIT ${queryLimit}
+      `);
+
+      const recentComments = await db.execute(sql`
+        SELECT
+          c.id,
+          c.created_at AS "createdAt",
+          u.username AS "actorUsername",
+          b.id AS "barId",
+          SUBSTRING(b.content, 1, 80) AS "barPreview"
+        FROM comments c
+        JOIN users u ON c.user_id = u.id
+        JOIN bars b ON c.bar_id = b.id
+        WHERE b.deleted_at IS NULL
+          AND b.moderation_status = 'approved'
+        ORDER BY c.created_at DESC
+        LIMIT ${queryLimit}
+      `);
+
+      const recentPosts = await db.execute(sql`
+        SELECT
+          b.id,
+          b.created_at AS "createdAt",
+          u.username AS "actorUsername",
+          b.id AS "barId"
+        FROM bars b
+        JOIN users u ON b.user_id = u.id
+        WHERE b.deleted_at IS NULL
+          AND b.permission_status != 'private'
+          AND b.moderation_status = 'approved'
+        ORDER BY b.created_at DESC
+        LIMIT ${queryLimit}
+      `);
+
+      const prompt = getCurrentPrompt();
+      const promptEvent = {
+        id: `prompt-${prompt.slug}`,
+        type: "prompt",
+        text: `New prompt: "${prompt.text}"`,
+        href: `/prompts/${prompt.slug}`,
+        createdAt: new Date().toISOString(),
+      };
+
+      const likeEvents = (recentLikes.rows || []).map((row: any) => {
+        const snippet = stripHtmlToSnippet(String(row.barPreview || ""), 42);
+        return {
+          id: `like-${row.id}`,
+          type: "reaction",
+          text: `@${row.actorUsername} reacted 🔥 to "${snippet}"`,
+          href: `/bars/${row.barId}`,
+          createdAt: row.createdAt,
+        };
+      });
+
+      const commentEvents = (recentComments.rows || []).map((row: any) => {
+        const snippet = stripHtmlToSnippet(String(row.barPreview || ""), 42);
+        return {
+          id: `comment-${row.id}`,
+          type: "comment",
+          text: `@${row.actorUsername} jumped in on "${snippet}"`,
+          href: `/bars/${row.barId}`,
+          createdAt: row.createdAt,
+        };
+      });
+
+      const postEvents = (recentPosts.rows || []).map((row: any) => ({
+        id: `post-${row.id}`,
+        type: "post",
+        text: `@${row.actorUsername} just dropped a bar`,
+        href: `/bars/${row.barId}`,
+        createdAt: row.createdAt,
+      }));
+
+      const merged = [promptEvent, ...likeEvents, ...commentEvents, ...postEvents]
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
+        .slice(0, limit);
+
+      res.json(merged);
+    } catch (error: any) {
+      console.error("Now activity error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/prompts", async (_req, res) => {
+    try {
+      const current = getCurrentPrompt();
+      const prompts = await Promise.all(
+        PROMPT_LIBRARY.map(async (prompt) => {
+          const tag = `prompt:${prompt.slug}`;
+          const promptBars = await storage.getBarsByTag(tag);
+          return {
+            ...prompt,
+            tag,
+            isCurrent: current.slug === prompt.slug,
+            barsCount: promptBars.length,
+          };
+        }),
+      );
+
+      res.json(prompts);
+    } catch (error: any) {
+      console.error("Prompts list error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/prompts/current", async (_req, res) => {
+    try {
+      const current = getCurrentPrompt();
+      const promptBars = await storage.getBarsByTag(current.tag);
+
+      res.json({
+        ...current,
+        barsCount: promptBars.length,
+        href: `/prompts/${current.slug}`,
+      });
+    } catch (error: any) {
+      console.error("Current prompt error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/prompts/:slug/bars", async (req, res) => {
+    try {
+      const slug = String(req.params.slug || "").toLowerCase();
+      const prompt = PROMPT_LIBRARY.find((entry) => entry.slug === slug);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      const promptBars = await storage.getBarsByTag(`prompt:${slug}`);
+      const userId = req.isAuthenticated() ? req.user!.id : undefined;
+
+      const barsWithEngagement = await Promise.all(
+        promptBars.map(async (bar) => {
+          const likeCount = await storage.getLikeCount(bar.id);
+          const liked = userId
+            ? await storage.hasUserLiked(userId, bar.id)
+            : false;
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId
+            ? await storage.hasUserDisliked(userId, bar.id)
+            : false;
+
+          return {
+            ...bar,
+            likeCount,
+            liked,
+            dislikeCount,
+            disliked,
+            quickReactions: getQuickReactionSummary(bar.id, userId),
+          };
+        }),
+      );
+
+      res.json({
+        prompt: {
+          ...prompt,
+          tag: `prompt:${prompt.slug}`,
+        },
+        bars: barsWithEngagement,
+      });
+    } catch (error: any) {
+      console.error("Prompt bars error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/challenges", async (req, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit as string) || 30, 100);
+      const challengeBars = (await storage.getBarsByTag("challenge")).filter(
+        (bar: any) =>
+          bar.permissionStatus !== "private" &&
+          bar.moderationStatus === "approved",
+      );
+      const userId = req.isAuthenticated() ? req.user!.id : undefined;
+
+      const enriched = await Promise.all(
+        challengeBars.slice(0, limit).map(async (bar) => {
+          const likeCount = await storage.getLikeCount(bar.id);
+          const liked = userId
+            ? await storage.hasUserLiked(userId, bar.id)
+            : false;
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId
+            ? await storage.hasUserDisliked(userId, bar.id)
+            : false;
+          const responses = await storage.getAdoptionsByOriginal(bar.id);
+
+          return {
+            ...bar,
+            likeCount,
+            liked,
+            dislikeCount,
+            disliked,
+            responseCount: responses.length,
+            quickReactions: getQuickReactionSummary(bar.id, userId),
+          };
+        }),
+      );
+
+      res.json(enriched);
+    } catch (error: any) {
+      console.error("Challenges feed error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/bars/:id/challenge", isAuthenticated, async (req, res) => {
+    try {
+      const active = req.body?.active;
+      if (typeof active !== "boolean") {
+        return res
+          .status(400)
+          .json({ message: "active (boolean) is required" });
+      }
+
+      const bar = await storage.getBarById(req.params.id);
+      if (!bar) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+
+      if (bar.userId !== req.user!.id) {
+        return res
+          .status(403)
+          .json({ message: "You can only update your own bars" });
+      }
+
+      const currentTags = Array.isArray(bar.tags) ? [...bar.tags] : [];
+      const hadChallenge = currentTags.some(
+        (tag) => tag.toLowerCase() === "challenge",
+      );
+      const nextTags = active
+        ? hadChallenge
+          ? currentTags
+          : [...currentTags, "challenge"]
+        : currentTags.filter((tag) => tag.toLowerCase() !== "challenge");
+
+      const nextPermissionStatus = active
+        ? "open_adopt"
+        : bar.permissionStatus === "open_adopt"
+          ? "share_only"
+          : bar.permissionStatus;
+
+      const [updated] = await db
+        .update(bars)
+        .set({
+          tags: nextTags,
+          permissionStatus: nextPermissionStatus,
+        })
+        .where(eq(bars.id, req.params.id))
+        .returning();
+
+      res.json({ ...updated, isChallenge: active });
+    } catch (error: any) {
+      console.error("Challenge toggle error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/bars/:id/respond", isAuthenticated, async (req, res) => {
+    try {
+      const { responseBarId } = req.body || {};
+      if (!responseBarId) {
+        return res.status(400).json({ message: "responseBarId is required" });
+      }
+
+      const originalBar = await storage.getBarById(req.params.id);
+      if (!originalBar) {
+        return res.status(404).json({ message: "Original bar not found" });
+      }
+
+      const isChallenge = (originalBar.tags || []).some(
+        (tag) => tag.toLowerCase() === "challenge",
+      );
+      if (!isChallenge && originalBar.permissionStatus !== "open_adopt") {
+        return res
+          .status(403)
+          .json({ message: "This bar is not open for responses" });
+      }
+
+      const responseBar = await storage.getBarById(String(responseBarId));
+      if (!responseBar) {
+        return res.status(404).json({ message: "Response bar not found" });
+      }
+
+      if (responseBar.userId !== req.user!.id) {
+        return res.status(403).json({
+          message: "You can only attach bars that belong to your account",
+        });
+      }
+
+      if (responseBar.id === originalBar.id) {
+        return res
+          .status(400)
+          .json({ message: "A bar cannot respond to itself" });
+      }
+
+      try {
+        const adoption = await storage.createAdoption(
+          originalBar.id,
+          responseBar.id,
+          req.user!.id,
+        );
+
+        if (originalBar.userId !== req.user!.id) {
+          await storage.createNotification({
+            userId: originalBar.userId,
+            type: "challenge_response",
+            actorId: req.user!.id,
+            barId: originalBar.id,
+            message: `@${req.user!.username} responded to your challenge`,
+          });
+        }
+
+        return res.json(adoption);
+      } catch (error: any) {
+        if (String(error?.message || "").toLowerCase().includes("duplicate")) {
+          return res
+            .status(409)
+            .json({ message: "This response is already attached" });
+        }
+        throw error;
+      }
+    } catch (error: any) {
+      console.error("Challenge response error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bars/:id/responses", async (req, res) => {
+    try {
+      const adoptions = await storage.getAdoptionsByOriginal(req.params.id);
+      const userId = req.isAuthenticated() ? req.user!.id : undefined;
+
+      const responses = await Promise.all(
+        adoptions.map(async (adoption) => {
+          const bar = await storage.getBarById(adoption.adoptedByBarId);
+          if (!bar || bar.deletedAt) {
+            return null;
+          }
+
+          const likeCount = await storage.getLikeCount(bar.id);
+          const liked = userId
+            ? await storage.hasUserLiked(userId, bar.id)
+            : false;
+          const dislikeCount = await storage.getDislikeCount(bar.id);
+          const disliked = userId
+            ? await storage.hasUserDisliked(userId, bar.id)
+            : false;
+
+          return {
+            ...bar,
+            likeCount,
+            liked,
+            dislikeCount,
+            disliked,
+            quickReactions: getQuickReactionSummary(bar.id, userId),
+            responseId: adoption.id,
+            respondedAt: adoption.createdAt,
+          };
+        }),
+      );
+
+      const cleanResponses = responses
+        .filter(Boolean)
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.respondedAt).getTime() - new Date(a.respondedAt).getTime(),
+        );
+
+      res.json(cleanResponses);
+    } catch (error: any) {
+      console.error("Fetch responses error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bars/:id/reactions", async (req, res) => {
+    try {
+      const userId = req.isAuthenticated() ? req.user!.id : undefined;
+      const summary = getQuickReactionSummary(req.params.id, userId);
+      res.json(summary);
+    } catch (error: any) {
+      console.error("Get quick reactions error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/bars/:id/reactions/:type", isAuthenticated, async (req, res) => {
+    try {
+      const type = String(req.params.type || "").toLowerCase() as QuickReactionType;
+      if (!QUICK_REACTION_TYPES.includes(type)) {
+        return res.status(400).json({ message: "Invalid reaction type" });
+      }
+
+      const bar = await storage.getBarById(req.params.id);
+      if (!bar) {
+        return res.status(404).json({ message: "Bar not found" });
+      }
+
+      // Lightweight in-memory implementation for quick reactions.
+      // TODO: Promote to persistent DB table when reaction analytics are finalized.
+      const key = `${req.params.id}:${type}`;
+      const voters = quickReactionStore.get(key) ?? new Set<string>();
+      let reacted = false;
+
+      if (voters.has(req.user!.id)) {
+        voters.delete(req.user!.id);
+      } else {
+        voters.add(req.user!.id);
+        reacted = true;
+      }
+
+      if (voters.size === 0) {
+        quickReactionStore.delete(key);
+      } else {
+        quickReactionStore.set(key, voters);
+      }
+
+      if (reacted && bar.userId !== req.user!.id) {
+        await storage.createNotification({
+          userId: bar.userId,
+          type: `quick_reaction_${type}`,
+          actorId: req.user!.id,
+          barId: bar.id,
+          message: `@${req.user!.username} reacted ${QUICK_REACTION_EMOJIS[type]} to your bar`,
+        });
+      }
+
+      const summary = getQuickReactionSummary(req.params.id, req.user!.id);
+      res.json({
+        type,
+        reacted,
+        count: summary[type].count,
+        reactions: summary,
+      });
+    } catch (error: any) {
+      console.error("Toggle quick reactions error:", error);
       res.status(500).json({ message: error.message });
     }
   });

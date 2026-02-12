@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, Bell, Settings, LogOut } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, Bell, Settings, LogOut, Compass, Swords } from "lucide-react";
 import headerLogo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
@@ -51,8 +51,20 @@ export default function Navigation() {
             <DropdownMenuContent align="start" className="w-56">
               <DropdownMenuItem asChild>
                 <Link href="/" className="flex items-center gap-3 cursor-pointer">
-                  <Home className="h-4 w-4" />
-                  <span>Home</span>
+                  <Compass className="h-4 w-4" />
+                  <span>Explore</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/prompts" className="flex items-center gap-3 cursor-pointer">
+                  <PenLine className="h-4 w-4" />
+                  <span>Prompts</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/challenges" className="flex items-center gap-3 cursor-pointer">
+                  <Swords className="h-4 w-4" />
+                  <span>Challenges</span>
                 </Link>
               </DropdownMenuItem>
               {currentUser && (
@@ -60,7 +72,7 @@ export default function Navigation() {
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="flex items-center gap-3 cursor-pointer">
                       <User className="h-4 w-4" />
-                      <span>Profile</span>
+                      <span>My Bars</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

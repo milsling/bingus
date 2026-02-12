@@ -26,6 +26,8 @@ import Apps from "@/pages/Apps";
 import Notebook from "@/pages/Notebook";
 import RhymeDictionary from "@/pages/RhymeDictionary";
 import AuthCallback from "@/pages/AuthCallback";
+import Prompts from "@/pages/Prompts";
+import Challenges from "@/pages/Challenges";
 import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
@@ -66,6 +68,9 @@ function Router() {
           <Route path="/messages/:id" component={Messages} />
           <Route path="/guidelines" component={Guidelines} />
           <Route path="/orphanage" component={Orphanage} />
+          <Route path="/prompts" component={Prompts} />
+          <Route path="/prompts/:slug" component={Prompts} />
+          <Route path="/challenges" component={Challenges} />
           <Route path="/terms" component={Terms} />
           <Route path="/achievements" component={Achievements} />
           <Route path="/badges" component={Badges} />

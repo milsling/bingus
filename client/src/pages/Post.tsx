@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ArrowLeft, Bold, Italic, Underline, MessageSquare, Shield, Share2, Users, Lock, AlertTriangle, Search, CheckCircle, Music, AlertCircle, FileQuestion } from "lucide-react";
 import { validateBeatUrl } from "@/components/BarMediaPlayer";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
@@ -57,10 +57,21 @@ const countLineBreaks = (html: string): number => {
   return (text.match(/\n/g) || []).length;
 };
 
+const prettifyPrompt = (slug: string) =>
+  slug
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
 export default function Post() {
   const { addBar, currentUser } = useBars();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const search = useSearch();
+  const searchParams = new URLSearchParams(search);
+  const promptSlug = (searchParams.get("prompt") || "").toLowerCase();
+  const respondToBarId = searchParams.get("respondTo") || "";
   const editorRef = useRef<HTMLDivElement>(null);
   const [explanation, setExplanation] = useState("");
   const [category, setCategory] = useState<Category>("Freestyle");
@@ -113,11 +124,17 @@ export default function Post() {
     const content = getContent();
     setIsSubmitting(true);
     try {
+      const manualTags = tags.split(",").map(t => t.trim()).filter(Boolean);
+      const autoPromptTag = promptSlug ? `prompt:${promptSlug}` : null;
+      const mergedTags = autoPromptTag
+        ? Array.from(new Set([...manualTags, autoPromptTag]))
+        : manualTags;
+
       const newBar = await addBar({
         content,
         explanation: explanation.trim() || undefined,
         category,
-        tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+        tags: mergedTags,
         feedbackWanted,
         permissionStatus,
         barType,
@@ -154,11 +171,37 @@ export default function Post() {
       } else {
         toast({
           title: "Bars Dropped!",
-          description: "Your lyric is now live on the feed.",
+          description: respondToBarId
+            ? "Your lyric is live. Linking it to the challenge..."
+            : "Your lyric is now live on the feed.",
         });
       }
 
-      setLocation("/");
+      if (respondToBarId && newBar?.id) {
+        try {
+          await api.submitChallengeResponse(respondToBarId, newBar.id);
+          toast({
+            title: "Response linked",
+            description: "Your bar is now threaded under the original challenge.",
+          });
+        } catch (error: any) {
+          toast({
+            title: "Posted, but not linked",
+            description:
+              error?.message ||
+              "Your bar posted successfully, but the challenge thread link failed.",
+            variant: "destructive",
+          });
+        }
+      }
+
+      if (respondToBarId) {
+        setLocation(`/bars/${respondToBarId}`);
+      } else if (promptSlug) {
+        setLocation(`/prompts/${promptSlug}`);
+      } else {
+        setLocation("/");
+      }
     } catch (error: any) {
       // Check if this is an AI moderation rejection
       if (error.aiRejected && error.canRequestReview) {
@@ -327,6 +370,34 @@ export default function Post() {
             <p className="text-muted-foreground">Share your lyrics with the community</p>
           </div>
         </div>
+
+        {(promptSlug || respondToBarId) && (
+          <div className="mb-6 space-y-2">
+            {promptSlug && (
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3">
+                <p className="text-xs uppercase tracking-wide text-primary/80 font-semibold">
+                  Writing to prompt
+                </p>
+                <p className="text-sm font-semibold mt-1">
+                  "{prettifyPrompt(promptSlug)}"
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This post will be auto-tagged with #{`prompt:${promptSlug}`}.
+                </p>
+              </div>
+            )}
+            {respondToBarId && (
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3">
+                <p className="text-xs uppercase tracking-wide text-primary/80 font-semibold">
+                  Response mode
+                </p>
+                <p className="text-sm font-semibold mt-1">
+                  This bar will be linked as a response in the challenge thread.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="mb-6 space-y-3">
           <div className="flex gap-3">
