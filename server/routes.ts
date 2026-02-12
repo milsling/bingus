@@ -1271,59 +1271,68 @@ export async function registerRoutes(
       
       const liked = await storage.toggleLike(req.user!.id, req.params.id);
       const count = await storage.getLikeCount(req.params.id);
-      
-      // Verify the like was actually saved
-      const verified = await storage.hasUserLiked(req.user!.id, req.params.id);
-      if (liked !== verified) {
-        console.error(`[LIKE] Verification mismatch! toggleLike returned ${liked} but hasUserLiked returned ${verified}`);
-        logDetails.verificationMismatch = true;
-      }
-      
-      logDetails.liked = liked;
-      logDetails.verified = verified;
-      logDetails.newLikeCount = count;
-      logDetails.duration = Date.now() - startTime;
-      
-      // Send notification if liked (not unliked) and not own bar
-      if (liked) {
-        const bar = await storage.getBarById(req.params.id);
-        if (bar && bar.userId !== req.user!.id) {
-          await storage.createNotification({
-            userId: bar.userId,
-            type: "like",
-            actorId: req.user!.id,
-            barId: bar.id,
-            message: `@${req.user!.username} liked your bar`
-          });
-          logDetails.notificationSent = true;
-          
-          // Award XP to bar owner for receiving a like (+5 XP, prevents self-like XP)
-          await storage.awardXp(bar.userId, 5, 'like_received');
-          
-          // Check achievements for the bar owner (they received a like)
-          const newAchievements = await storage.checkAndUnlockAchievements(bar.userId);
-          logDetails.newAchievements = newAchievements;
-          for (const achievementId of newAchievements) {
-            const achievement = ACHIEVEMENTS[achievementId];
-            await storage.createNotification({
-              userId: bar.userId,
-              type: "achievement",
-              message: `${achievement.emoji} Achievement unlocked: ${achievement.name}!`,
-            });
-          }
-        }
-      }
-      
-      // Log successful like action
-      await storage.createDebugLog({
-        action: "like",
-        userId: req.user!.id,
-        targetId: req.params.id,
-        details: JSON.stringify(logDetails),
-        success: true,
-      });
-      
+
+      // Respond immediately so client never sees "failed" when the like was saved
       res.json({ liked, count });
+
+      // Run notification, XP, achievements, and debug log in background (don't block or change response)
+      (async () => {
+        try {
+          const verified = await storage.hasUserLiked(req.user!.id, req.params.id);
+          if (liked !== verified) {
+            console.error(`[LIKE] Verification mismatch! toggleLike returned ${liked} but hasUserLiked returned ${verified}`);
+            logDetails.verificationMismatch = true;
+          }
+          logDetails.liked = liked;
+          logDetails.verified = verified;
+          logDetails.newLikeCount = count;
+          logDetails.duration = Date.now() - startTime;
+
+          if (liked) {
+            const bar = await storage.getBarById(req.params.id);
+            if (bar && bar.userId !== req.user!.id) {
+              await storage.createNotification({
+                userId: bar.userId,
+                type: "like",
+                actorId: req.user!.id,
+                barId: bar.id,
+                message: `@${req.user!.username} liked your bar`
+              });
+              logDetails.notificationSent = true;
+              await storage.awardXp(bar.userId, 5, 'like_received');
+              const newAchievements = await storage.checkAndUnlockAchievements(bar.userId);
+              logDetails.newAchievements = newAchievements;
+              for (const achievementId of newAchievements) {
+                const achievement = ACHIEVEMENTS[achievementId];
+                await storage.createNotification({
+                  userId: bar.userId,
+                  type: "achievement",
+                  message: `${achievement.emoji} Achievement unlocked: ${achievement.name}!`,
+                });
+              }
+            }
+          }
+          await storage.createDebugLog({
+            action: "like",
+            userId: req.user!.id,
+            targetId: req.params.id,
+            details: JSON.stringify(logDetails),
+            success: true,
+          });
+        } catch (err: any) {
+          console.error('[LIKE] Post-like processing failed:', err);
+          logDetails.error = err.message;
+          logDetails.duration = Date.now() - startTime;
+          await storage.createDebugLog({
+            action: "like",
+            userId: req.user!.id,
+            targetId: req.params.id,
+            details: JSON.stringify(logDetails),
+            success: false,
+            errorMessage: err.message,
+          }).catch(() => {});
+        }
+      })();
     } catch (error: any) {
       logDetails.error = error.message;
       logDetails.stack = error.stack;

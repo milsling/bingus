@@ -27,7 +27,7 @@ function stripHtml(html: string): string {
 }
 
 export default function Admin() {
-  const { currentUser, bars } = useBars();
+  const { currentUser, bars, isLoadingUser } = useBars();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -1280,15 +1280,23 @@ export default function Admin() {
     }
   };
 
-  // Redirect non-admin users
+  // Redirect only after we know the user (don't redirect while still loading)
   useEffect(() => {
+    if (isLoadingUser) return;
     if (!currentUser) {
       setLocation("/auth");
     } else if (!currentUser.isAdmin) {
       setLocation("/");
     }
-  }, [currentUser, setLocation]);
+  }, [currentUser, isLoadingUser, setLocation]);
 
+  if (isLoadingUser) {
+    return (
+      <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
   if (!currentUser || !currentUser.isAdmin) {
     return null;
   }

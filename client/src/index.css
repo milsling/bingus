@@ -148,12 +148,13 @@
   --app-bg-3: rgba(59, 130, 246, 0.12);
   --app-bg-4: rgba(236, 72, 153, 0.09);
   --app-bg-5: rgba(99, 102, 241, 0.08);
-  --app-bg-base-start: #fcfdff;
-  --app-bg-base-end: #eef3ff;
+  /* Light variant of multicolor modern gradient (soft purple/blue) */
+  --app-bg-base-start: #f8f5ff;
+  --app-bg-base-end: #e8e6f7;
 
-  /* Floating bars */
-  --floating-bar-bg: rgba(255, 255, 255, 0.62);
-  --floating-bar-border: rgba(255, 255, 255, 0.72);
+  /* Floating bars - more transparent so feed shows through */
+  --floating-bar-bg: rgba(255, 255, 255, 0.42);
+  --floating-bar-border: rgba(255, 255, 255, 0.52);
   --floating-bar-shadow:
     0 12px 28px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(15, 23, 42, 0.08);
@@ -243,9 +244,9 @@
   --app-bg-base-start: #1a1a2e;
   --app-bg-base-end: #0f0f1a;
 
-  /* Floating bars */
-  --floating-bar-bg: rgba(15, 23, 42, 0.56);
-  --floating-bar-border: rgba(255, 255, 255, 0.12);
+  /* Floating bars - more transparent so feed shows through */
+  --floating-bar-bg: rgba(15, 23, 42, 0.36);
+  --floating-bar-border: rgba(255, 255, 255, 0.1);
   --floating-bar-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.28);
