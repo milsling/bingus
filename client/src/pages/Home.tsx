@@ -179,11 +179,11 @@ export default function Home() {
   const clearTagFilter = () => setLocation("/");
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-24 md:pt-20 md:pb-8">
+    <div className="min-h-screen bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8">
       <main className="mx-auto max-w-7xl px-4 md:px-6">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="space-y-5">
-            <div className="md:hidden">
+            <div className="md:hidden sticky top-[calc(env(safe-area-inset-top)+3.4rem)] z-30">
               <div className="glass-panel p-3">
                 <SearchBar />
               </div>
@@ -197,7 +197,7 @@ export default function Home() {
                 <Badge className="mb-3 bg-primary/15 text-primary hover:bg-primary/20">
                   Modern writer room
                 </Badge>
-                <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-tight md:text-5xl">
+                <h1 className="max-w-3xl text-[clamp(2rem,4.4vw,3.4rem)] font-black leading-tight tracking-tight">
                   Drop the lines that do not fit anywhere else.
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm text-muted-foreground md:text-base">
@@ -385,7 +385,7 @@ export default function Home() {
             </PullToRefresh>
           </section>
 
-          <aside className="hidden xl:block">
+          <aside className="hidden lg:block">
             <div className="sticky top-20 space-y-4">
               <section className="rounded-2xl border border-border/60 bg-card/70 p-4">
                 <p className="mb-3 text-sm font-semibold flex items-center gap-2">
