@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, Bell, Settings, LogOut, Compass, Swords, BookOpen } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, Bell, Settings, LogOut, Compass, Swords, BookOpen, NotebookPen } from "lucide-react";
 import headerLogo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
@@ -65,6 +65,12 @@ export default function Navigation() {
                 <Link href="/apps/notebook" className="flex items-center gap-3 cursor-pointer">
                   <BookOpen className="h-4 w-4" />
                   <span>Notebook</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/orphanstudio" className="flex items-center gap-3 cursor-pointer">
+                  <NotebookPen className="h-4 w-4" />
+                  <span>Open OrphanStudio</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
