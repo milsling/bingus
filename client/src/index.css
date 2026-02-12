@@ -175,8 +175,8 @@
   --glass-field-border-focus: rgba(129, 140, 248, 0.55);
   --glass-field-placeholder: rgba(71, 85, 105, 0.55);
 
-  --sheet-bg: rgba(245, 245, 247, 0.92);
-  --sheet-border: rgba(0, 0, 0, 0.08);
+  --sheet-bg: rgba(252, 252, 254, 0.96);
+  --sheet-border: rgba(0, 0, 0, 0.1);
 
   /* Search input inside floating bar - slightly darker for contrast */
   --glass-input-in-bar-bg: rgba(0, 0, 0, 0.06);
@@ -292,8 +292,9 @@
   --glass-field-border-focus: rgba(167, 139, 250, 0.5);
   --glass-field-placeholder: rgba(142, 142, 147, 0.7);
 
-  --sheet-bg: rgba(18, 18, 24, 0.92);
-  --sheet-border: rgba(255, 255, 255, 0.1);
+  /* Sheet/menu - frosted glass: more opaque, stronger blur */
+  --sheet-bg: rgba(24, 24, 32, 0.96);
+  --sheet-border: rgba(255, 255, 255, 0.12);
 
   /* Search input inside floating bar */
   --glass-input-in-bar-bg: rgba(255, 255, 255, 0.06);
@@ -628,12 +629,13 @@ html.dark {
   box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
 }
 
-/* Glass bottom sheet - compact overlay, rounded top corners */
+/* Glass bottom sheet - frosted glass menu overlay */
 .glass-sheet {
   background: var(--sheet-bg);
   border: 1px solid var(--sheet-border);
-  backdrop-filter: blur(20px) saturate(130%);
-  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
 }
 
 /* Glass button - theme-aware */
