@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -37,6 +37,20 @@ import AIAssistant from "@/components/AIAssistant";
 import { useBackground } from "@/components/BackgroundSelector";
 import Navigation from "@/components/Navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+
+const OrphanStudio = lazy(() => import("@/pages/orphanstudio"));
+
+function RouteLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+      <div className="container mx-auto max-w-5xl p-4">
+        <div className="glass-surface rounded-3xl border border-border/55 p-6">
+          <p className="text-sm text-muted-foreground">Loading workspace...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Router() {
   const [location] = useLocation();
@@ -77,6 +91,13 @@ function Router() {
           <Route path="/apps" component={Apps} />
           <Route path="/apps/notebook" component={Notebook} />
           <Route path="/apps/rhyme" component={RhymeDictionary} />
+          <Route path="/orphanstudio">
+            {() => (
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <OrphanStudio />
+              </Suspense>
+            )}
+          </Route>
           <Route path="/discover" component={Home} />
           <Route path="/bars/:id" component={BarDetail} />
           <Route path="/u/:username">

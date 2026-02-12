@@ -13,6 +13,7 @@ import { Link, useLocation, useSearch } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { motion, useReducedMotion } from "framer-motion";
 
 type SimilarBar = {
   id: string;
@@ -64,6 +65,15 @@ const prettifyPrompt = (slug: string) =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
+const getPlainText = (html: string) =>
+  html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+
 export default function Post() {
   const { addBar, currentUser } = useBars();
   const { toast } = useToast();
@@ -90,6 +100,8 @@ export default function Post() {
   const [isChecking, setIsChecking] = useState(false);
   const [showOriginalityReport, setShowOriginalityReport] = useState(false);
   const [originalityChecked, setOriginalityChecked] = useState(false);
+  const [editorStats, setEditorStats] = useState({ chars: 0, words: 0, lines: 0 });
+  const prefersReducedMotion = useReducedMotion();
   
   // AI moderation rejection state
   const [showAiRejectionModal, setShowAiRejectionModal] = useState(false);
@@ -114,10 +126,22 @@ export default function Post() {
   const applyFormat = (command: string) => {
     document.execCommand(command, false);
     editorRef.current?.focus();
+    window.setTimeout(updateEditorStats, 0);
   };
 
   const getContent = () => {
     return editorRef.current?.innerHTML || "";
+  };
+
+  const updateEditorStats = () => {
+    const plain = getPlainText(getContent());
+    const words = plain ? plain.split(/\s+/).filter(Boolean).length : 0;
+    const lines = plain ? plain.split("\n").filter(Boolean).length : 0;
+    setEditorStats({
+      chars: plain.length,
+      words,
+      lines,
+    });
   };
 
   const doPost = async () => {
@@ -355,10 +379,18 @@ export default function Post() {
     }
   };
 
+  const panelAnimation = prefersReducedMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 12, scale: 0.99 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        transition: { duration: 0.22, ease: "easeOut" as const },
+      };
+
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-8 md:pt-24">
       
-      <main className="max-w-4xl mx-auto p-4 md:p-8">
+      <main className="max-w-5xl mx-auto p-4 md:p-8">
         <div className="mb-8 flex items-center gap-4">
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -431,10 +463,11 @@ export default function Post() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="border-border bg-card/50 backdrop-blur-sm">
+          <div className="space-y-6">
+            <motion.div {...panelAnimation}>
+            <Card className="border-border/60 bg-card/65 backdrop-blur-xl shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
               <CardContent className="p-6 space-y-6">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -475,14 +508,24 @@ export default function Post() {
                   <div
                     ref={editorRef}
                     contentEditable
-                    className="min-h-[180px] p-4 bg-secondary/50 border border-border/50 rounded-xl font-display text-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 whitespace-pre-wrap"
+                    onInput={updateEditorStats}
+                    className="min-h-[220px] p-4 bg-secondary/45 border border-border/50 rounded-xl font-display text-lg leading-relaxed focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 whitespace-pre-wrap"
                     data-placeholder="Type your lyrics here... Use line breaks for flow."
                     data-testid="input-content"
                   />
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm text-muted-foreground">
                       Tip: Highlight text and click formatting buttons to style your bars.
                     </p>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/55 px-3 py-1 text-[11px] text-muted-foreground">
+                      <span>{editorStats.words} words</span>
+                      <span className="opacity-60">•</span>
+                      <span>{editorStats.lines} lines</span>
+                      <span className="opacity-60">•</span>
+                      <span>{editorStats.chars} chars</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
                     <Button
                       variant="outline"
                       size="sm"
@@ -547,11 +590,12 @@ export default function Post() {
                 </div>
               </CardContent>
             </Card>
+            </motion.div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
-            <Card className="border-border bg-card/50 backdrop-blur-sm">
+          <motion.div {...panelAnimation} className="space-y-6 lg:sticky lg:top-24 h-fit">
+            <Card className="border-border/60 bg-card/65 backdrop-blur-xl shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
               <CardContent className="p-6 space-y-6">
                 <div className="space-y-3">
                   <Label htmlFor="category">Category</Label>
@@ -602,7 +646,7 @@ export default function Post() {
               </CardContent>
             </Card>
 
-            <Card className="border-border bg-card/50 backdrop-blur-sm">
+            <Card className="border-border/60 bg-card/65 backdrop-blur-xl shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
               <CardContent className="p-6 space-y-4">
                 <div className="space-y-3">
                   <Label>Permissions</Label>
@@ -668,17 +712,30 @@ export default function Post() {
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="w-full py-3 text-lg font-semibold rounded-xl"
+              className="hidden lg:flex w-full py-3 text-lg font-semibold rounded-xl"
               data-testid="button-submit"
             >
               {isSubmitting ? "Dropping..." : "Drop Bar"}
             </Button>
-          </div>
+          </motion.div>
         </div>
       </main>
 
+      <div className="lg:hidden fixed left-3 right-3 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-[980]">
+        <div className="glass-surface-strong rounded-2xl border border-border/55 p-2 shadow-[0_14px_32px_rgba(2,6,23,0.36)]">
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-full py-3 text-base font-semibold rounded-xl"
+            data-testid="button-submit-mobile"
+          >
+            {isSubmitting ? "Dropping..." : "Drop Bar"}
+          </Button>
+        </div>
+      </div>
+
       <Dialog open={showSimilarWarning} onOpenChange={setShowSimilarWarning}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-yellow-500">
               <AlertTriangle className="h-5 w-5" />
@@ -731,7 +788,7 @@ export default function Post() {
           setUserAppeal("");
         }
       }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-orange-500">
               <AlertCircle className="h-5 w-5" />

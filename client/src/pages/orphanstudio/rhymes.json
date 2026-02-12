@@ -1,0 +1,181 @@
+{
+  "dictionary": {
+    "night": {
+      "perfect": ["light", "bright", "right", "tight", "flight", "height", "sight"],
+      "near": ["ninth", "knife", "hype", "might"],
+      "family": ["midnight", "streetlight", "moonlight", "limelight"]
+    },
+    "fire": {
+      "perfect": ["wire", "choir", "sire", "spire", "mire", "liar"],
+      "near": ["higher", "player", "finer", "flyer"],
+      "family": ["wildfire", "bonfire", "backfire", "crossfire"]
+    },
+    "pain": {
+      "perfect": ["rain", "chain", "gain", "lane", "vein", "train"],
+      "near": ["plain", "grain", "prayer", "again"],
+      "family": ["windowpane", "campaign", "hurricane"]
+    },
+    "glow": {
+      "perfect": ["flow", "show", "snow", "throw", "below", "slow"],
+      "near": ["gold", "goal", "row", "go"],
+      "family": ["afterglow", "overthrow", "studio"]
+    },
+    "dream": {
+      "perfect": ["scheme", "team", "beam", "theme", "cream", "stream"],
+      "near": ["drift", "deep", "dim", "green"],
+      "family": ["daydream", "moonbeam", "mainstream"]
+    },
+    "soul": {
+      "perfect": ["goal", "whole", "scroll", "role", "stole", "control"],
+      "near": ["cold", "slow", "golden", "coal"],
+      "family": ["heart-soul", "solo", "soulful"]
+    },
+    "time": {
+      "perfect": ["rhyme", "climb", "prime", "chime", "sublime", "mime"],
+      "near": ["line", "shine", "mind", "tide"],
+      "family": ["showtime", "nighttime", "downtime"]
+    },
+    "city": {
+      "perfect": ["gritty", "pretty", "witty", "pity", "committee"],
+      "near": ["silly", "kitty", "fifty"],
+      "family": ["inner-city", "megacity", "cityscape"]
+    },
+    "bars": {
+      "perfect": ["stars", "cars", "scars", "mars", "guitars"],
+      "near": ["boss", "base", "brass", "bosses"],
+      "family": ["barside", "barline", "barcode"]
+    },
+    "mind": {
+      "perfect": ["grind", "find", "blind", "kind", "signed", "aligned"],
+      "near": ["mine", "line", "time", "wind"],
+      "family": ["state-of-mind", "mindset", "mindframe"]
+    },
+    "cold": {
+      "perfect": ["gold", "told", "rolled", "hold", "sold"],
+      "near": ["code", "glow", "coal", "calm"],
+      "family": ["ice-cold", "cold-blood", "coldness"]
+    },
+    "late": {
+      "perfect": ["fate", "great", "weight", "state", "crate", "plate"],
+      "near": ["lit", "line", "light", "laced"],
+      "family": ["checkmate", "translate", "elevate"]
+    },
+    "crown": {
+      "perfect": ["down", "sound", "town", "round", "bound", "found"],
+      "near": ["brown", "drum", "crowd"],
+      "family": ["king-crown", "downtown", "playground"]
+    },
+    "code": {
+      "perfect": ["mode", "road", "load", "node", "owed", "strobe"],
+      "near": ["cold", "goal", "coat"],
+      "family": ["decode", "overload", "episode"]
+    },
+    "heart": {
+      "perfect": ["start", "part", "chart", "art", "smart"],
+      "near": ["hard", "hot", "hurt"],
+      "family": ["heartbreak", "wholeheart", "heartline"]
+    },
+    "street": {
+      "perfect": ["beat", "heat", "fleet", "sweet", "complete"],
+      "near": ["speak", "straight", "state"],
+      "family": ["backstreet", "mainstreet", "streetlight"]
+    },
+    "ghost": {
+      "perfect": ["coast", "toast", "post", "most", "host"],
+      "near": ["go", "close", "cold"],
+      "family": ["ghosted", "holy-ghost", "coastal"]
+    },
+    "hunger": {
+      "perfect": ["younger", "stronger", "longer"],
+      "near": ["honor", "thunder", "number"],
+      "family": ["hunger-pain", "hunger-games", "hungered"]
+    },
+    "voice": {
+      "perfect": ["choice", "noise", "poise", "rejoice"],
+      "near": ["void", "boys", "verse"],
+      "family": ["voice-note", "voiceover", "inner-voice"]
+    },
+    "rage": {
+      "perfect": ["stage", "cage", "page", "gauge", "engage"],
+      "near": ["race", "rain", "raise"],
+      "family": ["backstage", "outrage", "rampage"]
+    },
+    "grace": {
+      "perfect": ["space", "face", "base", "lace", "trace"],
+      "near": ["brace", "place", "phrase"],
+      "family": ["graceful", "airspace", "surface"]
+    },
+    "sky": {
+      "perfect": ["fly", "high", "why", "my", "sigh"],
+      "near": ["sly", "shine", "side"],
+      "family": ["skyline", "mid-sky", "skylight"]
+    },
+    "storm": {
+      "perfect": ["form", "warm", "transform", "reform"],
+      "near": ["stone", "strum", "torn"],
+      "family": ["rainstorm", "stormfront", "brainstorm"]
+    },
+    "ink": {
+      "perfect": ["think", "blink", "link", "sync", "drink"],
+      "near": ["king", "ring", "sink"],
+      "family": ["inked", "inkwell", "instinct"]
+    },
+    "verse": {
+      "perfect": ["curse", "hearse", "purse", "reverse", "universe"],
+      "near": ["voice", "world", "burst"],
+      "family": ["subverse", "metaverse", "diverse"]
+    }
+  },
+  "endings": [
+    { "key": "ight", "words": ["light", "bright", "right", "tight", "flight", "night", "sight"] },
+    { "key": "ire", "words": ["fire", "wire", "choir", "sire", "spire", "desire"] },
+    { "key": "ain", "words": ["pain", "rain", "chain", "gain", "vein", "train"] },
+    { "key": "ow", "words": ["glow", "flow", "show", "slow", "throw", "below"] },
+    { "key": "eam", "words": ["dream", "scheme", "team", "beam", "theme", "stream"] },
+    { "key": "oul", "words": ["soul", "goal", "whole", "scroll", "control"] },
+    { "key": "ime", "words": ["time", "rhyme", "climb", "prime", "sublime"] },
+    { "key": "ity", "words": ["city", "gritty", "pretty", "witty", "pity"] },
+    { "key": "ars", "words": ["bars", "stars", "cars", "scars", "mars"] },
+    { "key": "ind", "words": ["mind", "grind", "find", "blind", "kind"] },
+    { "key": "old", "words": ["cold", "gold", "told", "hold", "sold"] },
+    { "key": "ate", "words": ["late", "fate", "great", "state", "plate"] },
+    { "key": "own", "words": ["crown", "down", "town", "sound", "round"] },
+    { "key": "ode", "words": ["code", "mode", "road", "load", "node"] },
+    { "key": "art", "words": ["heart", "start", "part", "chart", "smart"] },
+    { "key": "eet", "words": ["street", "beat", "heat", "fleet", "sweet"] },
+    { "key": "ost", "words": ["ghost", "coast", "toast", "post", "most"] },
+    { "key": "ice", "words": ["voice", "choice", "noise", "poise", "rejoice"] },
+    { "key": "age", "words": ["rage", "stage", "cage", "page", "engage"] },
+    { "key": "ace", "words": ["grace", "space", "face", "base", "trace"] },
+    { "key": "sky", "words": ["sky", "fly", "high", "why", "sigh"] },
+    { "key": "orm", "words": ["storm", "form", "warm", "reform", "transform"] },
+    { "key": "ink", "words": ["ink", "think", "blink", "link", "sync"] },
+    { "key": "erse", "words": ["verse", "curse", "purse", "reverse", "universe"] }
+  ],
+  "wordBank": [
+    "night", "light", "bright", "right", "tight", "flight", "height", "sight",
+    "fire", "wire", "choir", "sire", "spire", "desire", "bonfire", "wildfire",
+    "pain", "rain", "chain", "gain", "lane", "vein", "train", "campaign",
+    "glow", "flow", "show", "snow", "throw", "below", "slow", "afterglow",
+    "dream", "scheme", "team", "beam", "theme", "cream", "stream", "daydream",
+    "soul", "goal", "whole", "scroll", "role", "control", "soulful",
+    "time", "rhyme", "climb", "prime", "chime", "sublime", "showtime",
+    "city", "gritty", "pretty", "witty", "pity", "committee", "megacity",
+    "bars", "stars", "cars", "scars", "mars", "guitars", "barline",
+    "mind", "grind", "find", "blind", "kind", "aligned", "mindset",
+    "cold", "gold", "told", "rolled", "hold", "sold", "ice-cold",
+    "late", "fate", "great", "weight", "state", "plate", "elevate",
+    "crown", "down", "sound", "town", "round", "bound", "found", "downtown",
+    "code", "mode", "road", "load", "node", "decode", "overload",
+    "heart", "start", "part", "chart", "smart", "heartbreak",
+    "street", "beat", "heat", "fleet", "sweet", "complete", "streetlight",
+    "ghost", "coast", "toast", "post", "most", "host", "ghosted",
+    "voice", "choice", "noise", "poise", "rejoice", "voice-note",
+    "rage", "stage", "cage", "page", "gauge", "engage", "rampage",
+    "grace", "space", "face", "base", "lace", "trace", "airspace",
+    "sky", "fly", "high", "why", "my", "sigh", "skyline",
+    "storm", "form", "warm", "transform", "reform", "brainstorm",
+    "ink", "think", "blink", "link", "sync", "drink", "inkwell",
+    "verse", "curse", "hearse", "purse", "reverse", "universe", "diverse"
+  ]
+}
