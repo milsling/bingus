@@ -254,7 +254,7 @@ export default function Home() {
             </section>
 
             <ActivityStrip items={activityItems} />
-            <CommunitySpotlight spotlight={spotlight} />
+            <CommunitySpotlight spotlight={spotlight ?? null} />
 
             {currentPrompt && (
               <section className="rounded-2xl border border-primary/25 bg-primary/6 p-5">
