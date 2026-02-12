@@ -18,7 +18,8 @@ import {
   BarChart3,
   Sparkles,
   LayoutGrid,
-  Swords
+  Swords,
+  BookOpen
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
@@ -149,6 +150,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
       return [
         { icon: Home, label: "Explore", path: "/", id: "guest-explore" },
         { icon: Sparkles, label: "Prompts", path: "/prompts", id: "guest-prompts" },
+        { icon: BookOpen, label: "Notebook", path: "/apps/notebook", id: "guest-notebook" },
         { icon: Swords, label: "Challenges", path: "/challenges", id: "guest-challenges" },
         { icon: LogIn, label: "Login", path: "/auth", id: "guest-login" },
       ];
@@ -166,6 +168,7 @@ export function BottomNav({ onNewMessage }: BottomNavProps) {
     const items = [
       { icon: Home, label: "Explore", path: "/", id: "main-explore" },
       { icon: Sparkles, label: "Prompts", path: "/prompts", id: "main-prompts" },
+      { icon: BookOpen, label: "Notebook", path: "/apps/notebook", id: "main-notebook" },
       { icon: Swords, label: "Challenges", path: "/challenges", id: "main-challenges" },
       { icon: User, label: "My Bars", path: "/profile", id: "main-my-bars" },
       { icon: MessageCircle, label: "Messages", path: "/messages", id: "main-messages" },
