@@ -208,7 +208,7 @@ export default function Navigation() {
 
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onSelect={(e) => {
+                    onSelect={(e: Event) => {
                       e.preventDefault();
                       void handleLogout();
                     }}
