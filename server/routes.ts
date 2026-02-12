@@ -1365,6 +1365,102 @@ export async function registerRoutes(
     }
   });
 
+  // Quick reactions (🔥 💡 🧠). Safe to deploy before DB migration:
+  // if the `bar_reactions` table doesn't exist yet, we return 501.
+  const isMissingTableError = (err: any) => err?.code === "42P01" || /relation .*bar_reactions.* does not exist/i.test(String(err?.message || ""));
+  const allowedReactionTypes = new Set(["fire", "idea", "mind"]);
+
+  app.get("/api/bars/:id/reactions", async (req, res) => {
+    try {
+      const barId = req.params.id;
+      const isAuth = req.isAuthenticated() || Boolean((req as any).user?.id);
+      const userId = isAuth ? String((req as any).user?.id || req.user?.id) : null;
+
+      const countsResult = await db.execute(sql`
+        SELECT type, COUNT(*)::int AS count
+        FROM bar_reactions
+        WHERE bar_id = ${barId}
+        GROUP BY type
+      `);
+
+      const reactedResult = userId
+        ? await db.execute(sql`
+            SELECT type
+            FROM bar_reactions
+            WHERE bar_id = ${barId} AND user_id = ${userId}
+          `)
+        : null;
+
+      const counts: Record<string, number> = { fire: 0, idea: 0, mind: 0 };
+      for (const row of (countsResult as any).rows || []) {
+        if (row?.type && row?.count != null) counts[row.type] = Number(row.count) || 0;
+      }
+
+      const reacted: Record<string, boolean> = { fire: false, idea: false, mind: false };
+      for (const row of (reactedResult as any)?.rows || []) {
+        if (row?.type) reacted[row.type] = true;
+      }
+
+      res.json({ enabled: true, counts, reacted });
+    } catch (error: any) {
+      if (isMissingTableError(error)) {
+        return res.status(501).json({ enabled: false, message: "Quick reactions not enabled (missing table)" });
+      }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/bars/:id/reactions", isAuthenticated, async (req, res) => {
+    try {
+      const barId = req.params.id;
+      const userId = String(req.user!.id);
+      const type = String(req.body?.type || "").trim();
+      if (!allowedReactionTypes.has(type)) {
+        return res.status(400).json({ message: "Invalid reaction type" });
+      }
+
+      // Toggle reaction for (user, bar, type)
+      const deleted = await db.execute(sql`
+        DELETE FROM bar_reactions
+        WHERE bar_id = ${barId} AND user_id = ${userId} AND type = ${type}
+        RETURNING id
+      `);
+
+      let reacted = false;
+      if (((deleted as any).rows || []).length > 0) {
+        reacted = false;
+      } else {
+        // Insert if not deleted
+        await db.execute(sql`
+          INSERT INTO bar_reactions (user_id, bar_id, type)
+          VALUES (${userId}, ${barId}, ${type})
+          ON CONFLICT DO NOTHING
+        `);
+        reacted = true;
+      }
+
+      // Return updated counts for this bar
+      const countsResult = await db.execute(sql`
+        SELECT type, COUNT(*)::int AS count
+        FROM bar_reactions
+        WHERE bar_id = ${barId}
+        GROUP BY type
+      `);
+
+      const counts: Record<string, number> = { fire: 0, idea: 0, mind: 0 };
+      for (const row of (countsResult as any).rows || []) {
+        if (row?.type && row?.count != null) counts[row.type] = Number(row.count) || 0;
+      }
+
+      res.json({ enabled: true, type, reacted, counts });
+    } catch (error: any) {
+      if (isMissingTableError(error)) {
+        return res.status(501).json({ enabled: false, message: "Quick reactions not enabled (missing table)" });
+      }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Dislike routes
   app.post("/api/bars/:id/dislike", isAuthenticated, async (req, res) => {
     const startTime = Date.now();
@@ -4018,6 +4114,67 @@ export async function registerRoutes(
       }
       res.json({ success: true });
     } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Community stats (social proof)
+  app.get("/api/stats/community", async (_req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT
+          (SELECT COUNT(*) FROM bars b WHERE b.deleted_at IS NULL AND b.moderation_status = 'approved')::int AS "totalBars",
+          (SELECT COUNT(*) FROM bars b WHERE b.deleted_at IS NULL AND b.moderation_status = 'approved' AND b.created_at >= NOW() - INTERVAL '7 days')::int AS "barsThisWeek",
+          (SELECT COUNT(DISTINCT b.user_id) FROM bars b WHERE b.deleted_at IS NULL AND b.moderation_status = 'approved' AND b.created_at >= NOW() - INTERVAL '30 days')::int AS "activeWritersThisMonth"
+      `);
+
+      const row = (result as any)?.rows?.[0];
+      res.json({
+        totalBars: row?.totalBars ?? 0,
+        barsThisWeek: row?.barsThisWeek ?? 0,
+        activeWritersThisMonth: row?.activeWritersThisMonth ?? 0,
+      });
+    } catch (error: any) {
+      console.error("Community stats error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Weekly spotlight (Bar of the Week)
+  app.get("/api/spotlight/weekly", async (_req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT
+          b.id AS "barId",
+          b.content AS "content",
+          b.created_at AS "createdAt",
+          u.username AS "authorUsername",
+          u.avatar_url AS "authorAvatar",
+          COUNT(l.id)::int AS "likesIn7d"
+        FROM bars b
+        JOIN users u ON b.user_id = u.id
+        LEFT JOIN likes l ON l.bar_id = b.id AND l.created_at >= NOW() - INTERVAL '7 days'
+        WHERE b.deleted_at IS NULL AND b.moderation_status = 'approved'
+        GROUP BY b.id, u.id
+        ORDER BY COUNT(l.id) DESC, b.created_at DESC
+        LIMIT 1
+      `);
+
+      const row = (result as any)?.rows?.[0];
+      if (!row) return res.json(null);
+
+      // 1–2 line snippet for spotlight display
+      const content = (row.content ?? "") as string;
+      const snippet = content.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim();
+      res.json({
+        barId: row.barId,
+        snippet: snippet.length > 160 ? `${snippet.slice(0, 160)}…` : snippet,
+        authorUsername: row.authorUsername,
+        authorAvatar: row.authorAvatar,
+        likesIn7d: row.likesIn7d ?? 0,
+      });
+    } catch (error: any) {
+      console.error("Weekly spotlight error:", error);
       res.status(500).json({ message: error.message });
     }
   });

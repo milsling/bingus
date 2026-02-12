@@ -214,6 +214,30 @@ export const dislikesRelations = relations(dislikes, ({ one }) => ({
   bar: one(bars, { fields: [dislikes.barId], references: [bars.id] }),
 }));
 
+// Quick reactions (🔥 💡 🧠) - additive to likes/dislikes
+export const barReactions = pgTable(
+  "bar_reactions",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    barId: varchar("bar_id")
+      .notNull()
+      .references(() => bars.id, { onDelete: "cascade" }),
+    type: text("type").notNull(), // 'fire' | 'idea' | 'mind'
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [unique("bar_reactions_unique").on(table.userId, table.barId, table.type)],
+);
+
+export const barReactionsRelations = relations(barReactions, ({ one }) => ({
+  user: one(users, { fields: [barReactions.userId], references: [users.id] }),
+  bar: one(bars, { fields: [barReactions.barId], references: [bars.id] }),
+}));
+
 export const commentDislikes = pgTable(
   "comment_dislikes",
   {
