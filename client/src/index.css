@@ -307,6 +307,16 @@
   * {
     @apply border-border;
   }
+  /* Ensure app content stacks above background layers */
+  #root {
+    position: relative;
+    z-index: 1;
+    min-height: 100dvh;
+  }
+  /* Background image must stay behind all content */
+  #app-background-image {
+    z-index: -999 !important;
+  }
   body {
     @apply font-sans antialiased text-foreground;
     background: 
