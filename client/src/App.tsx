@@ -22,7 +22,6 @@ import Terms from "@/pages/Terms";
 import Achievements from "@/pages/Achievements";
 import Badges from "@/pages/Badges";
 import Apps from "@/pages/Apps";
-import Notebook from "@/pages/Notebook";
 import RhymeDictionary from "@/pages/RhymeDictionary";
 import AuthCallback from "@/pages/AuthCallback";
 import Prompts from "@/pages/Prompts";
@@ -80,7 +79,13 @@ function Router() {
       <Route path="/achievements" component={Achievements} />
       <Route path="/badges" component={Badges} />
       <Route path="/apps" component={Apps} />
-      <Route path="/apps/notebook" component={Notebook} />
+      <Route path="/apps/notebook">
+        {() => (
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <OrphanStudio />
+          </Suspense>
+        )}
+      </Route>
       <Route path="/apps/rhyme" component={RhymeDictionary} />
       <Route path="/orphanstudio">
         {() => (

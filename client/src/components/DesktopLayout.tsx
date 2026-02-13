@@ -87,7 +87,10 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
                   <img src={headerLogo} alt="" className="h-7 w-7" />
                   <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <span className="font-logo leading-none text-xl text-white">ORPHAN BARS</span>
+                <span className="font-logo leading-none text-xl text-white flex items-center gap-0.5">
+                  <span>ORPHAN</span>
+                  <span>BARS</span>
+                </span>
               </div>
             </Link>
           </div>

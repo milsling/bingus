@@ -4098,7 +4098,7 @@ export default function Admin() {
                           </div>
                           <ul className="mt-2 text-sm text-muted-foreground space-y-1">
                             <li>• Apps menu with creative writing tools</li>
-                            <li>• Notebook app for saving writing documents</li>
+                            <li>• Orphan Studio writing workspace with rhyme tools</li>
                             <li>• Rhyme Dictionary using Datamuse API</li>
                             <li>• Features & Version History section in Owner Console</li>
                             <li>• Redesigned tablet FAB menu with quarter-pie arc animation</li>
@@ -4203,6 +4203,107 @@ export default function Admin() {
               </Card>
             </TabsContent>
           )}
+
+          {/* OAuth Linking Tab */}
+          {currentUser?.isOwner && (
+            <TabsContent value="oauth">
+              <Card className="border-border bg-card/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-purple-500" />
+                    Link Supabase OAuth Identity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="link-username">Username</Label>
+                    <Input
+                      id="link-username"
+                      placeholder="Milsling"
+                      value={actionUsername}
+                      onChange={(e) => setActionUsername(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="link-supabase-id">Supabase User ID</Label>
+                    <Input
+                      id="link-supabase-id"
+                      placeholder="847ab629-8ffc-4a3a-84f3-d849d78b23dc"
+                      onChange={(e) => setConsoleQuery(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    onClick={async () => {
+                      if (!actionUsername.trim() || !consoleQuery.trim()) {
+                        toast({ title: "Missing fields", description: "Enter both username and Supabase ID", variant: "destructive" });
+                        return;
+                      }
+                      try {
+                        const res = await fetch('/api/admin/link-supabase', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({ username: actionUsername.trim(), supabaseId: consoleQuery.trim() }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.message || 'Failed to link');
+                        toast({ title: "Success", description: data.message });
+                        setActionUsername('');
+                        setConsoleQuery('');
+                      } catch (e: any) {
+                        toast({ title: "Error", description: e.message, variant: "destructive" });
+                      }
+                    }}
+                    disabled={!actionUsername.trim() || !consoleQuery.trim()}
+                    className="w-full"
+                  >
+                    Link OAuth Account
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-orange-500" />
+                    Reset Bar Authentication Sequence
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    This will renumber all locked bars based on their creation date (oldest gets #00001, next gets #00002, etc.). 
+                    This action cannot be undone.
+                  </p>
+                  <Button
+                    onClick={async () => {
+                      if (!confirm("Are you sure? This will renumber all locked bars and cannot be undone.")) {
+                        return;
+                      }
+                      try {
+                        const res = await fetch('/api/admin/reset-bar-sequence', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.message || 'Failed to reset sequence');
+                        toast({ 
+                          title: "Success", 
+                          description: `${data.message}. Next bar will be ${data.nextId}` 
+                        });
+                      } catch (e: any) {
+                        toast({ title: "Error", description: e.message, variant: "destructive" });
+                      }
+                    }}
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    Reset Bar Sequence
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
 
         <Dialog open={!!moderateBarId} onOpenChange={(open) => !open && setModerateBarId(null)}>
@@ -4242,107 +4343,6 @@ export default function Admin() {
           </DialogContent>
         </Dialog>
       </main>
-
-      {/* OAuth Linking Tab */}
-      {currentUser?.isOwner && (
-        <TabsContent value="oauth">
-          <Card className="border-border bg-card/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-purple-500" />
-                Link Supabase OAuth Identity
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="link-username">Username</Label>
-                <Input
-                  id="link-username"
-                  placeholder="Milsling"
-                  value={actionUsername}
-                  onChange={(e) => setActionUsername(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="link-supabase-id">Supabase User ID</Label>
-                <Input
-                  id="link-supabase-id"
-                  placeholder="847ab629-8ffc-4a3a-84f3-d849d78b23dc"
-                  onChange={(e) => setConsoleQuery(e.target.value)}
-                />
-              </div>
-              <Button
-                onClick={async () => {
-                  if (!actionUsername.trim() || !consoleQuery.trim()) {
-                    toast({ title: "Missing fields", description: "Enter both username and Supabase ID", variant: "destructive" });
-                    return;
-                  }
-                  try {
-                    const res = await fetch('/api/admin/link-supabase', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ username: actionUsername.trim(), supabaseId: consoleQuery.trim() }),
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.message || 'Failed to link');
-                    toast({ title: "Success", description: data.message });
-                    setActionUsername('');
-                    setConsoleQuery('');
-                  } catch (e: any) {
-                    toast({ title: "Error", description: e.message, variant: "destructive" });
-                  }
-                }}
-                disabled={!actionUsername.trim() || !consoleQuery.trim()}
-                className="w-full"
-              >
-                Link OAuth Account
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border bg-card/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
-                Reset Bar Authentication Sequence
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                This will renumber all locked bars based on their creation date (oldest gets #00001, next gets #00002, etc.). 
-                This action cannot be undone.
-              </p>
-              <Button
-                onClick={async () => {
-                  if (!confirm("Are you sure? This will renumber all locked bars and cannot be undone.")) {
-                    return;
-                  }
-                  try {
-                    const res = await fetch('/api/admin/reset-bar-sequence', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.message || 'Failed to reset sequence');
-                    toast({ 
-                      title: "Success", 
-                      description: `${data.message}. Next bar will be ${data.nextId}` 
-                    });
-                  } catch (e: any) {
-                    toast({ title: "Error", description: e.message, variant: "destructive" });
-                  }
-                }}
-                variant="destructive"
-                className="w-full"
-              >
-                Reset Bar Sequence
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      )}
     </div>
   );
 }

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, Bell, Settings, LogOut, Compass, Swords, BookOpen, NotebookPen } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, LogOut, Compass, Swords, NotebookPen } from "lucide-react";
 import headerLogo from "@/assets/logo.png";
-import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchBar } from "@/components/SearchBar";
@@ -71,15 +70,9 @@ export default function Navigation() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/apps/notebook" className="flex items-center gap-3 cursor-pointer">
-                  <BookOpen className="h-4 w-4" />
-                  <span>Notebook</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
                 <Link href="/orphanstudio" className="flex items-center gap-3 cursor-pointer">
                   <NotebookPen className="h-4 w-4" />
-                  <span>Open OrphanStudio</span>
+                  <span>Orphan Studio</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -157,7 +150,10 @@ export default function Navigation() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               <img src={headerLogo} alt="" className="h-7 w-7" />
-              <span className="font-logo text-xl text-foreground">ORPHAN BARS</span>
+              <span className="font-logo text-xl leading-none text-foreground flex items-center gap-1">
+                <span>ORPHAN</span>
+                <span>BARS</span>
+              </span>
             </div>
           </Link>
         </div>
@@ -209,7 +205,10 @@ export default function Navigation() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
               <img src={headerLogo} alt="" className="h-6 w-6" />
-              <span className="font-logo text-base text-foreground">ORPHAN BARS</span>
+              <span className="font-logo text-base leading-none text-foreground flex items-center gap-0.5">
+                <span>ORPHAN</span>
+                <span>BARS</span>
+              </span>
             </div>
           </Link>
           <div className="flex items-center gap-2">
