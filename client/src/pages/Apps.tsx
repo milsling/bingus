@@ -1,18 +1,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
-import { BookOpen, BookText, LayoutGrid, NotebookPen } from "lucide-react";
+import { BookText, LayoutGrid, NotebookPen } from "lucide-react";
 import { motion } from "framer-motion";
 import { useBars } from "@/context/BarContext";
 
 const apps = [
   {
-    id: "notebook",
-    title: "Notebook",
-    description: "Write and save your bars, verses, and ideas",
-    icon: BookOpen,
-    path: "/apps/notebook",
-    color: "from-blue-500 to-blue-600",
-    requiresAuth: true,
+    id: "orphanstudio",
+    title: "OrphanStudio",
+    description: "Lyric workspace with built-in rhyme suggestions and local autosave",
+    icon: NotebookPen,
+    path: "/orphanstudio",
+    color: "from-fuchsia-500 to-violet-600",
+    requiresAuth: false,
   },
   {
     id: "rhyme",
@@ -21,15 +21,6 @@ const apps = [
     icon: BookText,
     path: "/apps/rhyme",
     color: "from-purple-500 to-purple-600",
-    requiresAuth: false,
-  },
-  {
-    id: "orphanstudio",
-    title: "OrphanStudio",
-    description: "Lyric workspace with built-in rhyme suggestions and local autosave",
-    icon: NotebookPen,
-    path: "/orphanstudio",
-    color: "from-fuchsia-500 to-violet-600",
     requiresAuth: false,
   },
 ];

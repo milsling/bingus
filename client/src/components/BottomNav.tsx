@@ -19,15 +19,15 @@ import {
   Sparkles,
   LayoutGrid,
   Swords,
-  BookOpen,
-  NotebookPen
+  NotebookPen,
+  type LucideIcon
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import AIAssistant from "@/components/AIAssistant";
-import orphanBarsMenuLogo from "@/assets/orphan-bars-menu-logo.png";
+import headerLogo from "@/assets/logo.png";
 import orphanageFullLogoWhite from "@/assets/orphanage-full-logo-white.png";
 import orphanageFullLogoDark from "@/assets/orphanage-full-logo-dark.png";
 
@@ -120,6 +120,15 @@ interface BottomNavProps {
   onSearchOpenChange?: (open: boolean) => void;
 }
 
+type NavItem = {
+  icon: LucideIcon;
+  label: string;
+  subLabel: string;
+  path?: string;
+  action?: "search";
+  id: string;
+};
+
 export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOpenChange }: BottomNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpenInternal, setSearchOpenInternal] = useState(false);
@@ -175,50 +184,83 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const getNavItems = () => {
+  const getNavItems = (): NavItem[] => {
     if (!currentUser) {
       return [
-        { icon: Home, label: "Explore", path: "/", id: "guest-explore" },
-        { icon: Sparkles, label: "Prompts", path: "/prompts", id: "guest-prompts" },
-        { icon: BookOpen, label: "Notebook", path: "/apps/notebook", id: "guest-notebook" },
-        { icon: NotebookPen, label: "OrphanStudio", path: "/orphanstudio", id: "guest-orphanstudio" },
-        { icon: Swords, label: "Challenges", path: "/challenges", id: "guest-challenges" },
-        { icon: Search, label: "Search", action: "search" as const, id: "guest-search" },
-        { icon: LogIn, label: "Login", path: "/auth", id: "guest-login" },
+        { icon: Home, label: "Explore", subLabel: "Fresh bars and trends", path: "/", id: "guest-explore" },
+        { icon: Sparkles, label: "Prompts", subLabel: "Daily writing sparks", path: "/prompts", id: "guest-prompts" },
+        {
+          icon: NotebookPen,
+          label: "Orphan Studio",
+          subLabel: "Write with rhyme tools",
+          path: "/orphanstudio",
+          id: "guest-orphanstudio",
+        },
+        { icon: Swords, label: "Challenges", subLabel: "Battles and events", path: "/challenges", id: "guest-challenges" },
+        { icon: Search, label: "Search", subLabel: "Find bars and users", action: "search", id: "guest-search" },
+        { icon: LogIn, label: "Login", subLabel: "Access your profile", path: "/auth", id: "guest-login" },
       ];
     }
 
     if (menuSection === "orphanage") {
       return [
-        { icon: DoorOpen, label: "Browse", path: "/orphanage", id: "orphanage-browse" },
-        { icon: BarChart3, label: "Leaderboard", path: "/orphanage#leaderboard", id: "orphanage-leaderboard" },
-        { icon: Heart, label: "My Adoptions", path: "/orphanage#my-adoptions", id: "orphanage-my-adoptions" },
-        { icon: Home, label: "Back to Feed", path: "/", id: "orphanage-back" },
+        { icon: DoorOpen, label: "Browse", subLabel: "See available bars", path: "/orphanage", id: "orphanage-browse" },
+        {
+          icon: BarChart3,
+          label: "Leaderboard",
+          subLabel: "Top adopters this week",
+          path: "/orphanage#leaderboard",
+          id: "orphanage-leaderboard",
+        },
+        {
+          icon: Heart,
+          label: "My Adoptions",
+          subLabel: "Bars you've adopted",
+          path: "/orphanage#my-adoptions",
+          id: "orphanage-my-adoptions",
+        },
+        { icon: Home, label: "Back to Feed", subLabel: "Return to Orphan Bars", path: "/", id: "orphanage-back" },
       ];
     }
 
-    const items = [
-      { icon: Home, label: "Explore", path: "/", id: "main-explore" },
-      { icon: Sparkles, label: "Prompts", path: "/prompts", id: "main-prompts" },
-      { icon: BookOpen, label: "Notebook", path: "/apps/notebook", id: "main-notebook" },
-      { icon: NotebookPen, label: "OrphanStudio", path: "/orphanstudio", id: "main-orphanstudio" },
-      { icon: Swords, label: "Challenges", path: "/challenges", id: "main-challenges" },
-      { icon: User, label: "My Bars", path: "/profile", id: "main-my-bars" },
-      { icon: MessageCircle, label: "Messages", path: "/messages", id: "main-messages" },
-      { icon: Users, label: "Friends", path: "/friends", id: "main-friends" },
-      { icon: Bookmark, label: "Saved", path: "/saved", id: "main-saved" },
-      { icon: Search, label: "Search", action: "search" as const, id: "main-search" },
-      { icon: LayoutGrid, label: "Apps", path: "/apps", id: "main-apps" },
+    const items: NavItem[] = [
+      { icon: Home, label: "Explore", subLabel: "Newest bars and stories", path: "/", id: "main-explore" },
+      { icon: Sparkles, label: "Prompts", subLabel: "Stay in writing mode", path: "/prompts", id: "main-prompts" },
+      {
+        icon: NotebookPen,
+        label: "Orphan Studio",
+        subLabel: "Draft lyrics and rhyme",
+        path: "/orphanstudio",
+        id: "main-orphanstudio",
+      },
+      { icon: Swords, label: "Challenges", subLabel: "Compete with the community", path: "/challenges", id: "main-challenges" },
+      { icon: User, label: "My Bars", subLabel: "Your profile and progress", path: "/profile", id: "main-my-bars" },
+      { icon: MessageCircle, label: "Messages", subLabel: "DMs and threads", path: "/messages", id: "main-messages" },
+      { icon: Users, label: "Friends", subLabel: "Your circle", path: "/friends", id: "main-friends" },
+      { icon: Bookmark, label: "Saved", subLabel: "Bookmarks and refs", path: "/saved", id: "main-saved" },
+      { icon: Search, label: "Search", subLabel: "Find anything quickly", action: "search", id: "main-search" },
+      { icon: LayoutGrid, label: "Apps", subLabel: "Creative tools", path: "/apps", id: "main-apps" },
     ];
 
     if (currentUser.isAdmin) {
-      items.push({ icon: Shield, label: "Admin", path: "/admin", id: "main-admin" });
+      items.push({ icon: Shield, label: "Admin", subLabel: "Moderation controls", path: "/admin", id: "main-admin" });
     }
 
     return items;
   };
 
   const navItems = getNavItems();
+  const quickNavItems = navItems.slice(0, menuSection === "orphanage" ? 4 : 5);
+
+  const isItemActive = useCallback(
+    (item: { path?: string }) => {
+      if (!item.path) return false;
+      const basePath = item.path.split("#")[0];
+      if (basePath === "/") return location === "/";
+      return location === basePath || location.startsWith(`${basePath}/`);
+    },
+    [location],
+  );
 
   const scrollToHashTarget = (hash: string, attempt = 0) => {
     const target = document.getElementById(hash);
@@ -232,7 +274,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
   };
 
   const handleNavClick = useCallback(
-    (item: { path?: string; action?: string }) => {
+    (item: Pick<NavItem, "path" | "action">) => {
       if (item.action === "search") {
         setIsOpen(false);
         setSearchOpen(true);
@@ -250,7 +292,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
       if (item.path.startsWith("/orphanage")) setMenuSection("orphanage");
       else if (item.path === "/") setMenuSection("orphanbars");
     },
-    [setLocation]
+    [setLocation, setSearchOpen]
   );
 
   const handleCenterClick = () => {
@@ -286,11 +328,13 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
               <div className="flex-shrink-0 px-6 pt-4 pb-3 border-b border-white/[0.06]">
                 <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-foreground/20" />
                 <div className="flex items-center justify-between">
-                  <img
-                    src={orphanBarsMenuLogo}
-                    alt="Orphan Bars"
-                    className="h-8 w-auto opacity-90 dark:brightness-0 dark:invert"
-                  />
+                  <div className="flex items-center gap-2">
+                    <img src={headerLogo} alt="Orphan Bars" className="h-8 w-8" />
+                    <span className="font-logo text-xl leading-none text-foreground flex items-center gap-0.5">
+                      <span>ORPHAN</span>
+                      <span>BARS</span>
+                    </span>
+                  </div>
                   <motion.button
                     onClick={() => {
                       playMenuCloseSound();
@@ -311,88 +355,137 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.08, duration: 0.2 }}
               >
-                <nav className="space-y-1">
-                  {navItems.map((item, index) => {
-                    const isActive = item.path && location === item.path;
-                    return (
-                      <motion.button
-                        key={item.id}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 + index * 0.03, duration: 0.2 }}
-                        onClick={() => handleNavClick(item as any)}
+                <div className="space-y-4">
+                  <div className="glass-surface rounded-2xl p-1">
+                    <div className="grid grid-cols-2 gap-1">
+                      <button
+                        onClick={() => {
+                          setMenuSection("orphanbars");
+                          handleNavClick({ path: "/" });
+                        }}
                         className={cn(
-                          "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98]",
-                          isActive ? "bg-primary/10 text-foreground" : "hover:bg-white/[0.06] text-foreground/90"
+                          "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
+                          menuSection === "orphanbars"
+                            ? "bg-primary/15 text-foreground"
+                            : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
                         )}
-                        data-testid={`nav-item-${item.label.toLowerCase().replace(/\s/g, "-")}`}
+                        data-testid="nav-section-orphanbars"
                       >
-                        <div
-                          className={cn(
-                            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                            isActive ? "bg-primary/15" : "bg-white/[0.06]"
-                          )}
-                        >
-                          {item.icon && (
-                            <item.icon
-                              className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")}
-                              strokeWidth={1.8}
-                            />
-                          )}
-                        </div>
-                        <span className="text-base font-medium">{item.label}</span>
-                      </motion.button>
-                    );
-                  })}
-                </nav>
+                        <img src={headerLogo} alt="Orphan Bars" className="h-5 w-5" />
+                        <span>Orphan Bars</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMenuSection("orphanage");
+                          handleNavClick({ path: "/orphanage" });
+                        }}
+                        className={cn(
+                          "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
+                          menuSection === "orphanage"
+                            ? "bg-primary/15 text-foreground"
+                            : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+                        )}
+                        data-testid="nav-section-orphanage"
+                      >
+                        <img
+                          src={resolvedTheme === "dark" ? orphanageFullLogoWhite : orphanageFullLogoDark}
+                          alt="The Orphanage"
+                          className="h-5 w-auto object-contain"
+                        />
+                        <span>The Orphanage</span>
+                      </button>
+                    </div>
+                  </div>
 
-                <div className="mt-6 pt-6 border-t border-white/[0.06] space-y-1">
-                  <button
-                    onClick={() => {
-                      setMenuSection("orphanbars");
-                      handleNavClick({ path: "/" });
-                    }}
-                    className={cn(
-                      "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98]",
-                      menuSection === "orphanbars" ? "bg-primary/10" : "hover:bg-white/[0.06]"
-                    )}
-                    data-testid="nav-section-orphanbars"
-                  >
-                    <div
-                      className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                        menuSection === "orphanbars" ? "bg-primary/15" : "bg-white/[0.06]"
-                      )}
-                    >
-                      <img src={orphanBarsMenuLogo} alt="Orphan Bars" className="h-6 w-auto dark:brightness-0 dark:invert" />
+                  <div>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/90">
+                      Quick Jump
+                    </p>
+                    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                      {quickNavItems.map((item, index) => {
+                        const isActive = isItemActive(item);
+                        return (
+                          <motion.button
+                            key={`quick-${item.id}`}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.06 + index * 0.03, duration: 0.18 }}
+                            onClick={() => handleNavClick(item)}
+                            className={cn(
+                              "min-w-[116px] rounded-2xl border px-3 py-2 text-left transition-all active:scale-[0.98]",
+                              isActive
+                                ? "border-primary/40 bg-primary/12"
+                                : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08]",
+                            )}
+                            data-testid={`nav-quick-item-${item.label.toLowerCase().replace(/\s/g, "-")}`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={cn(
+                                  "flex h-8 w-8 items-center justify-center rounded-xl",
+                                  isActive ? "bg-primary/20" : "bg-white/[0.08]",
+                                )}
+                              >
+                                <item.icon
+                                  className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
+                                  strokeWidth={1.9}
+                                />
+                              </div>
+                              <span className="text-sm font-medium text-foreground">{item.label}</span>
+                            </div>
+                          </motion.button>
+                        );
+                      })}
                     </div>
-                    <span className="text-base font-medium">Orphan Bars</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMenuSection("orphanage");
-                      handleNavClick({ path: "/orphanage" });
-                    }}
-                    className={cn(
-                      "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98]",
-                      menuSection === "orphanage" ? "bg-primary/10" : "hover:bg-white/[0.06]"
-                    )}
-                    data-testid="nav-section-orphanage"
-                  >
-                    <div
-                      className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                        menuSection === "orphanage" ? "bg-primary/15" : "bg-white/[0.06]"
-                      )}
-                    >
-                      <img
-                        src={resolvedTheme === "dark" ? orphanageFullLogoWhite : orphanageFullLogoDark}
-                        alt="The Orphanage"
-                        className="h-7 w-auto object-contain"
-                      />
-                    </div>
-                    <span className="text-base font-medium">The Orphanage</span>
-                  </button>
+                  </div>
+
+                  <div>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/90">
+                      Navigation
+                    </p>
+                    <nav className="grid grid-cols-2 gap-2.5">
+                      {navItems.map((item, index) => {
+                        const isActive = isItemActive(item);
+                        return (
+                          <motion.button
+                            key={item.id}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.08 + index * 0.025, duration: 0.2 }}
+                            onClick={() => handleNavClick(item)}
+                            className={cn(
+                              "group rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
+                              isActive
+                                ? "border-primary/40 bg-primary/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+                                : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08]",
+                            )}
+                            data-testid={`nav-item-${item.label.toLowerCase().replace(/\s/g, "-")}`}
+                          >
+                            <div className="mb-3 flex items-center justify-between gap-2">
+                              <div
+                                className={cn(
+                                  "flex h-9 w-9 items-center justify-center rounded-xl",
+                                  isActive ? "bg-primary/20" : "bg-white/[0.08]",
+                                )}
+                              >
+                                <item.icon
+                                  className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
+                                  strokeWidth={1.9}
+                                />
+                              </div>
+                              {isActive && (
+                                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary">
+                                  Live
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.subLabel}</p>
+                          </motion.button>
+                        );
+                      })}
+                    </nav>
+                  </div>
                 </div>
 
                 {currentUser && (
@@ -407,7 +500,10 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <Sparkles className="h-5 w-5 text-primary" />
                     </div>
-                    <span className="text-base font-medium text-foreground">Ara</span>
+                    <div className="text-left">
+                      <p className="text-base font-medium text-foreground leading-none">Ara</p>
+                      <p className="mt-1 text-xs text-muted-foreground">AI writing copilot</p>
+                    </div>
                   </button>
                 )}
               </motion.div>
