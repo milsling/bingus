@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls, type PanInfo } from "framer-motion";
 import {
   Home,
   Plus,
@@ -33,6 +33,8 @@ import orphanageFullLogoDark from "@/assets/orphanage-full-logo-dark.png";
 
 // Scroll threshold for FAB hide/reveal (px)
 const SCROLL_THRESHOLD = 15;
+const SHEET_CLOSE_DRAG_OFFSET = 90;
+const SHEET_CLOSE_DRAG_VELOCITY = 700;
 
 // Modern drawer slide sound effects using Web Audio API
 const playMenuOpenSound = () => {
@@ -150,6 +152,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
   );
   const { currentUser } = useBars();
   const { resolvedTheme } = useTheme();
+  const sheetDragControls = useDragControls();
 
   useEffect(() => {
     setMenuSection(location.startsWith("/orphanage") ? "orphanage" : "orphanbars");
@@ -301,6 +304,18 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
     setIsOpen(!isOpen);
   };
 
+  const handleSheetDragEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const draggedFarEnough = info.offset.y > SHEET_CLOSE_DRAG_OFFSET;
+      const draggedFastEnough = info.velocity.y > SHEET_CLOSE_DRAG_VELOCITY;
+      if (draggedFarEnough || draggedFastEnough) {
+        playMenuCloseSound();
+        setIsOpen(false);
+      }
+    },
+    [],
+  );
+
   return (
     <>
       {/* Glassmorphic bottom sheet - compact overlay */}
@@ -323,10 +338,29 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+              drag="y"
+              dragControls={sheetDragControls}
+              dragListener={false}
+              dragConstraints={{ top: 0, bottom: 280 }}
+              dragElastic={{ top: 0, bottom: 0.35 }}
+              dragMomentum={false}
+              dragSnapToOrigin
+              onDragEnd={handleSheetDragEnd}
               className="fixed inset-x-0 bottom-0 z-[1110] flex flex-col rounded-t-[2rem] glass-sheet border border-b-0 border-white/[0.08] max-h-[85vh] shadow-[0_-28px_56px_rgba(0,0,0,0.4)]"
             >
               <div className="flex-shrink-0 px-6 pt-4 pb-3 border-b border-white/[0.06]">
-                <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-foreground/20" />
+                <button
+                  type="button"
+                  onPointerDown={(event) => sheetDragControls.start(event)}
+                  onClick={() => {
+                    playMenuCloseSound();
+                    setIsOpen(false);
+                  }}
+                  className="mx-auto mb-3 block h-5 w-14 touch-none rounded-full"
+                  aria-label="Drag down to close menu"
+                >
+                  <span className="mx-auto mt-1.5 block h-1.5 w-12 rounded-full bg-foreground/20" />
+                </button>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <img src={headerLogo} alt="Orphan Bars" className="h-8 w-8" />
