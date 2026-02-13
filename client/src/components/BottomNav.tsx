@@ -346,7 +346,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
               dragMomentum={false}
               dragSnapToOrigin
               onDragEnd={handleSheetDragEnd}
-              className="fixed inset-x-0 bottom-0 z-[1110] flex flex-col rounded-t-[2rem] glass-sheet border border-b-0 border-white/[0.08] max-h-[85vh] shadow-[0_-28px_56px_rgba(0,0,0,0.4)]"
+              className="fixed inset-x-0 bottom-0 z-[1110] flex flex-col rounded-t-[2rem] glass-sheet border border-b-0 border-white/[0.08] max-h-[85vh] shadow-[0_-28px_56px_rgba(0,0,0,0.4)] transform-gpu will-change-transform"
             >
               <div className="flex-shrink-0 px-6 pt-4 pb-3 border-b border-white/[0.06]">
                 <button
@@ -383,12 +383,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                 </div>
               </div>
 
-              <motion.div
-                className="flex-1 flex flex-col px-6 py-4 overflow-y-auto overscroll-contain min-h-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.08, duration: 0.2 }}
-              >
+              <div className="flex-1 flex flex-col px-6 py-4 overflow-y-auto overscroll-contain min-h-0">
                 <div className="space-y-4">
                   <div className="glass-surface rounded-2xl p-1">
                     <div className="grid grid-cols-2 gap-1">
@@ -439,11 +434,8 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                       {quickNavItems.map((item, index) => {
                         const isActive = isItemActive(item);
                         return (
-                          <motion.button
+                          <button
                             key={`quick-${item.id}`}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.06 + index * 0.03, duration: 0.18 }}
                             onClick={() => handleNavClick(item)}
                             className={cn(
                               "min-w-[116px] rounded-2xl border px-3 py-2 text-left transition-all active:scale-[0.98]",
@@ -467,7 +459,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                               </div>
                               <span className="text-sm font-medium text-foreground">{item.label}</span>
                             </div>
-                          </motion.button>
+                          </button>
                         );
                       })}
                     </div>
@@ -481,11 +473,8 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                       {navItems.map((item, index) => {
                         const isActive = isItemActive(item);
                         return (
-                          <motion.button
+                          <button
                             key={item.id}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.08 + index * 0.025, duration: 0.2 }}
                             onClick={() => handleNavClick(item)}
                             className={cn(
                               "group rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
@@ -515,7 +504,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                             </div>
                             <p className="text-sm font-semibold text-foreground">{item.label}</p>
                             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.subLabel}</p>
-                          </motion.button>
+                          </button>
                         );
                       })}
                     </nav>
@@ -540,7 +529,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                     </div>
                   </button>
                 )}
-              </motion.div>
+              </div>
 
               {currentUser && (
                 <div className="flex-shrink-0 px-6 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 border-t border-white/[0.06]">
