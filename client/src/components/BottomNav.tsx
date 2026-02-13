@@ -20,6 +20,14 @@ import {
   LayoutGrid,
   Swords,
   NotebookPen,
+  Settings2,
+  ChevronLeft,
+  Sun,
+  Moon,
+  Monitor,
+  UserCog,
+  Palette,
+  Volume2,
   type LucideIcon
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
@@ -133,6 +141,7 @@ type NavItem = {
 
 export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOpenChange }: BottomNavProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [menuView, setMenuView] = useState<"main" | "settings">("main");
   const [searchOpenInternal, setSearchOpenInternal] = useState(false);
   const isControlled = searchOpenProp !== undefined && onSearchOpenChange;
   const searchOpen = isControlled ? searchOpenProp! : searchOpenInternal;
@@ -151,12 +160,18 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
     location.startsWith("/orphanage") ? "orphanage" : "orphanbars"
   );
   const { currentUser } = useBars();
-  const { resolvedTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const sheetDragControls = useDragControls();
 
   useEffect(() => {
     setMenuSection(location.startsWith("/orphanage") ? "orphanage" : "orphanbars");
   }, [location]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setMenuView("main");
+    }
+  }, [isOpen]);
 
   // Scroll-direction-based FAB visibility: down = hide, up = show
   useEffect(() => {
@@ -278,6 +293,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
 
   const handleNavClick = useCallback(
     (item: Pick<NavItem, "path" | "action">) => {
+      setMenuView("main");
       if (item.action === "search") {
         setIsOpen(false);
         setSearchOpen(true);
@@ -299,8 +315,12 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
   );
 
   const handleCenterClick = () => {
-    if (!isOpen) playMenuOpenSound();
-    else playMenuCloseSound();
+    if (!isOpen) {
+      setMenuView("main");
+      playMenuOpenSound();
+    } else {
+      playMenuCloseSound();
+    }
     setIsOpen(!isOpen);
   };
 
@@ -362,13 +382,25 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                   <span className="mx-auto mt-1.5 block h-1.5 w-12 rounded-full bg-foreground/20" />
                 </button>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <img src={headerLogo} alt="Orphan Bars" className="h-8 w-8" />
-                    <span className="font-logo text-xl leading-none text-foreground flex items-center gap-0.5">
-                      <span>ORPHAN</span>
-                      <span>BARS</span>
-                    </span>
-                  </div>
+                  {menuView === "settings" ? (
+                    <button
+                      type="button"
+                      onClick={() => setMenuView("main")}
+                      className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-foreground/90 hover:bg-white/[0.06]"
+                      data-testid="button-settings-back"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      <span>Back to Menu</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <img src={headerLogo} alt="Orphan Bars" className="h-8 w-8" />
+                      <span className="font-logo text-xl leading-none text-foreground flex items-center gap-0.5">
+                        <span>ORPHAN</span>
+                        <span>BARS</span>
+                      </span>
+                    </div>
+                  )}
                   <motion.button
                     onClick={() => {
                       playMenuCloseSound();
@@ -384,154 +416,290 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
               </div>
 
               <div className="flex-1 flex flex-col px-6 py-4 overflow-y-auto overscroll-contain min-h-0">
-                <div className="space-y-4">
-                  <div className="glass-surface rounded-2xl p-1">
-                    <div className="grid grid-cols-2 gap-1">
+                {menuView === "settings" ? (
+                  <div className="space-y-4">
+                    <div className="glass-surface rounded-2xl border border-white/[0.08] p-4">
+                      <div className="flex items-center gap-2">
+                        <Settings2 className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold">Appearance</p>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Choose how Orphan Bars looks.
+                      </p>
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => setTheme("light")}
+                          className={cn(
+                            "rounded-xl border px-2 py-2 text-xs font-medium transition-all",
+                            theme === "light"
+                              ? "border-primary/40 bg-primary/15 text-foreground"
+                              : "border-white/[0.08] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]",
+                          )}
+                          data-testid="settings-theme-light"
+                        >
+                          <Sun className="mx-auto mb-1 h-4 w-4" />
+                          Light
+                        </button>
+                        <button
+                          onClick={() => setTheme("dark")}
+                          className={cn(
+                            "rounded-xl border px-2 py-2 text-xs font-medium transition-all",
+                            theme === "dark"
+                              ? "border-primary/40 bg-primary/15 text-foreground"
+                              : "border-white/[0.08] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]",
+                          )}
+                          data-testid="settings-theme-dark"
+                        >
+                          <Moon className="mx-auto mb-1 h-4 w-4" />
+                          Dark
+                        </button>
+                        <button
+                          onClick={() => setTheme("system")}
+                          className={cn(
+                            "rounded-xl border px-2 py-2 text-xs font-medium transition-all",
+                            theme === "system"
+                              ? "border-primary/40 bg-primary/15 text-foreground"
+                              : "border-white/[0.08] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]",
+                          )}
+                          data-testid="settings-theme-system"
+                        >
+                          <Monitor className="mx-auto mb-1 h-4 w-4" />
+                          System
+                        </button>
+                      </div>
+                      <p className="mt-3 text-[11px] text-muted-foreground">
+                        Active: {resolvedTheme === "dark" ? "Dark mode" : "Light mode"}
+                        {theme === "system" ? " (system)" : ""}
+                      </p>
+                    </div>
+
+                    {currentUser ? (
+                      <>
+                        <button
+                          onClick={() => handleNavClick({ path: "/profile/edit" })}
+                          className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
+                          data-testid="settings-account-link"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                              <UserCog className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">Account & Privacy</p>
+                              <p className="text-xs text-muted-foreground">Profile, password, and message privacy</p>
+                            </div>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => handleNavClick({ path: "/profile/edit" })}
+                          className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
+                          data-testid="settings-sounds-link"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                              <Volume2 className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">Sounds & Notifications</p>
+                              <p className="text-xs text-muted-foreground">Notification tone and message sounds</p>
+                            </div>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => handleNavClick({ path: "/profile/edit" })}
+                          className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
+                          data-testid="settings-background-link"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                              <Palette className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">Background & Style</p>
+                              <p className="text-xs text-muted-foreground">Visual customization options</p>
+                            </div>
+                          </div>
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => handleNavClick({ path: "/auth" })}
+                        className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
+                        data-testid="settings-login-link"
+                      >
+                        <p className="text-sm font-semibold text-foreground">Sign in for account settings</p>
+                        <p className="text-xs text-muted-foreground">Manage profile, privacy, and sounds.</p>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-4">
+                      <div className="glass-surface rounded-2xl p-1">
+                        <div className="grid grid-cols-2 gap-1">
+                          <button
+                            onClick={() => {
+                              setMenuSection("orphanbars");
+                              handleNavClick({ path: "/" });
+                            }}
+                            className={cn(
+                              "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
+                              menuSection === "orphanbars"
+                                ? "bg-primary/15 text-foreground"
+                                : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+                            )}
+                            data-testid="nav-section-orphanbars"
+                          >
+                            <img src={headerLogo} alt="Orphan Bars" className="h-5 w-5" />
+                            <span>Orphan Bars</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMenuSection("orphanage");
+                              handleNavClick({ path: "/orphanage" });
+                            }}
+                            className={cn(
+                              "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
+                              menuSection === "orphanage"
+                                ? "bg-primary/15 text-foreground"
+                                : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+                            )}
+                            data-testid="nav-section-orphanage"
+                          >
+                            <img
+                              src={resolvedTheme === "dark" ? orphanageFullLogoWhite : orphanageFullLogoDark}
+                              alt="The Orphanage"
+                              className="h-5 w-auto object-contain"
+                            />
+                            <span>The Orphanage</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setMenuView("settings")}
+                        className="w-full rounded-2xl border border-primary/30 bg-primary/10 p-3.5 text-left transition-all hover:bg-primary/15"
+                        data-testid="button-open-mobile-settings"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20">
+                            <Settings2 className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">Settings</p>
+                            <p className="text-xs text-muted-foreground">Theme, profile, privacy, and sounds</p>
+                          </div>
+                        </div>
+                      </button>
+
+                      <div>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/90">
+                          Quick Jump
+                        </p>
+                        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                          {quickNavItems.map((item) => {
+                            const isActive = isItemActive(item);
+                            return (
+                              <button
+                                key={`quick-${item.id}`}
+                                onClick={() => handleNavClick(item)}
+                                className={cn(
+                                  "min-w-[116px] rounded-2xl border px-3 py-2 text-left transition-all active:scale-[0.98]",
+                                  isActive
+                                    ? "border-primary/40 bg-primary/12"
+                                    : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08]",
+                                )}
+                                data-testid={`nav-quick-item-${item.label.toLowerCase().replace(/\s/g, "-")}`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className={cn(
+                                      "flex h-8 w-8 items-center justify-center rounded-xl",
+                                      isActive ? "bg-primary/20" : "bg-white/[0.08]",
+                                    )}
+                                  >
+                                    <item.icon
+                                      className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
+                                      strokeWidth={1.9}
+                                    />
+                                  </div>
+                                  <span className="text-sm font-medium text-foreground">{item.label}</span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/90">
+                          Navigation
+                        </p>
+                        <nav className="grid grid-cols-2 gap-2.5">
+                          {navItems.map((item) => {
+                            const isActive = isItemActive(item);
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => handleNavClick(item)}
+                                className={cn(
+                                  "group rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
+                                  isActive
+                                    ? "border-primary/40 bg-primary/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+                                    : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08]",
+                                )}
+                                data-testid={`nav-item-${item.label.toLowerCase().replace(/\s/g, "-")}`}
+                              >
+                                <div className="mb-3 flex items-center justify-between gap-2">
+                                  <div
+                                    className={cn(
+                                      "flex h-9 w-9 items-center justify-center rounded-xl",
+                                      isActive ? "bg-primary/20" : "bg-white/[0.08]",
+                                    )}
+                                  >
+                                    <item.icon
+                                      className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
+                                      strokeWidth={1.9}
+                                    />
+                                  </div>
+                                  {isActive && (
+                                    <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary">
+                                      Live
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.subLabel}</p>
+                              </button>
+                            );
+                          })}
+                        </nav>
+                      </div>
+                    </div>
+
+                    {currentUser && (
                       <button
                         onClick={() => {
-                          setMenuSection("orphanbars");
-                          handleNavClick({ path: "/" });
+                          setIsOpen(false);
+                          setAraOpen(true);
                         }}
-                        className={cn(
-                          "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
-                          menuSection === "orphanbars"
-                            ? "bg-primary/15 text-foreground"
-                            : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
-                        )}
-                        data-testid="nav-section-orphanbars"
+                        className="mt-4 w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-white/[0.06] hover:bg-white/[0.1] transition-all active:scale-[0.98]"
+                        data-testid="nav-section-ara"
                       >
-                        <img src={headerLogo} alt="Orphan Bars" className="h-5 w-5" />
-                        <span>Orphan Bars</span>
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <Sparkles className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-base font-medium text-foreground leading-none">Ara</p>
+                          <p className="mt-1 text-xs text-muted-foreground">AI writing copilot</p>
+                        </div>
                       </button>
-                      <button
-                        onClick={() => {
-                          setMenuSection("orphanage");
-                          handleNavClick({ path: "/orphanage" });
-                        }}
-                        className={cn(
-                          "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
-                          menuSection === "orphanage"
-                            ? "bg-primary/15 text-foreground"
-                            : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
-                        )}
-                        data-testid="nav-section-orphanage"
-                      >
-                        <img
-                          src={resolvedTheme === "dark" ? orphanageFullLogoWhite : orphanageFullLogoDark}
-                          alt="The Orphanage"
-                          className="h-5 w-auto object-contain"
-                        />
-                        <span>The Orphanage</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/90">
-                      Quick Jump
-                    </p>
-                    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-                      {quickNavItems.map((item, index) => {
-                        const isActive = isItemActive(item);
-                        return (
-                          <button
-                            key={`quick-${item.id}`}
-                            onClick={() => handleNavClick(item)}
-                            className={cn(
-                              "min-w-[116px] rounded-2xl border px-3 py-2 text-left transition-all active:scale-[0.98]",
-                              isActive
-                                ? "border-primary/40 bg-primary/12"
-                                : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08]",
-                            )}
-                            data-testid={`nav-quick-item-${item.label.toLowerCase().replace(/\s/g, "-")}`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={cn(
-                                  "flex h-8 w-8 items-center justify-center rounded-xl",
-                                  isActive ? "bg-primary/20" : "bg-white/[0.08]",
-                                )}
-                              >
-                                <item.icon
-                                  className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
-                                  strokeWidth={1.9}
-                                />
-                              </div>
-                              <span className="text-sm font-medium text-foreground">{item.label}</span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/90">
-                      Navigation
-                    </p>
-                    <nav className="grid grid-cols-2 gap-2.5">
-                      {navItems.map((item, index) => {
-                        const isActive = isItemActive(item);
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() => handleNavClick(item)}
-                            className={cn(
-                              "group rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
-                              isActive
-                                ? "border-primary/40 bg-primary/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
-                                : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08]",
-                            )}
-                            data-testid={`nav-item-${item.label.toLowerCase().replace(/\s/g, "-")}`}
-                          >
-                            <div className="mb-3 flex items-center justify-between gap-2">
-                              <div
-                                className={cn(
-                                  "flex h-9 w-9 items-center justify-center rounded-xl",
-                                  isActive ? "bg-primary/20" : "bg-white/[0.08]",
-                                )}
-                              >
-                                <item.icon
-                                  className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
-                                  strokeWidth={1.9}
-                                />
-                              </div>
-                              {isActive && (
-                                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary">
-                                  Live
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.subLabel}</p>
-                          </button>
-                        );
-                      })}
-                    </nav>
-                  </div>
-                </div>
-
-                {currentUser && (
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      setAraOpen(true);
-                    }}
-                    className="mt-4 w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-white/[0.06] hover:bg-white/[0.1] transition-all active:scale-[0.98]"
-                    data-testid="nav-section-ara"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Sparkles className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-base font-medium text-foreground leading-none">Ara</p>
-                      <p className="mt-1 text-xs text-muted-foreground">AI writing copilot</p>
-                    </div>
-                  </button>
+                    )}
+                  </>
                 )}
               </div>
 
-              {currentUser && (
+              {currentUser && menuView === "main" && (
                 <div className="flex-shrink-0 px-6 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 border-t border-white/[0.06]">
                   <button
                     onClick={() => handleNavClick({ path: "/post" })}
