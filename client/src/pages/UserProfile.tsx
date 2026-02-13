@@ -202,7 +202,7 @@ export default function UserProfile() {
 
   if (userLoading || (!user && isFetching)) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+      <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -212,8 +212,8 @@ export default function UserProfile() {
 
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-        <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-6">
+      <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
+        <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
           <Button
             variant="ghost"
             className="mb-4"
@@ -231,8 +231,8 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
-      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
+      <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
         <Button
           variant="ghost"
           className="mb-4"
@@ -245,7 +245,7 @@ export default function UserProfile() {
 
         <div className="glass-panel rounded-2xl overflow-hidden mb-6">
           {user.bannerUrl && (
-            <div className="w-full h-32 md:h-40">
+            <div className="w-full h-32 sm:h-40">
               <img 
                 src={user.bannerUrl} 
                 alt={`${user.username}'s banner`}
@@ -253,7 +253,7 @@ export default function UserProfile() {
               />
             </div>
           )}
-          <div className="p-4 md:p-6">
+          <div className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
             <div className="relative shrink-0">
               <Avatar className={`h-20 w-20 ${user.bannerUrl ? '-mt-12 border-4 border-card' : ''}`}>
@@ -272,7 +272,7 @@ export default function UserProfile() {
             </div>
             <div className="flex-1 min-w-0 text-center sm:text-left w-full">
               <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                <h1 className="text-xl md:text-2xl font-bold" data-testid="text-username">
+                <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-username">
                   @{user.username}
                 </h1>
                 <UserProfileBadges userId={user.id} size="sm" maxBadges={5} />
