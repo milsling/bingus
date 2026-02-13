@@ -4090,6 +4090,22 @@ export default function Admin() {
                     </div>
                     <div className="bg-muted/30 rounded-lg p-4 max-h-[400px] overflow-y-auto">
                       <div className="space-y-3">
+                        {/* Version 2.6.0 */}
+                        <div className="border-l-2 border-fuchsia-500 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-fuchsia-600 text-white text-xs">v2.6.0</Badge>
+                            <span className="text-xs text-muted-foreground">Feb 2026</span>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• Orphanage fully redesigned with animated card grid and modern dark styling</li>
+                            <li>• New Orphanage filters + search bar with mood/style pill controls</li>
+                            <li>• Adoption UX upgrade: loading, success, error, and glow microinteractions</li>
+                            <li>• Mobile bottom-nav now includes a full Settings view with theme controls</li>
+                            <li>• Desktop now uses a unified Settings dropdown for theme + account access</li>
+                            <li>• Profile pages updated for proper tablet landscape and wide-screen layouts</li>
+                          </ul>
+                        </div>
+
                         {/* Version 2.5.0 */}
                         <div className="border-l-2 border-purple-500 pl-3">
                           <div className="flex items-center gap-2">
