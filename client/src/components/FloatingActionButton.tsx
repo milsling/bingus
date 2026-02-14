@@ -35,6 +35,8 @@ export function FloatingActionButton({
   const [isMobile, setIsMobile] = useState(false);
   const [hapticPulseKey, setHapticPulseKey] = useState(0);
   const suppressClickRef = useRef(false);
+  const touchActiveRef = useRef(false);
+  const [touchSessionKey, setTouchSessionKey] = useState(0);
   const { currentUser } = useBars();
 
   useEffect(() => {
@@ -208,6 +210,8 @@ export function FloatingActionButton({
     (event: React.TouchEvent<HTMLDivElement>) => {
       event.preventDefault();
       suppressClickRef.current = true;
+      touchActiveRef.current = true;
+      setTouchSessionKey((key) => key + 1);
       setHapticPulseKey((key) => key + 1);
       if ("vibrate" in navigator) navigator.vibrate(10);
       handleTouchStart(event.nativeEvent);
@@ -215,17 +219,11 @@ export function FloatingActionButton({
     [handleTouchStart],
   );
 
-  const onFabTouchMove = useCallback(
-    (event: React.TouchEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      handleTouchMove(event.nativeEvent);
-    },
-    [handleTouchMove],
-  );
-
-  const onFabTouchEnd = useCallback(
-    (event: React.TouchEvent<HTMLDivElement>) => {
-      event.preventDefault();
+  const finishTouchInteraction = useCallback(
+    (event?: Event | React.TouchEvent<HTMLDivElement>) => {
+      if (event) event.preventDefault();
+      if (!touchActiveRef.current) return;
+      touchActiveRef.current = false;
       handleTouchEnd();
       window.setTimeout(() => {
         suppressClickRef.current = false;
@@ -233,6 +231,29 @@ export function FloatingActionButton({
     },
     [handleTouchEnd],
   );
+
+  useEffect(() => {
+    if (!touchActiveRef.current) return;
+
+    const handleWindowTouchMove = (event: TouchEvent) => {
+      event.preventDefault();
+      handleTouchMove(event);
+    };
+
+    const handleWindowTouchEnd = (event: TouchEvent) => {
+      finishTouchInteraction(event);
+    };
+
+    window.addEventListener("touchmove", handleWindowTouchMove, { passive: false });
+    window.addEventListener("touchend", handleWindowTouchEnd, { passive: false });
+    window.addEventListener("touchcancel", handleWindowTouchEnd, { passive: false });
+
+    return () => {
+      window.removeEventListener("touchmove", handleWindowTouchMove);
+      window.removeEventListener("touchend", handleWindowTouchEnd);
+      window.removeEventListener("touchcancel", handleWindowTouchEnd);
+    };
+  }, [touchSessionKey, handleTouchMove, finishTouchInteraction]);
 
   const onFabClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -249,7 +270,7 @@ export function FloatingActionButton({
       <motion.div
         animate={isHolding ? { scale: 1.1, boxShadow: "0 12px 32px rgba(0,0,0,0.3)" } : { scale: 1 }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        style={{ x: "-50%" }}
+        transformTemplate={(_, generated) => `translateX(-50%) ${generated}`}
         className="fab-button"
         role="button"
         tabIndex={0}
@@ -257,9 +278,12 @@ export function FloatingActionButton({
         aria-expanded={isNavOpen}
         data-testid="floating-action-button"
         onTouchStart={onFabTouchStart}
-        onTouchMove={onFabTouchMove}
-        onTouchEnd={onFabTouchEnd}
-        onTouchCancel={onFabTouchEnd}
+        onTouchMove={(event) => {
+          event.preventDefault();
+          handleTouchMove(event.nativeEvent);
+        }}
+        onTouchEnd={finishTouchInteraction}
+        onTouchCancel={finishTouchInteraction}
         onClick={onFabClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {

@@ -15,7 +15,6 @@ import FeedBarCard from "@/components/FeedBarCard";
 import ActivityStrip from "@/components/ActivityStrip";
 import CommunitySpotlight from "@/components/CommunitySpotlight";
 import {
-  NativeFab,
   NativeGlassCard,
   NativeScreen,
   NativeSegmentedControl,
@@ -195,13 +194,15 @@ export default function Home() {
       className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8"
       contentClassName="px-4 md:px-6"
     >
+        <div className="md:hidden fixed top-[calc(env(safe-area-inset-top)+3.7rem)] left-3 right-3 z-[997]">
+          <div className="glass-surface rounded-2xl p-3">
+            <SearchBar />
+          </div>
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="space-y-5">
-            <div className="md:hidden sticky top-[calc(env(safe-area-inset-top)+3.4rem)] z-30">
-              <div className="glass-panel p-3">
-                <SearchBar />
-              </div>
-            </div>
+            <div className="h-[5rem] md:hidden" aria-hidden />
 
             <NativeGlassCard animate className="relative overflow-hidden border-white/[0.08] p-6 md:p-8">
               <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
@@ -458,14 +459,6 @@ export default function Home() {
             </div>
           </aside>
         </div>
-      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+5.8rem)] right-4 z-[980] md:hidden">
-        <NativeFab
-          href="/post"
-          label="Drop"
-          icon={<PenLine className="mr-1.5 h-4 w-4" />}
-          testId="button-mobile-drop-fab"
-        />
-      </div>
     </NativeScreen>
   );
 }

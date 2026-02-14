@@ -148,7 +148,7 @@ export function SearchBar({ className }: { className?: string }) {
             animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.16, ease: "easeOut" }}
-            className="absolute top-full left-0 right-0 z-50 mt-1 overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(160deg,rgba(16,16,24,0.96),rgba(16,16,24,0.9))] shadow-[0_18px_30px_rgba(2,6,23,0.5)] backdrop-blur-xl"
+            className="absolute top-full left-0 right-0 z-[1300] mt-1 overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(160deg,rgba(16,16,24,0.96),rgba(16,16,24,0.9))] shadow-[0_18px_30px_rgba(2,6,23,0.5)] backdrop-blur-xl"
           >
             {query.length < 2 ? (
               <div className="p-3">
