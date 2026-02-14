@@ -256,7 +256,7 @@ export default function Navigation() {
       </header>
 
       {/* Mobile Top Bar - Slim glass bar: logo, notifications, online */}
-      <div className="md:hidden fixed top-[calc(env(safe-area-inset-top)+0.5rem)] left-3 right-3 z-[1200] overflow-visible">
+      <div className="md:hidden fixed mobile-topbar-offset left-3 right-3 z-[1200] overflow-visible">
         <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-4 overflow-visible">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
