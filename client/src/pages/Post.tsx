@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +13,7 @@ import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { motion, useReducedMotion } from "framer-motion";
+import { NativeGlassCard, NativeScreen, NativeSectionHeader } from "@/components/ui/native-shell";
 
 type SimilarBar = {
   id: string;
@@ -388,20 +388,22 @@ export default function Post() {
       };
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-8 md:pt-24">
-      
-      <main className="max-w-5xl mx-auto p-4 md:p-8">
-        <div className="mb-8 flex items-center gap-4">
+    <NativeScreen
+      className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-8 md:pt-24"
+      contentClassName="max-w-5xl p-4 md:p-8"
+    >
+      <NativeSectionHeader
+        title="Drop a Bar"
+        subtitle="Share your lyrics with the community"
+        className="mb-6"
+        action={
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-full">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-3xl font-display font-bold">Drop a Bar</h1>
-            <p className="text-muted-foreground">Share your lyrics with the community</p>
-          </div>
-        </div>
+        }
+      />
 
         {(promptSlug || respondToBarId) && (
           <div className="mb-6 space-y-2">
@@ -467,8 +469,7 @@ export default function Post() {
           {/* Main Content */}
           <div className="space-y-6">
             <motion.div {...panelAnimation}>
-            <Card className="border-border/60 bg-card/65 backdrop-blur-xl shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
-              <CardContent className="p-6 space-y-6">
+              <NativeGlassCard animate className="border-white/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-lg">The Bars</Label>
@@ -588,15 +589,13 @@ export default function Post() {
                     className="min-h-[100px] bg-secondary/30 border-border/50 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none rounded-lg"
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </NativeGlassCard>
             </motion.div>
           </div>
 
           {/* Sidebar */}
           <motion.div {...panelAnimation} className="space-y-6 lg:sticky lg:top-24 h-fit">
-            <Card className="border-border/60 bg-card/65 backdrop-blur-xl shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
-              <CardContent className="p-6 space-y-6">
+            <NativeGlassCard className="border-white/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
                 <div className="space-y-3">
                   <Label htmlFor="category">Category</Label>
                   <Select value={category} onValueChange={(val: Category) => setCategory(val)}>
@@ -643,11 +642,9 @@ export default function Post() {
                     className="bg-secondary/30 border-border/50"
                   />
                 </div>
-              </CardContent>
-            </Card>
+            </NativeGlassCard>
 
-            <Card className="border-border/60 bg-card/65 backdrop-blur-xl shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
-              <CardContent className="p-6 space-y-4">
+            <NativeGlassCard className="border-white/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
                 <div className="space-y-3">
                   <Label>Permissions</Label>
                   <div className="space-y-2">
@@ -706,8 +703,7 @@ export default function Post() {
                     />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </NativeGlassCard>
 
             <Button
               onClick={handleSubmit}
@@ -719,7 +715,6 @@ export default function Post() {
             </Button>
           </motion.div>
         </div>
-      </main>
 
       <div className="lg:hidden fixed left-3 right-3 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-[980]">
         <div className="glass-surface-strong rounded-2xl border border-border/55 p-2 shadow-[0_14px_32px_rgba(2,6,23,0.36)]">
@@ -863,6 +858,6 @@ export default function Post() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </NativeScreen>
   );
 }
