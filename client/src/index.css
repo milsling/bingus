@@ -685,6 +685,8 @@ html.dark {
   backdrop-filter: blur(32px) saturate(140%);
   -webkit-backdrop-filter: blur(32px) saturate(140%);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
 /* Glass button - theme-aware */

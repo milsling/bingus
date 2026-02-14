@@ -14,6 +14,7 @@ import { formatTimestamp } from "@/lib/formatDate";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { NativeScreen } from "@/components/ui/native-shell";
 
 export default function Messages() {
   const { currentUser } = useBars();
@@ -181,12 +182,18 @@ export default function Messages() {
   const ConversationList = () => (
     <div className="flex flex-col h-full">
       <Tabs defaultValue="chats" className="flex-1 flex flex-col">
-        <TabsList className="w-full rounded-none bg-transparent border-b border-border/40 shrink-0">
-          <TabsTrigger value="chats" className="flex-1 gap-1.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+        <TabsList className="m-3 h-auto rounded-2xl border border-white/10 bg-black/20 p-1">
+          <TabsTrigger
+            value="chats"
+            className="flex-1 gap-1.5 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-500 data-[state=active]:text-white"
+          >
             <MessageCircle className="h-3.5 w-3.5" />
             Chats
           </TabsTrigger>
-          <TabsTrigger value="friends" className="flex-1 gap-1.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="friends"
+            className="flex-1 gap-1.5 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-500 data-[state=active]:text-white"
+          >
             <Users className="h-3.5 w-3.5" />
             Friends
           </TabsTrigger>
@@ -329,13 +336,15 @@ export default function Messages() {
   );
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
-
-      <main className="max-w-5xl mx-auto h-[calc(100vh-80px)] md:h-[calc(100vh-64px)] md:p-4">
-        <div className="h-full md:rounded-2xl glass-panel overflow-hidden flex">
+    <NativeScreen
+      className="bg-background pt-20 pb-24 md:pb-4 md:pt-24"
+      contentClassName="max-w-6xl"
+    >
+      <main className="h-[calc(100vh-80px)] md:h-[calc(100vh-64px)] md:p-4">
+        <div className="h-full overflow-hidden rounded-[1.6rem] border border-white/10 bg-black/20 backdrop-blur-xl md:rounded-[1.9rem] flex">
           
-          <div className="hidden md:flex w-80 border-r border-border/40 flex-col">
-            <div className="p-4 border-b border-border/40 flex items-center justify-between">
+          <div className="hidden md:flex w-80 border-r border-white/10 flex-col">
+            <div className="p-4 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
                 <h1 className="font-display font-bold text-lg text-foreground">Messages</h1>
@@ -363,7 +372,7 @@ export default function Messages() {
           </div>
 
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="md:hidden flex items-center gap-3 p-3 border-b border-border/40 glass-nav">
+            <div className="md:hidden flex items-center gap-3 p-3 border-b border-white/10 bg-black/10 backdrop-blur-xl">
               {selectedUserId && selectedUser ? (
                 <>
                   <Button
@@ -422,7 +431,7 @@ export default function Messages() {
               </div>
             ) : selectedUserId && selectedUser ? (
               <>
-                <div className="hidden md:flex p-3 border-b border-border/50 items-center gap-3 bg-background/30">
+                <div className="hidden md:flex p-3 border-b border-white/10 items-center gap-3 bg-black/10">
                   <Link href={`/u/${selectedUser.username}`} className="flex items-center gap-3">
                     <div className="relative">
                       <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
@@ -491,7 +500,7 @@ export default function Messages() {
                   </div>
                 </ScrollArea>
 
-                <div className="p-3 border-t border-border/50 bg-background/50 backdrop-blur-sm">
+                <div className="p-3 border-t border-white/10 bg-black/10 backdrop-blur-md">
                   <div className="flex gap-2 items-end">
                     <Input
                       placeholder="Type a message..."
@@ -530,6 +539,6 @@ export default function Messages() {
           </div>
         </div>
       </main>
-    </div>
+    </NativeScreen>
   );
 }

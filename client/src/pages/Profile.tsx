@@ -156,13 +156,13 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-4 md:pt-24">
+    <div className="min-h-screen bg-background pt-20 pb-24 sm:pb-6 sm:pt-24">
       
-      <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-3 md:px-0">
+      <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 lg:px-6">
         {/* Profile Header - Glass card on neutral dark */}
         <div className="relative glass-panel overflow-hidden rounded-2xl">
           {currentUser.bannerUrl ? (
-            <div className="h-32 md:h-48 w-full overflow-hidden">
+            <div className="h-32 sm:h-48 w-full overflow-hidden">
               <img
                 src={currentUser.bannerUrl}
                 alt="Profile banner"
@@ -170,13 +170,13 @@ export default function Profile() {
               />
             </div>
           ) : (
-            <div className="h-32 md:h-48 bg-gradient-to-r from-primary/5 via-zinc-900/80 to-zinc-800/80 w-full" />
+            <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/5 via-zinc-900/80 to-zinc-800/80 w-full" />
           )}
           
-          <div className="px-4 md:px-8 -mt-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
-            <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
+          <div className="px-4 sm:px-8 -mt-12 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
               <div className="relative">
-                <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-xl">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-background shadow-xl">
                   <AvatarImage src={currentUser.avatarUrl || undefined} />
                   <AvatarFallback>{currentUser.username[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
@@ -184,13 +184,13 @@ export default function Profile() {
                   <img 
                     src="/owner-crown.png"
                     alt="Owner crown"
-                    className="absolute -top-[33px] left-1/2 -translate-x-[calc(50%+10px)] w-24 h-18 md:w-36 md:h-22 rotate-[-8deg] drop-shadow-lg pointer-events-none z-10"
+                    className="absolute -top-[33px] left-1/2 -translate-x-[calc(50%+10px)] w-24 h-18 sm:w-36 sm:h-22 rotate-[-8deg] drop-shadow-lg pointer-events-none z-10"
                   />
                 )}
               </div>
               
               <div className="mb-2">
-                <h1 className="text-2xl md:text-3xl font-display font-bold flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl font-display font-bold flex items-center gap-2 flex-wrap">
                   @{currentUser.username}
                   <UserProfileBadges userId={currentUser.id} size="sm" maxBadges={5} />
                   {currentUser.membershipTier !== "free" && <span className="text-primary text-xl">✓</span>}
@@ -214,7 +214,7 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="flex gap-2 w-full md:w-auto mb-2 flex-wrap">
+            <div className="flex gap-2 w-full sm:w-auto mb-2 flex-wrap">
               <Link href="/profile/edit">
                 <Button variant="outline" className="gap-2 glass-button border-white/10 hover:bg-white/10" data-testid="button-edit-profile">
                   <Edit className="h-4 w-4" />
@@ -239,7 +239,7 @@ export default function Profile() {
         </div>
 
         {/* Stats & Bio */}
-        <div className="px-4 md:px-8 py-6 space-y-4">
+        <div className="px-4 sm:px-8 py-6 space-y-4">
           <div className="flex gap-6 text-sm">
             <div className="flex items-center gap-1 glass-button px-3 py-1.5 rounded-lg" data-testid="stat-bars">
               <span className="font-bold text-white">{stats?.barsCount ?? 0}</span>
@@ -303,7 +303,7 @@ export default function Profile() {
           </div>
 
           {currentUser.bio && (
-            <p className="text-sm md:text-base max-w-xl" data-testid="text-bio">
+            <p className="text-sm sm:text-base max-w-xl" data-testid="text-bio">
               {currentUser.bio}
             </p>
           )}
@@ -403,7 +403,7 @@ export default function Profile() {
         </div>
 
         {/* Tabs - modern pill-style indicator */}
-        <div className="px-4 md:px-8">
+        <div className="px-4 sm:px-8">
           <Tabs defaultValue="bars" className="w-full">
             <TabsList className="w-full justify-start bg-muted/40 border-0 rounded-2xl h-auto p-1 gap-1">
               <TabsTrigger 

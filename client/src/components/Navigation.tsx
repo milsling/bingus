@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, Search, LogOut, Compass, Swords, NotebookPen } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog } from "lucide-react";
 import headerLogo from "@/assets/logo.png";
 import { useBars } from "@/context/BarContext";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -9,7 +9,7 @@ import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import { NewMessageDialog } from "@/components/NewMessageDialog";
 import { BottomNav } from "@/components/BottomNav";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +21,7 @@ import {
 export default function Navigation() {
   const [location, setLocation] = useLocation();
   const { currentUser, logout } = useBars();
+  const { theme, setTheme } = useTheme();
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
@@ -79,6 +80,13 @@ export default function Navigation() {
                 <Link href="/challenges" className="flex items-center gap-3 cursor-pointer">
                   <Swords className="h-4 w-4" />
                   <span>Challenges</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={currentUser ? "/profile/edit" : "/auth"} className="flex items-center gap-3 cursor-pointer">
+                  <Settings2 className="h-4 w-4" />
+                  <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               {currentUser && (
@@ -165,7 +173,45 @@ export default function Navigation() {
         
         {/* Right: Actions */}
         <div className="flex items-center gap-1">
-          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-foreground/80"
+                aria-label="Open settings"
+                data-testid="button-desktop-settings"
+              >
+                <Settings2 className="h-5 w-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Appearance
+              </div>
+              <DropdownMenuItem onClick={() => setTheme("light")} className="flex items-center gap-2 cursor-pointer">
+                <Sun className="h-4 w-4" />
+                <span>Light</span>
+                {theme === "light" && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")} className="flex items-center gap-2 cursor-pointer">
+                <Moon className="h-4 w-4" />
+                <span>Dark</span>
+                {theme === "dark" && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")} className="flex items-center gap-2 cursor-pointer">
+                <Monitor className="h-4 w-4" />
+                <span>System</span>
+                {theme === "system" && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={currentUser ? "/profile/edit" : "/auth"} className="flex items-center gap-2 cursor-pointer">
+                  <UserCog className="h-4 w-4" />
+                  <span>{currentUser ? "Account Settings" : "Sign in for Settings"}</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {currentUser ? (
             <>
               {isOnMessagesPage ? (
@@ -199,7 +245,7 @@ export default function Navigation() {
         </div>
       </header>
 
-      {/* Mobile Top Bar - Slim glass bar: logo, search, notifications, online */}
+      {/* Mobile Top Bar - Slim glass bar: logo, notifications, online */}
       <div className="md:hidden fixed top-[calc(env(safe-area-inset-top)+0.5rem)] left-3 right-3 z-[998] overflow-visible">
         <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-4 overflow-visible">
           <Link href="/">
@@ -212,15 +258,6 @@ export default function Navigation() {
             </div>
           </Link>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-foreground/80"
-              aria-label="Search"
-              data-testid="button-search-top"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-            <ThemeToggle />
             {currentUser && <NotificationBell />}
             <OnlineStatusIndicator />
           </div>

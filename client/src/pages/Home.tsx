@@ -14,8 +14,20 @@ import { SearchBar } from "@/components/SearchBar";
 import FeedBarCard from "@/components/FeedBarCard";
 import ActivityStrip from "@/components/ActivityStrip";
 import CommunitySpotlight from "@/components/CommunitySpotlight";
+import {
+  NativeFab,
+  NativeGlassCard,
+  NativeScreen,
+  NativeSegmentedControl,
+} from "@/components/ui/native-shell";
 
 type FeedTab = "latest" | "top" | "trending" | "challenges";
+const FEED_TAB_OPTIONS: Array<{ value: FeedTab; label: string }> = [
+  { value: "latest", label: "Latest" },
+  { value: "top", label: "Top" },
+  { value: "trending", label: "Trending" },
+  { value: "challenges", label: "Challenges" },
+];
 
 function formatCompact(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
@@ -179,8 +191,10 @@ export default function Home() {
   const clearTagFilter = () => setLocation("/");
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8">
-      <main className="mx-auto max-w-7xl px-4 md:px-6">
+    <NativeScreen
+      className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8"
+      contentClassName="px-4 md:px-6"
+    >
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="space-y-5">
             <div className="md:hidden sticky top-[calc(env(safe-area-inset-top)+3.4rem)] z-30">
@@ -189,7 +203,7 @@ export default function Home() {
               </div>
             </div>
 
-            <section className="relative overflow-hidden rounded-3xl glass-panel border border-white/[0.08] p-6 md:p-8">
+            <NativeGlassCard animate className="relative overflow-hidden border-white/[0.08] p-6 md:p-8">
               <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
               <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl pointer-events-none" />
 
@@ -251,7 +265,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </section>
+            </NativeGlassCard>
 
             <ActivityStrip items={activityItems} />
             <CommunitySpotlight spotlight={spotlight ?? null} />
@@ -331,27 +345,14 @@ export default function Home() {
             )}
 
             {!tagFilter && (
-              <div className="rounded-2xl border border-border/60 bg-card/60 p-2 flex flex-wrap gap-2">
-                {(
-                  [
-                    { id: "latest", label: "Latest" },
-                    { id: "top", label: "Top" },
-                    { id: "trending", label: "Trending" },
-                    { id: "challenges", label: "Challenges" },
-                  ] as Array<{ id: FeedTab; label: string }>
-                ).map((tab) => (
-                  <Button
-                    key={tab.id}
-                    variant={activeTab === tab.id ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={activeTab === tab.id ? "bg-primary text-primary-foreground" : ""}
-                    data-testid={`feed-tab-${tab.id}`}
-                  >
-                    {tab.label}
-                  </Button>
-                ))}
-              </div>
+              <NativeGlassCard className="p-2">
+                <NativeSegmentedControl
+                  value={activeTab}
+                  onChange={(tab) => setActiveTab(tab)}
+                  options={FEED_TAB_OPTIONS}
+                  className="w-full"
+                />
+              </NativeGlassCard>
             )}
 
             <PullToRefresh onRefresh={handleRefresh}>
@@ -387,7 +388,7 @@ export default function Home() {
 
           <aside className="hidden lg:block">
             <div className="sticky top-20 space-y-4">
-              <section className="rounded-2xl border border-border/60 bg-card/70 p-4">
+              <NativeGlassCard className="rounded-2xl p-4">
                 <p className="mb-3 text-sm font-semibold flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-yellow-500" />
                   Top lyricists
@@ -423,9 +424,9 @@ export default function Home() {
                     </Link>
                   ))}
                 </div>
-              </section>
+              </NativeGlassCard>
 
-              <section className="rounded-2xl border border-border/60 bg-card/70 p-4">
+              <NativeGlassCard className="rounded-2xl p-4">
                 <p className="mb-2 text-sm font-semibold flex items-center gap-2">
                   <Compass className="h-4 w-4 text-primary" />
                   Explore
@@ -453,11 +454,18 @@ export default function Home() {
                     My Bars
                   </Button>
                 </div>
-              </section>
+              </NativeGlassCard>
             </div>
           </aside>
         </div>
-      </main>
-    </div>
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+5.8rem)] right-4 z-[980] md:hidden">
+        <NativeFab
+          href="/post"
+          label="Drop"
+          icon={<PenLine className="mr-1.5 h-4 w-4" />}
+          testId="button-mobile-drop-fab"
+        />
+      </div>
+    </NativeScreen>
   );
 }
