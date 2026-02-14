@@ -8,7 +8,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import { NewMessageDialog } from "@/components/NewMessageDialog";
-import { BottomNav } from "@/components/BottomNav";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
   DropdownMenu,
@@ -25,7 +25,6 @@ export default function Navigation() {
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   
   const isOnMessagesPage = location.startsWith("/messages");
 
@@ -36,11 +35,22 @@ export default function Navigation() {
 
   return (
     <>
-      {/* Mobile Bottom Nav - Fixed to screen bottom */}
-      <BottomNav
-        onNewMessage={() => setNewMessageOpen(true)}
-        searchOpen={searchOpen}
-        onSearchOpenChange={setSearchOpen}
+      <FloatingActionButton
+        onDropABar={() => setLocation(currentUser ? "/post" : "/auth")}
+        onSwipeLeft={() => {
+          if (!currentUser) {
+            setLocation("/auth");
+            return;
+          }
+
+          if (isOnMessagesPage) {
+            setNewMessageOpen(true);
+            return;
+          }
+
+          setLocation("/messages");
+        }}
+        onSwipeRight={() => setLocation(currentUser ? "/profile" : "/auth")}
       />
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}

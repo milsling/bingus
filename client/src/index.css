@@ -776,3 +776,131 @@ html.dark {
   }
 }
 
+/* ========================================
+  Floating Action Button System (mobile)
+  ======================================== */
+.fab-button {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 64px;
+  background: rgba(59, 130, 246, 0.95); /* glassmorphism blue */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  z-index: 9999;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.button-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  background: rgba(9, 12, 20, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.nav-overlay-anchor {
+  position: fixed;
+  left: 50%;
+  bottom: 104px;
+  width: min(92vw, 360px);
+  transform: translateX(-50%);
+  z-index: 9998;
+}
+
+.nav-overlay {
+  width: 100%;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(180deg, rgba(16, 23, 40, 0.9), rgba(9, 14, 28, 0.93));
+  box-shadow: 0 24px 52px rgba(3, 7, 18, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  transform-origin: bottom center;
+}
+
+.nav-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem 0.65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.nav-overlay-close {
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-overlay-grid {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.8rem;
+}
+
+.nav-overlay-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.65rem 0.75rem;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.nav-overlay-item:active {
+  transform: scale(0.98);
+}
+
+.nav-overlay-item:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.nav-overlay-item-icon {
+  width: 1.95rem;
+  height: 1.95rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(191, 219, 254);
+  background: rgba(59, 130, 246, 0.25);
+}
+
+@media (min-width: 768px) {
+  .fab-button { display: none; }
+  .nav-overlay-backdrop,
+  .nav-overlay-anchor { display: none; }
+}
+
