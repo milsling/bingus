@@ -54,7 +54,7 @@ export default function Navigation() {
       />
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar overflow-visible">
+      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-[1200] items-center justify-between px-2 rounded-2xl floating-bar overflow-visible">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -256,7 +256,7 @@ export default function Navigation() {
       </header>
 
       {/* Mobile Top Bar - Slim glass bar: logo, notifications, online */}
-      <div className="md:hidden fixed top-[calc(env(safe-area-inset-top)+0.5rem)] left-3 right-3 z-[998] overflow-visible">
+      <div className="md:hidden fixed mobile-topbar-offset left-3 right-3 z-[1200] overflow-visible">
         <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-4 overflow-visible">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">

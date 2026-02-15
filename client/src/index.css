@@ -190,6 +190,12 @@
   --duration-modal: 350ms;
   --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
   --ease-ios: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Mobile floating header/search spacing tokens */
+  --mobile-header-top-offset: 0.5rem;
+  --mobile-header-height: 3rem;
+  --mobile-search-gap: 0.75rem;
+  --mobile-search-reserved-space: 5.25rem;
 }
 
 .dark {
@@ -776,6 +782,14 @@ html.dark {
   }
 }
 
+@media (max-width: 380px) {
+  :root {
+    --mobile-header-top-offset: 0.4rem;
+    --mobile-search-gap: 0.6rem;
+    --mobile-search-reserved-space: 5rem;
+  }
+}
+
 /* ========================================
   Floating Action Button System (mobile)
   ======================================== */
@@ -902,5 +916,22 @@ html.dark {
   .fab-button { display: none; }
   .nav-overlay-backdrop,
   .nav-overlay-anchor { display: none; }
+}
+
+.mobile-topbar-offset {
+  top: calc(env(safe-area-inset-top) + var(--mobile-header-top-offset));
+}
+
+.mobile-search-offset {
+  top: calc(
+    env(safe-area-inset-top)
+    + var(--mobile-header-top-offset)
+    + var(--mobile-header-height)
+    + var(--mobile-search-gap)
+  );
+}
+
+.mobile-search-spacer {
+  height: var(--mobile-search-reserved-space);
 }
 
