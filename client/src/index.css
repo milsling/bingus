@@ -836,6 +836,7 @@ html.dark {
   padding: 0.35rem 0.7rem;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  pointer-events: auto;
 }
 
 .fab-debug-toggle-active {
@@ -844,7 +845,7 @@ html.dark {
 }
 
 .fab-debug-panel {
-  width: min(88vw, 320px);
+  width: min(82vw, 300px);
   border-radius: 0.85rem;
   border: 1px solid hsl(var(--primary) / 0.4);
   background: hsl(var(--background) / 0.92);
@@ -855,6 +856,7 @@ html.dark {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  pointer-events: auto;
 }
 
 .fab-debug-title {

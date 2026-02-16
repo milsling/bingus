@@ -411,7 +411,7 @@ export function FloatingActionButton({
       <NavOverlay isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} items={navItems} />
 
       {canDebug && (
-        <div className="md:hidden fixed left-3 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[10002] flex flex-col items-start gap-2">
+        <div className="md:hidden fixed left-3 top-[calc(env(safe-area-inset-top)+4.2rem)] z-[10002] flex flex-col items-start gap-2 pointer-events-none">
           <button
             type="button"
             onClick={() => setDebugEnabled((enabled) => !enabled)}
