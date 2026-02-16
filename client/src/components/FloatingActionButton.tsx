@@ -18,11 +18,25 @@ import {
 import { useBars } from "@/context/BarContext";
 import { NavOverlay, type NavOverlayItem } from "@/components/NavOverlay";
 import { useGestureControl } from "@/hooks/useGestureControl";
+import { cn } from "@/lib/utils";
 
 interface FloatingActionButtonProps {
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   onDropABar?: () => void;
+}
+
+interface GestureDebugState {
+  lastEvent: string;
+  tapCount: number;
+  swipeUpCount: number;
+  swipeLeftCount: number;
+  swipeRightCount: number;
+  holdCount: number;
+  touchActive: boolean;
+  touchStart: { x: number; y: number } | null;
+  touchMove: { x: number; y: number; dx: number; dy: number } | null;
+  updatedAt: number;
 }
 
 export function FloatingActionButton({
@@ -34,9 +48,25 @@ export function FloatingActionButton({
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [hapticPulseKey, setHapticPulseKey] = useState(0);
+  const [debugEnabled, setDebugEnabled] = useState(false);
+  const [debugState, setDebugState] = useState<GestureDebugState>({
+    lastEvent: "idle",
+    tapCount: 0,
+    swipeUpCount: 0,
+    swipeLeftCount: 0,
+    swipeRightCount: 0,
+    holdCount: 0,
+    touchActive: false,
+    touchStart: null,
+    touchMove: null,
+    updatedAt: Date.now(),
+  });
   const suppressClickRef = useRef(false);
   const lastTouchEndAtRef = useRef(0);
+  const touchActiveRef = useRef(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const { currentUser } = useBars();
+  const canDebug = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
 
   useEffect(() => {
     const updateIsMobile = () => setIsMobile(window.innerWidth < 768);
@@ -48,6 +78,28 @@ export function FloatingActionButton({
   useEffect(() => {
     setIsNavOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    if (!canDebug) {
+      setDebugEnabled(false);
+      return;
+    }
+    const saved = window.localStorage.getItem("fab-debug-enabled");
+    setDebugEnabled(saved === "1");
+  }, [canDebug]);
+
+  useEffect(() => {
+    if (!canDebug) return;
+    window.localStorage.setItem("fab-debug-enabled", debugEnabled ? "1" : "0");
+  }, [canDebug, debugEnabled]);
+
+  const updateDebugState = useCallback(
+    (updater: (prev: GestureDebugState) => GestureDebugState) => {
+      if (!canDebug || !debugEnabled) return;
+      setDebugState((prev) => updater(prev));
+    },
+    [canDebug, debugEnabled],
+  );
 
   const navigate = useCallback(
     (path: string) => {
@@ -83,21 +135,65 @@ export function FloatingActionButton({
     navigate(currentUser ? "/profile" : "/auth");
   }, [onSwipeRight, navigate, currentUser]);
 
+  const handleTapAction = useCallback(() => {
+    updateDebugState((prev) => ({
+      ...prev,
+      lastEvent: "tap-open-menu",
+      tapCount: prev.tapCount + 1,
+      updatedAt: Date.now(),
+    }));
+    setIsNavOpen((open) => !open);
+  }, [updateDebugState]);
+
+  const handleSwipeUpAction = useCallback(() => {
+    updateDebugState((prev) => ({
+      ...prev,
+      lastEvent: "swipe-up-drop-bar",
+      swipeUpCount: prev.swipeUpCount + 1,
+      updatedAt: Date.now(),
+    }));
+    setIsNavOpen(false);
+    runDropABar();
+  }, [updateDebugState, runDropABar]);
+
+  const handleSwipeLeftAction = useCallback(() => {
+    updateDebugState((prev) => ({
+      ...prev,
+      lastEvent: "swipe-left-quick-action",
+      swipeLeftCount: prev.swipeLeftCount + 1,
+      updatedAt: Date.now(),
+    }));
+    setIsNavOpen(false);
+    runSwipeLeft();
+  }, [updateDebugState, runSwipeLeft]);
+
+  const handleSwipeRightAction = useCallback(() => {
+    updateDebugState((prev) => ({
+      ...prev,
+      lastEvent: "swipe-right-quick-action",
+      swipeRightCount: prev.swipeRightCount + 1,
+      updatedAt: Date.now(),
+    }));
+    setIsNavOpen(false);
+    runSwipeRight();
+  }, [updateDebugState, runSwipeRight]);
+
   const { handleTouchStart, handleTouchMove, handleTouchEnd, isHolding } = useGestureControl(
-    () => setIsNavOpen((open) => !open),
-    () => {
-      setIsNavOpen(false);
-      runDropABar();
-    },
-    () => {
-      setIsNavOpen(false);
-      runSwipeLeft();
-    },
-    () => {
-      setIsNavOpen(false);
-      runSwipeRight();
-    },
+    handleTapAction,
+    handleSwipeUpAction,
+    handleSwipeLeftAction,
+    handleSwipeRightAction,
   );
+
+  useEffect(() => {
+    if (!isHolding) return;
+    updateDebugState((prev) => ({
+      ...prev,
+      lastEvent: "hold-active",
+      holdCount: prev.holdCount + 1,
+      updatedAt: Date.now(),
+    }));
+  }, [isHolding, updateDebugState]);
 
   const navItems = useMemo<NavOverlayItem[]>(() => {
     if (!currentUser) {
@@ -209,36 +305,151 @@ export function FloatingActionButton({
     (event: React.TouchEvent<HTMLButtonElement>) => {
       event.preventDefault();
       suppressClickRef.current = true;
+      touchActiveRef.current = true;
+      const touch = event.nativeEvent.touches[0];
+      const touchStart = touch ? { x: touch.clientX, y: touch.clientY } : null;
+      touchStartRef.current = touchStart;
+      updateDebugState((prev) => ({
+        ...prev,
+        lastEvent: "element-touchstart",
+        touchActive: true,
+        touchStart,
+        touchMove: null,
+        updatedAt: Date.now(),
+      }));
       setHapticPulseKey((key) => key + 1);
       if ("vibrate" in navigator) navigator.vibrate(10);
       handleTouchStart(event.nativeEvent);
     },
-    [handleTouchStart],
+    [handleTouchStart, updateDebugState],
   );
 
   const finishTouchInteraction = useCallback(
-    (event: React.TouchEvent<HTMLButtonElement>) => {
+    (event: Event | React.TouchEvent<HTMLButtonElement>, source: "element" | "window") => {
       event.preventDefault();
+      if (!touchActiveRef.current) return;
+      touchActiveRef.current = false;
+      touchStartRef.current = null;
       handleTouchEnd();
       lastTouchEndAtRef.current = Date.now();
+      updateDebugState((prev) => ({
+        ...prev,
+        lastEvent: `${source}-touchend`,
+        touchActive: false,
+        touchMove: null,
+        updatedAt: Date.now(),
+      }));
       window.setTimeout(() => {
         suppressClickRef.current = false;
       }, 450);
     },
-    [handleTouchEnd],
+    [handleTouchEnd, updateDebugState],
   );
+
+  const trackTouchMoveForDebug = useCallback(
+    (touch: Touch) => {
+      const start = touchStartRef.current;
+      if (!start) return;
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      updateDebugState((prev) => ({
+        ...prev,
+        lastEvent: "touchmove",
+        touchMove: { x: touch.clientX, y: touch.clientY, dx, dy },
+        updatedAt: Date.now(),
+      }));
+    },
+    [updateDebugState],
+  );
+
+  useEffect(() => {
+    const onWindowTouchMove = (event: TouchEvent) => {
+      if (!touchActiveRef.current) return;
+      event.preventDefault();
+      handleTouchMove(event);
+      const touch = event.touches[0];
+      if (touch) trackTouchMoveForDebug(touch);
+    };
+
+    const onWindowTouchEnd = (event: TouchEvent) => {
+      finishTouchInteraction(event, "window");
+    };
+
+    window.addEventListener("touchmove", onWindowTouchMove, { passive: false });
+    window.addEventListener("touchend", onWindowTouchEnd, { passive: false });
+    window.addEventListener("touchcancel", onWindowTouchEnd, { passive: false });
+
+    return () => {
+      window.removeEventListener("touchmove", onWindowTouchMove);
+      window.removeEventListener("touchend", onWindowTouchEnd);
+      window.removeEventListener("touchcancel", onWindowTouchEnd);
+    };
+  }, [finishTouchInteraction, handleTouchMove, trackTouchMoveForDebug]);
 
   const onFabClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    if (suppressClickRef.current || Date.now() - lastTouchEndAtRef.current < 450) return;
+    if (suppressClickRef.current || Date.now() - lastTouchEndAtRef.current < 450) {
+      updateDebugState((prev) => ({
+        ...prev,
+        lastEvent: "click-blocked",
+        updatedAt: Date.now(),
+      }));
+      return;
+    }
+    updateDebugState((prev) => ({
+      ...prev,
+      lastEvent: "click-toggle-menu",
+      updatedAt: Date.now(),
+    }));
     setIsNavOpen((open) => !open);
-  }, []);
+  }, [updateDebugState]);
 
   if (!isMobile) return null;
 
   return (
     <>
       <NavOverlay isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} items={navItems} />
+
+      {canDebug && (
+        <div className="md:hidden fixed left-3 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[10002] flex flex-col items-start gap-2">
+          <button
+            type="button"
+            onClick={() => setDebugEnabled((enabled) => !enabled)}
+            className={cn(
+              "fab-debug-toggle",
+              debugEnabled && "fab-debug-toggle-active",
+            )}
+            data-testid="button-fab-debug-toggle"
+          >
+            {debugEnabled ? "Hide FAB Debug" : "Show FAB Debug"}
+          </button>
+
+          {debugEnabled && (
+            <div className="fab-debug-panel" data-testid="panel-fab-debug">
+              <p className="fab-debug-title">FAB Gesture Debug</p>
+              <p>Event: {debugState.lastEvent}</p>
+              <p>Holding: {isHolding ? "yes" : "no"}</p>
+              <p>Touch Active: {debugState.touchActive ? "yes" : "no"}</p>
+              <p>Menu Open: {isNavOpen ? "yes" : "no"}</p>
+              <p>
+                Tap/Up/Left/Right: {debugState.tapCount}/{debugState.swipeUpCount}/
+                {debugState.swipeLeftCount}/{debugState.swipeRightCount}
+              </p>
+              <p>Hold Count: {debugState.holdCount}</p>
+              <p>
+                Start: {debugState.touchStart ? `${debugState.touchStart.x},${debugState.touchStart.y}` : "-"}
+              </p>
+              <p>
+                Move:{" "}
+                {debugState.touchMove
+                  ? `${debugState.touchMove.x},${debugState.touchMove.y} (dx ${Math.round(debugState.touchMove.dx)}, dy ${Math.round(debugState.touchMove.dy)})`
+                  : "-"}
+              </p>
+              <p>Updated: {new Date(debugState.updatedAt).toLocaleTimeString()}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <motion.button
         type="button"
@@ -253,9 +464,11 @@ export function FloatingActionButton({
         onTouchMove={(event) => {
           event.preventDefault();
           handleTouchMove(event.nativeEvent);
+          const touch = event.nativeEvent.touches[0];
+          if (touch) trackTouchMoveForDebug(touch);
         }}
-        onTouchEnd={finishTouchInteraction}
-        onTouchCancel={finishTouchInteraction}
+        onTouchEnd={(event) => finishTouchInteraction(event, "element")}
+        onTouchCancel={(event) => finishTouchInteraction(event, "element")}
         onClick={onFabClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
