@@ -80,7 +80,7 @@ export const useGestureControl = (
   );
 
   const handleTouchEnd = useCallback(() => {
-    if (!gestureHandled.current && !isHoldingRef.current && startPosRef.current) onTap(); // tap = nav menu
+    if (!gestureHandled.current && startPosRef.current) onTap(); // tap/hold without swipe = nav menu
     gestureHandled.current = false;
     resetTrackingState();
   }, [onTap, resetTrackingState]);
