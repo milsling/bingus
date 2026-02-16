@@ -3,6 +3,9 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
   Bookmark,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
   Home,
   LayoutGrid,
   LogIn,
@@ -26,6 +29,8 @@ interface FloatingActionButtonProps {
   onDropABar?: () => void;
 }
 
+type ShortcutDirection = "up" | "left" | "right";
+
 interface GestureDebugState {
   lastEvent: string;
   tapCount: number;
@@ -48,6 +53,7 @@ export function FloatingActionButton({
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [hapticPulseKey, setHapticPulseKey] = useState(0);
+  const [pendingShortcut, setPendingShortcut] = useState<ShortcutDirection | null>(null);
   const [debugEnabled, setDebugEnabled] = useState(false);
   const [debugState, setDebugState] = useState<GestureDebugState>({
     lastEvent: "idle",
@@ -64,6 +70,7 @@ export function FloatingActionButton({
   const suppressClickRef = useRef(false);
   const lastTouchEndAtRef = useRef(0);
   const lastGestureActionAtRef = useRef(0);
+  const shortcutTimerRef = useRef<number | null>(null);
   const touchActiveRef = useRef(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const { currentUser } = useBars();
@@ -79,6 +86,14 @@ export function FloatingActionButton({
   useEffect(() => {
     setIsNavOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    return () => {
+      if (shortcutTimerRef.current !== null) {
+        window.clearTimeout(shortcutTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!canDebug) {
@@ -136,7 +151,48 @@ export function FloatingActionButton({
     navigate(currentUser ? "/profile" : "/auth");
   }, [onSwipeRight, navigate, currentUser]);
 
+  const runShortcutAction = useCallback(
+    (direction: ShortcutDirection) => {
+      if (direction === "up") runDropABar();
+      else if (direction === "left") runSwipeLeft();
+      else runSwipeRight();
+    },
+    [runDropABar, runSwipeLeft, runSwipeRight],
+  );
+
+  const queueShortcutAction = useCallback(
+    (direction: ShortcutDirection) => {
+      lastGestureActionAtRef.current = Date.now();
+      setIsNavOpen(false);
+      setPendingShortcut(direction);
+      updateDebugState((prev) => ({
+        ...prev,
+        lastEvent: `shortcut-animate-${direction}`,
+        swipeUpCount: direction === "up" ? prev.swipeUpCount + 1 : prev.swipeUpCount,
+        swipeLeftCount: direction === "left" ? prev.swipeLeftCount + 1 : prev.swipeLeftCount,
+        swipeRightCount: direction === "right" ? prev.swipeRightCount + 1 : prev.swipeRightCount,
+        updatedAt: Date.now(),
+      }));
+
+      if (shortcutTimerRef.current !== null) {
+        window.clearTimeout(shortcutTimerRef.current);
+      }
+
+      shortcutTimerRef.current = window.setTimeout(() => {
+        setPendingShortcut(null);
+        runShortcutAction(direction);
+        updateDebugState((prev) => ({
+          ...prev,
+          lastEvent: `shortcut-open-${direction}`,
+          updatedAt: Date.now(),
+        }));
+      }, 180);
+    },
+    [runShortcutAction, updateDebugState],
+  );
+
   const handleTapAction = useCallback(() => {
+    if (pendingShortcut) return;
     lastGestureActionAtRef.current = Date.now();
     updateDebugState((prev) => ({
       ...prev,
@@ -145,45 +201,28 @@ export function FloatingActionButton({
       updatedAt: Date.now(),
     }));
     setIsNavOpen((open) => !open);
-  }, [updateDebugState]);
+  }, [pendingShortcut, updateDebugState]);
 
   const handleSwipeUpAction = useCallback(() => {
-    lastGestureActionAtRef.current = Date.now();
-    updateDebugState((prev) => ({
-      ...prev,
-      lastEvent: "swipe-up-drop-bar",
-      swipeUpCount: prev.swipeUpCount + 1,
-      updatedAt: Date.now(),
-    }));
-    setIsNavOpen(false);
-    runDropABar();
-  }, [updateDebugState, runDropABar]);
+    queueShortcutAction("up");
+  }, [queueShortcutAction]);
 
   const handleSwipeLeftAction = useCallback(() => {
-    lastGestureActionAtRef.current = Date.now();
-    updateDebugState((prev) => ({
-      ...prev,
-      lastEvent: "swipe-left-quick-action",
-      swipeLeftCount: prev.swipeLeftCount + 1,
-      updatedAt: Date.now(),
-    }));
-    setIsNavOpen(false);
-    runSwipeLeft();
-  }, [updateDebugState, runSwipeLeft]);
+    queueShortcutAction("left");
+  }, [queueShortcutAction]);
 
   const handleSwipeRightAction = useCallback(() => {
-    lastGestureActionAtRef.current = Date.now();
-    updateDebugState((prev) => ({
-      ...prev,
-      lastEvent: "swipe-right-quick-action",
-      swipeRightCount: prev.swipeRightCount + 1,
-      updatedAt: Date.now(),
-    }));
-    setIsNavOpen(false);
-    runSwipeRight();
-  }, [updateDebugState, runSwipeRight]);
+    queueShortcutAction("right");
+  }, [queueShortcutAction]);
 
-  const { handleTouchStart, handleTouchMove, handleTouchEnd, isHolding } = useGestureControl(
+  const {
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    isHolding,
+    previewDirection,
+    gestureVector,
+  } = useGestureControl(
     handleTapAction,
     handleSwipeUpAction,
     handleSwipeLeftAction,
@@ -308,6 +347,7 @@ export function FloatingActionButton({
 
   const onFabTouchStart = useCallback(
     (event: React.TouchEvent<HTMLButtonElement>) => {
+      if (pendingShortcut) return;
       event.preventDefault();
       suppressClickRef.current = true;
       touchActiveRef.current = true;
@@ -326,7 +366,7 @@ export function FloatingActionButton({
       if ("vibrate" in navigator) navigator.vibrate(10);
       handleTouchStart(event.nativeEvent);
     },
-    [handleTouchStart, updateDebugState],
+    [pendingShortcut, handleTouchStart, updateDebugState],
   );
 
   const finishTouchInteraction = useCallback(
@@ -335,7 +375,8 @@ export function FloatingActionButton({
       if (!touchActiveRef.current) return;
       touchActiveRef.current = false;
       touchStartRef.current = null;
-      handleTouchEnd();
+      const nativeEvent = "nativeEvent" in event ? event.nativeEvent : event;
+      handleTouchEnd(nativeEvent as TouchEvent);
       lastTouchEndAtRef.current = Date.now();
       updateDebugState((prev) => ({
         ...prev,
@@ -393,6 +434,7 @@ export function FloatingActionButton({
 
   const onFabClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    if (pendingShortcut) return;
     const now = Date.now();
     const touchEndedRecently = now - lastTouchEndAtRef.current < 450;
     const gestureHandledRecently = now - lastGestureActionAtRef.current < 450;
@@ -421,7 +463,24 @@ export function FloatingActionButton({
       updatedAt: now,
     }));
     setIsNavOpen((open) => !open);
-  }, [updateDebugState]);
+  }, [pendingShortcut, updateDebugState]);
+
+  const hudVisible = isHolding || pendingShortcut !== null;
+  const clampedGestureVector = useMemo(
+    () => ({
+      dx: Math.max(-76, Math.min(76, gestureVector.dx)),
+      dy: Math.max(-86, Math.min(34, gestureVector.dy)),
+    }),
+    [gestureVector],
+  );
+
+  const shortcutButtonAnimation = useMemo(() => {
+    if (!pendingShortcut) return null;
+
+    if (pendingShortcut === "up") return { x: [0, 0], y: [0, -26], scale: [1, 1.08] };
+    if (pendingShortcut === "left") return { x: [0, -26], y: [0, 0], scale: [1, 1.08] };
+    return { x: [0, 26], y: [0, 0], scale: [1, 1.08] };
+  }, [pendingShortcut]);
 
   if (!isMobile) return null;
 
@@ -470,10 +529,63 @@ export function FloatingActionButton({
         </div>
       )}
 
+      {hudVisible && (
+        <div className="fab-gesture-hud" aria-hidden>
+          <motion.div
+            className={cn(
+              "fab-gesture-target fab-gesture-target-up",
+              (previewDirection === "up" || pendingShortcut === "up") && "fab-gesture-target-active",
+            )}
+            animate={previewDirection === "up" || pendingShortcut === "up" ? { scale: 1.12, opacity: 1 } : { scale: 1, opacity: 0.7 }}
+            transition={{ type: "spring", stiffness: 440, damping: 30 }}
+          >
+            <ChevronUp className="h-4 w-4" />
+          </motion.div>
+          <motion.div
+            className={cn(
+              "fab-gesture-target fab-gesture-target-left",
+              (previewDirection === "left" || pendingShortcut === "left") && "fab-gesture-target-active",
+            )}
+            animate={previewDirection === "left" || pendingShortcut === "left" ? { scale: 1.12, opacity: 1 } : { scale: 1, opacity: 0.7 }}
+            transition={{ type: "spring", stiffness: 440, damping: 30 }}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </motion.div>
+          <motion.div
+            className={cn(
+              "fab-gesture-target fab-gesture-target-right",
+              (previewDirection === "right" || pendingShortcut === "right") && "fab-gesture-target-active",
+            )}
+            animate={previewDirection === "right" || pendingShortcut === "right" ? { scale: 1.12, opacity: 1 } : { scale: 1, opacity: 0.7 }}
+            transition={{ type: "spring", stiffness: 440, damping: 30 }}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </motion.div>
+
+          {isHolding && (
+            <motion.div
+              className="fab-gesture-cursor"
+              animate={{ x: clampedGestureVector.dx, y: clampedGestureVector.dy }}
+              transition={{ type: "spring", stiffness: 420, damping: 32 }}
+            />
+          )}
+        </div>
+      )}
+
       <motion.button
         type="button"
-        animate={isHolding ? { scale: 1.1, boxShadow: "0 12px 32px rgba(0,0,0,0.3)" } : { scale: 1 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        animate={
+          shortcutButtonAnimation
+            ? { ...shortcutButtonAnimation, boxShadow: "0 14px 34px rgba(0,0,0,0.34)" }
+            : isHolding
+              ? { scale: 1.1, boxShadow: "0 12px 32px rgba(0,0,0,0.3)" }
+              : { scale: 1, x: 0, y: 0 }
+        }
+        transition={
+          shortcutButtonAnimation
+            ? { duration: 0.18, ease: "easeOut" }
+            : { type: "spring", stiffness: 500, damping: 30 }
+        }
         transformTemplate={(_, generated) => `translateX(-50%) ${generated}`}
         className="fab-button"
         aria-label="Open main navigation menu"
@@ -481,6 +593,7 @@ export function FloatingActionButton({
         data-testid="floating-action-button"
         onTouchStart={onFabTouchStart}
         onTouchMove={(event) => {
+          if (pendingShortcut) return;
           event.preventDefault();
           handleTouchMove(event.nativeEvent);
           const touch = event.nativeEvent.touches[0];
@@ -490,6 +603,7 @@ export function FloatingActionButton({
         onTouchCancel={(event) => finishTouchInteraction(event, "element")}
         onClick={onFabClick}
         onKeyDown={(event) => {
+          if (pendingShortcut) return;
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
             setIsNavOpen((open) => !open);
