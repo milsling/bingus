@@ -31,7 +31,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
 import { VersionCheck } from "@/components/VersionCheck";
 import { SwipeBackNavigation } from "@/components/SwipeBackNavigation";
-import AIAssistant from "@/components/AIAssistant";
 import { useBackground } from "@/components/BackgroundSelector";
 import Navigation from "@/components/Navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -128,7 +127,6 @@ function App() {
               <SwipeBackNavigation>
                 <Router />
               </SwipeBackNavigation>
-              <AIAssistant hideFloatingButton />
             </TooltipProvider>
           </BarProvider>
         </ThemeProvider>
