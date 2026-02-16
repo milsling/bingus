@@ -514,6 +514,8 @@ export function FloatingActionButton({
                 {debugState.swipeLeftCount}/{debugState.swipeRightCount}
               </p>
               <p>Hold Count: {debugState.holdCount}</p>
+              <p>Preview Direction: {previewDirection ?? "-"}</p>
+              <p>Pending Shortcut: {pendingShortcut ?? "-"}</p>
               <p>
                 Start: {debugState.touchStart ? `${debugState.touchStart.x},${debugState.touchStart.y}` : "-"}
               </p>
@@ -616,9 +618,11 @@ export function FloatingActionButton({
           transition={{ duration: 0.1, ease: "easeOut" }}
           className="button-inner"
         >
-          <motion.div animate={{ rotate: isNavOpen ? 45 : 0 }} transition={{ duration: 0.2 }}>
-            <Plus className="h-8 w-8 text-white" strokeWidth={2.1} />
-          </motion.div>
+          <motion.div
+            className={cn("fab-ring-core", isNavOpen && "fab-ring-core-open")}
+            animate={isNavOpen ? { scale: 1.04 } : { scale: 1 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+          />
         </motion.div>
       </motion.button>
     </>
