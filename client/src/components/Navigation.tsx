@@ -54,7 +54,7 @@ export default function Navigation() {
       />
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-[1200] items-center justify-between px-2 rounded-2xl floating-bar overflow-visible">
+      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar overflow-visible">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-2">
           <DropdownMenu>

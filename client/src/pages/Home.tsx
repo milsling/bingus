@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BarWithUser } from "@shared/schema";
 import { Link, useLocation, useSearch } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ import { SearchBar } from "@/components/SearchBar";
 import FeedBarCard from "@/components/FeedBarCard";
 import ActivityStrip from "@/components/ActivityStrip";
 import CommunitySpotlight from "@/components/CommunitySpotlight";
+import { cn } from "@/lib/utils";
 import {
   NativeGlassCard,
   NativeScreen,
@@ -35,6 +36,9 @@ function formatCompact(value: number) {
 export default function Home() {
   const { bars, isLoadingBars, refetchBars, currentUser } = useBars();
   const [activeTab, setActiveTab] = useState<FeedTab>("latest");
+  const [isSearchVisible, setIsSearchVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+  const isScrollTickingRef = useRef(false);
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const searchString = useSearch();
@@ -189,12 +193,49 @@ export default function Home() {
 
   const clearTagFilter = () => setLocation("/");
 
+  useEffect(() => {
+    const SCROLL_DELTA_THRESHOLD = 10;
+
+    const handleScroll = () => {
+      if (window.innerWidth >= 768 || isScrollTickingRef.current) return;
+
+      isScrollTickingRef.current = true;
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+
+        if (currentScrollY <= 8) {
+          setIsSearchVisible(true);
+          lastScrollYRef.current = currentScrollY;
+          isScrollTickingRef.current = false;
+          return;
+        }
+
+        const delta = currentScrollY - lastScrollYRef.current;
+        if (Math.abs(delta) >= SCROLL_DELTA_THRESHOLD) {
+          if (delta > 0) setIsSearchVisible(false);
+          else setIsSearchVisible(true);
+          lastScrollYRef.current = currentScrollY;
+        }
+
+        isScrollTickingRef.current = false;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <NativeScreen
       className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8"
       contentClassName="px-4 md:px-6"
     >
-        <div className="md:hidden fixed mobile-search-offset left-3 right-3 z-[1190]">
+        <div
+          className={cn(
+            "md:hidden fixed mobile-search-offset left-3 right-3 z-[1190] transition-all duration-200 ease-out",
+            isSearchVisible ? "translate-y-0 opacity-100" : "-translate-y-[130%] opacity-0 pointer-events-none",
+          )}
+        >
           <div className="glass-surface rounded-2xl p-3">
             <SearchBar />
           </div>
@@ -202,7 +243,13 @@ export default function Home() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="space-y-5">
-            <div className="mobile-search-spacer md:hidden" aria-hidden />
+            <div
+              className={cn(
+                "md:hidden transition-[height] duration-200 ease-out",
+                isSearchVisible ? "mobile-search-spacer" : "h-0",
+              )}
+              aria-hidden
+            />
 
             <NativeGlassCard animate className="relative overflow-hidden border-white/[0.08] p-6 md:p-8">
               <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />

@@ -8,69 +8,82 @@ export const useGestureControl = (
 ) => {
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
   const [isHolding, setIsHolding] = useState(false);
+  const startPosRef = useRef<{ x: number; y: number } | null>(null);
+  const isHoldingRef = useRef(false);
   const holdTimer = useRef<NodeJS.Timeout | null>(null);
   const gestureHandled = useRef(false);
 
+  const resetTrackingState = useCallback(() => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    isHoldingRef.current = false;
+    setIsHolding(false);
+    startPosRef.current = null;
+    setStartPos(null);
+  }, []);
+
   useEffect(() => {
     return () => {
-      if (holdTimer.current) clearTimeout(holdTimer.current);
+      resetTrackingState();
     };
-  }, []);
+  }, [resetTrackingState]);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     e.preventDefault();
     const touch = e.touches[0];
     if (!touch) return;
 
+    if (holdTimer.current) clearTimeout(holdTimer.current);
     gestureHandled.current = false;
-    setStartPos({ x: touch.clientX, y: touch.clientY });
-    holdTimer.current = setTimeout(() => setIsHolding(true), 300);
+    isHoldingRef.current = false;
+    setIsHolding(false);
+
+    const nextStartPos = { x: touch.clientX, y: touch.clientY };
+    startPosRef.current = nextStartPos;
+    setStartPos(nextStartPos);
+
+    holdTimer.current = setTimeout(() => {
+      isHoldingRef.current = true;
+      setIsHolding(true);
+    }, 300);
   }, []);
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
-      if (!startPos || !isHolding || gestureHandled.current) return;
+      const currentStartPos = startPosRef.current;
+      if (!currentStartPos || !isHoldingRef.current || gestureHandled.current) return;
       const touch = e.touches[0];
       if (!touch) return;
 
-      const dx = touch.clientX - startPos.x;
-      const dy = touch.clientY - startPos.y;
+      const dx = touch.clientX - currentStartPos.x;
+      const dy = touch.clientY - currentStartPos.y;
 
       if (Math.abs(dy) > 40 && dy < 0) {
         gestureHandled.current = true;
-        if (holdTimer.current) clearTimeout(holdTimer.current);
-        setIsHolding(false);
-        setStartPos(null);
+        resetTrackingState();
         onSwipeUp();
         return;
       } // up = Drop a Bar
       if (Math.abs(dx) > 40 && dx > 0) {
         gestureHandled.current = true;
-        if (holdTimer.current) clearTimeout(holdTimer.current);
-        setIsHolding(false);
-        setStartPos(null);
+        resetTrackingState();
         onSwipeRight();
         return;
       } // right = custom
       if (Math.abs(dx) > 40 && dx < 0) {
         gestureHandled.current = true;
-        if (holdTimer.current) clearTimeout(holdTimer.current);
-        setIsHolding(false);
-        setStartPos(null);
+        resetTrackingState();
         onSwipeLeft();
         return;
       } // left = custom
     },
-    [startPos, isHolding, onSwipeUp, onSwipeLeft, onSwipeRight],
+    [onSwipeUp, onSwipeLeft, onSwipeRight, resetTrackingState],
   );
 
   const handleTouchEnd = useCallback(() => {
-    if (!gestureHandled.current && !isHolding && startPos) onTap(); // tap = nav menu
-    if (holdTimer.current) clearTimeout(holdTimer.current);
+    if (!gestureHandled.current && !isHoldingRef.current && startPosRef.current) onTap(); // tap = nav menu
     gestureHandled.current = false;
-    setIsHolding(false);
-    setStartPos(null);
-  }, [startPos, isHolding, onTap]);
+    resetTrackingState();
+  }, [onTap, resetTrackingState]);
 
   return { handleTouchStart, handleTouchMove, handleTouchEnd, isHolding };
 };
