@@ -825,6 +825,44 @@ html.dark {
   justify-content: center;
 }
 
+.fab-debug-toggle {
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--primary) / 0.45);
+  background: hsl(var(--background) / 0.92);
+  color: hsl(var(--foreground));
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.35rem 0.7rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.fab-debug-toggle-active {
+  background: hsl(var(--primary) / 0.22);
+  border-color: hsl(var(--primary) / 0.65);
+}
+
+.fab-debug-panel {
+  width: min(88vw, 320px);
+  border-radius: 0.85rem;
+  border: 1px solid hsl(var(--primary) / 0.4);
+  background: hsl(var(--background) / 0.92);
+  color: hsl(var(--foreground));
+  font-size: 0.68rem;
+  line-height: 1.35;
+  padding: 0.55rem 0.65rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.fab-debug-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
 .nav-overlay-backdrop {
   position: fixed;
   inset: 0;
