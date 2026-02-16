@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 type Point = { x: number; y: number };
 type ShortcutDirection = "up" | "left" | "right";
+type GestureInputEvent = TouchEvent | PointerEvent;
 
 const HOLD_DELAY_MS = 300;
 const SHORTCUT_THRESHOLD = 36;
@@ -17,11 +18,15 @@ const resolveDirection = (dx: number, dy: number): ShortcutDirection | null => {
   return null;
 };
 
-const getTouchPoint = (event: TouchEvent, useChangedTouches = false): Point | null => {
-  const list = useChangedTouches ? event.changedTouches : event.touches;
-  const touch = list[0];
-  if (!touch) return null;
-  return { x: touch.clientX, y: touch.clientY };
+const getInputPoint = (event: GestureInputEvent, useChangedTouches = false): Point | null => {
+  if ("touches" in event) {
+    const list = useChangedTouches ? event.changedTouches : event.touches;
+    const touch = list[0];
+    if (!touch) return null;
+    return { x: touch.clientX, y: touch.clientY };
+  }
+
+  return { x: event.clientX, y: event.clientY };
 };
 
 export const useGestureControl = (
@@ -59,9 +64,9 @@ export const useGestureControl = (
     };
   }, [resetTrackingState]);
 
-  const handleTouchStart = useCallback((event: TouchEvent) => {
+  const handleTouchStart = useCallback((event: GestureInputEvent) => {
     event.preventDefault();
-    const point = getTouchPoint(event);
+    const point = getInputPoint(event);
     if (!point) return;
 
     if (holdTimer.current) clearTimeout(holdTimer.current);
@@ -81,11 +86,11 @@ export const useGestureControl = (
     }, HOLD_DELAY_MS);
   }, []);
 
-  const handleTouchMove = useCallback((event: TouchEvent) => {
+  const handleTouchMove = useCallback((event: GestureInputEvent) => {
     const start = startPosRef.current;
     if (!start) return;
 
-    const point = getTouchPoint(event);
+    const point = getInputPoint(event);
     if (!point) return;
 
     currentPosRef.current = point;
@@ -101,7 +106,7 @@ export const useGestureControl = (
   }, []);
 
   const handleTouchEnd = useCallback(
-    (event?: TouchEvent) => {
+    (event?: GestureInputEvent) => {
       const start = startPosRef.current;
       if (!start) {
         resetTrackingState();
@@ -109,7 +114,7 @@ export const useGestureControl = (
       }
 
       const endPoint =
-        (event ? getTouchPoint(event, true) : null) ?? currentPosRef.current ?? start;
+        (event ? getInputPoint(event, true) : null) ?? currentPosRef.current ?? start;
 
       const dx = endPoint.x - start.x;
       const dy = endPoint.y - start.y;

@@ -67,12 +67,10 @@ export function FloatingActionButton({
     touchMove: null,
     updatedAt: Date.now(),
   });
-  const suppressClickRef = useRef(false);
-  const lastTouchEndAtRef = useRef(0);
-  const lastGestureActionAtRef = useRef(0);
   const shortcutTimerRef = useRef<number | null>(null);
   const touchActiveRef = useRef(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const activePointerIdRef = useRef<number | null>(null);
   const { currentUser } = useBars();
   const canDebug = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
 
@@ -162,7 +160,6 @@ export function FloatingActionButton({
 
   const queueShortcutAction = useCallback(
     (direction: ShortcutDirection) => {
-      lastGestureActionAtRef.current = Date.now();
       setIsNavOpen(false);
       setPendingShortcut(direction);
       updateDebugState((prev) => ({
@@ -193,7 +190,6 @@ export function FloatingActionButton({
 
   const handleTapAction = useCallback(() => {
     if (pendingShortcut) return;
-    lastGestureActionAtRef.current = Date.now();
     updateDebugState((prev) => ({
       ...prev,
       lastEvent: "tap-open-menu",
@@ -345,125 +341,95 @@ export function FloatingActionButton({
     return items;
   }, [currentUser, navigate, runDropABar]);
 
-  const onFabTouchStart = useCallback(
-    (event: React.TouchEvent<HTMLButtonElement>) => {
-      if (pendingShortcut) return;
-      event.preventDefault();
-      suppressClickRef.current = true;
-      touchActiveRef.current = true;
-      const touch = event.nativeEvent.touches[0];
-      const touchStart = touch ? { x: touch.clientX, y: touch.clientY } : null;
-      touchStartRef.current = touchStart;
-      updateDebugState((prev) => ({
-        ...prev,
-        lastEvent: "element-touchstart",
-        touchActive: true,
-        touchStart,
-        touchMove: null,
-        updatedAt: Date.now(),
-      }));
-      setHapticPulseKey((key) => key + 1);
-      if ("vibrate" in navigator) navigator.vibrate(10);
-      handleTouchStart(event.nativeEvent);
-    },
-    [pendingShortcut, handleTouchStart, updateDebugState],
-  );
-
-  const finishTouchInteraction = useCallback(
-    (event: Event | React.TouchEvent<HTMLButtonElement>, source: "element" | "window") => {
-      event.preventDefault();
-      if (!touchActiveRef.current) return;
-      touchActiveRef.current = false;
-      touchStartRef.current = null;
-      const nativeEvent = "nativeEvent" in event ? event.nativeEvent : event;
-      handleTouchEnd(nativeEvent as TouchEvent);
-      lastTouchEndAtRef.current = Date.now();
-      updateDebugState((prev) => ({
-        ...prev,
-        lastEvent: `${source}-touchend`,
-        touchActive: false,
-        touchMove: null,
-        updatedAt: Date.now(),
-      }));
-      window.setTimeout(() => {
-        suppressClickRef.current = false;
-      }, 450);
-    },
-    [handleTouchEnd, updateDebugState],
-  );
-
-  const trackTouchMoveForDebug = useCallback(
-    (touch: Touch) => {
+  const trackMoveForDebug = useCallback(
+    (point: { x: number; y: number }) => {
       const start = touchStartRef.current;
       if (!start) return;
-      const dx = touch.clientX - start.x;
-      const dy = touch.clientY - start.y;
+      const dx = point.x - start.x;
+      const dy = point.y - start.y;
       updateDebugState((prev) => ({
         ...prev,
-        lastEvent: "touchmove",
-        touchMove: { x: touch.clientX, y: touch.clientY, dx, dy },
+        lastEvent: "pointermove",
+        touchMove: { x: point.x, y: point.y, dx, dy },
         updatedAt: Date.now(),
       }));
     },
     [updateDebugState],
   );
 
-  useEffect(() => {
-    const onWindowTouchMove = (event: TouchEvent) => {
-      if (!touchActiveRef.current) return;
+  const onFabPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (pendingShortcut) return;
+      if (event.button !== 0) return;
+      if (!event.isPrimary) return;
+
       event.preventDefault();
-      handleTouchMove(event);
-      const touch = event.touches[0];
-      if (touch) trackTouchMoveForDebug(touch);
-    };
-
-    const onWindowTouchEnd = (event: TouchEvent) => {
-      finishTouchInteraction(event, "window");
-    };
-
-    window.addEventListener("touchmove", onWindowTouchMove, { passive: false });
-    window.addEventListener("touchend", onWindowTouchEnd, { passive: false });
-    window.addEventListener("touchcancel", onWindowTouchEnd, { passive: false });
-
-    return () => {
-      window.removeEventListener("touchmove", onWindowTouchMove);
-      window.removeEventListener("touchend", onWindowTouchEnd);
-      window.removeEventListener("touchcancel", onWindowTouchEnd);
-    };
-  }, [finishTouchInteraction, handleTouchMove, trackTouchMoveForDebug]);
-
-  const onFabClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    if (pendingShortcut) return;
-    const now = Date.now();
-    const touchEndedRecently = now - lastTouchEndAtRef.current < 450;
-    const gestureHandledRecently = now - lastGestureActionAtRef.current < 450;
-
-    if (suppressClickRef.current || touchEndedRecently) {
-      if (!gestureHandledRecently) {
-        updateDebugState((prev) => ({
-          ...prev,
-          lastEvent: "click-fallback-toggle",
-          updatedAt: now,
-        }));
-        setIsNavOpen((open) => !open);
-        return;
+      activePointerIdRef.current = event.pointerId;
+      touchActiveRef.current = true;
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        // Some mobile browsers may ignore pointer capture silently.
       }
 
+      const touchStart = { x: event.clientX, y: event.clientY };
+      touchStartRef.current = touchStart;
       updateDebugState((prev) => ({
         ...prev,
-        lastEvent: "click-blocked-touch-handled",
-        updatedAt: now,
+        lastEvent: "pointerdown",
+        touchActive: true,
+        touchStart,
+        touchMove: null,
+        updatedAt: Date.now(),
       }));
-      return;
-    }
-    updateDebugState((prev) => ({
-      ...prev,
-      lastEvent: "click-toggle-menu",
-      updatedAt: now,
-    }));
-    setIsNavOpen((open) => !open);
-  }, [pendingShortcut, updateDebugState]);
+
+      setHapticPulseKey((key) => key + 1);
+      if ("vibrate" in navigator && event.pointerType === "touch") navigator.vibrate(10);
+      handleTouchStart(event.nativeEvent);
+    },
+    [pendingShortcut, updateDebugState, handleTouchStart],
+  );
+
+  const onFabPointerMove = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (pendingShortcut) return;
+      if (activePointerIdRef.current !== event.pointerId) return;
+
+      event.preventDefault();
+      handleTouchMove(event.nativeEvent);
+      trackMoveForDebug({ x: event.clientX, y: event.clientY });
+    },
+    [pendingShortcut, handleTouchMove, trackMoveForDebug],
+  );
+
+  const finishPointerInteraction = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>, source: "pointerup" | "pointercancel") => {
+      if (activePointerIdRef.current !== null && event.pointerId !== activePointerIdRef.current) return;
+
+      event.preventDefault();
+      try {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      } catch {
+        // Ignore capture-release errors on inconsistent browser implementations.
+      }
+      activePointerIdRef.current = null;
+      if (!touchActiveRef.current) return;
+
+      touchActiveRef.current = false;
+      touchStartRef.current = null;
+      handleTouchEnd(event.nativeEvent);
+      updateDebugState((prev) => ({
+        ...prev,
+        lastEvent: source,
+        touchActive: false,
+        touchMove: null,
+        updatedAt: Date.now(),
+      }));
+    },
+    [handleTouchEnd, updateDebugState],
+  );
 
   const hudVisible = isHolding || pendingShortcut !== null;
   const clampedGestureVector = useMemo(
@@ -593,17 +559,10 @@ export function FloatingActionButton({
         aria-label="Open main navigation menu"
         aria-expanded={isNavOpen}
         data-testid="floating-action-button"
-        onTouchStart={onFabTouchStart}
-        onTouchMove={(event) => {
-          if (pendingShortcut) return;
-          event.preventDefault();
-          handleTouchMove(event.nativeEvent);
-          const touch = event.nativeEvent.touches[0];
-          if (touch) trackTouchMoveForDebug(touch);
-        }}
-        onTouchEnd={(event) => finishTouchInteraction(event, "element")}
-        onTouchCancel={(event) => finishTouchInteraction(event, "element")}
-        onClick={onFabClick}
+        onPointerDown={onFabPointerDown}
+        onPointerMove={onFabPointerMove}
+        onPointerUp={(event) => finishPointerInteraction(event, "pointerup")}
+        onPointerCancel={(event) => finishPointerInteraction(event, "pointercancel")}
         onKeyDown={(event) => {
           if (pendingShortcut) return;
           if (event.key === "Enter" || event.key === " ") {
