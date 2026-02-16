@@ -275,9 +275,18 @@ export default function Navigation() {
               </span>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {currentUser && <NotificationBell />}
-            <OnlineStatusIndicator />
+            <button
+              type="button"
+              onClick={() => setLocation(currentUser ? "/profile/edit" : "/auth")}
+              className="h-8 w-8 rounded-full border border-white/15 bg-white/[0.04] text-foreground/85 hover:bg-white/[0.1] transition-colors flex items-center justify-center shrink-0"
+              aria-label="Open settings"
+              data-testid="button-mobile-settings"
+            >
+              <Settings2 className="h-4 w-4" />
+            </button>
+            <OnlineStatusIndicator compact />
           </div>
         </div>
       </div>
