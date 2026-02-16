@@ -63,6 +63,7 @@ export function FloatingActionButton({
   });
   const suppressClickRef = useRef(false);
   const lastTouchEndAtRef = useRef(0);
+  const lastGestureActionAtRef = useRef(0);
   const touchActiveRef = useRef(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const { currentUser } = useBars();
@@ -136,6 +137,7 @@ export function FloatingActionButton({
   }, [onSwipeRight, navigate, currentUser]);
 
   const handleTapAction = useCallback(() => {
+    lastGestureActionAtRef.current = Date.now();
     updateDebugState((prev) => ({
       ...prev,
       lastEvent: "tap-open-menu",
@@ -146,6 +148,7 @@ export function FloatingActionButton({
   }, [updateDebugState]);
 
   const handleSwipeUpAction = useCallback(() => {
+    lastGestureActionAtRef.current = Date.now();
     updateDebugState((prev) => ({
       ...prev,
       lastEvent: "swipe-up-drop-bar",
@@ -157,6 +160,7 @@ export function FloatingActionButton({
   }, [updateDebugState, runDropABar]);
 
   const handleSwipeLeftAction = useCallback(() => {
+    lastGestureActionAtRef.current = Date.now();
     updateDebugState((prev) => ({
       ...prev,
       lastEvent: "swipe-left-quick-action",
@@ -168,6 +172,7 @@ export function FloatingActionButton({
   }, [updateDebugState, runSwipeLeft]);
 
   const handleSwipeRightAction = useCallback(() => {
+    lastGestureActionAtRef.current = Date.now();
     updateDebugState((prev) => ({
       ...prev,
       lastEvent: "swipe-right-quick-action",
@@ -388,18 +393,32 @@ export function FloatingActionButton({
 
   const onFabClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    if (suppressClickRef.current || Date.now() - lastTouchEndAtRef.current < 450) {
+    const now = Date.now();
+    const touchEndedRecently = now - lastTouchEndAtRef.current < 450;
+    const gestureHandledRecently = now - lastGestureActionAtRef.current < 450;
+
+    if (suppressClickRef.current || touchEndedRecently) {
+      if (!gestureHandledRecently) {
+        updateDebugState((prev) => ({
+          ...prev,
+          lastEvent: "click-fallback-toggle",
+          updatedAt: now,
+        }));
+        setIsNavOpen((open) => !open);
+        return;
+      }
+
       updateDebugState((prev) => ({
         ...prev,
-        lastEvent: "click-blocked",
-        updatedAt: Date.now(),
+        lastEvent: "click-blocked-touch-handled",
+        updatedAt: now,
       }));
       return;
     }
     updateDebugState((prev) => ({
       ...prev,
       lastEvent: "click-toggle-menu",
-      updatedAt: Date.now(),
+      updatedAt: now,
     }));
     setIsNavOpen((open) => !open);
   }, [updateDebugState]);
