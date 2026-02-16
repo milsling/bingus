@@ -9,6 +9,7 @@ import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
 import { NewMessageDialog } from "@/components/NewMessageDialog";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
+import AIAssistant from "@/components/AIAssistant";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ export default function Navigation() {
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const [araOpen, setAraOpen] = useState(false);
   
   const isOnMessagesPage = location.startsWith("/messages");
 
@@ -50,7 +52,13 @@ export default function Navigation() {
 
           setLocation("/messages");
         }}
-        onSwipeRight={() => setLocation(currentUser ? "/profile" : "/auth")}
+        onSwipeRight={() => {
+          if (!currentUser) {
+            setLocation("/auth");
+            return;
+          }
+          setAraOpen(true);
+        }}
       />
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
@@ -275,6 +283,7 @@ export default function Navigation() {
       </div>
       
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
+      <AIAssistant open={araOpen} onOpenChange={setAraOpen} hideFloatingButton />
     </>
   );
 }
