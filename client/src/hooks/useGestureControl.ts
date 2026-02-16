@@ -4,15 +4,15 @@ type Point = { x: number; y: number };
 type ShortcutDirection = "up" | "left" | "right";
 
 const HOLD_DELAY_MS = 300;
-const SHORTCUT_THRESHOLD = 48;
+const SHORTCUT_THRESHOLD = 36;
 
 const resolveDirection = (dx: number, dy: number): ShortcutDirection | null => {
   const absX = Math.abs(dx);
   const absY = Math.abs(dy);
 
-  if (dy < -SHORTCUT_THRESHOLD && absY >= absX * 0.9) return "up";
-  if (dx < -SHORTCUT_THRESHOLD && absX >= absY * 0.9) return "left";
-  if (dx > SHORTCUT_THRESHOLD && absX >= absY * 0.9) return "right";
+  if (dy < -SHORTCUT_THRESHOLD && absY >= absX * 0.55) return "up";
+  if (dx < -SHORTCUT_THRESHOLD && absX >= absY * 0.55) return "left";
+  if (dx > SHORTCUT_THRESHOLD && absX >= absY * 0.55) return "right";
   return null;
 };
 
@@ -36,6 +36,7 @@ export const useGestureControl = (
 
   const startPosRef = useRef<Point | null>(null);
   const currentPosRef = useRef<Point | null>(null);
+  const previewDirectionRef = useRef<ShortcutDirection | null>(null);
   const isHoldingRef = useRef(false);
   const holdTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -44,6 +45,7 @@ export const useGestureControl = (
     isHoldingRef.current = false;
     setIsHolding(false);
     setPreviewDirection(null);
+    previewDirectionRef.current = null;
     startPosRef.current = null;
     currentPosRef.current = null;
     setStartPos(null);
@@ -65,6 +67,7 @@ export const useGestureControl = (
     isHoldingRef.current = false;
     setIsHolding(false);
     setPreviewDirection(null);
+    previewDirectionRef.current = null;
 
     startPosRef.current = point;
     currentPosRef.current = point;
@@ -91,7 +94,9 @@ export const useGestureControl = (
 
     const dx = point.x - start.x;
     const dy = point.y - start.y;
-    setPreviewDirection(resolveDirection(dx, dy));
+    const direction = resolveDirection(dx, dy);
+    previewDirectionRef.current = direction;
+    setPreviewDirection(direction);
   }, []);
 
   const handleTouchEnd = useCallback(
@@ -104,7 +109,9 @@ export const useGestureControl = (
 
       const dx = endPoint.x - start.x;
       const dy = endPoint.y - start.y;
-      const direction = isHoldingRef.current ? resolveDirection(dx, dy) : null;
+      const direction = isHoldingRef.current
+        ? resolveDirection(dx, dy) ?? previewDirectionRef.current
+        : null;
 
       if (direction === "up") onSwipeUp();
       else if (direction === "left") onSwipeLeft();
