@@ -5,6 +5,7 @@ type ShortcutDirection = "up" | "left" | "right";
 
 const HOLD_DELAY_MS = 300;
 const SHORTCUT_THRESHOLD = 36;
+const TAP_JITTER_THRESHOLD = 12; // New: max movement for a tap (px)
 
 const resolveDirection = (dx: number, dy: number): ShortcutDirection | null => {
   const absX = Math.abs(dx);
@@ -102,21 +103,41 @@ export const useGestureControl = (
   const handleTouchEnd = useCallback(
     (event?: TouchEvent) => {
       const start = startPosRef.current;
-      if (!start) return;
+      if (!start) {
+        resetTrackingState();
+        return;
+      }
 
       const endPoint =
         (event ? getTouchPoint(event, true) : null) ?? currentPosRef.current ?? start;
 
       const dx = endPoint.x - start.x;
       const dy = endPoint.y - start.y;
-      const direction = isHoldingRef.current
-        ? resolveDirection(dx, dy) ?? previewDirectionRef.current
-        : null;
+      const movementDistance = Math.sqrt(dx * dx + dy * dy);
 
-      if (direction === "up") onSwipeUp();
-      else if (direction === "left") onSwipeLeft();
-      else if (direction === "right") onSwipeRight();
-      else onTap();
+      // FIXED LOGIC: Tap vs Swipe decision on release
+      // - If movement is tiny AND not holding → tap
+      // - If holding → always try to resolve a swipe direction (even if movement is small)
+      // - No fallback to tap after long press; either swipe or nothing
+      if (isHoldingRef.current) {
+        // Long press: prioritize swipe direction from full gesture
+        const direction = resolveDirection(dx, dy) ?? previewDirectionRef.current;
+        if (direction === "up") {
+          onSwipeUp();
+        } else if (direction === "left") {
+          onSwipeLeft();
+        } else if (direction === "right") {
+          onSwipeRight();
+        } else {
+          // Long press with no clear direction: do nothing (no fallback to tap)
+          // This prevents accidental nav opens after a failed swipe
+        }
+      } else if (movementDistance < TAP_JITTER_THRESHOLD) {
+        // Quick tap: open nav
+        onTap();
+      } else {
+        // Short gesture with too much movement: ignore
+      }
 
       resetTrackingState();
     },
