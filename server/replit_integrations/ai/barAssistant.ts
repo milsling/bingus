@@ -475,8 +475,7 @@ If verified platform profile data is not provided, say you do not have that spec
               { role: "system", content: compactSystemPrompt },
               { role: "user", content: safeMessage },
             ],
-            temperature: 0.7,
-            maxTokens: 500,
+            model: "grok-4-latest",
           });
 
           if (compactResponse?.trim()) {
