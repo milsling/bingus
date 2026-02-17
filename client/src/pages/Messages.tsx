@@ -338,10 +338,10 @@ export default function Messages() {
   return (
     <NativeScreen
       className="bg-background pt-20 pb-24 md:pb-4 md:pt-24"
-      contentClassName="w-full max-w-none md:max-w-6xl"
+      contentClassName="max-w-6xl"
     >
       <main className="h-[calc(100dvh-80px)] w-full md:h-[calc(100vh-64px)] md:p-4">
-        <div className="h-full w-full overflow-hidden rounded-none border-y border-white/10 bg-black/20 backdrop-blur-xl md:rounded-[1.9rem] md:border flex">
+        <div className="h-full w-full overflow-hidden rounded-[1.35rem] border border-white/10 bg-black/20 backdrop-blur-xl md:rounded-[1.9rem] flex">
           
           <div className="hidden md:flex w-80 border-r border-white/10 flex-col">
             <div className="p-4 border-b border-white/10 flex items-center justify-between">

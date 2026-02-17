@@ -339,6 +339,35 @@ export interface PlatformContext {
   }>;
 }
 
+function buildFallbackAraResponse(message: string, platformContext?: PlatformContext): string {
+  const normalized = message.toLowerCase();
+  const topicWords = message
+    .replace(/[^\w\s]/g, " ")
+    .split(/\s+/)
+    .filter((word) => word.length > 3)
+    .slice(0, 3);
+  const topic = topicWords.join(" ") || "that idea";
+
+  if (platformContext?.users?.length) {
+    const featured = platformContext.users[0];
+    return `Ara fallback mode: I can't reach live AI right now, but I can still help. Based on saved platform data, @${featured.username} has ${featured.barCount} bars and ${featured.followerCount} followers. Try again shortly for full analysis.`;
+  }
+
+  if (normalized.includes("rhyme") || normalized.includes("rhymes")) {
+    return `Ara fallback mode: quick rhyme pack for "${topic}" -> ${topic.split(" ")[0] || "flow"}, glow, show, go, echo, tempo. Try a 2-syllable end rhyme and stack internal rhymes in the middle of your bar.`;
+  }
+
+  if (normalized.includes("explain") || normalized.includes("meaning")) {
+    return "Ara fallback mode: I can't run a full breakdown right now, but start by mapping literal meaning, hidden metaphor, and any double entendre. Then check if the punchline flips expectation on the final stressed syllable.";
+  }
+
+  if (normalized.includes("style") || normalized.includes("analyze")) {
+    return "Ara fallback mode: style analysis is temporarily limited. I can still suggest: check multisyllabic rhyme density, punchline frequency, imagery level, and narrative coherence to classify style.";
+  }
+
+  return "Ara fallback mode: live AI is temporarily unreachable, but I'm still here. Drop a bar/topic and I can give quick structure, rhyme seeds, and punchline framing while the full model reconnects.";
+}
+
 export async function chatWithAssistant(message: string, platformContext?: PlatformContext, customPersonality?: string): Promise<string> {
   if (!isXaiConfigured()) {
     return "Ara's offline right now (API key missing). Feed me `XAI_API_KEY` and I’ll get unhinged again.";
@@ -415,19 +444,19 @@ Be conversational, helpful, and honest. Keep responses concise but explosive.${p
     console.error("Chat error:", error);
     if (error instanceof XaiClientError) {
       if (error.status === 408) {
-        return "Ara timed out while thinking. Try again in a few seconds.";
+        return buildFallbackAraResponse(message, platformContext);
       }
       if (error.status === 429) {
-        return "Ara is getting flooded right now (rate-limited). Try again in about 30 seconds.";
+        return buildFallbackAraResponse(message, platformContext);
       }
       if (error.status === 401 || error.status === 403) {
         return "Ara's AI credentials are having issues. The team needs to reconnect xAI access.";
       }
       if (error.status && error.status >= 500) {
-        return "xAI is having server issues right now. Try again in a moment.";
+        return buildFallbackAraResponse(message, platformContext);
       }
     }
 
-    return "Ara hit a network issue. Try again in a moment.";
+    return buildFallbackAraResponse(message, platformContext);
   }
 }
