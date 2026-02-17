@@ -265,19 +265,29 @@ export default function Navigation() {
 
       {/* Mobile Top Bar - Slim glass bar: logo, notifications, online */}
       <div className="md:hidden fixed mobile-topbar-offset left-3 right-3 z-[1200] overflow-visible">
-        <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-4 overflow-visible">
+        <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-3 overflow-visible">
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer">
+            <div className="flex items-center gap-1.5 cursor-pointer min-w-0">
               <img src={headerLogo} alt="" className="h-6 w-6" />
-              <span className="font-logo text-base leading-none text-foreground flex items-center gap-0.5">
+              <span className="font-logo text-sm leading-none text-foreground flex items-center gap-0.5 truncate">
                 <span>ORPHAN</span>
                 <span>BARS</span>
               </span>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
-            {currentUser && <NotificationBell />}
-            <OnlineStatusIndicator />
+          <div className="flex items-center gap-1 shrink-0">
+            {currentUser && <NotificationBell compact />}
+            <button
+              type="button"
+              onClick={() => setLocation(currentUser ? "/profile/edit" : "/auth")}
+              className="h-8 px-2.5 rounded-full border border-white/15 bg-white/[0.06] text-foreground/90 hover:bg-white/[0.12] transition-colors flex items-center gap-1.5 shrink-0"
+              aria-label="Open settings"
+              data-testid="button-mobile-settings"
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-semibold leading-none">Settings</span>
+            </button>
+            <OnlineStatusIndicator compact />
           </div>
         </div>
       </div>

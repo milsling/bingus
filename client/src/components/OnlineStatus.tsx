@@ -12,7 +12,11 @@ import { useBars } from "@/context/BarContext";
 
 type OnlineStatusType = "online" | "offline" | "busy";
 
-export function OnlineStatusIndicator() {
+interface OnlineStatusIndicatorProps {
+  compact?: boolean;
+}
+
+export function OnlineStatusIndicator({ compact = false }: OnlineStatusIndicatorProps) {
   const { currentUser } = useBars();
   const queryClient = useQueryClient();
 
@@ -103,7 +107,7 @@ export function OnlineStatusIndicator() {
     return (
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Users className="h-3.5 w-3.5" />
-        <span>{onlineCount} online</span>
+        {!compact && <span>{onlineCount} online</span>}
       </div>
     );
   }
@@ -111,12 +115,17 @@ export function OnlineStatusIndicator() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" data-testid="button-online-status">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={compact ? "h-8 w-8 p-0" : "h-8 gap-1.5 text-xs"}
+          data-testid="button-online-status"
+        >
           <div className="relative">
             <Users className="h-3.5 w-3.5" />
             <div className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ${getStatusColor(currentUser.onlineStatus)} border border-background`} />
           </div>
-          <span>{onlineCount} online</span>
+          {!compact && <span>{onlineCount} online</span>}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
