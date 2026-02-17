@@ -209,7 +209,11 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
       return "Ara chat is toggled off in AI settings.";
     }
     if (araStatus.lastError?.message) {
-      return araStatus.lastError.message;
+      const statusPrefix = araStatus.lastError.status ? `HTTP ${araStatus.lastError.status}: ` : "";
+      const bodySnippet = araStatus.lastError.body
+        ? ` ${araStatus.lastError.body}`.slice(0, 180)
+        : "";
+      return `${statusPrefix}${araStatus.lastError.message}${bodySnippet}`;
     }
     if (araStatus.lastSuccessAt) {
       return `Last xAI success: ${new Date(araStatus.lastSuccessAt).toLocaleString()}`;
