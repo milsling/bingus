@@ -14,12 +14,18 @@ jobs:
       - name: Trigger Render deploy hook
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
         run: |
-          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
-            echo "Missing required secret: RENDER_DEPLOY_HOOK_URL"
+          HOOK_URL="$RENDER_DEPLOY_HOOK_URL"
+          if [ -z "$HOOK_URL" ]; then
+            HOOK_URL="$DEPLOY_HOOK"
+          fi
+
+          if [ -z "$HOOK_URL" ]; then
+            echo "Missing required secret. Set RENDER_DEPLOY_HOOK_URL or DEPLOY_HOOK."
             exit 1
           fi
 
           echo "Triggering Render deploy..."
-          curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK_URL"
+          curl --fail --silent --show-error --request POST "$HOOK_URL"
           echo "Render deploy hook triggered."
