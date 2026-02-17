@@ -381,7 +381,8 @@
   .ara-launcher-swirl,
   .ara-launcher-arc,
   .ara-launcher-ripple,
-  .ara-launcher-unhinged {
+  .ara-launcher-unhinged,
+  .ara-chat-status-pulse {
     animation: none !important;
     transition: none !important;
   }
@@ -629,6 +630,15 @@ html.dark {
   }
 }
 
+@keyframes ara-chat-status-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.16);
+  }
+}
+
 .ara-launcher-breath {
   animation: ara-launcher-breath 4s ease-in-out infinite;
 }
@@ -656,6 +666,10 @@ html.dark {
 
 .ara-launcher-unhinged {
   animation: ara-launcher-glitch 220ms steps(2, end) infinite;
+}
+
+.ara-chat-status-pulse {
+  animation: ara-chat-status-pulse 1.8s ease-in-out infinite;
 }
 
 /* ========================================
