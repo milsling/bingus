@@ -339,6 +339,19 @@ export interface PlatformContext {
   }>;
 }
 
+const MAX_CHAT_USER_MESSAGE_CHARS = 3600;
+const MAX_CHAT_CONTEXT_CHARS = 5500;
+const MAX_CHAT_PERSONALITY_CHARS = 1200;
+
+function clampForModel(text: string, maxChars: number): string {
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, maxChars)}\n\n[Input truncated for model limits.]`;
+}
+
+function sanitizeForModel(text: string): string {
+  return text.replace(/\u0000/g, "").trim();
+}
+
 function buildFallbackAraResponse(message: string, platformContext?: PlatformContext): string {
   const normalized = message.toLowerCase();
   const topicWords = message
@@ -373,6 +386,11 @@ export async function chatWithAssistant(message: string, platformContext?: Platf
     return "Ara's offline right now (API key missing). Feed me `XAI_API_KEY` and I’ll get unhinged again.";
   }
 
+  const safeMessage = clampForModel(sanitizeForModel(message), MAX_CHAT_USER_MESSAGE_CHARS);
+  const safePersonality = customPersonality
+    ? clampForModel(sanitizeForModel(customPersonality), MAX_CHAT_PERSONALITY_CHARS)
+    : "";
+
   try {
     let contextBlock = "";
     
@@ -406,7 +424,10 @@ export async function chatWithAssistant(message: string, platformContext?: Platf
       contextBlock += "=== END BARS ===\n";
     }
 
-    const personalityInstructions = customPersonality ? `\n\nADDITIONAL PERSONALITY INSTRUCTIONS FROM SITE OWNER:\n${customPersonality}\n` : "";
+    const limitedContextBlock = clampForModel(contextBlock, MAX_CHAT_CONTEXT_CHARS);
+    const personalityInstructions = safePersonality
+      ? `\n\nADDITIONAL PERSONALITY INSTRUCTIONS FROM SITE OWNER:\n${safePersonality}\n`
+      : "";
 
     const contentText = await createChatCompletion({
       messages: [
@@ -428,11 +449,11 @@ CRITICAL RULES:
 4. If someone asks "who is X" and X is not in the context, acknowledge you don't have their profile data.
 5. You can still discuss hip-hop culture, techniques, and general topics freely.
 
-Be conversational, helpful, and honest. Keep responses concise but explosive.${personalityInstructions}${contextBlock}`
+Be conversational, helpful, and honest. Keep responses concise but explosive.${personalityInstructions}${limitedContextBlock}`
         },
         {
           role: "user",
-          content: message
+          content: safeMessage
         }
       ],
       temperature: 0.8,
@@ -443,6 +464,30 @@ Be conversational, helpful, and honest. Keep responses concise but explosive.${p
   } catch (error) {
     console.error("Chat error:", error);
     if (error instanceof XaiClientError) {
+      if (error.status === 400) {
+        try {
+          const compactSystemPrompt = `You are Ara on orphanbars.space: truthful, witty, rebellious, and concise.
+Help users with bars, rhymes, punchlines, and hip-hop references.
+If verified platform profile data is not provided, say you do not have that specific profile data.`;
+
+          const compactResponse = await createChatCompletion({
+            messages: [
+              { role: "system", content: compactSystemPrompt },
+              { role: "user", content: safeMessage },
+            ],
+            temperature: 0.7,
+            maxTokens: 500,
+          });
+
+          if (compactResponse?.trim()) {
+            return compactResponse.trim();
+          }
+        } catch (recoveryError) {
+          console.error("Chat recovery error:", recoveryError);
+        }
+
+        return buildFallbackAraResponse(message, platformContext);
+      }
       if (error.status === 408) {
         return buildFallbackAraResponse(message, platformContext);
       }
