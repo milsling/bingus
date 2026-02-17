@@ -77,6 +77,10 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     if (typeof window === "undefined") return false;
     return localStorage.getItem(ARA_VOICE_MODE_KEY) === "true";
   });
+  const [isVoiceCallView, setIsVoiceCallView] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(ARA_VOICE_MODE_KEY) === "true";
+  });
   const [isVoiceTurnPending, setIsVoiceTurnPending] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(() => {
     if (typeof window === "undefined") return true;
@@ -105,7 +109,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     };
   }, []);
 
-  const speakTTS = useCallback((text: string) => {
+  const speakTTS = useCallback((text: string, onComplete?: () => void) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -113,8 +117,14 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     utterance.pitch = 1;
     utterance.lang = "en-US";
     utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      onComplete?.();
+    };
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      onComplete?.();
+    };
     window.speechSynthesis.speak(utterance);
   }, []);
 
@@ -122,6 +132,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
+      setIsVoiceTurnPending(false);
     }
   }, []);
 
@@ -149,6 +160,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
         localStorage.setItem(ARA_AUTOSPEAK_KEY, "true");
         setAutoSpeak(true);
       }
+      setIsVoiceCallView(next);
       return next;
     });
   }, [autoSpeak]);
@@ -198,6 +210,12 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
       setIsVoiceTurnPending(false);
     }
   }, [voiceModeEnabled, isVoiceTurnPending]);
+
+  useEffect(() => {
+    if (!voiceModeEnabled && isVoiceCallView) {
+      setIsVoiceCallView(false);
+    }
+  }, [voiceModeEnabled, isVoiceCallView]);
 
   useEffect(() => {
     if (!isVoiceSupported && voiceModeEnabled) {
@@ -416,7 +434,14 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
         "Sorry, I couldn't respond.";
       setMessages(prev => [...prev, { role: "assistant", content: responseText }]);
       if (autoSpeak && window.speechSynthesis) {
-        speakTTS(responseText);
+        speakTTS(
+          responseText,
+          source === "voice"
+            ? () => setIsVoiceTurnPending(false)
+            : undefined
+        );
+      } else if (source === "voice") {
+        setIsVoiceTurnPending(false);
       }
     } catch (error: any) {
       const fallback =
@@ -425,13 +450,17 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
           : error?.message || "Sorry, I couldn't respond. Try again.";
       setMessages(prev => [...prev, { role: "assistant", content: fallback }]);
       if (autoSpeak && window.speechSynthesis) {
-        speakTTS(fallback);
+        speakTTS(
+          fallback,
+          source === "voice"
+            ? () => setIsVoiceTurnPending(false)
+            : undefined
+        );
+      } else if (source === "voice") {
+        setIsVoiceTurnPending(false);
       }
     } finally {
       window.clearTimeout(timeoutId);
-      if (source === "voice") {
-        setIsVoiceTurnPending(false);
-      }
       setIsLoading(false);
       if (canViewAraStatus) {
         void fetchAraStatus();
@@ -479,7 +508,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
 
   const launcherMode: "idle" | "listening" | "thinking" = isRecording
     ? "listening"
-    : isLoading
+    : isLoading || isSpeaking
       ? "thinking"
       : "idle";
   const launcherStatusLabel =
@@ -497,12 +526,32 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
   const isCircleLauncher = launcherVariant === "circle";
   const modeBadgeClass = cn(
     "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]",
+    isSpeaking && "border-fuchsia-300/50 bg-fuchsia-400/10 text-fuchsia-100",
     launcherMode === "idle" && "border-violet-300/35 bg-violet-400/10 text-violet-100",
     launcherMode === "listening" && "ara-chat-status-pulse border-cyan-300/50 bg-cyan-300/10 text-cyan-100",
     launcherMode === "thinking" && "ara-chat-status-pulse border-violet-300/55 bg-violet-500/15 text-violet-100"
   );
   const modeLabel =
-    launcherMode === "listening" ? "Listening" : launcherMode === "thinking" ? "Thinking" : "Standby";
+    isSpeaking
+      ? "Speaking"
+      : launcherMode === "listening"
+        ? "Listening"
+        : launcherMode === "thinking"
+          ? "Thinking"
+          : "Standby";
+  const recentVoiceTranscript = messages.slice(-4);
+  const voiceSessionLabel = isRecording
+    ? "Listening..."
+    : isSpeaking
+      ? "Ara speaking..."
+      : isLoading || isVoiceTurnPending
+        ? "Thinking..."
+        : "Ready";
+  const voiceSessionHint = isRecording
+    ? "Speak naturally. Ara will answer and listen again."
+    : isSpeaking
+      ? "Ara is responding out loud."
+      : "Tap the mic to start listening.";
 
   return (
     <>
@@ -682,13 +731,9 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="h-[76vh] max-w-[min(94vw,30rem)] overflow-hidden border border-violet-300/25 bg-[#070913]/95 p-0 gap-0 shadow-[0_26px_68px_rgba(2,4,14,0.8),0_0_42px_rgba(168,85,247,0.24)]">
-          <DialogHeader className="relative overflow-hidden border-b border-violet-300/20 px-4 py-3">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(34,211,238,0.14),transparent_42%),radial-gradient(circle_at_100%_100%,rgba(168,85,247,0.24),transparent_58%),linear-gradient(180deg,rgba(7,10,22,0.98),rgba(7,9,19,0.9))]"
-            />
-            <div className="relative flex items-start justify-between gap-3">
+        <DialogContent className="flex h-[78vh] max-h-[780px] w-[min(94vw,30rem)] flex-col overflow-hidden border border-violet-300/25 bg-[#070913]/95 p-0 gap-0 text-violet-50 shadow-[0_26px_68px_rgba(2,4,14,0.8),0_0_42px_rgba(168,85,247,0.24)]">
+          <DialogHeader className="border-b border-violet-300/20 bg-[radial-gradient(circle_at_8%_0%,rgba(34,211,238,0.14),transparent_40%),radial-gradient(circle_at_100%_100%,rgba(168,85,247,0.24),transparent_56%),linear-gradient(180deg,#070a16,#090b1b)] px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 pr-2">
                 <DialogTitle className="flex items-center gap-2 text-base text-white">
                   <Sparkles className="h-4 w-4 text-violet-300" />
@@ -732,7 +777,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
                   </p>
                 )}
               </div>
-              <div className="relative z-10 flex shrink-0 items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <Button
                   type="button"
                   variant="ghost"
@@ -744,6 +789,19 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
                 >
                   {isCircleLauncher ? "Pill" : "Circle"}
                 </Button>
+                {voiceModeEnabled && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsVoiceCallView((prev) => !prev)}
+                    className="h-9 rounded-full border border-violet-300/25 bg-black/35 px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-100 hover:bg-violet-500/15"
+                    title={isVoiceCallView ? "Open chat view" : "Open call view"}
+                    data-testid="button-ara-call-view"
+                  >
+                    {isVoiceCallView ? "Chat" : "Call"}
+                  </Button>
+                )}
                 {isVoiceSupported && ttsSupported && (
                   <Button
                     type="button"
@@ -787,77 +845,132 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
             </div>
           </DialogHeader>
 
-          <ScrollArea className="relative flex-1">
-            <div className="relative min-h-full px-4 py-4">
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_8%,rgba(56,189,248,0.08),transparent_38%),radial-gradient(circle_at_82%_95%,rgba(168,85,247,0.16),transparent_45%),linear-gradient(180deg,#060811,#08091a)]"
-              />
-              {messages.length === 0 && (
-                <div className="flex h-full flex-col items-center justify-center py-8 text-center">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-violet-300/35 bg-violet-500/10">
-                    <Sparkles className="h-5 w-5 text-violet-200" />
-                  </div>
-                  <p className="text-sm font-semibold text-white">Ara is online.</p>
-                  <p className="mt-1 max-w-[260px] text-xs text-violet-100/70">
-                    Ask for punchline rewrites, rhyme chains, bar breakdowns, and strategy. Enable voice mode for real-time back-and-forth.
-                  </p>
+          {voiceModeEnabled && isVoiceCallView ? (
+            <div className="flex flex-1 flex-col bg-[radial-gradient(circle_at_20%_10%,rgba(56,189,248,0.1),transparent_42%),radial-gradient(circle_at_82%_96%,rgba(168,85,247,0.18),transparent_50%),linear-gradient(180deg,#050812,#080a1a)] px-4 py-4">
+              <div className="flex flex-1 flex-col items-center justify-center text-center">
+                <div
+                  className={cn(
+                    "relative flex h-28 w-28 items-center justify-center rounded-full border border-violet-300/35 bg-black/40 shadow-[0_0_42px_rgba(139,92,246,0.28)]",
+                    isRecording && "border-cyan-300/55 shadow-[0_0_52px_rgba(34,211,238,0.35)]",
+                    isSpeaking && "border-violet-300/55"
+                  )}
+                >
+                  {isRecording ? (
+                    <span className="flex h-10 items-end gap-1" aria-hidden>
+                      {Array.from({ length: 7 }).map((_, waveIndex) => (
+                        <span
+                          key={`ara-call-wave-${waveIndex}`}
+                          className="ara-launcher-wave block w-[3px] rounded-full bg-gradient-to-t from-cyan-200/80 to-violet-200"
+                          style={{
+                            height: `${12 + (waveIndex % 2 === 0 ? 12 : 18)}px`,
+                            animationDelay: `${waveIndex * 0.07}s`,
+                          }}
+                        />
+                      ))}
+                    </span>
+                  ) : isSpeaking ? (
+                    <Sparkles className="ara-launcher-swirl h-8 w-8 text-violet-100" />
+                  ) : (
+                    <Mic className="h-8 w-8 text-violet-100" />
+                  )}
                 </div>
-              )}
-              {messages.map((msg, i) => (
-                <div key={i} className={cn("mb-3", msg.role === "user" ? "text-right" : "text-left")}>
-                  <div
-                    className={cn(
-                      "inline-flex max-w-[88%] items-end gap-2",
-                      msg.role === "user" && "ml-auto flex-row-reverse"
-                    )}
-                  >
+                <p className="mt-4 text-lg font-semibold text-white">{voiceSessionLabel}</p>
+                <p className="mt-1 max-w-[260px] text-sm text-violet-100/70">{voiceSessionHint}</p>
+              </div>
+
+              <div className="rounded-2xl border border-violet-300/25 bg-black/35 p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-100/70">Live transcript</p>
+                <div className="mt-2 max-h-28 space-y-1.5 overflow-y-auto pr-1">
+                  {recentVoiceTranscript.length === 0 ? (
+                    <p className="text-xs text-violet-100/60">Start talking and Ara will capture your conversation here.</p>
+                  ) : (
+                    recentVoiceTranscript.map((msg, i) => (
+                      <p
+                        key={`voice-transcript-${i}`}
+                        className={cn(
+                          "text-xs leading-relaxed",
+                          msg.role === "user" ? "text-cyan-100" : "text-violet-100/85"
+                        )}
+                      >
+                        <span className="mr-1 font-semibold uppercase tracking-[0.08em] opacity-75">
+                          {msg.role === "user" ? "You:" : "Ara:"}
+                        </span>
+                        {msg.content}
+                      </p>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <ScrollArea className="flex-1 bg-[radial-gradient(circle_at_20%_8%,rgba(56,189,248,0.08),transparent_38%),radial-gradient(circle_at_82%_95%,rgba(168,85,247,0.16),transparent_45%),linear-gradient(180deg,#060811,#08091a)]">
+              <div className="flex min-h-full flex-col px-4 py-4">
+                {messages.length === 0 && (
+                  <div className="flex flex-1 flex-col items-center justify-center py-8 text-center">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-violet-300/35 bg-violet-500/10">
+                      <Sparkles className="h-5 w-5 text-violet-200" />
+                    </div>
+                    <p className="text-sm font-semibold text-white">Ara is online.</p>
+                    <p className="mt-1 max-w-[260px] text-xs text-violet-100/70">
+                      Ask for punchline rewrites, rhyme chains, bar breakdowns, and strategy. Enable voice mode for real-time back-and-forth.
+                    </p>
+                  </div>
+                )}
+                {messages.map((msg, i) => (
+                  <div key={i} className={cn("mb-3", msg.role === "user" ? "text-right" : "text-left")}>
                     <div
                       className={cn(
-                        "rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap",
-                        msg.role === "user"
-                          ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-[0_8px_18px_rgba(139,92,246,0.35)]"
-                          : "border border-violet-300/20 bg-black/35 text-violet-50"
+                        "inline-flex max-w-[88%] items-end gap-2",
+                        msg.role === "user" && "ml-auto flex-row-reverse"
                       )}
                     >
-                      {msg.content}
-                    </div>
-                    {msg.role === "assistant" && ttsSupported && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 shrink-0 rounded-full border border-violet-300/20 bg-black/30 text-violet-100 hover:bg-violet-500/15"
-                        onClick={() => (isSpeaking ? stopTTS() : speakTTS(msg.content))}
-                        title={isSpeaking ? "Stop speaking" : "Speak this response"}
-                        data-testid={`button-speak-msg-${i}`}
+                      <div
+                        className={cn(
+                          "rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap",
+                          msg.role === "user"
+                            ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-[0_8px_18px_rgba(139,92,246,0.35)]"
+                            : "border border-violet-300/20 bg-black/35 text-violet-50"
+                        )}
                       >
-                        {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                      </Button>
-                    )}
+                        {msg.content}
+                      </div>
+                      {msg.role === "assistant" && ttsSupported && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 rounded-full border border-violet-300/20 bg-black/30 text-violet-100 hover:bg-violet-500/15"
+                          onClick={() => (isSpeaking ? stopTTS() : speakTTS(msg.content))}
+                          title={isSpeaking ? "Stop speaking" : "Speak this response"}
+                          data-testid={`button-speak-msg-${i}`}
+                        >
+                          {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="mb-3 text-left">
-                  <div className="inline-flex items-center gap-2 rounded-2xl border border-violet-300/25 bg-black/40 px-3 py-2 text-xs text-violet-100/85">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Ara is thinking...
+                ))}
+                {isLoading && (
+                  <div className="mb-3 text-left">
+                    <div className="inline-flex items-center gap-2 rounded-2xl border border-violet-300/25 bg-black/40 px-3 py-2 text-xs text-violet-100/85">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Ara is thinking...
+                    </div>
                   </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+          )}
 
-          <div className="border-t border-violet-300/20 bg-[#070b18]/90 p-3">
+          <div className="border-t border-violet-300/20 bg-[#070b18] p-3">
             {voiceModeEnabled && isVoiceSupported && (
               <p className="mb-2 text-[11px] font-medium text-cyan-100/85">
                 {isRecording
                   ? "Voice mode live - listening now."
                   : isLoading || isSpeaking || isVoiceTurnPending
                     ? "Voice mode live - waiting for Ara response."
-                    : "Voice mode live - preparing microphone."}
+                    : "Voice mode live - ready for your next line."}
               </p>
             )}
             <div className="flex items-center gap-2">
@@ -866,25 +979,28 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                  if (voiceModeEnabled) {
-                    toggleVoiceMode();
+                  if (isSpeaking) {
+                    stopTTS();
+                    if (voiceModeEnabled) {
+                      startRecognition();
+                    }
                     return;
                   }
                   toggleRecording();
                 }}
-                disabled={isLoading || !isVoiceSupported}
+                disabled={!isVoiceSupported || (!voiceModeEnabled && isLoading)}
                 className={cn(
                   "h-11 w-11 rounded-2xl border border-violet-300/25 bg-black/35 text-violet-100 hover:bg-violet-500/15",
-                  isRecording && "border-cyan-300/55 bg-cyan-400/10 text-cyan-100"
+                  (isRecording || isSpeaking) && "border-cyan-300/55 bg-cyan-400/10 text-cyan-100"
                 )}
                 title={
                   !isVoiceSupported
                     ? "Voice input not supported"
-                    : voiceModeEnabled
-                      ? "Disable conversational voice mode"
+                    : isSpeaking
+                      ? "Interrupt Ara and resume listening"
                       : isRecording
-                        ? "Stop recording"
-                        : "Voice input"
+                        ? "Stop listening"
+                        : "Start listening"
                 }
                 data-testid="button-ai-voice"
               >
@@ -899,13 +1015,13 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
                   voiceModeEnabled
-                    ? "Voice mode is active. You can still type here..."
+                    ? "Voice mode active. Type to jump in..."
                     : isVoiceSupported
                       ? "Ask Ara anything (or use the mic)..."
                       : "Ask Ara anything..."
                 }
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                disabled={isLoading}
+                disabled={isLoading && !voiceModeEnabled}
                 className="h-11 rounded-2xl border-violet-300/30 bg-black/35 text-violet-50 placeholder:text-violet-100/50"
                 data-testid="input-ai-chat"
               />
