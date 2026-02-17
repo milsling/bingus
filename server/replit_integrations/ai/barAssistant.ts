@@ -1,4 +1,4 @@
-import { createChatCompletion, isXaiConfigured } from "./xaiClient";
+import { createChatCompletion, isXaiConfigured, XaiClientError } from "./xaiClient";
 
 export interface ModerationResult {
   approved: boolean;
@@ -413,6 +413,21 @@ Be conversational, helpful, and honest. Keep responses concise but explosive.${p
     return contentText || "Sorry, I couldn't respond right now.";
   } catch (error) {
     console.error("Chat error:", error);
-    return "Sorry, I'm having trouble responding right now. Try again in a moment.";
+    if (error instanceof XaiClientError) {
+      if (error.status === 408) {
+        return "Ara timed out while thinking. Try again in a few seconds.";
+      }
+      if (error.status === 429) {
+        return "Ara is getting flooded right now (rate-limited). Try again in about 30 seconds.";
+      }
+      if (error.status === 401 || error.status === 403) {
+        return "Ara's AI credentials are having issues. The team needs to reconnect xAI access.";
+      }
+      if (error.status && error.status >= 500) {
+        return "xAI is having server issues right now. Try again in a moment.";
+      }
+    }
+
+    return "Ara hit a network issue. Try again in a moment.";
   }
 }
