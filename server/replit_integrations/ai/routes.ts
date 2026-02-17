@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { moderateContent, explainBar, suggestRhymes, chatWithAssistant, analyzeUserStyle, type PlatformContext, type StyleAnalysis } from "./barAssistant";
 import { storage } from "../../storage";
+import { getXaiRuntimeDiagnostics } from "./xaiClient";
 
 function extractPotentialUsernames(message: string): string[] {
   const usernames: string[] = [];
@@ -93,6 +94,45 @@ async function buildPlatformContext(usernames: string[], includeStyleAnalysis: b
 }
 
 export function registerAIRoutes(app: Express): void {
+  app.get("/api/ai/status", async (req: Request, res: Response) => {
+    try {
+      if (!req.isAuthenticated?.() || !req.user?.id) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const canViewStatus = Boolean(req.user.isOwner || req.user.isAdmin);
+      if (!canViewStatus) {
+        return res.status(403).json({ error: "Admin or owner access required" });
+      }
+
+      const settings = await storage.getAISettings();
+      const diagnostics = getXaiRuntimeDiagnostics();
+      const ready = settings.orphieChatEnabled && diagnostics.configured;
+
+      const reason = !settings.orphieChatEnabled
+        ? "chat_disabled"
+        : !diagnostics.configured
+          ? "missing_api_key"
+          : diagnostics.lastError
+            ? "upstream_error"
+            : "ok";
+
+      return res.json({
+        ready,
+        reason,
+        chatEnabled: settings.orphieChatEnabled,
+        xaiConfigured: diagnostics.configured,
+        model: diagnostics.model,
+        lastRequestAt: diagnostics.lastRequestAt,
+        lastSuccessAt: diagnostics.lastSuccessAt,
+        lastError: diagnostics.lastError,
+      });
+    } catch (error) {
+      console.error("AI status API error:", error);
+      return res.status(500).json({ error: "Status check failed" });
+    }
+  });
+
   app.post("/api/ai/sts", async (req: Request, res: Response) => {
     try {
       const stsEnabled = process.env.AI_STS_ENABLED === "true";
