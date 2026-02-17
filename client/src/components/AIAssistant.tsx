@@ -7,6 +7,7 @@ import { Mic, MicOff, Sparkles, Send, Loader2, Volume2, VolumeX } from "lucide-r
 import { cn } from "@/lib/utils";
 
 const ARA_AUTOSPEAK_KEY = "ara-autospeak";
+const ARA_REQUEST_TIMEOUT_MS = 20000;
 
 interface Message {
   role: "user" | "assistant";
@@ -137,20 +138,47 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     setIsLoading(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), ARA_REQUEST_TIMEOUT_MS);
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ message: userMessage }),
+        signal: controller.signal,
       });
-      const data = await res.json();
-      const responseText = data.response || "Sorry, I couldn't respond.";
+
+      window.clearTimeout(timeoutId);
+
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        const errorText =
+          data?.response ||
+          data?.message ||
+          data?.error ||
+          "Ara is unavailable right now. Please try again.";
+        throw new Error(errorText);
+      }
+
+      const responseText =
+        data?.response ||
+        data?.message ||
+        "Sorry, I couldn't respond.";
       setMessages(prev => [...prev, { role: "assistant", content: responseText }]);
       if (autoSpeak && window.speechSynthesis) {
         speakTTS(responseText);
       }
-    } catch {
-      const fallback = "Sorry, I couldn't respond. Try again.";
+    } catch (error: any) {
+      const fallback =
+        error?.name === "AbortError"
+          ? "Ara took too long to respond. Please try again."
+          : error?.message || "Sorry, I couldn't respond. Try again.";
       setMessages(prev => [...prev, { role: "assistant", content: fallback }]);
       if (autoSpeak && window.speechSynthesis) {
         speakTTS(fallback);
@@ -159,6 +187,12 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
       setIsLoading(false);
     }
   }, [autoSpeak, speakTTS]);
+
+  useEffect(() => {
+    sendMessageRef.current = (content: string) => {
+      void sendMessageWithContent(content);
+    };
+  }, [sendMessageWithContent]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
