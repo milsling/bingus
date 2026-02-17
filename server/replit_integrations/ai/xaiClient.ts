@@ -27,10 +27,30 @@ export class XaiClientError extends Error {
   body?: unknown;
 }
 
+export type XaiRuntimeDiagnostics = {
+  configured: boolean;
+  model: string;
+  lastRequestAt: string | null;
+  lastSuccessAt: string | null;
+  lastError:
+    | {
+        status?: number;
+        message: string;
+        body?: string;
+        at: string;
+      }
+    | null;
+};
+
 const XAI_REQUEST_TIMEOUT_MS = 20000;
 const XAI_MAX_RETRIES = 2;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const nowIso = () => new Date().toISOString();
+
+let lastRequestAt: string | null = null;
+let lastSuccessAt: string | null = null;
+let lastError: XaiRuntimeDiagnostics["lastError"] = null;
 
 function isTransientStatus(status?: number): boolean {
   if (!status) return true;
@@ -50,9 +70,24 @@ function normalizeErrorBody(body: unknown): string | undefined {
   return undefined;
 }
 
+function setLastError(status: number | undefined, message: string, body?: unknown): void {
+  lastError = {
+    status,
+    message,
+    body: normalizeErrorBody(body),
+    at: nowIso(),
+  };
+}
+
+function markXaiSuccess(): void {
+  lastSuccessAt = nowIso();
+  lastError = null;
+}
+
 function getRequiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
+    setLastError(undefined, `${name} is not configured`);
     throw new XaiClientError(`${name} is not configured`);
   }
   return value;
@@ -60,6 +95,16 @@ function getRequiredEnv(name: string): string {
 
 export function isXaiConfigured(): boolean {
   return !!process.env.XAI_API_KEY;
+}
+
+export function getXaiRuntimeDiagnostics(): XaiRuntimeDiagnostics {
+  return {
+    configured: isXaiConfigured(),
+    model: process.env.XAI_MODEL || "grok-4-latest",
+    lastRequestAt,
+    lastSuccessAt,
+    lastError,
+  };
 }
 
 export async function createChatCompletion(params: {
@@ -78,6 +123,7 @@ export async function createChatCompletion(params: {
     for (let attempt = 0; attempt <= XAI_MAX_RETRIES; attempt += 1) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), XAI_REQUEST_TIMEOUT_MS);
+      lastRequestAt = nowIso();
 
       try {
         const body: XaiChatCompletionRequest = {
@@ -107,6 +153,7 @@ export async function createChatCompletion(params: {
             err.body = await response.text().catch(() => undefined);
           }
           lastError = err;
+          setLastError(err.status, err.message, err.body);
 
           const shouldRetry = isTransientStatus(response.status) && attempt < XAI_MAX_RETRIES;
           if (shouldRetry) {
@@ -124,12 +171,16 @@ export async function createChatCompletion(params: {
 
         const data = (await response.json()) as XaiChatCompletionResponse;
         const content = data.choices?.[0]?.message?.content?.trim();
-        if (content) return content;
+        if (content) {
+          markXaiSuccess();
+          return content;
+        }
 
         const emptyError = new XaiClientError("xAI returned an empty completion");
         emptyError.status = 502;
         emptyError.body = data;
         lastError = emptyError;
+        setLastError(emptyError.status, emptyError.message, emptyError.body);
 
         const shouldRetry = attempt < XAI_MAX_RETRIES;
         if (shouldRetry) {
@@ -141,12 +192,15 @@ export async function createChatCompletion(params: {
           const timeoutError = new XaiClientError("xAI request timed out");
           timeoutError.status = 408;
           lastError = timeoutError;
+          setLastError(timeoutError.status, timeoutError.message);
         } else if (error instanceof XaiClientError) {
           lastError = error;
+          setLastError(error.status, error.message, error.body);
         } else {
           const networkError = new XaiClientError("xAI network request failed");
           networkError.body = normalizeErrorBody(error?.message ?? error);
           lastError = networkError;
+          setLastError(networkError.status, networkError.message, networkError.body);
         }
 
         const shouldRetry = isTransientStatus(lastError.status) && attempt < XAI_MAX_RETRIES;

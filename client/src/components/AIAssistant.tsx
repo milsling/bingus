@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Mic, MicOff, Sparkles, Send, Loader2, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBars } from "@/context/BarContext";
 
 const ARA_AUTOSPEAK_KEY = "ara-autospeak";
 const ARA_REQUEST_TIMEOUT_MS = 20000;
@@ -21,7 +22,24 @@ interface AIAssistantProps {
   initialPrompt?: string;
 }
 
+type AraStatusResponse = {
+  ready: boolean;
+  reason: "ok" | "chat_disabled" | "missing_api_key" | "upstream_error";
+  chatEnabled: boolean;
+  xaiConfigured: boolean;
+  model: string;
+  lastRequestAt: string | null;
+  lastSuccessAt: string | null;
+  lastError: {
+    status?: number;
+    message: string;
+    body?: string;
+    at: string;
+  } | null;
+};
+
 export default function AIAssistant({ open, onOpenChange, hideFloatingButton = false, initialPrompt }: AIAssistantProps) {
+  const { currentUser } = useBars();
   const [internalOpen, setInternalOpen] = useState(false);
   
   const isOpen = open !== undefined ? open : internalOpen;
@@ -42,6 +60,10 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
   });
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsSupported, setTtsSupported] = useState(false);
+  const canViewAraStatus = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
+  const [araStatus, setAraStatus] = useState<AraStatusResponse | null>(null);
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   useEffect(() => {
     setTtsSupported(typeof window !== "undefined" && "speechSynthesis" in window);
@@ -130,16 +152,81 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     }
   }, [isOpen]);
 
+  const fetchAraStatus = useCallback(async () => {
+    if (!canViewAraStatus) return;
+    setIsStatusLoading(true);
+
+    try {
+      const res = await fetch("/api/ai/status", { credentials: "include" });
+      let payload: any = null;
+      try {
+        payload = await res.json();
+      } catch {
+        payload = null;
+      }
+
+      if (!res.ok) {
+        const message = payload?.error || payload?.message || "Unable to load AI status.";
+        throw new Error(message);
+      }
+
+      setAraStatus(payload as AraStatusResponse);
+      setStatusError(null);
+    } catch (error: any) {
+      setStatusError(error?.message || "Unable to load AI status.");
+    } finally {
+      setIsStatusLoading(false);
+    }
+  }, [canViewAraStatus]);
+
+  useEffect(() => {
+    if (isOpen && canViewAraStatus) {
+      void fetchAraStatus();
+    }
+  }, [isOpen, canViewAraStatus, fetchAraStatus]);
+
+  const araStatusLabel = (() => {
+    if (!canViewAraStatus) return "";
+    if (isStatusLoading && !araStatus) return "Checking xAI...";
+    if (statusError) return "Status unavailable";
+    if (!araStatus) return "Status unknown";
+    if (araStatus.ready) return "xAI OK";
+    if (araStatus.reason === "chat_disabled") return "Chat disabled";
+    if (araStatus.reason === "missing_api_key") return "API key missing";
+    if (araStatus.lastError?.status === 429) return "Rate limited";
+    if (araStatus.lastError?.status === 408) return "xAI timeout";
+    return "xAI upstream error";
+  })();
+
+  const araStatusHint = (() => {
+    if (!canViewAraStatus) return "";
+    if (statusError) return statusError;
+    if (!araStatus) return "";
+    if (araStatus.reason === "missing_api_key") {
+      return "Server has no XAI_API_KEY, so requests never reach xAI.";
+    }
+    if (araStatus.reason === "chat_disabled") {
+      return "Ara chat is toggled off in AI settings.";
+    }
+    if (araStatus.lastError?.message) {
+      return araStatus.lastError.message;
+    }
+    if (araStatus.lastSuccessAt) {
+      return `Last xAI success: ${new Date(araStatus.lastSuccessAt).toLocaleString()}`;
+    }
+    return "";
+  })();
+
   const sendMessageWithContent = useCallback(async (content: string) => {
     if (!content.trim() || isLoading) return;
     
     const userMessage = content.trim();
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), ARA_REQUEST_TIMEOUT_MS);
 
     try {
-      const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), ARA_REQUEST_TIMEOUT_MS);
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,8 +234,6 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
         body: JSON.stringify({ message: userMessage }),
         signal: controller.signal,
       });
-
-      window.clearTimeout(timeoutId);
 
       let data: any = null;
       try {
@@ -184,9 +269,13 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
         speakTTS(fallback);
       }
     } finally {
+      window.clearTimeout(timeoutId);
       setIsLoading(false);
+      if (canViewAraStatus) {
+        void fetchAraStatus();
+      }
     }
-  }, [autoSpeak, speakTTS]);
+  }, [autoSpeak, canViewAraStatus, fetchAraStatus, isLoading, speakTTS]);
 
   useEffect(() => {
     sendMessageRef.current = (content: string) => {
@@ -237,11 +326,44 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-md h-[70vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-4 py-3 border-b flex flex-row items-center justify-between gap-4">
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-purple-500" />
-              Ara
-            </DialogTitle>
+          <DialogHeader className="px-4 py-3 border-b flex flex-row items-start justify-between gap-4">
+            <div className="min-w-0">
+              <DialogTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-500" />
+                Ara
+              </DialogTitle>
+              {canViewAraStatus && (
+                <div className="mt-1 flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium",
+                        araStatus?.ready
+                          ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                          : "border-amber-500/40 bg-amber-500/10 text-amber-200"
+                      )}
+                    >
+                      {araStatusLabel}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-2 text-[10px]"
+                      onClick={() => void fetchAraStatus()}
+                      disabled={isStatusLoading}
+                    >
+                      {isStatusLoading ? "..." : "refresh"}
+                    </Button>
+                  </div>
+                  {araStatusHint && (
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {araStatusHint}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
             {ttsSupported && (
               <Button
                 type="button"
