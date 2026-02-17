@@ -9,6 +9,13 @@ import { useBars } from "@/context/BarContext";
 
 const ARA_AUTOSPEAK_KEY = "ara-autospeak";
 const ARA_REQUEST_TIMEOUT_MS = 20000;
+const ARA_LONG_PRESS_MS = 900;
+const ARA_UNHINGED_DURATION_MS = 2200;
+const ARA_LAUNCHER_PARTICLES = [
+  { left: "28%", top: "24%", delay: "0s", duration: "3.9s" },
+  { left: "46%", top: "62%", delay: "0.7s", duration: "4.5s" },
+  { left: "69%", top: "34%", delay: "1.3s", duration: "4.2s" },
+] as const;
 
 interface Message {
   role: "user" | "assistant";
@@ -48,9 +55,12 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false);
+  const [isUnhinged, setIsUnhinged] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const sendMessageRef = useRef<(content: string) => void>(() => {});
+  const longPressTimeoutRef = useRef<number | null>(null);
+  const unhingedTimeoutRef = useRef<number | null>(null);
   const [isVoiceSupported, setIsVoiceSupported] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(() => {
@@ -67,6 +77,17 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
 
   useEffect(() => {
     setTtsSupported(typeof window !== "undefined" && "speechSynthesis" in window);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimeoutRef.current !== null) {
+        window.clearTimeout(longPressTimeoutRef.current);
+      }
+      if (unhingedTimeoutRef.current !== null) {
+        window.clearTimeout(unhingedTimeoutRef.current);
+      }
+    };
   }, []);
 
   const speakTTS = useCallback((text: string) => {
@@ -313,17 +334,168 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     }
   };
 
+  const clearLauncherLongPressTimer = useCallback(() => {
+    if (longPressTimeoutRef.current !== null) {
+      window.clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+  }, []);
+
+  const triggerUnhingedMode = useCallback(() => {
+    setIsUnhinged(true);
+    if (unhingedTimeoutRef.current !== null) {
+      window.clearTimeout(unhingedTimeoutRef.current);
+    }
+    unhingedTimeoutRef.current = window.setTimeout(() => {
+      setIsUnhinged(false);
+      unhingedTimeoutRef.current = null;
+    }, ARA_UNHINGED_DURATION_MS);
+  }, []);
+
+  const startLauncherLongPress = useCallback(() => {
+    clearLauncherLongPressTimer();
+    longPressTimeoutRef.current = window.setTimeout(() => {
+      triggerUnhingedMode();
+      longPressTimeoutRef.current = null;
+    }, ARA_LONG_PRESS_MS);
+  }, [clearLauncherLongPressTimer, triggerUnhingedMode]);
+
+  const launcherMode: "idle" | "listening" | "thinking" = isRecording
+    ? "listening"
+    : isLoading
+      ? "thinking"
+      : "idle";
+  const launcherStatusLabel =
+    launcherMode === "listening"
+      ? "Listening"
+      : launcherMode === "thinking"
+        ? "Thinking"
+        : "Standby";
+  const launcherHint =
+    launcherMode === "listening"
+      ? "Ara is listening for voice input."
+      : launcherMode === "thinking"
+        ? "Ara is processing your request."
+        : "Activate Ara voice/text assistant";
+
   return (
     <>
       {!hideFloatingButton && (
-        <div className="fixed bottom-20 right-4 md:bottom-6 z-50 flex flex-col gap-3">
+        <div className="fixed bottom-20 right-4 md:bottom-6 z-50">
           <Button
+            type="button"
+            variant="ghost"
             onClick={() => setIsOpen(true)}
-            className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-500/30"
-            size="icon"
+            onPointerDown={startLauncherLongPress}
+            onPointerUp={clearLauncherLongPressTimer}
+            onPointerLeave={clearLauncherLongPressTimer}
+            onPointerCancel={clearLauncherLongPressTimer}
+            className={cn(
+              "group relative isolate h-14 w-[168px] overflow-hidden rounded-[18px] border border-violet-300/30 bg-[#06070f]/90 px-2 shadow-[0_16px_38px_rgba(4,6,16,0.62),0_0_0_1px_rgba(168,85,247,0.18)] backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-violet-300/45 hover:shadow-[0_18px_42px_rgba(4,6,16,0.72),0_0_30px_rgba(168,85,247,0.28)] active:translate-y-0 active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050509]",
+              launcherMode === "idle" && "ara-launcher-breath",
+              launcherMode === "listening" &&
+                "border-cyan-300/55 shadow-[0_18px_42px_rgba(3,12,28,0.72),0_0_30px_rgba(34,211,238,0.32)]",
+              launcherMode === "thinking" &&
+                "border-violet-300/50 shadow-[0_18px_42px_rgba(7,8,28,0.72),0_0_32px_rgba(139,92,246,0.34)]",
+              isUnhinged && "ring-1 ring-cyan-300/60"
+            )}
             data-testid="button-ai-assistant"
+            aria-label={launcherHint}
+            title={launcherHint}
           >
-            <Sparkles className="h-6 w-6" />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-[18px] bg-[radial-gradient(ellipse_at_18%_15%,rgba(56,189,248,0.24),transparent_48%),radial-gradient(ellipse_at_85%_85%,rgba(168,85,247,0.28),transparent_52%),linear-gradient(135deg,rgba(10,10,19,0.94),rgba(20,12,34,0.96)_58%,rgba(9,9,20,0.92))]"
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-[18px] bg-[linear-gradient(112deg,rgba(34,211,238,0.16),transparent_34%,rgba(168,85,247,0.3)_72%,transparent)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
+            />
+            <span
+              aria-hidden
+              className="ara-launcher-arc pointer-events-none absolute inset-x-1 top-0.5 h-6 rounded-full border-t border-cyan-300/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
+            />
+            <span
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute inset-0 rounded-[18px] border opacity-0",
+                launcherMode !== "idle" &&
+                  "ara-launcher-ripple opacity-100",
+                launcherMode === "listening" ? "border-cyan-300/50" : "border-violet-300/45"
+              )}
+            />
+
+            {ARA_LAUNCHER_PARTICLES.map((particle, index) => (
+              <span
+                key={`ara-particle-${index}`}
+                aria-hidden
+                className={cn(
+                  "ara-launcher-particle pointer-events-none absolute h-1 w-1 rounded-full bg-violet-100/80 shadow-[0_0_10px_rgba(167,139,250,0.7)]",
+                  launcherMode === "listening" &&
+                    "bg-cyan-200/90 shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+                )}
+                style={{
+                  left: particle.left,
+                  top: particle.top,
+                  animationDelay: particle.delay,
+                  animationDuration: particle.duration,
+                }}
+              />
+            ))}
+
+            <span className="relative z-10 flex w-full items-center">
+              <span
+                className={cn(
+                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-violet-200/25 bg-black/35 backdrop-blur-sm",
+                  launcherMode === "listening" && "border-cyan-300/60 bg-cyan-400/10",
+                  launcherMode === "thinking" && "border-violet-300/60 bg-violet-500/15"
+                )}
+              >
+                {launcherMode === "thinking" ? (
+                  <Sparkles className="ara-launcher-swirl h-4 w-4 text-violet-100" strokeWidth={1.8} />
+                ) : launcherMode === "listening" ? (
+                  <span className="flex h-4 items-end gap-0.5" aria-hidden>
+                    {Array.from({ length: 5 }).map((_, waveIndex) => (
+                      <span
+                        key={`ara-wave-${waveIndex}`}
+                        className="ara-launcher-wave block w-[2.5px] rounded-full bg-gradient-to-t from-cyan-200/80 to-violet-200"
+                        style={{
+                          height: `${8 + (waveIndex % 2 === 0 ? 6 : 10)}px`,
+                          animationDelay: `${waveIndex * 0.08}s`,
+                        }}
+                      />
+                    ))}
+                  </span>
+                ) : (
+                  <Mic className="h-[17px] w-[17px] text-violet-50" strokeWidth={1.8} />
+                )}
+              </span>
+              <span className="ml-3 flex min-w-0 flex-1 flex-col items-start pr-1 text-left">
+                <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-violet-200/75">xAI</span>
+                <span className={cn("text-sm font-semibold leading-none text-white", isUnhinged && "ara-launcher-unhinged text-cyan-100")}>
+                  Ara
+                </span>
+              </span>
+              <span
+                className={cn(
+                  "rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em]",
+                  launcherMode === "idle" && "border-violet-300/45 bg-violet-500/10 text-violet-100",
+                  launcherMode === "listening" && "border-cyan-300/50 bg-cyan-400/10 text-cyan-100",
+                  launcherMode === "thinking" && "border-violet-300/55 bg-violet-500/15 text-violet-100"
+                )}
+              >
+                {launcherStatusLabel}
+              </span>
+            </span>
+
+            {isUnhinged && (
+              <span
+                aria-hidden
+                className="ara-launcher-unhinged pointer-events-none absolute inset-x-0 bottom-1 z-20 text-center text-[8px] font-mono uppercase tracking-[0.2em] text-cyan-200"
+              >
+                |=| rotor balanced // unhinged
+              </span>
+            )}
           </Button>
         </div>
       )}

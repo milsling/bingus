@@ -374,7 +374,14 @@
   .animate-marquee,
   [data-animate],
   .fab-transition,
-  .page-transition {
+  .page-transition,
+  .ara-launcher-breath,
+  .ara-launcher-particle,
+  .ara-launcher-wave,
+  .ara-launcher-swirl,
+  .ara-launcher-arc,
+  .ara-launcher-ripple,
+  .ara-launcher-unhinged {
     animation: none !important;
     transition: none !important;
   }
@@ -526,6 +533,129 @@ html.dark {
   color: #fff;
   text-shadow: 0 0 10px #ffd70080;
   animation: founderPulse 4s ease-in-out infinite;
+}
+
+/* Ara launcher (xAI-inspired cosmic pill) */
+@keyframes ara-launcher-breath {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+@keyframes ara-launcher-wave {
+  0%, 100% {
+    transform: scaleY(0.35);
+    opacity: 0.45;
+  }
+  45% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ara-launcher-particle {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.82);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(0, -16px, 0) scale(1.08);
+    opacity: 0;
+  }
+}
+
+@keyframes ara-launcher-swirl {
+  0% {
+    transform: rotate(0deg) scale(0.92);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.06);
+  }
+  100% {
+    transform: rotate(360deg) scale(0.92);
+  }
+}
+
+@keyframes ara-launcher-arc {
+  0%, 100% {
+    opacity: 0.16;
+  }
+  12% {
+    opacity: 0.62;
+  }
+  24% {
+    opacity: 0.22;
+  }
+  40% {
+    opacity: 0.58;
+  }
+  72% {
+    opacity: 0.46;
+  }
+  92% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes ara-launcher-ripple {
+  0% {
+    transform: scale(0.94);
+    opacity: 0.58;
+  }
+  100% {
+    transform: scale(1.04);
+    opacity: 0;
+  }
+}
+
+@keyframes ara-launcher-glitch {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-1px);
+  }
+  50% {
+    transform: translateX(1px);
+  }
+  75% {
+    transform: translateX(-0.5px);
+  }
+}
+
+.ara-launcher-breath {
+  animation: ara-launcher-breath 4s ease-in-out infinite;
+}
+
+.ara-launcher-wave {
+  transform-origin: center bottom;
+  animation: ara-launcher-wave 1.15s ease-in-out infinite;
+}
+
+.ara-launcher-particle {
+  animation: ara-launcher-particle 4.2s ease-in-out infinite;
+}
+
+.ara-launcher-swirl {
+  animation: ara-launcher-swirl 2.4s linear infinite;
+}
+
+.ara-launcher-arc {
+  animation: ara-launcher-arc 1.8s steps(2, end) infinite;
+}
+
+.ara-launcher-ripple {
+  animation: ara-launcher-ripple 1.6s ease-out infinite;
+}
+
+.ara-launcher-unhinged {
+  animation: ara-launcher-glitch 220ms steps(2, end) infinite;
 }
 
 /* ========================================
