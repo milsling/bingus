@@ -211,7 +211,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     if (araStatus.lastError?.message) {
       const statusPrefix = araStatus.lastError.status ? `HTTP ${araStatus.lastError.status}: ` : "";
       const bodySnippet = araStatus.lastError.body
-        ? ` ${araStatus.lastError.body}`.slice(0, 180)
+        ? ` ${araStatus.lastError.body}`.slice(0, 360)
         : "";
       return `${statusPrefix}${araStatus.lastError.message}${bodySnippet}`;
     }
@@ -361,7 +361,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
                     </Button>
                   </div>
                   {araStatusHint && (
-                    <p className="text-[10px] text-muted-foreground truncate">
+                    <p className="text-[10px] text-muted-foreground break-words leading-tight">
                       {araStatusHint}
                     </p>
                   )}

@@ -8,7 +8,6 @@ export type XaiChatMessage = {
 type XaiChatCompletionRequest = {
   model: string;
   messages: XaiChatMessage[];
-  stream?: boolean;
   temperature?: number;
   max_tokens?: number;
 };
@@ -70,6 +69,19 @@ function normalizeErrorBody(body: unknown): string | undefined {
   return undefined;
 }
 
+function sanitizeMessages(messages: XaiChatMessage[]): XaiChatMessage[] {
+  return messages.map((message) => {
+    const normalizedContent = (message.content ?? "")
+      .replace(/\u0000/g, "")
+      .trim();
+
+    return {
+      role: message.role,
+      content: normalizedContent.length > 0 ? normalizedContent : "(empty)",
+    };
+  });
+}
+
 function setLastError(status: number | undefined, message: string, body?: unknown): void {
   lastError = {
     status,
@@ -115,11 +127,14 @@ export async function createChatCompletion(params: {
 }): Promise<string> {
   const apiKey = getRequiredEnv("XAI_API_KEY");
   const model = params.model || process.env.XAI_MODEL || "grok-4-latest";
+  const preparedMessages = sanitizeMessages(params.messages);
 
   const modelCandidates = Array.from(new Set([model, "grok-4-latest"]));
   let lastError: XaiClientError | null = null;
 
   for (const modelCandidate of modelCandidates) {
+    let compatibilityMode = false;
+
     for (let attempt = 0; attempt <= XAI_MAX_RETRIES; attempt += 1) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), XAI_REQUEST_TIMEOUT_MS);
@@ -128,11 +143,16 @@ export async function createChatCompletion(params: {
       try {
         const body: XaiChatCompletionRequest = {
           model: modelCandidate,
-          messages: params.messages,
-          stream: false,
-          temperature: params.temperature,
-          max_tokens: params.maxTokens,
+          messages: preparedMessages,
         };
+        if (!compatibilityMode) {
+          if (typeof params.temperature === "number") {
+            body.temperature = params.temperature;
+          }
+          if (typeof params.maxTokens === "number") {
+            body.max_tokens = params.maxTokens;
+          }
+        }
 
         const response = await fetch("https://api.x.ai/v1/chat/completions", {
           method: "POST",
@@ -154,6 +174,14 @@ export async function createChatCompletion(params: {
           }
           lastError = err;
           setLastError(err.status, err.message, err.body);
+
+          // Some xAI model revisions reject optional fields with "invalid argument".
+          // Retry once with a compatibility payload that strips optional params.
+          if (response.status === 400 && !compatibilityMode && attempt < XAI_MAX_RETRIES) {
+            compatibilityMode = true;
+            await sleep(180);
+            continue;
+          }
 
           const shouldRetry = isTransientStatus(response.status) && attempt < XAI_MAX_RETRIES;
           if (shouldRetry) {

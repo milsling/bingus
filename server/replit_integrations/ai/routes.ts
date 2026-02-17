@@ -107,7 +107,7 @@ export function registerAIRoutes(app: Express): void {
 
       const settings = await storage.getAISettings();
       const diagnostics = getXaiRuntimeDiagnostics();
-      const ready = settings.orphieChatEnabled && diagnostics.configured;
+      const ready = settings.orphieChatEnabled && diagnostics.configured && !diagnostics.lastError;
 
       const reason = !settings.orphieChatEnabled
         ? "chat_disabled"
