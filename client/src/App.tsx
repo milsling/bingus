@@ -9,6 +9,7 @@ import Home from "@/pages/Home";
 import Post from "@/pages/Post";
 import Profile from "@/pages/Profile";
 import EditProfile from "@/pages/EditProfile";
+import Settings from "@/pages/Settings";
 import Auth from "@/pages/Auth";
 import Admin from "@/pages/Admin";
 import BarDetail from "@/pages/BarDetail";
@@ -64,6 +65,7 @@ function Router() {
       <Route path="/post" component={Post} />
       <Route path="/profile" component={Profile} />
       <Route path="/profile/edit" component={EditProfile} />
+      <Route path="/settings" component={Settings} />
       <Route path="/admin" component={Admin} />
       <Route path="/saved" component={Saved} />
       <Route path="/friends" component={Friends} />

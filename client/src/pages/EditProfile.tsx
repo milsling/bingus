@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Camera, Loader2, Lock, MessageCircle, ImageIcon, ZoomIn, ZoomOut, Palette, Volume2 } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, ImageIcon, ZoomIn, ZoomOut, Settings2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -15,9 +14,6 @@ import { api } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { BackgroundSelector, useBackground } from "@/components/BackgroundSelector";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { playNotificationSound, notificationSoundLabels, messageSoundLabels } from "@/lib/notificationSounds";
 
 export default function EditProfile() {
   const { currentUser } = useBars();
@@ -26,7 +22,6 @@ export default function EditProfile() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
-  useBackground();
 
   const [bio, setBio] = useState(currentUser?.bio || "");
   const [location, setLocationField] = useState(currentUser?.location || "");
@@ -35,12 +30,6 @@ export default function EditProfile() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [newUsername, setNewUsername] = useState(currentUser?.username || "");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [messagePrivacy, setMessagePrivacy] = useState(currentUser?.messagePrivacy || "friends_only");
-  const [notificationSound, setNotificationSound] = useState(currentUser?.notificationSound || "chime");
-  const [messageSound, setMessageSound] = useState(currentUser?.messageSound || "ding");
   
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -183,82 +172,6 @@ export default function EditProfile() {
       });
     },
   });
-
-  const changePasswordMutation = useMutation({
-    mutationFn: () => api.changePassword(currentPassword, newPassword),
-    onSuccess: () => {
-      toast({
-        title: "Password changed!",
-        description: "Your password has been updated successfully.",
-      });
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Password change failed",
-        description: error.message || "Could not change password",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updatePrivacyMutation = useMutation({
-    mutationFn: (privacy: string) => api.updateProfile({ messagePrivacy: privacy }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      toast({
-        title: "Privacy updated",
-        description: "Your message privacy setting has been saved.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Update failed",
-        description: error.message || "Could not update privacy setting",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateSoundMutation = useMutation({
-    mutationFn: (data: { notificationSound?: string; messageSound?: string }) => api.updateProfile(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      toast({
-        title: "Sound updated",
-        description: "Your sound preference has been saved.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Update failed",
-        description: error.message || "Could not update sound setting",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleChangePassword = () => {
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "New password and confirmation must match.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters.",
-        variant: "destructive",
-      });
-      return;
-    }
-    changePasswordMutation.mutate();
-  };
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -531,187 +444,19 @@ export default function EditProfile() {
         <Card className="border-border bg-card/50 backdrop-blur-sm mt-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              Change Password
+              <Settings2 className="h-5 w-5 text-primary" />
+              App Settings
             </CardTitle>
-            <CardDescription>Update your account password</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
-              <Input
-                id="current-password"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
-                className="bg-secondary/30 border-border/50"
-                data-testid="input-current-password"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password (min 6 characters)"
-                className="bg-secondary/30 border-border/50"
-                data-testid="input-new-password"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-                className="bg-secondary/30 border-border/50"
-                data-testid="input-confirm-password"
-              />
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={handleChangePassword}
-              disabled={changePasswordMutation.isPending || !currentPassword || !newPassword || !confirmPassword}
-              data-testid="button-change-password"
-            >
-              {changePasswordMutation.isPending ? "Changing..." : "Change Password"}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card/50 backdrop-blur-sm mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              Message Privacy
-            </CardTitle>
-            <CardDescription>Control who can send you direct messages</CardDescription>
+            <CardDescription>
+              Privacy, sounds, theme, and security now live in a dedicated settings hub.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <RadioGroup
-              value={messagePrivacy}
-              onValueChange={(value) => {
-                setMessagePrivacy(value);
-                updatePrivacyMutation.mutate(value);
-              }}
-              className="space-y-3"
-            >
-              <div className="flex items-center space-x-3">
-                <RadioGroupItem value="friends_only" id="friends_only" data-testid="radio-friends-only" />
-                <Label htmlFor="friends_only" className="cursor-pointer">
-                  <span className="font-medium">Friends only</span>
-                  <p className="text-sm text-muted-foreground">Only accepted friends can message you</p>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-3">
-                <RadioGroupItem value="everyone" id="everyone" data-testid="radio-everyone" />
-                <Label htmlFor="everyone" className="cursor-pointer">
-                  <span className="font-medium">Everyone</span>
-                  <p className="text-sm text-muted-foreground">Any user can send you a message</p>
-                </Label>
-              </div>
-            </RadioGroup>
-            {updatePrivacyMutation.isPending && (
-              <p className="text-xs text-muted-foreground mt-2">Saving...</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card/50 backdrop-blur-sm mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Volume2 className="h-5 w-5" />
-              Sound Settings
-            </CardTitle>
-            <CardDescription>Choose sounds for notifications and messages</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="notification-sound">Notification Sound</Label>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={notificationSound}
-                  onValueChange={(value) => {
-                    setNotificationSound(value);
-                    playNotificationSound(value as any);
-                    updateSoundMutation.mutate({ notificationSound: value });
-                  }}
-                >
-                  <SelectTrigger className="w-full" data-testid="select-notification-sound">
-                    <SelectValue placeholder="Select sound" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(notificationSoundLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => playNotificationSound(notificationSound as any)}
-                  data-testid="button-test-notification-sound"
-                >
-                  <Volume2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="message-sound">Message Sound</Label>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={messageSound}
-                  onValueChange={(value) => {
-                    setMessageSound(value);
-                    playNotificationSound(value as any);
-                    updateSoundMutation.mutate({ messageSound: value });
-                  }}
-                >
-                  <SelectTrigger className="w-full" data-testid="select-message-sound">
-                    <SelectValue placeholder="Select sound" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(messageSoundLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => playNotificationSound(messageSound as any)}
-                  data-testid="button-test-message-sound"
-                >
-                  <Volume2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            {updateSoundMutation.isPending && (
-              <p className="text-xs text-muted-foreground">Saving...</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card/50 backdrop-blur-sm mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              Appearance
-            </CardTitle>
-            <CardDescription>Customize how Orphan Bars looks for you</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BackgroundSelector />
+            <Link href="/settings">
+              <Button className="w-full" variant="outline" data-testid="button-open-settings-page">
+                Open Settings
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </main>

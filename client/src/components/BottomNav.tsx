@@ -485,13 +485,13 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                               <UserCog className="h-4 w-4 text-primary" />
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-foreground">Account & Privacy</p>
-                              <p className="text-xs text-muted-foreground">Profile, password, and message privacy</p>
+                              <p className="text-sm font-semibold text-foreground">Edit Profile</p>
+                              <p className="text-xs text-muted-foreground">Username, avatar, bio, and profile details</p>
                             </div>
                           </div>
                         </button>
                         <button
-                          onClick={() => handleNavClick({ path: "/profile/edit" })}
+                          onClick={() => handleNavClick({ path: "/settings" })}
                           className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
                           data-testid="settings-sounds-link"
                         >
@@ -500,13 +500,13 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                               <Volume2 className="h-4 w-4 text-primary" />
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-foreground">Sounds & Notifications</p>
-                              <p className="text-xs text-muted-foreground">Notification tone and message sounds</p>
+                              <p className="text-sm font-semibold text-foreground">App Settings</p>
+                              <p className="text-xs text-muted-foreground">Privacy, sounds, and account security</p>
                             </div>
                           </div>
                         </button>
                         <button
-                          onClick={() => handleNavClick({ path: "/profile/edit" })}
+                          onClick={() => handleNavClick({ path: "/settings" })}
                           className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
                           data-testid="settings-background-link"
                         >
@@ -515,8 +515,8 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                               <Palette className="h-4 w-4 text-primary" />
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-foreground">Background & Style</p>
-                              <p className="text-xs text-muted-foreground">Visual customization options</p>
+                              <p className="text-sm font-semibold text-foreground">Appearance</p>
+                              <p className="text-xs text-muted-foreground">Theme and background personalization</p>
                             </div>
                           </div>
                         </button>

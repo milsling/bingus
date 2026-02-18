@@ -23,6 +23,10 @@ import { NavOverlay, type NavOverlayItem } from "@/components/NavOverlay";
 import { useGestureControl } from "@/hooks/useGestureControl";
 import { cn } from "@/lib/utils";
 
+const FAB_DEBUG_ENABLED_KEY = "fab-debug-enabled";
+const FAB_DEBUG_LAUNCHER_HIDDEN_KEY = "fab-debug-launcher-hidden";
+const FAB_DEBUG_VISIBILITY_EVENT = "fab-debug-launcher-visibility-change";
+
 interface FloatingActionButtonProps {
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
@@ -55,6 +59,7 @@ export function FloatingActionButton({
   const [hapticPulseKey, setHapticPulseKey] = useState(0);
   const [pendingShortcut, setPendingShortcut] = useState<ShortcutDirection | null>(null);
   const [debugEnabled, setDebugEnabled] = useState(false);
+  const [debugLauncherHidden, setDebugLauncherHidden] = useState(false);
   const [debugState, setDebugState] = useState<GestureDebugState>({
     lastEvent: "idle",
     tapCount: 0,
@@ -98,14 +103,63 @@ export function FloatingActionButton({
       setDebugEnabled(false);
       return;
     }
-    const saved = window.localStorage.getItem("fab-debug-enabled");
+    const saved = window.localStorage.getItem(FAB_DEBUG_ENABLED_KEY);
     setDebugEnabled(saved === "1");
   }, [canDebug]);
 
   useEffect(() => {
-    if (!canDebug) return;
-    window.localStorage.setItem("fab-debug-enabled", debugEnabled ? "1" : "0");
-  }, [canDebug, debugEnabled]);
+    if (!canDebug || debugLauncherHidden) return;
+    window.localStorage.setItem(FAB_DEBUG_ENABLED_KEY, debugEnabled ? "1" : "0");
+  }, [canDebug, debugEnabled, debugLauncherHidden]);
+
+  const syncDebugLauncherVisibility = useCallback(() => {
+    if (!canDebug) {
+      setDebugLauncherHidden(false);
+      return;
+    }
+
+    const hidden = window.localStorage.getItem(FAB_DEBUG_LAUNCHER_HIDDEN_KEY) === "1";
+    setDebugLauncherHidden(hidden);
+
+    if (hidden) {
+      setDebugEnabled(false);
+    }
+  }, [canDebug]);
+
+  useEffect(() => {
+    syncDebugLauncherVisibility();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === FAB_DEBUG_LAUNCHER_HIDDEN_KEY) {
+        syncDebugLauncherVisibility();
+      }
+    };
+
+    const handleVisibilityEvent = () => {
+      syncDebugLauncherVisibility();
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(FAB_DEBUG_VISIBILITY_EVENT, handleVisibilityEvent);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(FAB_DEBUG_VISIBILITY_EVENT, handleVisibilityEvent);
+    };
+  }, [syncDebugLauncherVisibility]);
+
+  const setDebugLauncherVisibility = useCallback(
+    (hidden: boolean) => {
+      if (!canDebug) return;
+      window.localStorage.setItem(FAB_DEBUG_LAUNCHER_HIDDEN_KEY, hidden ? "1" : "0");
+      setDebugLauncherHidden(hidden);
+      if (hidden) {
+        setDebugEnabled(false);
+      }
+      window.dispatchEvent(new CustomEvent(FAB_DEBUG_VISIBILITY_EVENT));
+    },
+    [canDebug],
+  );
 
   const updateDebugState = useCallback(
     (updater: (prev: GestureDebugState) => GestureDebugState) => {
@@ -454,7 +508,7 @@ export function FloatingActionButton({
     <>
       <NavOverlay isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} items={navItems} />
 
-      {canDebug && (
+      {canDebug && !debugLauncherHidden && (
         <div className="md:hidden fixed left-3 top-[calc(env(safe-area-inset-top)+4.2rem)] z-[10002] flex flex-col items-start gap-2 pointer-events-none">
           <button
             type="button"
@@ -492,6 +546,14 @@ export function FloatingActionButton({
                   : "-"}
               </p>
               <p>Updated: {new Date(debugState.updatedAt).toLocaleTimeString()}</p>
+              <button
+                type="button"
+                className="mt-2 rounded-full border border-primary/35 bg-primary/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary pointer-events-auto"
+                onClick={() => setDebugLauncherVisibility(true)}
+                data-testid="button-hide-fab-debug-launcher"
+              >
+                Hide launcher off-screen
+              </button>
             </div>
           )}
         </div>

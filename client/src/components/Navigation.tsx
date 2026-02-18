@@ -102,7 +102,7 @@ export default function Navigation() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={currentUser ? "/profile/edit" : "/auth"} className="flex items-center gap-3 cursor-pointer">
+                <Link href={currentUser ? "/settings" : "/auth"} className="flex items-center gap-3 cursor-pointer">
                   <Settings2 className="h-4 w-4" />
                   <span>Settings</span>
                 </Link>
@@ -223,7 +223,7 @@ export default function Navigation() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={currentUser ? "/profile/edit" : "/auth"} className="flex items-center gap-2 cursor-pointer">
+                <Link href={currentUser ? "/settings" : "/auth"} className="flex items-center gap-2 cursor-pointer">
                   <UserCog className="h-4 w-4" />
                   <span>{currentUser ? "Account Settings" : "Sign in for Settings"}</span>
                 </Link>
@@ -279,7 +279,7 @@ export default function Navigation() {
             {currentUser && <NotificationBell compact />}
             <button
               type="button"
-              onClick={() => setLocation(currentUser ? "/profile/edit" : "/auth")}
+              onClick={() => setLocation(currentUser ? "/settings" : "/auth")}
               className="h-8 px-2.5 rounded-full border border-white/15 bg-white/[0.06] text-foreground/90 hover:bg-white/[0.12] transition-colors flex items-center gap-1.5 shrink-0"
               aria-label="Open settings"
               data-testid="button-mobile-settings"
