@@ -53,7 +53,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
@@ -1344,73 +1344,177 @@ export default function Admin() {
     );
   }
 
+  const pendingReportsCount = reports.filter((r: any) => r.status === "pending").length;
+  const adminSections = [
+    {
+      value: "moderation",
+      label: "Review Queue",
+      icon: Eye,
+      badge: pendingBars.length,
+      show: true,
+    },
+    {
+      value: "ai-reviews",
+      label: "AI Appeals",
+      icon: Bot,
+      badge: aiReviewRequests.length,
+      show: true,
+    },
+    {
+      value: "phrases",
+      label: "Phrases",
+      icon: AlertTriangle,
+      badge: 0,
+      show: true,
+    },
+    {
+      value: "reports",
+      label: "Reports",
+      icon: Flag,
+      badge: pendingReportsCount,
+      show: true,
+    },
+    {
+      value: "archive",
+      label: "Archive",
+      icon: Archive,
+      badge: deletedBars.length,
+      show: true,
+    },
+    {
+      value: "users",
+      label: "Users",
+      icon: Users,
+      badge: 0,
+      show: true,
+    },
+    {
+      value: "bars",
+      label: "Bars",
+      icon: FileText,
+      badge: 0,
+      show: true,
+    },
+    {
+      value: "console",
+      label: "Owner Console",
+      icon: Power,
+      badge: 0,
+      show: currentUser.isOwner,
+    },
+    {
+      value: "achievements",
+      label: "Badges",
+      icon: Trophy,
+      badge: 0,
+      show: currentUser.isOwner || currentUser.isAdminPlus,
+    },
+    {
+      value: "protected",
+      label: "Protected",
+      icon: Lock,
+      badge: protectedBars.length,
+      show: currentUser.isOwner,
+    },
+    {
+      value: "ai-settings",
+      label: "AI Settings",
+      icon: Bot,
+      badge: 0,
+      show: currentUser.isOwner,
+    },
+    {
+      value: "oauth",
+      label: "OAuth",
+      icon: Shield,
+      badge: 0,
+      show: currentUser.isOwner,
+    },
+  ].filter((section) => section.show);
+
   return (
     <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
       
-      <main className="max-w-4xl mx-auto p-4 md:p-8">
-        <div className="flex items-center gap-3 mb-6">
-          <Shield className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-display font-bold">Admin Dashboard</h1>
+      <main className="mx-auto w-full max-w-5xl p-4 md:p-8">
+        <div className="mb-6 glass-surface-strong rounded-3xl border border-white/[0.1] p-4 md:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15">
+                <Shield className="h-6 w-6 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-display font-bold md:text-3xl">Admin Control Center</h1>
+                <p className="mt-1 text-xs text-muted-foreground md:text-sm">
+                  Mobile-first moderation, user ops, and safety tooling.
+                </p>
+              </div>
+            </div>
+            <Link href="/profile">
+              <Button variant="ghost" size="icon" className="shrink-0 rounded-full" data-testid="button-admin-back">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        <div className={`grid grid-cols-2 gap-4 mb-8 ${currentUser?.isOwner ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+        <div className={`mb-6 grid grid-cols-2 gap-3 ${currentUser?.isOwner ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
           <Card 
-            className="bg-card/50 cursor-pointer hover:bg-card/70 transition-colors border-2 border-transparent hover:border-blue-500/50"
+            className="glass-surface cursor-pointer border border-blue-500/25 transition-all hover:border-blue-500/55 hover:bg-blue-500/10"
             onClick={() => setActiveTab("users")}
             data-testid="card-total-users"
           >
-            <CardContent className="pt-6">
+            <CardContent className="pt-4">
               <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-blue-500" />
+                <Users className="h-6 w-6 text-blue-500 md:h-8 md:w-8" />
                 <div>
-                  <p className="text-2xl font-bold">{allUsers.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Users</p>
+                  <p className="text-xl font-bold md:text-2xl">{allUsers.length}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Total Users</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card 
-            className="bg-card/50 cursor-pointer hover:bg-card/70 transition-colors border-2 border-transparent hover:border-green-500/50"
+            className="glass-surface cursor-pointer border border-green-500/25 transition-all hover:border-green-500/55 hover:bg-green-500/10"
             onClick={() => setActiveTab("bars")}
             data-testid="card-total-bars"
           >
-            <CardContent className="pt-6">
+            <CardContent className="pt-4">
               <div className="flex items-center gap-3">
-                <FileText className="h-8 w-8 text-green-500" />
+                <FileText className="h-6 w-6 text-green-500 md:h-8 md:w-8" />
                 <div>
-                  <p className="text-2xl font-bold">{bars.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Bars</p>
+                  <p className="text-xl font-bold md:text-2xl">{bars.length}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Total Bars</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card 
-            className="bg-card/50 cursor-pointer hover:bg-card/70 transition-colors border-2 border-transparent hover:border-yellow-500/50"
+            className="glass-surface cursor-pointer border border-yellow-500/25 transition-all hover:border-yellow-500/55 hover:bg-yellow-500/10"
             onClick={() => setActiveTab("users")}
             data-testid="card-admins"
           >
-            <CardContent className="pt-6">
+            <CardContent className="pt-4">
               <div className="flex items-center gap-3">
-                <Crown className="h-8 w-8 text-yellow-500" />
+                <Crown className="h-6 w-6 text-yellow-500 md:h-8 md:w-8" />
                 <div>
-                  <p className="text-2xl font-bold">{allUsers.filter(u => u.isAdmin).length}</p>
-                  <p className="text-sm text-muted-foreground">Admins</p>
+                  <p className="text-xl font-bold md:text-2xl">{allUsers.filter(u => u.isAdmin).length}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Admins</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           {currentUser?.isOwner && (
             <Card 
-              className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 cursor-pointer hover:from-purple-600/30 hover:to-pink-600/30 transition-colors border-2 border-purple-500/50 hover:border-purple-500"
+              className="glass-surface cursor-pointer border border-purple-500/35 bg-gradient-to-br from-purple-600/20 to-pink-600/20 transition-all hover:border-purple-500 hover:from-purple-600/30 hover:to-pink-600/30"
               onClick={() => setActiveTab("console")}
               data-testid="card-owner-console"
             >
-              <CardContent className="pt-6">
+              <CardContent className="pt-4">
                 <div className="flex items-center gap-3">
-                  <Power className="h-8 w-8 text-purple-500" />
+                  <Power className="h-6 w-6 text-purple-500 md:h-8 md:w-8" />
                   <div>
-                    <p className="text-2xl font-bold">Owner</p>
-                    <p className="text-sm text-muted-foreground">Console</p>
+                    <p className="text-xl font-bold md:text-2xl">Owner</p>
+                    <p className="text-xs text-muted-foreground md:text-sm">Console</p>
                   </div>
                 </div>
               </CardContent>
@@ -1419,8 +1523,43 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full mb-6 ${currentUser?.isOwner ? 'grid-cols-11' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
-            <TabsTrigger value="moderation" className="gap-1 text-xs px-2">
+          <div className="mb-4 md:hidden">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Sections
+            </p>
+            <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+              {adminSections.map((section) => (
+                <button
+                  key={section.value}
+                  type="button"
+                  onClick={() => setActiveTab(section.value)}
+                  className={`min-w-[128px] rounded-2xl border px-3 py-2.5 text-left transition-all active:scale-[0.98] ${
+                    activeTab === section.value
+                      ? "border-primary/45 bg-primary/15 shadow-[0_0_16px_rgba(168,85,247,0.2)]"
+                      : "border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08]"
+                  }`}
+                  data-testid={`admin-mobile-tab-${section.value}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${activeTab === section.value ? "bg-primary/20" : "bg-white/[0.08]"}`}>
+                      <section.icon className={`h-4 w-4 ${activeTab === section.value ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-foreground">{section.label}</p>
+                      {section.badge > 0 ? (
+                        <p className="text-[10px] text-primary">{section.badge} pending</p>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground">Ready</p>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <TabsList className={`hidden md:grid w-full mb-6 rounded-2xl border border-white/[0.1] bg-white/[0.03] p-1 ${currentUser?.isOwner ? 'grid-cols-12' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
+            <TabsTrigger value="moderation" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
               {pendingBars.length > 0 && (
@@ -1429,7 +1568,7 @@ export default function Admin() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="ai-reviews" className="gap-1 text-xs px-2">
+            <TabsTrigger value="ai-reviews" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               <Bot className="h-4 w-4" />
               <span className="hidden sm:inline">AI Appeals</span>
               {aiReviewRequests.length > 0 && (
@@ -1438,20 +1577,20 @@ export default function Admin() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="phrases" className="gap-1 text-xs px-2">
+            <TabsTrigger value="phrases" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               <AlertTriangle className="h-4 w-4" />
               <span className="hidden sm:inline">Phrases</span>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="gap-1 text-xs px-2">
+            <TabsTrigger value="reports" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               <Flag className="h-4 w-4" />
               <span className="hidden sm:inline">Reports</span>
-              {reports.filter((r: any) => r.status === 'pending').length > 0 && (
+              {pendingReportsCount > 0 && (
                 <Badge variant="destructive" className="ml-1 text-xs">
-                  {reports.filter((r: any) => r.status === 'pending').length}
+                  {pendingReportsCount}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="archive" className="gap-1 text-xs px-2">
+            <TabsTrigger value="archive" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               <Archive className="h-4 w-4" />
               <span className="hidden sm:inline">Archive</span>
               {deletedBars.length > 0 && (
@@ -1460,22 +1599,28 @@ export default function Admin() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="users" className="gap-1 text-xs px-2">
+            <TabsTrigger value="users" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Users</span>
             </TabsTrigger>
-            <TabsTrigger value="bars" className="gap-1 text-xs px-2">
+            <TabsTrigger value="bars" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Bars</span>
             </TabsTrigger>
+            {currentUser?.isOwner && (
+              <TabsTrigger value="console" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
+                <Power className="h-4 w-4" />
+                <span className="hidden sm:inline">Console</span>
+              </TabsTrigger>
+            )}
             {(currentUser?.isOwner || currentUser?.isAdminPlus) && (
-              <TabsTrigger value="achievements" className="gap-1 text-xs px-2">
+              <TabsTrigger value="achievements" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Badges</span>
               </TabsTrigger>
             )}
             {currentUser?.isOwner && (
-              <TabsTrigger value="protected" className="gap-1 text-xs px-2">
+              <TabsTrigger value="protected" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
                 <Lock className="h-4 w-4" />
                 <span className="hidden sm:inline">Protected</span>
                 {protectedBars.length > 0 && (
@@ -1486,13 +1631,13 @@ export default function Admin() {
               </TabsTrigger>
             )}
             {currentUser?.isOwner && (
-              <TabsTrigger value="ai-settings" className="gap-1 text-xs px-2">
+              <TabsTrigger value="ai-settings" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
                 <Bot className="h-4 w-4" />
                 <span className="hidden sm:inline">AI</span>
               </TabsTrigger>
             )}
             {currentUser?.isOwner && (
-              <TabsTrigger value="oauth" className="gap-1 text-xs px-2">
+              <TabsTrigger value="oauth" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
                 <Shield className="h-4 w-4" />
                 <span className="hidden sm:inline">OAuth</span>
               </TabsTrigger>
@@ -3844,71 +3989,81 @@ export default function Admin() {
 
           {currentUser?.isOwner && (
             <TabsContent value="console">
-              <Card className="border-border bg-card/50">
-                <CardHeader>
+              <Card className="glass-surface-strong border-white/[0.1]">
+                <CardHeader className="space-y-2">
                   <CardTitle className="flex items-center gap-2">
                     <Power className="h-5 w-5 text-purple-500" />
                     Owner Console
                   </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    High-trust tools for owner-only operations, diagnostics, and system controls.
+                  </p>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 md:space-y-7">
                   {/* Owner-only quick access buttons */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2 h-auto py-3"
-                      onClick={() => setActiveTab("protected")}
-                      data-testid="button-goto-protected"
-                    >
-                      <Lock className="h-5 w-5 text-yellow-500" />
-                      <span>Protected</span>
-                      {protectedBars.length > 0 && (
-                        <Badge className="ml-1 bg-yellow-500 text-xs">{protectedBars.length}</Badge>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2 h-auto py-3"
-                      onClick={() => setActiveTab("debug")}
-                      data-testid="button-goto-debug"
-                    >
-                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                      <span>Debug Logs</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2 h-auto py-3"
-                      onClick={() => setActiveTab("maintenance")}
-                      data-testid="button-goto-maintenance"
-                    >
-                      <Wrench className="h-5 w-5 text-orange-500" />
-                      <span>Maintenance</span>
-                      {maintenanceStatus?.isActive && (
-                        <Badge className="ml-1 bg-orange-500 text-xs">ON</Badge>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2 h-auto py-3"
-                      onClick={() => setActiveTab("achievements")}
-                      data-testid="button-goto-achievements"
-                    >
-                      <Trophy className="h-5 w-5 text-purple-500" />
-                      <span>Achievements</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2 h-auto py-3"
-                      onClick={() => setActiveTab("profile-badges")}
-                      data-testid="button-goto-profile-badges"
-                    >
-                      <Star className="h-5 w-5 text-pink-500" />
-                      <span>Profile Badges</span>
-                    </Button>
+                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-3 md:p-4">
+                    <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Quick Jump
+                    </p>
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
+                      <Button
+                        variant="outline"
+                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        onClick={() => setActiveTab("protected")}
+                        data-testid="button-goto-protected"
+                      >
+                        <Lock className="h-5 w-5 text-yellow-500" />
+                        <span>Protected</span>
+                        {protectedBars.length > 0 && (
+                          <Badge className="ml-1 bg-yellow-500 text-xs">{protectedBars.length}</Badge>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        onClick={() => setActiveTab("debug")}
+                        data-testid="button-goto-debug"
+                      >
+                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                        <span>Debug Logs</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        onClick={() => setActiveTab("maintenance")}
+                        data-testid="button-goto-maintenance"
+                      >
+                        <Wrench className="h-5 w-5 text-orange-500" />
+                        <span>Maintenance</span>
+                        {maintenanceStatus?.isActive && (
+                          <Badge className="ml-1 bg-orange-500 text-xs">ON</Badge>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        onClick={() => setActiveTab("achievements")}
+                        data-testid="button-goto-achievements"
+                      >
+                        <Trophy className="h-5 w-5 text-purple-500" />
+                        <span>Achievements</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        onClick={() => setActiveTab("profile-badges")}
+                        data-testid="button-goto-profile-badges"
+                      >
+                        <Star className="h-5 w-5 text-pink-500" />
+                        <span>Profile Badges</span>
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="border-t border-border pt-6 space-y-3">
-                    <Label>SQL Query (SELECT only)</Label>
+                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 md:p-5 space-y-3">
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      SQL Query (SELECT only)
+                    </Label>
                     <div className="flex gap-2">
                       <Textarea
                         placeholder="SELECT * FROM users LIMIT 10"
@@ -3937,14 +4092,15 @@ export default function Admin() {
                         }
                       }}
                       disabled={!consoleQuery.trim()}
+                      className="w-full sm:w-auto"
                       data-testid="button-run-query"
                     >
                       Run Query
                     </Button>
                     
                     {consoleOutput && (
-                      <div className="mt-4 border border-border rounded-lg overflow-hidden">
-                        <div className="bg-muted/50 px-3 py-2 text-sm font-medium">
+                      <div className="mt-4 overflow-hidden rounded-xl border border-white/[0.1]">
+                        <div className="bg-muted/40 px-3 py-2 text-sm font-medium">
                           Results ({consoleOutput.rowCount} rows)
                         </div>
                         <div className="max-h-[300px] overflow-auto">
@@ -3956,10 +4112,12 @@ export default function Admin() {
                     )}
                   </div>
 
-                  <div className="border-t border-border pt-6">
-                    <h3 className="font-semibold mb-4">Quick Actions</h3>
+                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 md:p-5">
+                    <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Quick Actions
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
+                      <div className="space-y-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3">
                         <Label>Look up user by username</Label>
                         <div className="flex gap-2">
                           <Input
@@ -3994,7 +4152,7 @@ export default function Admin() {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3">
                         <Label>Calculate Retroactive XP</Label>
                         <Button
                           variant="outline"
@@ -4020,7 +4178,7 @@ export default function Admin() {
                         </Button>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3">
                         <Label>Clear Debug Logs</Label>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -4066,13 +4224,13 @@ export default function Admin() {
                   </div>
 
                   {consoleHistory.length > 0 && (
-                    <div className="border-t border-border pt-6">
-                      <h3 className="font-semibold mb-3">Recent Queries</h3>
+                    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 md:p-5">
+                      <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent Queries</h3>
                       <div className="space-y-2">
                         {consoleHistory.map((query, idx) => (
                           <button
                             key={idx}
-                            className="w-full text-left p-2 text-sm font-mono bg-muted/50 rounded hover:bg-muted truncate"
+                            className="w-full truncate rounded-xl border border-white/[0.08] bg-muted/40 p-2 text-left font-mono text-sm hover:bg-muted/70"
                             onClick={() => setConsoleQuery(query)}
                           >
                             {query}
@@ -4083,12 +4241,12 @@ export default function Admin() {
                   )}
 
                   {/* Features & Version History */}
-                  <div className="border-t border-border pt-6 space-y-4">
+                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 md:p-5 space-y-4">
                     <div className="flex items-center gap-2">
                       <History className="h-5 w-5 text-purple-400" />
                       <h3 className="text-lg font-semibold">Features & Version History</h3>
                     </div>
-                    <div className="bg-muted/30 rounded-lg p-4 max-h-[400px] overflow-y-auto">
+                    <div className="max-h-[400px] overflow-y-auto rounded-xl border border-white/[0.08] bg-muted/30 p-4">
                       <div className="space-y-3">
                         {/* Version 2.6.0 */}
                         <div className="border-l-2 border-fuchsia-500 pl-3">
