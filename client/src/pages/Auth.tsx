@@ -748,16 +748,16 @@ export default function Auth() {
 
       <Card className="w-full max-w-md md:max-w-lg glass-surface-strong rounded-[32px] overflow-hidden shadow-[0_0_120px_rgba(139,92,246,0.2),0_8px_40px_rgba(0,0,0,0.3)]">
         <Tabs defaultValue="login" className="w-full" onValueChange={() => resetSignup()}>
-          <TabsList className="grid w-full grid-cols-2 bg-transparent p-0 h-14 border-b border-white/[0.06]">
+          <TabsList className="grid w-full grid-cols-2 bg-transparent p-0 h-14 border-b border-white/[0.06] rounded-t-[32px] rounded-b-none overflow-hidden">
             <TabsTrigger 
               value="login" 
-              className="h-full rounded-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
+              className="h-full rounded-none first:rounded-tl-[32px] data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
             >
               Login
             </TabsTrigger>
             <TabsTrigger 
               value="signup" 
-              className="h-full rounded-none data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
+              className="h-full rounded-none last:rounded-tr-[32px] data-[state=active]:bg-white/[0.05] data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary transition-all font-bold focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
             >
               Create Account
             </TabsTrigger>
