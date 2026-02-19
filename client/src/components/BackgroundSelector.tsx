@@ -4,18 +4,18 @@ import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
-import abstractWaves from '@/assets/backgrounds/abstract-waves.webp';
-import purpleCosmos from '@/assets/backgrounds/purple-cosmos.jpeg';
-import retroSun from '@/assets/backgrounds/retro-sun.jpeg';
-import neonLeaves from '@/assets/backgrounds/neon-leaves.jpeg';
-import cityNight from '@/assets/backgrounds/city-night.jpeg';
-import holographicMoney from '@/assets/backgrounds/holographic-money.jpeg';
-import rainAlley from '@/assets/backgrounds/rain-alley.jpeg';
-import nowhereStation from '@/assets/backgrounds/nowhere-station.jpeg';
-import neonSign from '@/assets/backgrounds/neon-sign.jpeg';
-import neonFace from '@/assets/backgrounds/neon-face.jpeg';
-import cyberSkull from '@/assets/backgrounds/cyber-skull.jpeg';
-import vaporwaveStatue from '@/assets/backgrounds/vaporwave-statue.jpeg';
+import abstractWaves from '../assets/backgrounds/abstract-waves.webp';
+import purpleCosmos from '../assets/backgrounds/purple-cosmos.jpeg';
+import retroSun from '../assets/backgrounds/retro-sun.jpeg';
+import neonLeaves from '../assets/backgrounds/neon-leaves.jpeg';
+import cityNight from '../assets/backgrounds/city-night.jpeg';
+import holographicMoney from '../assets/backgrounds/holographic-money.jpeg';
+import rainAlley from '../assets/backgrounds/rain-alley.jpeg';
+import nowhereStation from '../assets/backgrounds/nowhere-station.jpeg';
+import neonSign from '../assets/backgrounds/neon-sign.jpeg';
+import neonFace from '../assets/backgrounds/neon-face.jpeg';
+import cyberSkull from '../assets/backgrounds/cyber-skull.jpeg';
+import vaporwaveStatue from '../assets/backgrounds/vaporwave-statue.jpeg';
 
 export interface Background {
   id: string;
@@ -84,7 +84,7 @@ export function useBackground() {
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: -999;
+        z-index: -1;
         background-image: url(${selectedBackground.image});
         background-size: cover;
         background-position: center;
@@ -96,11 +96,12 @@ export function useBackground() {
       `;
       document.body.prepend(bgElement);
 
-      // Keep image visible while preserving readable contrast per theme.
-      document.body.style.background = isLight
-        ? "linear-gradient(180deg, rgba(255,255,255,0.58) 0%, rgba(248,250,252,0.74) 100%)"
-        : "linear-gradient(180deg, rgba(15,23,42,0.64) 0%, rgba(2,6,23,0.8) 100%)";
-      document.body.style.backgroundAttachment = "fixed";
+      // Remove the body background overlay to let the custom background show through
+      document.body.style.background = 'transparent';
+      document.body.style.backgroundAttachment = 'initial';
+    } else {
+      // For default background, ensure the body uses the theme's background
+      // This will be handled by the CSS variables automatically
     }
   }, [selectedId, selectedBackground, resolvedTheme]);
 
