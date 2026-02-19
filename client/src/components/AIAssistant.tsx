@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X } from "lucide-react";
+import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -20,16 +22,20 @@ interface AIAssistantProps {
   initialPrompt?: string;
 }
 
-export default function AIAssistant({ open: externalOpen, onClose }: AIAssistantProps) {
+export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloatingButton: propHideFloatingButton, initialPrompt }: AIAssistantProps) {
   const [isOpen, setIsOpen] = useState(externalOpen || false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDictating, setIsDictating] = useState(false);
-  const [hideFloatingButton, setHideFloatingButton] = useState(false);
+  const [hideFloatingButton, setHideFloatingButton] = useState(propHideFloatingButton || false);
   const [isScrollingDown, setIsScrollingDown] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false);
   const lastScrollYRef = useRef(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
   const { currentUser } = useBars();

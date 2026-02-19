@@ -253,6 +253,10 @@ export default function Profile() {
               <span className="font-bold text-foreground">{stats?.followingCount ?? 0}</span>
               <span className="text-muted-foreground">Following</span>
             </div>
+            <div className="flex items-center gap-1" data-testid="stat-profile-likes">
+              <span className="font-bold text-foreground">{stats?.profileLikesCount ?? 0}</span>
+              <span className="text-muted-foreground">Profile Likes</span>
+            </div>
           </div>
 
           {/* XP & Level Display */}

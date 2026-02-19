@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { BarSkeletonList } from "@/components/BarSkeleton";
 import { SearchBar } from "@/components/SearchBar";
-import FeedBarCard from "@/components/FeedBarCard";
+import BarCard from "@/components/BarCard";
 import ActivityStrip from "@/components/ActivityStrip";
 import CommunitySpotlight from "@/components/CommunitySpotlight";
 import { cn } from "@/lib/utils";
@@ -479,7 +479,7 @@ export default function Home() {
                 ) : (
                   visibleBars.map((bar) => (
                     <div key={bar.id} className={hasCustomBackground ? "glass-surface-strong rounded-2xl p-1" : ""}>
-                      <FeedBarCard bar={bar} />
+                      <BarCard bar={bar} />
                     </div>
                   ))
                 )}

@@ -24,6 +24,7 @@ import {
   CheckCircle,
   Clock,
   Crown,
+  DoorOpen,
   Eye,
   FileQuestion,
   FileText,
@@ -112,6 +113,16 @@ export default function Admin() {
   const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ['admin', 'users'],
     queryFn: () => api.getAllUsers(),
+    enabled: !!currentUser?.isAdmin,
+  });
+
+  const { data: orphanageBars = [], isLoading: isLoadingOrphanageBars } = useQuery({
+    queryKey: ['admin', 'orphanage-bars'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/orphanage-bars', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch orphanage bars');
+      return res.json();
+    },
     enabled: !!currentUser?.isAdmin,
   });
 
@@ -1483,7 +1494,38 @@ export default function Admin() {
                 <FileText className="h-6 w-6 text-green-500 md:h-8 md:w-8" />
                 <div>
                   <p className="text-xl font-bold md:text-2xl">{bars.length}</p>
-                  <p className="text-xs text-muted-foreground md:text-sm">Total Bars</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Main Bars</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="glass-surface cursor-pointer border border-orange-500/25 transition-all hover:border-orange-500/55 hover:bg-orange-500/10"
+            onClick={() => setLocation("/orphanage")}
+            data-testid="card-orphanage-bars"
+          >
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <DoorOpen className="h-6 w-6 text-orange-500 md:h-8 md:w-8" />
+                <div>
+                  <p className="text-xl font-bold md:text-2xl">{orphanageBars.length}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Orphanage Bars</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="glass-surface cursor-pointer border border-purple-500/25 transition-all hover:border-purple-500/55 hover:bg-purple-500/10"
+            data-testid="card-total-all-bars"
+          >
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <FileText className="h-6 w-6 text-purple-500 md:h-8 md:w-8" />
+                <div>
+                  <p className="text-xl font-bold md:text-2xl">{bars.length + orphanageBars.length}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Total All Bars</p>
                 </div>
               </div>
             </CardContent>

@@ -6,7 +6,7 @@ import { UserProfileBadges } from "@/components/UserProfileBadges";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, MapPin, Share2, UserPlus, UserMinus, Users, MessageCircle, Clock, Trophy, Star, Crown } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin, Share2, UserPlus, UserMinus, Users, MessageCircle, Clock, Trophy, Star, Crown, Heart } from "lucide-react";
 import { Link } from "wouter";
 import { ACHIEVEMENTS, type AchievementId, type AchievementRarity } from "@shared/schema";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -54,14 +54,14 @@ export default function UserProfile() {
     refetchOnMount: false,
   });
 
-  const { data: stats = { barsCount: 0, followersCount: 0, followingCount: 0 } } = useQuery({
+  const { data: stats = { barsCount: 0, followersCount: 0, followingCount: 0, profileLikesCount: 0 } } = useQuery({
     queryKey: ["userStats", user?.id],
     queryFn: async () => {
-      if (!user?.id) return { barsCount: 0, followersCount: 0, followingCount: 0 };
+      if (!user?.id) return { barsCount: 0, followersCount: 0, followingCount: 0, profileLikesCount: 0 };
       try {
         return await api.getUserStats(user.id);
       } catch {
-        return { barsCount: 0, followersCount: 0, followingCount: 0 };
+        return { barsCount: 0, followersCount: 0, followingCount: 0, profileLikesCount: 0 };
       }
     },
     enabled: !!user?.id,
@@ -69,6 +69,24 @@ export default function UserProfile() {
     gcTime: 300000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+  });
+
+  const { data: isProfileLiked = false } = useQuery({
+    queryKey: ["isProfileLiked", user?.id],
+    queryFn: async () => {
+      if (!user?.id || !currentUser?.id) return false;
+      try {
+        const res = await fetch(`/api/users/${user.id}/profile-like`, { credentials: "include" });
+        if (!res.ok) return false;
+        const data = await res.json();
+        return data.isLiked;
+      } catch {
+        return false;
+      }
+    },
+    enabled: !!user?.id && !!currentUser?.id,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: achievements = [] } = useQuery({
@@ -129,12 +147,42 @@ export default function UserProfile() {
 
   const unfollowMutation = useMutation({
     mutationFn: async () => {
-      if (!user?.id) throw new Error("User not found");
+      if (!user?.id) throw new Error("User ID required");
       return api.unfollowUser(user.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["isFollowing", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["userStats", user?.id] });
+    },
+  });
+
+  const toggleProfileLikeMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("User ID required");
+      const res = await fetch(`/api/users/${user.id}/profile-like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to toggle profile like");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["isProfileLiked", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["userStats", user?.id] });
+      toast({
+        title: data.isLiked ? "Profile liked!" : "Profile like removed",
+        description: data.isLiked 
+          ? `You liked ${user?.username}'s profile` 
+          : `You removed your like from ${user?.username}'s profile`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile like",
+        variant: "destructive",
+      });
     },
   });
 
@@ -313,6 +361,10 @@ export default function UserProfile() {
                   <span className="font-bold">{stats?.followingCount || 0}</span>
                   <span className="text-muted-foreground ml-1">Following</span>
                 </div>
+                <div>
+                  <span className="font-bold">{stats?.profileLikesCount || 0}</span>
+                  <span className="text-muted-foreground ml-1">Profile Likes</span>
+                </div>
               </div>
               {/* Displayed Badges */}
               {((user.displayedBadges?.length ?? 0) > 0 || isOwnProfile) && (
@@ -390,6 +442,21 @@ export default function UserProfile() {
                           Follow
                         </>
                       )}
+                    </Button>
+                    <Button
+                      variant={isProfileLiked ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => toggleProfileLikeMutation.mutate()}
+                      disabled={toggleProfileLikeMutation.isPending}
+                      className={isProfileLiked ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+                      data-testid="button-profile-like"
+                    >
+                      {toggleProfileLikeMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <Heart className={`h-4 w-4 mr-1 ${isProfileLiked ? "fill-current" : ""}`} />
+                      )}
+                      {isProfileLiked ? "Liked" : "Like Profile"}
                     </Button>
                     {friendshipStatus?.status === "accepted" ? (
                       <Button

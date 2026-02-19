@@ -291,9 +291,9 @@ export const api = {
     return data.isFollowing;
   },
 
-  getUserStats: async (userId: string): Promise<{ barsCount: number; followersCount: number; followingCount: number }> => {
+  getUserStats: async (userId: string): Promise<{ barsCount: number; followersCount: number; followingCount: number; profileLikesCount: number }> => {
     const response = await apiFetch(`/api/users/${userId}/stats`);
-    return handleResponse<{ barsCount: number; followersCount: number; followingCount: number }>(response);
+    return handleResponse<{ barsCount: number; followersCount: number; followingCount: number; profileLikesCount: number }>(response);
   },
 
   getUserAchievements: async (userId: string): Promise<Array<{ achievementId: string; unlockedAt: Date; emoji: string; name: string; description: string }>> => {
