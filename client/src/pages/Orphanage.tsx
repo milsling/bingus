@@ -583,60 +583,10 @@ export default function OrphanagePage() {
                     <span className="shrink-0 text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(adoption.createdAt), { addSuffix: true })}
                     </span>
-                      {bar.usageCount} {bar.usageCount === 1 ? 'adoption' : 'adoptions'}
-                    </Badge>
                   </a>
                 ))}
               </div>
             </section>
-                </Badge>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-          )}
-
-          {isLoading ? (
-            <BarSkeletonList count={3} />
-          ) : adoptableBars.length === 0 ? (
-            <div className="rounded-2xl border border-border/60 bg-card/70 py-20 text-center text-muted-foreground">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-muted/50 opacity-70">
-                <Home className="h-8 w-8" />
-              </div>
-              <p className="text-lg text-foreground">The Orphanage is empty</p>
-              <p className="mt-2 text-sm text-muted-foreground">No bars are currently available for adoption</p>
-            </div>
-          ) : filteredBars.length === 0 ? (
-            <div className="rounded-2xl border border-border/60 bg-card/70 py-16 text-center text-muted-foreground">
-              <p className="text-lg text-foreground">No bars match these filters</p>
-              <p className="mt-2 text-sm text-muted-foreground">Try another style or clear your search.</p>
-              <Button
-                variant="outline"
-                className="mt-4 border-border/60 bg-transparent text-muted-foreground hover:bg-muted"
-                onClick={() => {
-                  setActiveFilter("All");
-                  setSearchTerm("");
-                }}
-              >
-                Reset Filters
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredBars.map((bar, index) => (
-                <motion.div
-                  key={bar.id}
-                  id={`bar-${bar.id}`}
-                  className="scroll-mt-20"
-                  initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
-                  animate={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
-                  transition={{ duration: 0.28, delay: shouldReduceMotion ? 0 : Math.min(index * 0.04, 0.32) }}
-                >
-                  <OrphanBarCard bar={bar} />
-                </motion.div>
-              ))}
-            </div>
           )}
         </div>
       </main>

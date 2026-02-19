@@ -37,7 +37,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
   const [editContent, setEditContent] = useState("");
   const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false);
   const lastScrollYRef = useRef(0);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { currentUser } = useBars();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
