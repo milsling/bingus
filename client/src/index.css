@@ -87,111 +87,118 @@
 
 :root {
   /* ========================================
-     ORPHANBARS - Light Mode (off-white, reduced glare)
+     ORPHANBARS - Light Mode (Enhanced for Eye Comfort)
+     Reduced glare, warmer undertones, improved contrast
      ======================================== */
-  /* Off-white base like Facebook/Google - not pure white */
-  --background: 220 14% 96%;
-  --foreground: 220 12% 18%;
+  /* Softer main background - warm off-white like Facebook/Google */
+  --background: 45 15% 97%;  /* #FAFAFC with warm tint */
+  --foreground: 220 15% 15%;  /* Darker gray text: #1F2937 */
 
-  --card: 0 0% 99%;
-  --card-foreground: 220 12% 18%;
+  /* Card backgrounds - pure white with subtle borders */
+  --card: 0 0% 100%;  /* Pure white */
+  --card-foreground: 220 15% 15%;  /* Darker text */
 
-  --popover: 0 0% 99%;
-  --popover-foreground: 220 12% 18%;
+  --popover: 0 0% 100%;  /* Pure white */
+  --popover-foreground: 220 15% 15%;
 
-  --primary: 265 70% 60%;
+  /* Primary purple - slightly desaturated for comfort */
+  --primary: 265 65% 58%;  /* Softer purple: #7C3AED */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 14% 92%;
-  --secondary-foreground: 220 12% 20%;
+  /* Secondary surfaces - warm light gray */
+  --secondary: 45 20% 95%;  /* Warm light gray: #F5F5F7 */
+  --secondary-foreground: 220 12% 20%;  /* Darker text */
 
-  --muted: 220 12% 91%;
-  --muted-foreground: 220 8% 42%;
+  /* Muted elements - softer gray */
+  --muted: 45 15% 94%;  /* Very light warm gray */
+  --muted-foreground: 220 8% 46%;  /* Medium gray: #6B7280 */
 
-  --accent: 265 70% 60%;
+  --accent: 265 65% 58%;  /* Match primary */
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 220 12% 88%;
-  --input: 220 12% 88%;
-  --ring: 265 70% 60%;
+  /* Subtle borders - light gray for depth */
+  --border: 220 10% 88%;  /* Light gray: #E5E7EB */
+  --input: 220 10% 88%;
+  --ring: 265 65% 58%;  /* Match primary */
 
   --radius: 0.5rem;
   
-  /* Glass panel variables - off-white, subtle */
-  --glass-bg: rgba(250, 250, 252, 0.75);
-  --glass-bg-hover: rgba(252, 252, 254, 0.85);
-  --glass-border: rgba(0, 0, 0, 0.06);
-  --glass-border-hover: rgba(0, 0, 0, 0.1);
+  /* Glass panel variables - warmer, more comfortable */
+  --glass-bg: rgba(252, 251, 248, 0.8);  /* Warm off-white */
+  --glass-bg-hover: rgba(254, 253, 250, 0.9);
+  --glass-border: rgba(229, 231, 235, 0.6);  /* Light gray borders */
+  --glass-border-hover: rgba(209, 213, 219, 0.8);
   
-  /* Shadows - subtle and modern */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  /* Enhanced shadows - layered for depth, reduced harshness */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08), 0 10px 10px rgba(0, 0, 0, 0.04);
   
   --shadow-card: 
-    0 2px 8px rgba(0, 0, 0, 0.06),
-    0 8px 24px rgba(0, 0, 0, 0.04),
-    0 0 0 1px rgba(0, 0, 0, 0.04);
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.03),
+    0 0 0 1px rgba(229, 231, 235, 0.5);  /* Light border */
   
   --shadow-card-hover: 
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    0 12px 32px rgba(0, 0, 0, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.04),
     0 0 0 1px rgba(168, 85, 247, 0.15);
 
-  /* App backdrop (light) */
-  --app-bg-1: rgba(168, 85, 247, 0.14);
-  --app-bg-2: rgba(139, 69, 180, 0.12);
-  --app-bg-3: rgba(59, 130, 246, 0.12);
-  --app-bg-4: rgba(236, 72, 153, 0.09);
-  --app-bg-5: rgba(99, 102, 241, 0.08);
-  /* Off-white gradient - soft gray, no glare (Facebook/Google style) */
-  --app-bg-base-start: #f2f2f5;
-  --app-bg-base-end: #e6e6eb;
+  /* App backdrop (light) - reduced saturation for comfort */
+  --app-bg-1: rgba(168, 85, 247, 0.08);  /* Reduced intensity */
+  --app-bg-2: rgba(139, 69, 180, 0.06);
+  --app-bg-3: rgba(59, 130, 246, 0.05);
+  --app-bg-4: rgba(236, 72, 153, 0.04);
+  --app-bg-5: rgba(99, 102, 241, 0.04);
+  
+  /* Warmer gradient base */
+  --app-bg-base-start: #fafafa;  /* Warmer off-white */
+  --app-bg-base-end: #f5f5f7;   /* Soft warm gray */
 
-  /* Floating bars - frosted glass */
-  --floating-bar-bg: rgba(248, 248, 250, 0.9);
-  --floating-bar-border: rgba(0, 0, 0, 0.1);
+  /* Floating bars - warmer glass */
+  --floating-bar-bg: rgba(252, 251, 248, 0.92);  /* Warm off-white */
+  --floating-bar-border: rgba(229, 231, 235, 0.8);  /* Light gray border */
   --floating-bar-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.12),
-    0 2px 8px rgba(15, 23, 42, 0.08);
+    0 12px 28px rgba(31, 41, 55, 0.08),  /* Darker, more defined */
+    0 2px 8px rgba(31, 41, 55, 0.04);
 
-  /* Unified glass system (light) - frosted glass, opaque enough to prevent text overlap */
-  --glass-surface-bg: rgba(248, 248, 250, 0.92);
-  --glass-surface-bg-strong: rgba(250, 250, 252, 0.96);
-  --glass-surface-border: rgba(0, 0, 0, 0.08);
-  --glass-surface-border-strong: rgba(0, 0, 0, 0.12);
+  /* Unified glass system - warmer, more comfortable */
+  --glass-surface-bg: rgba(252, 251, 248, 0.92);
+  --glass-surface-bg-strong: rgba(254, 253, 250, 0.96);
+  --glass-surface-border: rgba(229, 231, 235, 0.6);  /* Light gray borders */
+  --glass-surface-border-strong: rgba(209, 213, 219, 0.8);
   --glass-surface-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.12),
-    0 2px 8px rgba(15, 23, 42, 0.08);
+    0 12px 28px rgba(31, 41, 55, 0.08),
+    0 2px 8px rgba(31, 41, 55, 0.04);
 
-  --glass-field-bg: rgba(250, 250, 252, 0.8);
+  --glass-field-bg: rgba(252, 251, 248, 0.8);
   --glass-field-bg-focus: rgba(255, 255, 255, 0.95);
-  --glass-field-border: rgba(0, 0, 0, 0.08);
-  --glass-field-border-focus: rgba(129, 140, 248, 0.55);
-  --glass-field-placeholder: rgba(71, 85, 105, 0.55);
+  --glass-field-border: rgba(229, 231, 235, 0.6);
+  --glass-field-border-focus: rgba(168, 85, 247, 0.4);  /* Soft purple focus */
+  --glass-field-placeholder: rgba(107, 114, 128, 0.6);  /* Better contrast */
 
-  --sheet-bg: rgba(252, 252, 254, 0.96);
-  --sheet-border: rgba(0, 0, 0, 0.1);
+  --sheet-bg: rgba(254, 253, 250, 0.96);  /* Warm off-white */
+  --sheet-border: rgba(229, 231, 235, 0.8);
 
-  /* Search input inside floating bar - slightly darker for contrast */
-  --glass-input-in-bar-bg: rgba(0, 0, 0, 0.06);
-  --glass-input-in-bar-border: rgba(0, 0, 0, 0.1);
-  --glass-input-in-bar-bg-focus: rgba(0, 0, 0, 0.1);
-  --glass-input-in-bar-border-focus: rgba(129, 140, 248, 0.4);
+  /* Search input inside floating bar - better contrast */
+  --glass-input-in-bar-bg: rgba(31, 41, 55, 0.04);  /* Subtle dark */
+  --glass-input-in-bar-border: rgba(229, 231, 235, 0.8);
+  --glass-input-in-bar-bg-focus: rgba(31, 41, 55, 0.08);
+  --glass-input-in-bar-border-focus: rgba(168, 85, 247, 0.3);
 
-  /* Animation timings - tweak: durations, easing for FAB/transitions */
+  /* Animation timings - unchanged */
   --duration-interaction: 200ms;
   --duration-transition: 280ms;
   --duration-modal: 350ms;
   --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
   --ease-ios: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-  /* Mobile floating header/search spacing tokens */
+  /* Mobile spacing tokens - unchanged */
   --mobile-header-top-offset: 0.5rem;
   --mobile-header-height: 3rem;
   --mobile-search-gap: 0.75rem;
@@ -341,8 +348,34 @@
     overflow-x: hidden;
   }
   
+  /* Enhanced readability for light mode */
+  :root:not(.dark) {
+    font-size: 16px;  /* Base 16px for better readability */
+    line-height: 1.7;  /* Increased line-height for comfort */
+  }
+  
+  :root:not(.dark) body {
+    font-family: var(--font-sans);
+    letter-spacing: 0.01em;  /* Slightly increased letter spacing */
+  }
+  
+  :root:not(.dark) p, 
+  :root:not(.dark) .text-sm,
+  :root:not(.dark) .text-xs {
+    line-height: 1.75;  /* Even more line-height for body text */
+  }
+  
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight;
+  }
+  
+  /* Light mode heading improvements */
+  :root:not(.dark) h1, 
+  :root:not(.dark) h2, 
+  :root:not(.dark) h3 {
+    color: hsl(220 15% 12%);  /* Slightly darker than body text */
+    font-weight: 600;
+    text-shadow: 0 0.5px 0.5px rgba(0, 0, 0, 0.02);  /* Subtle shadow for readability */
   }
 
   [contenteditable]:empty:before {
@@ -709,17 +742,46 @@ html.dark {
     0 0 0 2px hsl(var(--ring) / 0.2);
 }
 
-/* Light mode buttons - subtle depth */
+/* Light mode buttons - enhanced depth and comfort */
 :root:not(.dark) button:not([class*="ghost"]):not([class*="link"]) {
   box-shadow: var(--shadow-xs);
+  transition: all 0.2s ease-out;
 }
 
 :root:not(.dark) button:not([class*="ghost"]):not([class*="link"]):hover {
   box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);  /* Subtle lift effect */
 }
 
 :root:not(.dark) button:not([class*="ghost"]):not([class*="link"]):active {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+  transform: translateY(0);
+}
+
+/* Enhanced primary button styling for light mode */
+:root:not(.dark) button.bg-primary,
+:root:not(.dark) .bg-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(265 70% 54%) 100%);  /* Subtle gradient */
+  border: 1px solid hsl(265 65% 50%);  /* Soft border for depth */
+  box-shadow: 
+    0 2px 4px rgba(168, 85, 247, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+:root:not(.dark) button.bg-primary:hover,
+:root:not(.dark) .bg-primary:hover {
+  background: linear-gradient(135deg, hsl(265 65% 62%) 0%, hsl(265 70% 56%) 100%);  /* Slightly darker */
+  box-shadow: 
+    0 4px 8px rgba(168, 85, 247, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+:root:not(.dark) button.bg-primary:active,
+:root:not(.dark) .bg-primary:active {
+  background: linear-gradient(135deg, hsl(265 65% 58%) 0%, hsl(265 70% 52%) 100%);  /* Darker for active */
+  box-shadow: inset 0 1px 2px rgba(124, 58, 237, 0.2);
+  transform: translateY(0);
 }
 
 /* Light mode dropdown/popover shadows */
@@ -732,6 +794,90 @@ html.dark {
 /* Light mode avatar ring - softer */
 :root:not(.dark) [data-slot="avatar"] {
   box-shadow: 0 0 0 2px hsl(var(--background)), var(--shadow-xs);
+}
+
+/* ========================================
+   LIGHT MODE ENHANCED SPACING & PADDING
+   Improved comfort and reduced crowding
+   ======================================== */
+
+/* Enhanced card spacing in light mode */
+:root:not(.dark) .card,
+:root:not(.dark) [data-slot="card"] {
+  padding: 1.5rem;  /* More generous padding */
+  margin-bottom: 1.25rem;  /* More space between cards */
+}
+
+:root:not(.dark) .card p,
+:root:not(.dark) [data-slot="card"] p {
+  margin-bottom: 1rem;  /* More space after paragraphs */
+}
+
+/* Enhanced section spacing */
+:root:not(.dark) section {
+  padding: 2rem 0;
+  margin-bottom: 1.5rem;
+}
+
+/* Better list spacing */
+:root:not(.dark) ul,
+:root:not(.dark) ol {
+  line-height: 1.8;
+  padding-left: 1.5rem;
+}
+
+:root:not(.dark) li {
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced form spacing */
+:root:not(.dark) .space-y-2 > * + * {
+  margin-top: 1rem;  /* More space between form elements */
+}
+
+:root:not(.dark) .space-y-4 > * + * {
+  margin-top: 1.5rem;  /* More space for larger gaps */
+}
+
+/* Better button spacing */
+:root:not(.dark) .button-group {
+  display: flex;
+  gap: 1rem;  /* More space between buttons */
+}
+
+:root:not(.dark) .stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Enhanced modal/dialog padding */
+:root:not(.dark) [role="dialog"] {
+  padding: 2rem;
+}
+
+:root:not(.dark) [role="dialog"] > div:first-child {
+  margin-bottom: 1.5rem;
+}
+
+/* Better table spacing */
+:root:not(.dark) table {
+  border-spacing: 0 0.5rem;
+}
+
+:root:not(.dark) th,
+:root:not(.dark) td {
+  padding: 1rem;
+}
+
+/* Enhanced navigation spacing */
+:root:not(.dark) nav {
+  padding: 1rem 0;
+}
+
+:root:not(.dark) nav a {
+  padding: 0.75rem 1rem;
+  margin: 0 0.25rem;
 }
 
 /* ========================================
