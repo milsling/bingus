@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen } from "lucide-react";
 import headerLogo from "@/assets/logo.png";
 import { useBars } from "@/context/BarContext";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -142,6 +142,7 @@ export default function Navigation() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/orphanage" className="flex items-center gap-3 cursor-pointer">
+                      <DoorOpen className="h-4 w-4" />
                       <span>The Orphanage</span>
                     </Link>
                   </DropdownMenuItem>

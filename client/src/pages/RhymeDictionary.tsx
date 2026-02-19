@@ -102,7 +102,7 @@ export default function RhymeDictionary() {
           <Button variant="ghost" size="icon" onClick={() => navigate('/apps')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <BookText className="h-6 w-6 text-purple-500" />
+          <BookText className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-logo)' }}>Rhyme Dictionary</h1>
         </div>
 

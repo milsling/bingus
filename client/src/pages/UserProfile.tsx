@@ -280,7 +280,7 @@ export default function UserProfile() {
                   <Badge variant="secondary">{user.membershipTier}</Badge>
                 )}
                 {user.isAdmin && (
-                  <Badge variant="default" className="bg-purple-600">{user.username === "Milsling" ? "Owner" : "Admin"}</Badge>
+                  <Badge variant="default" className="bg-primary">{user.username === "Milsling" ? "Owner" : "Admin"}</Badge>
                 )}
               </div>
               {user.location && (
@@ -297,9 +297,9 @@ export default function UserProfile() {
                   {(xpStats?.level ?? 1) >= 10 ? (
                     <Crown className="h-4 w-4 text-amber-400" />
                   ) : (
-                    <Star className="h-4 w-4 text-purple-400" />
+                    <Star className="h-4 w-4 text-primary" />
                   )}
-                  <span className="font-bold text-purple-300">Lv. {xpStats?.level ?? 1}</span>
+                  <span className="font-bold text-primary">Lv. {xpStats?.level ?? 1}</span>
                 </div>
                 <div>
                   <span className="font-bold">{stats?.barsCount || bars.length}</span>
@@ -330,8 +330,8 @@ export default function UserProfile() {
                                 className={cn(
                                   "inline-flex items-center justify-center w-10 h-10 rounded-full text-xl",
                                   `badge-${rarity}`,
-                                  rarity === "legendary" && "bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-purple-500/20",
-                                  rarity === "epic" && "bg-purple-500/20",
+                                  rarity === "legendary" && "bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-primary/20",
+                                  rarity === "epic" && "bg-primary/20",
                                   rarity === "rare" && "bg-blue-500/20",
                                   rarity === "common" && "bg-gray-500/20"
                                 )}
@@ -346,7 +346,7 @@ export default function UserProfile() {
                               <p className={cn(
                                 "text-xs capitalize mt-1",
                                 rarity === "legendary" && "text-amber-400",
-                                rarity === "epic" && "text-purple-400",
+                                rarity === "epic" && "text-primary",
                                 rarity === "rare" && "text-blue-400",
                                 rarity === "common" && "text-gray-400"
                               )}>{rarity}</p>

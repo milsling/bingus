@@ -182,17 +182,17 @@ export default function Messages() {
   const ConversationList = () => (
     <div className="flex flex-col h-full">
       <Tabs defaultValue="chats" className="flex-1 flex flex-col">
-        <TabsList className="m-3 h-auto rounded-2xl border border-white/10 bg-black/20 p-1">
+        <TabsList className="m-2 h-auto rounded-2xl border border-white/10 bg-black/20 p-1">
           <TabsTrigger
             value="chats"
-            className="flex-1 gap-1.5 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-500 data-[state=active]:text-white"
+            className="flex-1 gap-1.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <MessageCircle className="h-3.5 w-3.5" />
             Chats
           </TabsTrigger>
           <TabsTrigger
             value="friends"
-            className="flex-1 gap-1.5 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-500 data-[state=active]:text-white"
+            className="flex-1 gap-1.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <Users className="h-3.5 w-3.5" />
             Friends
@@ -201,10 +201,10 @@ export default function Messages() {
         <TabsContent value="chats" className="flex-1 m-0 overflow-hidden">
           <ScrollArea className="h-full">
             {loadingConversations ? (
-              <div className="p-6 text-center text-muted-foreground">
+              <div className="p-4 text-center text-muted-foreground">
                 <div className="animate-pulse space-y-3">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="flex items-center gap-3 p-3">
+                    <div key={i} className="flex items-center gap-3 p-2">
                       <div className="h-10 w-10 rounded-full bg-muted" />
                       <div className="flex-1 space-y-2">
                         <div className="h-4 w-24 bg-muted rounded" />
@@ -215,7 +215,7 @@ export default function Messages() {
                 </div>
               </div>
             ) : safeConversations.length === 0 ? (
-              <div className="p-6 text-center text-muted-foreground">
+              <div className="p-4 text-center text-muted-foreground">
                 <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
                 <p className="text-sm font-medium">No conversations yet</p>
                 <p className="text-xs mt-1 opacity-70">Start chatting with a friend!</p>
@@ -226,7 +226,7 @@ export default function Messages() {
                   <button
                     key={conv.user.id}
                     className={cn(
-                      "w-full p-3 flex items-center gap-3 transition-all text-left",
+                      "w-full p-2 flex items-center gap-3 transition-all text-left",
                       "hover:bg-accent/50",
                       selectedUserId === conv.user.id && "bg-accent"
                     )}
@@ -337,10 +337,10 @@ export default function Messages() {
 
   return (
     <NativeScreen
-      className="bg-background pt-20 pb-24 md:pb-4 md:pt-24"
-      contentClassName="max-w-6xl"
+      className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pb-4 md:pt-24"
+      contentClassName="max-w-full"
     >
-      <main className="h-[calc(100dvh-80px)] w-full md:h-[calc(100vh-64px)] md:p-4">
+      <main className="h-[calc(100dvh-56px)] w-full md:h-[calc(100vh-64px)] md:p-4">
         <div className="h-full w-full overflow-hidden rounded-[1.35rem] border border-white/10 bg-black/20 backdrop-blur-xl md:rounded-[1.9rem] flex">
           
           <div className="hidden md:flex w-80 border-r border-white/10 flex-col">
@@ -372,7 +372,7 @@ export default function Messages() {
           </div>
 
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="md:hidden flex items-center gap-3 p-3 border-b border-white/10 bg-black/10 backdrop-blur-xl">
+            <div className="md:hidden flex items-center gap-3 p-2 border-b border-white/10 bg-black/10 backdrop-blur-xl">
               {selectedUserId && selectedUser ? (
                 <>
                   <Button
@@ -500,7 +500,7 @@ export default function Messages() {
                   </div>
                 </ScrollArea>
 
-                <div className="p-3 border-t border-white/10 bg-black/10 backdrop-blur-md">
+                <div className="p-2 border-t border-white/10 bg-black/10 backdrop-blur-md">
                   <div className="flex gap-2 items-end">
                     <Input
                       placeholder="Type a message..."

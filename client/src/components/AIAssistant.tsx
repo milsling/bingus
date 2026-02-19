@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mic, Send, Loader2, Sparkles, MessageSquare } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 
@@ -19,20 +20,20 @@ interface AIAssistantProps {
   initialPrompt?: string;
 }
 
-export default function AIAssistant({ open, onOpenChange, hideFloatingButton = false, initialPrompt }: AIAssistantProps) {
-  const { currentUser } = useBars();
-  const [internalOpen, setInternalOpen] = useState(false);
-  
-  const isOpen = open !== undefined ? open : internalOpen;
-  const setIsOpen = onOpenChange || setInternalOpen;
-  const [messages, setMessages] = useState<Message[]>([]);
+export default function AIAssistant({ open: externalOpen, onClose }: AIAssistantProps) {
+  const [isOpen, setIsOpen] = useState(externalOpen || false);
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false);
-  const [isVoiceSupported, setIsVoiceSupported] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [isDictating, setIsDictating] = useState(false);
-  
+  const [hideFloatingButton, setHideFloatingButton] = useState(false);
+  const [isScrollingDown, setIsScrollingDown] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const lastScrollYRef = useRef(0);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const { currentUser } = useBars();
+  const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -47,31 +48,73 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
 
     recognition.onresult = (event: any) => {
-      const transcript = event?.results?.[0]?.[0]?.transcript;
-      if (typeof transcript === "string" && transcript.trim()) {
-        const text = transcript.trim();
-        setInput(text);
-        setIsDictating(false);
-        setIsRecording(false);
-      }
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0]?.transcript)
+        .join('');
+      setInput(transcript);
     };
 
-    recognition.onerror = () => {
-      setIsRecording(false);
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      if (event.error === 'not-allowed') {
+        toast({
+          title: "Microphone access denied",
+          description: "Please allow microphone access to use voice input",
+          variant: "destructive",
+        });
+      }
       setIsDictating(false);
     };
 
     recognition.onend = () => {
-      setIsRecording(false);
       setIsDictating(false);
     };
 
     recognitionRef.current = recognition;
+  }, [toast]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const deltaY = currentScrollY - lastScrollYRef.current;
+      
+      // Clear existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // Determine scroll direction and update visibility
+      if (deltaY > 5) {
+        // Scrolling down
+        setIsScrollingDown(true);
+        setHideFloatingButton(true);
+      } else if (deltaY < -5) {
+        // Scrolling up
+        setIsScrollingDown(false);
+        setHideFloatingButton(false);
+      }
+
+      // Update last scroll position
+      lastScrollYRef.current = currentScrollY;
+
+      // Set timeout to show button again after scrolling stops
+      scrollTimeoutRef.current = setTimeout(() => {
+        setHideFloatingButton(false);
+      }, 1000);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -185,10 +228,41 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
     await sendMessageWithContent(message);
   };
 
+  const startEdit = (index: number) => {
+    setEditingIndex(index);
+    setEditContent(messages[index].content);
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setEditContent("");
+  };
+
+  const saveEdit = () => {
+    if (editingIndex === null) return;
+    
+    const updatedMessages = [...messages];
+    updatedMessages[editingIndex] = {
+      ...updatedMessages[editingIndex],
+      content: editContent
+    };
+    setMessages(updatedMessages);
+    
+    toast({
+      title: "Message updated",
+      description: "AI assistant message has been edited",
+    });
+    
+    cancelEdit();
+  };
+
   return (
     <>
       {!hideFloatingButton && (
-        <div className="fixed bottom-20 right-4 md:bottom-6 z-50">
+        <div className={cn(
+          "fixed bottom-20 right-4 md:bottom-6 z-50 transition-all duration-300 ease-in-out",
+          isScrollingDown ? "translate-y-16 opacity-0" : "translate-y-0 opacity-100"
+        )}>
           <Button
             type="button"
             onClick={() => setIsOpen(true)}
@@ -202,7 +276,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="glass-surface-strong border border-white/[0.1] bg-background/95 max-w-[min(95vw,32rem)] h-[80vh] overflow-hidden p-0">
+        <DialogContent className="glass-surface-strong border border-white/[0.1] bg-background/95 w-[95vw] h-[95vh] md:max-w-[min(95vw,48rem)] md:h-[85vh] lg:max-w-[min(90vw,64rem)] xl:max-w-[min(85vw,80rem)] lg:h-[90vh] overflow-hidden p-0">
           <DialogHeader className="border-b border-white/[0.08] bg-background/50 p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15">
@@ -216,14 +290,14 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
           </DialogHeader>
 
           <ScrollArea className="flex-1">
-            <div className="p-4">
+            <div className="p-3 md:p-4 md:p-6 max-w-none">
               {messages.length === 0 && (
                 <div className="flex h-32 flex-col items-center justify-center text-center">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                     <Sparkles className="h-5 w-5 text-primary" />
                   </div>
                   <p className="text-sm font-medium text-foreground">How can I help you?</p>
-                  <p className="mt-1 max-w-[260px] text-xs text-muted-foreground">
+                  <p className="mt-1 max-w-[300px] md:max-w-[400px] text-xs text-muted-foreground">
                     Ask for punchline rewrites, rhyme chains, bar breakdowns, and strategy.
                   </p>
                 </div>
@@ -231,21 +305,63 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
               
               {messages.map((msg, i) => (
                 <div key={i} className={cn("mb-4", msg.role === "user" ? "text-right" : "text-left")}>
-                  <div
-                    className={cn(
-                      "inline-flex max-w-[85%] items-start gap-2",
+                  <div className={cn(
+                      "inline-flex max-w-[95%] md:max-w-[85%] lg:max-w-[80%] items-start gap-2",
                       msg.role === "user" && "flex-row-reverse"
                     )}
                   >
                     <div
                       className={cn(
-                        "rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap",
+                        "rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap relative group",
                         msg.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
                       )}
                     >
-                      {msg.content}
+                      {editingIndex === i && msg.role === "assistant" ? (
+                        <div className="min-w-[200px]">
+                          <Textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            className="min-h-[60px] resize-none bg-background border-border text-foreground"
+                            autoFocus
+                          />
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              size="sm"
+                              onClick={saveEdit}
+                              className="h-7 px-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={cancelEdit}
+                              className="h-7 px-2 text-xs border-border/60 hover:bg-muted"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {msg.content}
+                          {msg.role === "assistant" && currentUser?.isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEdit(i)}
+                              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20"
+                              data-testid={`button-edit-message-${i}`}
+                            >
+                              <Edit3 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -264,8 +380,8 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
             </div>
           </ScrollArea>
 
-          <div className="border-t border-white/[0.08] bg-background/50 p-4">
-            <div className="flex items-center gap-2">
+          <div className="border-t border-white/[0.08] bg-background/50 p-3 md:p-4 md:p-6">
+            <div className="flex items-center gap-2 md:gap-3">
               {isVoiceSupported && (
                 <Button
                   type="button"
@@ -274,7 +390,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
                   onClick={toggleDictation}
                   disabled={isLoading}
                   className={cn(
-                    "h-10 w-10 rounded-xl border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
+                    "h-10 w-10 md:h-12 md:w-12 rounded-xl border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
                     isRecording && "bg-red-500/10 border-red-500/30 text-red-500"
                   )}
                   title={isRecording ? "Stop dictation" : "Start voice dictation"}
@@ -301,7 +417,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
                   }
                 }}
                 disabled={isLoading || isDictating}
-                className="flex-1 rounded-xl border border-white/[0.1] bg-white/[0.05] placeholder:text-muted-foreground/50"
+                className="flex-1 rounded-xl border border-white/[0.1] bg-white/[0.05] placeholder:text-muted-foreground/50 text-base md:text-lg px-4 py-3"
                 data-testid="input-ai-chat"
               />
               
@@ -310,7 +426,7 @@ export default function AIAssistant({ open, onOpenChange, hideFloatingButton = f
                 onClick={sendMessage}
                 disabled={isLoading || !input.trim() || isDictating}
                 size="icon"
-                className="h-10 w-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 data-testid="button-ai-send"
               >
                 <Send className="h-4 w-4" />

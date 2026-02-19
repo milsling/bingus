@@ -110,30 +110,30 @@ interface OrphanageStatsProps {
 function OrphanageStats({ totalBars, visibleBars, totalAdoptions, adoptedToday }: OrphanageStatsProps) {
   return (
     <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <div className="rounded-2xl border border-violet-500/20 bg-slate-900/70 p-4 backdrop-blur shadow-[0_0_30px_rgba(139,92,246,0.18)]">
-        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
-          <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+      <div className="rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur shadow-[0_0_30px_rgba(139,92,246,0.18)]">
+        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
           Available
         </div>
         <p className="text-2xl font-semibold">{totalBars}</p>
       </div>
-      <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4 backdrop-blur">
-        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
-          <Search className="h-3.5 w-3.5 text-violet-400" />
+      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur">
+        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          <Search className="h-3.5 w-3.5 text-primary" />
           Visible
         </div>
         <p className="text-2xl font-semibold">{visibleBars}</p>
       </div>
-      <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4 backdrop-blur">
-        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
-          <Activity className="h-3.5 w-3.5 text-violet-400" />
+      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur">
+        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          <Activity className="h-3.5 w-3.5 text-primary" />
           Total Adoptions
         </div>
         <p className="text-2xl font-semibold">{totalAdoptions}</p>
       </div>
-      <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4 backdrop-blur">
-        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
-          <Heart className="h-3.5 w-3.5 text-violet-400" />
+      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur">
+        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          <Heart className="h-3.5 w-3.5 text-primary" />
           Adopted Today
         </div>
         <p className="text-2xl font-semibold">{adoptedToday}</p>
@@ -156,14 +156,14 @@ function OrphanageFilters({
   onSearchChange,
 }: OrphanageFiltersProps) {
   return (
-    <section className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4 backdrop-blur">
+    <section className="rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur">
       <div className="relative mb-3">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={searchTerm}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search bars, tags, creator..."
-          className="h-10 border-slate-700/70 bg-slate-950/80 pl-9 text-slate-100 placeholder:text-slate-500 focus-visible:ring-violet-500"
+          className="h-10 border-border/70 bg-background/80 pl-9 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
           data-testid="orphanage-search-input"
         />
       </div>
@@ -266,38 +266,52 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
   return (
     <article
       className={cn(
-        "relative rounded-xl border border-slate-700/60 bg-slate-900/70 p-4 backdrop-blur transition-transform duration-200 hover:-translate-y-1 hover:border-violet-500 hover:shadow-xl",
+        "relative rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur transition-transform duration-200 hover:-translate-y-1 hover:border-primary hover:shadow-xl",
         adoptPulse && "border-emerald-400/70 shadow-[0_0_28px_rgba(16,185,129,0.35)] animate-pulse",
       )}
       data-testid={`orphan-bar-card-${bar.id}`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm leading-relaxed text-slate-100">{plainText}</p>
+          <p className="text-sm leading-relaxed text-foreground">{plainText}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {displayTags.map((tag) => (
               <Badge
                 key={`${bar.id}-${tag}`}
                 variant="outline"
-                className="rounded-full border-slate-600/70 bg-slate-800/70 px-2.5 py-0.5 text-[11px] text-slate-300"
+                className="rounded-full border-border/70 bg-muted/50 px-2.5 py-0.5 text-[11px] text-muted-foreground"
               >
                 #{tag}
               </Badge>
             ))}
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8 border-2 border-border/50">
+            <AvatarImage src={bar.user.avatarUrl || undefined} />
+            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+              {bar.user.username[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="text-right">
+            <p className="text-xs font-medium text-foreground">@{bar.user.username}</p>
+            <Link href={`/u/${bar.user.username}`} className="text-xs text-primary hover:underline">
+              View Profile
+            </Link>
+          </div>
+        </div>
       </div>
 
-      <div className="mb-3 grid grid-cols-2 gap-2 text-xs text-slate-400">
-        <div className="rounded-lg border border-slate-700/60 bg-slate-950/70 px-2.5 py-1.5">
+      <div className="mb-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5">
           {wordCount} words
         </div>
-        <div className="rounded-lg border border-slate-700/60 bg-slate-950/70 px-2.5 py-1.5">
+        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5">
           ~{syllableCount} syllables
         </div>
       </div>
 
-      <div className="mb-3 flex items-center justify-between gap-2 text-xs text-slate-400">
+      <div className="mb-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <span>@{bar.user.username}</span>
         <span>{formatDistanceToNow(new Date(bar.createdAt), { addSuffix: true })}</span>
       </div>
@@ -305,7 +319,7 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
       <div className="space-y-2">
         {!currentUser ? (
           <Link href="/auth">
-            <Button className="h-10 w-full bg-violet-600 text-white hover:bg-violet-500">
+            <Button className="h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90">
               Login to Adopt
             </Button>
           </Link>
@@ -317,7 +331,7 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
               "h-10 w-full",
               adopted
                 ? "bg-emerald-500 text-white hover:bg-emerald-500"
-                : "bg-violet-600 text-white hover:bg-violet-500",
+                : "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
             data-testid={`button-adopt-${bar.id}`}
           >
@@ -331,13 +345,13 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
             {adopted ? "Adopted" : "Adopt"}
           </Button>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-2 rounded-xl border border-slate-700/60 bg-slate-950/70 p-3">
+          <form onSubmit={handleSubmit} className="space-y-2 rounded-xl border border-border/60 bg-background/50 p-3">
             <Input
               placeholder="Link to your work (optional)"
               value={usageLink}
               onChange={(e) => setUsageLink(e.target.value)}
               type="url"
-              className="border-slate-700 bg-slate-900/70 text-slate-100 placeholder:text-slate-500"
+              className="border-border/50 bg-background/80 text-foreground placeholder:text-muted-foreground"
               data-testid={`input-usage-link-${bar.id}`}
             />
             <Textarea
@@ -345,17 +359,19 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={2}
-              className="resize-none border-slate-700 bg-slate-900/70 text-slate-100 placeholder:text-slate-500"
+              className="resize-none border-border/50 bg-background/80 text-foreground placeholder:text-muted-foreground"
               data-testid={`input-usage-comment-${bar.id}`}
             />
             <div className="flex gap-2">
               <Button
                 type="button"
                 variant="outline"
-                className="border-slate-600 bg-transparent text-slate-300 hover:bg-slate-800"
+                className="border-border/60 bg-transparent text-muted-foreground hover:bg-muted"
                 onClick={() => {
                   setShowForm(false);
                   setAdoptError(null);
+                  setUsageLink("");
+                  setComment("");
                 }}
               >
                 Cancel
@@ -363,19 +379,12 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
               <Button
                 type="submit"
                 disabled={adoptMutation.isPending}
-                className="flex-1 bg-violet-600 text-white hover:bg-violet-500"
-                data-testid={`button-submit-adoption-${bar.id}`}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {adoptMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Adopting...
-                  </>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Confirm Adopt
-                  </>
+                  "Submit Adoption"
                 )}
               </Button>
             </div>
@@ -517,7 +526,7 @@ export default function OrphanagePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 pt-14 pb-20 text-slate-100 md:pb-4 md:pt-24">
+    <div className="min-h-screen bg-background pt-14 pb-20 text-foreground md:pb-4 md:pt-24">
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="space-y-6">
           <div className="flex flex-col items-center">
@@ -528,7 +537,7 @@ export default function OrphanagePage() {
               data-testid="img-orphanage-logo"
             />
             <h1 className="text-center text-2xl font-semibold sm:text-3xl">The Orphanage</h1>
-            <p className="mt-2 max-w-2xl text-center text-sm text-slate-400 sm:text-base">
+            <p className="mt-2 max-w-2xl text-center text-sm text-muted-foreground sm:text-base">
               Open-adopt bars cleared for commercial use. Claim one, build on it, and make it yours.
             </p>
           </div>
@@ -547,103 +556,64 @@ export default function OrphanagePage() {
             onSearchChange={setSearchTerm}
           />
 
-          {!isLoading && topAdoptedBars.length > 0 && (
+          {currentUser && myAdoptions.length > 0 && (
             <section
-              id="leaderboard"
-              className="scroll-mt-20 rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4 backdrop-blur"
-              data-testid="leaderboard"
+              id="my-adoptions"
+              className="scroll-mt-20 rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur"
+              data-testid="my-adoptions"
             >
               <div className="flex items-center gap-2 mb-4">
-                <Trophy className="h-5 w-5 text-violet-400" />
-                <h2 className="text-lg font-semibold">Most Adopted</h2>
+                <Heart className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold">My Adoptions</h2>
               </div>
               <div className="space-y-2">
-                {topAdoptedBars.map((bar: any, index: number) => (
+                {myAdoptions.map((adoption) => (
                   <a
-                    key={bar.id}
-                    href={`#bar-${bar.id}`}
-                    className="group flex items-center gap-3 rounded-lg border border-transparent p-2.5 transition-colors hover:border-violet-500/30 hover:bg-slate-800/80"
-                    data-testid={`leaderboard-item-${index}`}
+                    key={adoption.id}
+                    href={`#bar-${adoption.bar.id}`}
+                    className="group flex items-center gap-3 rounded-lg border border-transparent p-2.5 transition-colors hover:border-primary/30 hover:bg-muted/50"
                   >
-                    <span className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
-                      index === 0 && "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
-                      index === 1 && "bg-gray-300/30 text-gray-600 dark:text-gray-400",
-                      index === 2 && "bg-amber-600/20 text-amber-700 dark:text-amber-500",
-                      index > 2 && "bg-muted text-muted-foreground"
-                    )}>
-                      {index + 1}
-                    </span>
                     <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm text-slate-200 transition-colors group-hover:text-violet-300">
-                        {stripHtml(bar.content).slice(0, 80)}
-                        {bar.content.length > 60 ? '...' : ''}
+                      <p className="truncate text-sm text-foreground transition-colors group-hover:text-primary">
+                        {stripHtml(adoption.bar.content).slice(0, 80)}
+                        {adoption.bar.content.length > 60 ? '...' : ''}
                       </p>
-                      <p className="text-xs text-slate-500">by @{bar.user.username}</p>
+                      <p className="text-xs text-muted-foreground">by @{adoption.bar.user.username}</p>
                     </div>
-                    <Badge variant="outline" className="shrink-0 border-violet-400/35 bg-violet-500/10 text-violet-200">
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(adoption.createdAt), { addSuffix: true })}
+                    </span>
                       {bar.usageCount} {bar.usageCount === 1 ? 'adoption' : 'adoptions'}
                     </Badge>
                   </a>
                 ))}
               </div>
             </section>
-          )}
-
-          {currentUser && myAdoptions.length > 0 && (
-            <section
-              id="my-adoptions"
-              className="scroll-mt-20 rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4 backdrop-blur"
-              data-testid="my-adoptions"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="h-5 w-5 text-violet-400" />
-                <h2 className="text-lg font-semibold">My Adoptions</h2>
-                <Badge variant="outline" className="ml-auto border-violet-400/35 bg-violet-500/10 text-violet-200">
-                  {myAdoptions.length}
                 </Badge>
-              </div>
-              <div className="space-y-2">
-                {myAdoptions.slice(0, 5).map((adoption: any, index: number) => (
-                  <a
-                    key={adoption.id}
-                    href={`#bar-${adoption.barId}`}
-                    className="group flex items-center gap-3 rounded-lg border border-transparent p-2.5 transition-colors hover:border-violet-500/30 hover:bg-slate-800/80"
-                    data-testid={`my-adoption-${index}`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm text-slate-200 transition-colors group-hover:text-violet-300">
-                        {stripHtml(adoption.bar.content).slice(0, 80)}
-                        {adoption.bar.content.length > 60 ? '...' : ''}
-                      </p>
-                      <p className="text-xs text-slate-500">by @{adoption.bar.user.username}</p>
-                    </div>
-                    <span className="shrink-0 text-xs text-slate-500">
-                      {formatDistanceToNow(new Date(adoption.createdAt), { addSuffix: true })}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </section>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
           )}
 
           {isLoading ? (
             <BarSkeletonList count={3} />
           ) : adoptableBars.length === 0 ? (
-            <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 py-20 text-center text-slate-400">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-slate-800/70 opacity-70">
+            <div className="rounded-2xl border border-border/60 bg-card/70 py-20 text-center text-muted-foreground">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-muted/50 opacity-70">
                 <Home className="h-8 w-8" />
               </div>
-              <p className="text-lg text-slate-200">The Orphanage is empty</p>
-              <p className="mt-2 text-sm">No bars are currently available for adoption</p>
+              <p className="text-lg text-foreground">The Orphanage is empty</p>
+              <p className="mt-2 text-sm text-muted-foreground">No bars are currently available for adoption</p>
             </div>
           ) : filteredBars.length === 0 ? (
-            <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 py-16 text-center text-slate-400">
-              <p className="text-lg text-slate-200">No bars match these filters</p>
-              <p className="mt-2 text-sm">Try another style or clear your search.</p>
+            <div className="rounded-2xl border border-border/60 bg-card/70 py-16 text-center text-muted-foreground">
+              <p className="text-lg text-foreground">No bars match these filters</p>
+              <p className="mt-2 text-sm text-muted-foreground">Try another style or clear your search.</p>
               <Button
                 variant="outline"
-                className="mt-4 border-slate-600 bg-transparent text-slate-200 hover:bg-slate-800"
+                className="mt-4 border-border/60 bg-transparent text-muted-foreground hover:bg-muted"
                 onClick={() => {
                   setActiveFilter("All");
                   setSearchTerm("");

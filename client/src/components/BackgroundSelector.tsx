@@ -65,8 +65,9 @@ export function useBackground() {
     localStorage.setItem(STORAGE_KEY, selectedId);
     
     const existingBgElement = document.getElementById('app-background-image');
-    if (existingBgElement) {
-      existingBgElement.remove();
+    const rootElement = document.getElementById('root');
+    if (existingBgElement && rootElement) {
+      rootElement.removeChild(existingBgElement);
     }
 
     // Reset any previous inline overrides and let theme CSS drive defaults.
@@ -94,7 +95,13 @@ export function useBackground() {
         opacity: ${isLight ? '0.82' : '0.95'};
         pointer-events: none;
       `;
-      document.body.prepend(bgElement);
+      // Add CSS to ensure root element allows background positioning
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.position = 'relative';
+        rootElement.style.minHeight = '100vh';
+        rootElement.appendChild(bgElement);
+      }
 
       // Remove the body background overlay to let the custom background show through
       document.body.style.background = 'transparent';

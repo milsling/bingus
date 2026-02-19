@@ -230,7 +230,7 @@ export default function Profile() {
                 <Settings className="h-4 w-4" />
                 Logout
               </Button>
-              <Button className="gap-2 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg shadow-primary/30" onClick={handleShare} data-testid="button-share">
+              <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30" onClick={handleShare} data-testid="button-share">
                 <Share2 className="h-4 w-4" />
                 Share
               </Button>
@@ -256,15 +256,15 @@ export default function Profile() {
           </div>
 
           {/* XP & Level Display */}
-          <div className="glass-panel p-4 bg-gradient-to-r from-purple-500/10 to-violet-500/5" data-testid="xp-section">
+          <div className="glass-panel p-4 bg-primary/10" data-testid="xp-section">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 {level >= 10 ? (
                   <Crown className="h-6 w-6 text-amber-400" />
                 ) : (
-                  <Star className="h-6 w-6 text-purple-400" />
+                  <Star className="h-6 w-6 text-primary" />
                 )}
-                <span className="text-2xl font-bold text-purple-300" data-testid="text-level">Level {level}</span>
+                <span className="text-2xl font-bold text-primary" data-testid="text-level">Level {level}</span>
                 {level >= 10 && (
                   <span className="text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-0.5 rounded-full">Legend</span>
                 )}
@@ -281,7 +281,7 @@ export default function Profile() {
               </div>
               <div className="h-2 bg-background/50 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-violet-400 transition-all duration-500"
+                  className="h-full bg-primary transition-all duration-500"
                   style={{ width: `${xpProgress}%` }}
                 />
               </div>
@@ -292,7 +292,7 @@ export default function Profile() {
                 {activePerks.map((perk, idx) => (
                   <span 
                     key={idx}
-                    className="inline-flex items-center gap-1 text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded-full border border-purple-500/30"
+                    className="inline-flex items-center gap-1 text-xs bg-primary/20 text-primary px-2 py-1 rounded-full border border-primary/30"
                   >
                     <span>{perk.icon}</span>
                     <span>{perk.label}</span>
@@ -350,8 +350,8 @@ export default function Profile() {
                           className={cn(
                             "inline-flex items-center justify-center rounded px-1 py-0.5",
                             `badge-${rarity}`,
-                            rarity === "legendary" && "bg-gradient-to-r from-red-500/30 via-yellow-500/30 to-purple-500/30 border border-amber-500/50",
-                            rarity === "epic" && "bg-purple-500/30 border border-purple-500/50",
+                            rarity === "legendary" && "bg-gradient-to-r from-red-500/30 via-yellow-500/30 to-primary/30 border border-amber-500/50",
+                            rarity === "epic" && "bg-primary/30 border border-primary/50",
                             rarity === "rare" && "bg-blue-500/30 border border-blue-500/50",
                             rarity === "common" && "bg-gray-500/30 border border-gray-500/50"
                           )}
