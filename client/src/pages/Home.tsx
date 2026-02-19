@@ -20,6 +20,7 @@ import {
   NativeScreen,
   NativeSegmentedControl,
 } from "@/components/ui/native-shell";
+import { useBackground } from "@/components/BackgroundSelector";
 
 type FeedTab = "latest" | "top" | "trending" | "challenges";
 const FEED_TAB_OPTIONS: Array<{ value: FeedTab; label: string }> = [
@@ -35,6 +36,7 @@ function formatCompact(value: number) {
 
 export default function Home() {
   const { bars, isLoadingBars, refetchBars, currentUser } = useBars();
+  const { selectedBackground } = useBackground();
   const [activeTab, setActiveTab] = useState<FeedTab>("latest");
   const [isSearchVisible, setIsSearchVisible] = useState(true);
   const lastScrollYRef = useRef(0);
@@ -45,6 +47,9 @@ export default function Home() {
   const params = new URLSearchParams(searchString);
   const tagFilter = params.get("tag");
   const { toast } = useToast();
+
+  // Determine if we should apply frosted glass effect
+  const hasCustomBackground = selectedBackground.id !== 'default' && selectedBackground.image;
 
   useEffect(() => {
     const error = params.get("error");
@@ -227,8 +232,14 @@ export default function Home() {
 
   return (
     <NativeScreen
-      className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8"
-      contentClassName="px-4 md:px-6"
+      className={cn(
+        "bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8",
+        hasCustomBackground && "bg-transparent"
+      )}
+      contentClassName={cn(
+        "px-4 md:px-6",
+        hasCustomBackground && "glass-surface-strong"
+      )}
     >
         <div
           className={cn(
@@ -251,7 +262,10 @@ export default function Home() {
               aria-hidden
             />
 
-            <NativeGlassCard animate className="relative overflow-hidden border-white/[0.08] p-6 md:p-8">
+            <NativeGlassCard animate className={cn(
+              "relative overflow-hidden border-white/[0.08] p-6 md:p-8",
+              hasCustomBackground && "glass-surface-strong border-white/[0.15]"
+            )}>
               <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
               <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl pointer-events-none" />
 
@@ -319,7 +333,12 @@ export default function Home() {
             <CommunitySpotlight spotlight={spotlight ?? null} />
 
             {currentPrompt && (
-              <section className="rounded-2xl border border-primary/25 bg-primary/6 p-5">
+              <section className={cn(
+                "rounded-2xl border p-5",
+                hasCustomBackground 
+                  ? "border-primary/35 bg-primary/10 glass-surface-strong" 
+                  : "border-primary/25 bg-primary/6"
+              )}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
                   Current prompt
                 </p>
@@ -341,10 +360,20 @@ export default function Home() {
               </section>
             )}
 
-            <section className="rounded-2xl border border-border/60 bg-card/60 p-4 md:p-5">
+            <section className={cn(
+              "rounded-2xl border p-4 md:p-5",
+              hasCustomBackground 
+                ? "border-white/20 bg-white/5 glass-surface-strong" 
+                : "border-border/60 bg-card/60"
+            )}>
               <p className="mb-3 text-sm font-semibold">How it works</p>
               <div className="grid gap-3 md:grid-cols-3">
-                <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+                <div className={cn(
+                  "rounded-xl border p-3",
+                  hasCustomBackground 
+                    ? "border-white/15 bg-white/5" 
+                    : "border-border/50 bg-background/60"
+                )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Search className="h-4 w-4" />
                   </div>
@@ -353,7 +382,12 @@ export default function Home() {
                     Explore what writers are dropping right now.
                   </p>
                 </div>
-                <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+                <div className={cn(
+                  "rounded-xl border p-3",
+                  hasCustomBackground 
+                    ? "border-white/15 bg-white/5" 
+                    : "border-border/50 bg-background/60"
+                )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <PenLine className="h-4 w-4" />
                   </div>
@@ -362,7 +396,12 @@ export default function Home() {
                     Post one-liners, snippets, or challenge bars.
                   </p>
                 </div>
-                <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+                <div className={cn(
+                  "rounded-xl border p-3",
+                  hasCustomBackground 
+                    ? "border-white/15 bg-white/5" 
+                    : "border-border/50 bg-background/60"
+                )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Flame className="h-4 w-4" />
                   </div>
@@ -375,7 +414,12 @@ export default function Home() {
             </section>
 
             {tagFilter && (
-              <div className="rounded-xl border border-border/60 bg-card/60 p-3 flex items-center gap-2">
+              <div className={cn(
+                "rounded-xl p-3 flex items-center gap-2",
+                hasCustomBackground 
+                  ? "border-white/20 bg-white/5 glass-surface-strong" 
+                  : "border-border/60 bg-card/60"
+              )}>
                 <Hash className="h-4 w-4 text-primary" />
                 <span className="text-sm text-muted-foreground">Filtering by</span>
                 <Badge variant="secondary">#{tagFilter}</Badge>
@@ -408,7 +452,12 @@ export default function Home() {
                 {isLoading ? (
                   <BarSkeletonList count={5} />
                 ) : visibleBars.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-border/70 bg-card/40 p-10 text-center">
+                  <div className={cn(
+                    "rounded-2xl border border-dashed p-10 text-center",
+                    hasCustomBackground 
+                      ? "border-white/20 bg-white/5" 
+                      : "border-border/70 bg-card/40"
+                  )}>
                     <p className="text-base font-medium">
                       {tagFilter
                         ? `No bars found for #${tagFilter} yet.`
@@ -428,7 +477,11 @@ export default function Home() {
                     </Button>
                   </div>
                 ) : (
-                  visibleBars.map((bar) => <FeedBarCard key={bar.id} bar={bar} />)
+                  visibleBars.map((bar) => (
+                    <div key={bar.id} className={hasCustomBackground ? "glass-surface-strong rounded-2xl p-1" : ""}>
+                      <FeedBarCard bar={bar} />
+                    </div>
+                  ))
                 )}
               </div>
             </PullToRefresh>
@@ -436,7 +489,12 @@ export default function Home() {
 
           <aside className="hidden lg:block">
             <div className="sticky top-20 space-y-4">
-              <NativeGlassCard className="rounded-2xl p-4">
+              <div className={cn(
+                "rounded-2xl p-4",
+                hasCustomBackground 
+                  ? "glass-surface-strong" 
+                  : "NativeGlassCard"
+              )}>
                 <p className="mb-3 text-sm font-semibold flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-yellow-500" />
                   Top lyricists
@@ -472,9 +530,14 @@ export default function Home() {
                     </Link>
                   ))}
                 </div>
-              </NativeGlassCard>
+              </div>
 
-              <NativeGlassCard className="rounded-2xl p-4">
+              <div className={cn(
+                "rounded-2xl p-4",
+                hasCustomBackground 
+                  ? "glass-surface-strong" 
+                  : "NativeGlassCard"
+              )}>
                 <p className="mb-2 text-sm font-semibold flex items-center gap-2">
                   <Compass className="h-4 w-4 text-primary" />
                   Explore
@@ -502,7 +565,7 @@ export default function Home() {
                     My Bars
                   </Button>
                 </div>
-              </NativeGlassCard>
+              </div>
             </div>
           </aside>
         </div>

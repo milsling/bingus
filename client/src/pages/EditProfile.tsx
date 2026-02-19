@@ -94,23 +94,53 @@ export default function EditProfile() {
     setCropDialogOpen(false);
     
     try {
-      const file = new File([croppedBlob], 'avatar.jpg', { type: 'image/jpeg' });
-      const { uploadURL, objectPath } = await api.requestUploadUrl({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
+      // Try object storage first, fallback to local upload
+      let objectPath = '';
+      
+      try {
+        const file = new File([croppedBlob], 'avatar.jpg', { type: 'image/jpeg' });
+        const { uploadURL, objectPath: path } = await api.requestUploadUrl({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+        });
 
-      await fetch(uploadURL, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
+        await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: { 'Content-Type': file.type },
+        });
+        
+        objectPath = path;
+      } catch (storageError) {
+        console.log('Object storage failed, using local upload:', storageError);
+        // Fallback to local upload
+        const formData = new FormData();
+        formData.append('avatar', croppedBlob, 'avatar.jpg');
+        
+        const response = await fetch('/api/uploads/avatar', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error('Local upload failed');
+        }
+        
+        const data = await response.json();
+        objectPath = data.objectPath;
+      }
 
       setAvatarUrl(objectPath);
       toast({ title: "Image uploaded!", description: "Click Save to update your profile." });
     } catch (error: any) {
-      toast({ title: "Upload failed", description: error.message || "Could not upload image", variant: "destructive" });
+      console.error('Upload error:', error);
+      toast({ 
+        title: "Upload failed", 
+        description: error.message || "Could not upload image. Please try again.", 
+        variant: "destructive" 
+      });
     } finally {
       setIsUploadingAvatar(false);
       setImageSrc(null);
@@ -205,17 +235,42 @@ export default function EditProfile() {
 
     setIsUploadingBanner(true);
     try {
-      const { uploadURL, objectPath } = await api.requestUploadUrl({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
+      // Try object storage first, fallback to local upload
+      let objectPath = '';
+      
+      try {
+        const { uploadURL, objectPath: path } = await api.requestUploadUrl({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+        });
 
-      await fetch(uploadURL, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
+        await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: { 'Content-Type': file.type },
+        });
+        
+        objectPath = path;
+      } catch (storageError) {
+        console.log('Object storage failed, using local upload:', storageError);
+        // Fallback to local upload
+        const formData = new FormData();
+        formData.append('banner', file);
+        
+        const response = await fetch('/api/uploads/banner', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error('Local upload failed');
+        }
+        
+        const data = await response.json();
+        objectPath = data.objectPath;
+      }
 
       setBannerUrl(objectPath);
       toast({

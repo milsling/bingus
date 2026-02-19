@@ -17,6 +17,9 @@ import { analyzeContent, normalizeText, type FlaggedPhraseRule } from "./moderat
 import { moderateContent } from "./replit_integrations/ai/barAssistant";
 import { aiReviewRequests } from "@shared/schema";
 import { validateSupabaseToken } from "./supabaseAuth";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 const verificationAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const passwordResetAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const MAX_ATTEMPTS = 5;
@@ -4733,6 +4736,110 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Toggle quick reactions error:", error);
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ========================================
+  // LOCAL FILE UPLOAD FALLBACK ENDPOINTS
+  // Used when object storage is not configured
+  // ========================================
+
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  const avatarsDir = path.join(uploadsDir, 'avatars');
+  const bannersDir = path.join(uploadsDir, 'banners');
+
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  if (!fs.existsSync(avatarsDir)) {
+    fs.mkdirSync(avatarsDir, { recursive: true });
+  }
+  if (!fs.existsSync(bannersDir)) {
+    fs.mkdirSync(bannersDir, { recursive: true });
+  }
+
+  // Configure multer for local file uploads
+  const storage_config = multer.diskStorage({
+    destination: (req, file, cb) => {
+      if (file.fieldname === 'avatar') {
+        cb(null, avatarsDir);
+      } else if (file.fieldname === 'banner') {
+        cb(null, bannersDir);
+      } else {
+        cb(new Error('Invalid field name'), '');
+      }
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      cb(null, `${req.user!.id}-${uniqueSuffix}${ext}`);
+    }
+  });
+
+  const upload = multer({
+    storage: storage_config,
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed'));
+      }
+    }
+  });
+
+  // Avatar upload endpoint
+  app.post("/api/uploads/avatar", isAuthenticated, upload.single('avatar'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const objectPath = `/uploads/avatars/${req.file.filename}`;
+      res.json({ objectPath });
+    } catch (error: any) {
+      console.error("Avatar upload error:", error);
+      res.status(500).json({ message: error.message || "Upload failed" });
+    }
+  });
+
+  // Banner upload endpoint
+  app.post("/api/uploads/banner", isAuthenticated, upload.single('banner'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const objectPath = `/uploads/banners/${req.file.filename}`;
+      res.json({ objectPath });
+    } catch (error: any) {
+      console.error("Banner upload error:", error);
+      res.status(500).json({ message: error.message || "Upload failed" });
+    }
+  });
+
+  // Serve uploaded files
+  app.get('/uploads/:type/:filename', (req: Request, res: Response) => {
+    try {
+      const { type, filename } = req.params;
+      
+      if (!['avatars', 'banners'].includes(type)) {
+        return res.status(404).json({ message: "Invalid file type" });
+      }
+
+      const filePath = path.join(uploadsDir, type, filename);
+      
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "File not found" });
+      }
+
+      res.sendFile(filePath);
+    } catch (error: any) {
+      console.error("Serve file error:", error);
+      res.status(500).json({ message: "Error serving file" });
     }
   });
 
