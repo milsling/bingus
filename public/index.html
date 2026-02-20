@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrphanBars Voice Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client@1.15.0/dist/livekit-client.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-bottom: 2px solid #00ff00;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            font-size: 0.9em;
+            color: #ffff00;
+            padding: 5px 10px;
+            background: rgba(255, 255, 0, 0.1);
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .mic-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff0000, #ff6600);
+            border: 3px solid #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+        }
+
+        .mic-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+        }
+
+        .mic-button.active {
+            background: linear-gradient(135deg, #00ff00, #00aa00);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .transcript-container {
+            width: 100%;
+            max-width: 600px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+        }
+
+        .transcript {
+            color: #00ff00;
+            line-height: 1.6;
+        }
+
+        .transcript .user {
+            color: #ffff00;
+        }
+
+        .transcript .grok {
+            color: #ff00ff;
+        }
+
+        .transcript .system {
+            color: #00ffff;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-button {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: #00ff00;
+            color: #000000;
+        }
+
+        .volume-indicator {
+            width: 200px;
+            height: 10px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .volume-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .error {
+            color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ff0000;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .mic-button {
+                width: 100px;
+                height: 100px;
+                font-size: 2em;
+            }
+            
+            .transcript-container {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎤 OrphanBars Voice Chat</h1>
+        <div class="status" id="status">Initializing...</div>
+    </div>
+
+    <div class="main-container">
+        <div class="mic-button" id="micButton">
+            🎤
+        </div>
+
+        <div class="volume-indicator">
+            <div class="volume-bar" id="volumeBar"></div>
+        </div>
+
+        <div class="transcript-container">
+            <div class="transcript" id="transcript">
+                <div class="system">System: Voice chat ready. Click the mic to start talking with Grok.</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-button" id="clearButton">Clear Transcript</button>
+            <button class="control-button" id="testButton">Test Connection</button>
+        </div>
+    </div>
+
+    <script>
+        class VoiceChat {
+            constructor() {
+                this.ws = null;
+                this.mediaRecorder = null;
+                this.audioChunks = [];
+                this.stream = null;
+                this.isRecording = false;
+                this.isConnected = false;
+                this.roomName = null;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.connect();
+            }
+
+            initializeElements() {
+                this.micButton = document.getElementById('micButton');
+                this.status = document.getElementById('status');
+                this.transcript = document.getElementById('transcript');
+                this.volumeBar = document.getElementById('volumeBar');
+                this.clearButton = document.getElementById('clearButton');
+                this.testButton = document.getElementById('testButton');
+            }
+
+            setupEventListeners() {
+                this.micButton.addEventListener('click', () => this.toggleRecording());
+                this.clearButton.addEventListener('click', () => this.clearTranscript());
+                this.testButton.addEventListener('click', () => this.testConnection());
+            }
+
+            connect() {
+                this.updateStatus('Connecting to server...');
+                
+                this.ws = new WebSocket(`ws://${window.location.host}`);
+                
+                this.ws.onopen = () => {
+                    console.log('Connected to server');
+                    this.isConnected = true;
+                    this.updateStatus('Connected');
+                };
+
+                this.ws.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    this.handleMessage(message);
+                };
+
+                this.ws.onclose = () => {
+                    console.log('Disconnected from server');
+                    this.isConnected = false;
+                    this.updateStatus('Disconnected');
+                    this.stopRecording();
+                    
+                    // Auto-reconnect
+                    setTimeout(() => this.connect(), 3000);
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    this.updateStatus('Connection error');
+                };
+            }
+
+            handleMessage(message) {
+                switch (message.type) {
+                    case 'connected':
+                        this.roomName = message.roomName;
+                        this.updateStatus('Ready to chat');
+                        this.addTranscript('system', `Connected to room: ${this.roomName}`);
+                        break;
+
+                    case 'audio':
+                        this.playAudio(message.audio);
+                        if (message.transcript) {
+                            this.addTranscript('grok', message.transcript);
+                        }
+                        break;
+
+                    case 'transcript':
+                        this.addTranscript(message.isFinal ? 'grok' : 'system', message.text);
+                        break;
+
+                    case 'error':
+                        this.addTranscript('system', `Error: ${message.error}`);
+                        break;
+                }
+            }
+
+            async toggleRecording() {
+                if (this.isRecording) {
+                    this.stopRecording();
+                } else {
+                    await this.startRecording();
+                }
+            }
+
+            async startRecording() {
+                try {
+                    this.stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        } 
+                    });
+                    
+                    this.mediaRecorder = new MediaRecorder(this.stream, {
+                        mimeType: 'audio/webm'
+                    });
+                    
+                    this.audioChunks = [];
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            this.audioChunks.push(event.data);
+                        }
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        this.sendAudio();
+                    };
+                    
+                    // Set up volume monitoring
+                    this.setupVolumeMonitoring();
+                    
+                    this.mediaRecorder.start(100); // Collect data every 100ms
+                    this.isRecording = true;
+                    this.micButton.classList.add('active');
+                    this.updateStatus('Recording...');
+                    
+                } catch (error) {
+                    console.error('Error starting recording:', error);
+                    this.updateStatus('Microphone access denied');
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    this.micButton.classList.remove('active');
+                    this.updateStatus('Processing...');
+                    
+                    if (this.stream) {
+                        this.stream.getTracks().forEach(track => track.stop());
+                    }
+                }
+            }
+
+            setupVolumeMonitoring() {
+                if (!this.stream) return;
+                
+                const audioContext = new AudioContext();
+                const source = audioContext.createMediaStreamSource(this.stream);
+                const analyser = audioContext.createAnalyser();
+                
+                analyser.fftSize = 256;
+                source.connect(analyser);
+                
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                const updateVolume = () => {
+                    if (!this.isRecording) return;
+                    
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+                    const volume = Math.min(100, (average / 128) * 100);
+                    
+                    this.volumeBar.style.width = `${volume}%`;
+                    requestAnimationFrame(updateVolume);
+                };
+                
+                updateVolume();
+            }
+
+            async sendAudio() {
+                if (this.audioChunks.length === 0 || !this.isConnected) return;
+                
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+                
+                this.ws.send(JSON.stringify({
+                    type: 'audio',
+                    audio: base64Audio
+                }));
+                
+                this.audioChunks = [];
+                this.updateStatus('Ready to chat');
+            }
+
+            playAudio(base64Audio) {
+                try {
+                    const audioBytes = atob(base64Audio);
+                    const audioArray = new Uint8Array(audioBytes.length);
+                    
+                    for (let i = 0; i < audioBytes.length; i++) {
+                        audioArray[i] = audioBytes.charCodeAt(i);
+                    }
+                    
+                    const audioBlob = new Blob([audioArray], { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    
+                    audio.play().catch(error => {
+                        console.error('Error playing audio:', error);
+                    });
+                    
+                } catch (error) {
+                    console.error('Error processing audio:', error);
+                }
+            }
+
+            addTranscript(sender, text) {
+                const timestamp = new Date().toLocaleTimeString();
+                const message = document.createElement('div');
+                message.className = sender;
+                message.textContent = `[${timestamp}] ${sender === 'user' ? 'You' : sender === 'grok' ? 'Grok' : 'System'}: ${text}`;
+                
+                this.transcript.appendChild(message);
+                this.transcript.scrollTop = this.transcript.scrollHeight;
+            }
+
+            clearTranscript() {
+                this.transcript.innerHTML = '<div class="system">System: Transcript cleared.</div>';
+            }
+
+            testConnection() {
+                if (this.isConnected) {
+                    this.addTranscript('system', 'Connection test: OK');
+                    this.updateStatus('Connected');
+                } else {
+                    this.addTranscript('system', 'Connection test: FAILED');
+                    this.updateStatus('Disconnected');
+                }
+            }
+
+            updateStatus(text) {
+                this.status.textContent = text;
+            }
+        }
+
+        // Initialize the voice chat when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new VoiceChat();
+        });
+    </script>
+</body>
+</html>
