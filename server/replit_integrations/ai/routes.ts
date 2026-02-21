@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { moderateContent, explainBar, suggestRhymes, chatWithAssistant, analyzeUserStyle, type PlatformContext, type StyleAnalysis } from "./barAssistant";
 import { storage } from "../../storage";
 import { getXaiRuntimeDiagnostics } from "./xaiClient";
+import { AccessToken } from "livekit-server-sdk";
 
 function extractPotentialUsernames(message: string): string[] {
   const usernames: string[] = [];
@@ -130,6 +131,62 @@ export function registerAIRoutes(app: Express): void {
     } catch (error) {
       console.error("AI status API error:", error);
       return res.status(500).json({ error: "Status check failed" });
+    }
+  });
+
+  app.post("/api/ai/voice/token", async (req: Request, res: Response) => {
+    try {
+      // Check if voice is enabled
+      const voiceEnabled = process.env.XAI_API_KEY && process.env.LIVEKIT_API_KEY && process.env.LIVEKIT_API_SECRET;
+      if (!voiceEnabled) {
+        return res.status(503).json({ error: "Voice chat is not configured" });
+      }
+
+      if (!req.isAuthenticated?.() || !req.user?.id) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      // Check if user has access (you can add premium check here if needed)
+      // const isPremium = user.membershipTier === "donor_plus";
+      // if (!isPremium) {
+      //   return res.status(403).json({ error: "Premium membership required" });
+      // }
+
+      // Generate LiveKit token
+      const roomName = `voice-${user.id}-${Date.now()}`;
+      const participantName = user.username || `user-${user.id}`;
+
+      const at = new AccessToken(
+        process.env.LIVEKIT_API_KEY!,
+        process.env.LIVEKIT_API_SECRET!,
+        {
+          identity: participantName,
+          ttl: '5m', // Token valid for 5 minutes
+        }
+      );
+
+      at.addGrant({
+        roomJoin: true,
+        room: roomName,
+        canPublish: true,
+        canSubscribe: true,
+      });
+
+      const token = await at.toJwt();
+
+      return res.json({
+        token,
+        url: process.env.LIVEKIT_URL || 'wss://orphan-bars-kqcmttmh.livekit.cloud',
+        roomName,
+      });
+    } catch (error) {
+      console.error("Voice token API error:", error);
+      return res.status(500).json({ error: "Failed to generate voice token" });
     }
   });
 
