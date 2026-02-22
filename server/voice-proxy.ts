@@ -78,6 +78,18 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
             instructions: `You are Orphie, the AI assistant for orphanbars.space. You're helpful, friendly, and conversational. Keep responses concise and natural.`,
           },
         }));
+        
+        // Send initial greeting to trigger first response
+        setTimeout(() => {
+          if (session.isActive && xaiWs.readyState === WebSocket.OPEN) {
+            xaiWs.send(JSON.stringify({
+              type: 'response.create',
+              response: {
+                modalities: ['text', 'audio'],
+              }
+            }));
+          }
+        }, 500);
       });
 
       xaiWs.on('message', (data: Buffer | string) => {
@@ -87,33 +99,48 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
           const message = JSON.parse(data.toString());
           
           // Log all message types for debugging
-          console.log('xAI message type:', message.type);
+          console.log('xAI message:', message.type, message.event_id ? `(${message.event_id})` : '');
           
-          // Handle different message types
-          if (message.type === 'response.audio.delta') {
-            // Forward audio data to client
-            console.log('Received audio delta, length:', message.delta?.length || 0);
-            const audioData = Buffer.from(message.delta, 'base64');
-            console.log('Sending audio to client, buffer size:', audioData.length);
-            if (clientWs.readyState === WebSocket.OPEN) {
-              clientWs.send(audioData);
+          // Handle different message types (OpenAI Realtime API compatible)
+          // Audio response events
+          if (message.type === 'response.audio.delta' || message.type === 'response.audio_transcript.delta') {
+            if (message.delta && typeof message.delta === 'string') {
+              try {
+                console.log('Received audio delta, base64 length:', message.delta.length);
+                const audioData = Buffer.from(message.delta, 'base64');
+                console.log('Decoded audio buffer size:', audioData.length, 'bytes');
+                
+                if (audioData.length > 0 && clientWs.readyState === WebSocket.OPEN) {
+                  clientWs.send(audioData);
+                  console.log('✓ Sent audio to client');
+                }
+              } catch (decodeError) {
+                console.error('Failed to decode audio:', decodeError);
+              }
             }
-          } else if (message.type === 'response.audio.done') {
-            // Notify client that AI is done speaking
+          } 
+          // Response completed events
+          else if (message.type === 'response.audio.done' || message.type === 'response.done') {
+            console.log('AI response completed');
             if (clientWs.readyState === WebSocket.OPEN) {
               clientWs.send(JSON.stringify({ type: 'ai_done' }));
             }
-          } else if (message.type === 'response.audio_transcript.delta') {
-            // Forward AI transcript
-            if (clientWs.readyState === WebSocket.OPEN) {
-              clientWs.send(JSON.stringify({
-                type: 'transcript',
-                role: 'assistant',
-                text: message.delta || '',
-              }));
+          }
+          // Transcript events
+          else if (message.type === 'response.text.delta' || message.type === 'response.output_item.added') {
+            if (message.delta || message.item?.content) {
+              const text = message.delta || message.item?.content?.[0]?.text || '';
+              if (text && clientWs.readyState === WebSocket.OPEN) {
+                clientWs.send(JSON.stringify({
+                  type: 'transcript',
+                  role: 'assistant',
+                  text: text,
+                }));
+              }
             }
-          } else if (message.type === 'conversation.item.input_audio_transcription.completed') {
-            // Forward user transcript
+          }
+          else if (message.type === 'conversation.item.input_audio_transcription.completed') {
+            console.log('User transcript:', message.transcript);
             if (clientWs.readyState === WebSocket.OPEN) {
               clientWs.send(JSON.stringify({
                 type: 'transcript',
@@ -121,18 +148,43 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
                 text: message.transcript || '',
               }));
             }
-          } else if (message.type === 'input_audio_buffer.speech_started') {
-            console.log('Speech detected');
-          } else if (message.type === 'input_audio_buffer.speech_stopped') {
-            console.log('Speech ended');
-          } else if (message.type === 'error') {
-            console.error('xAI error:', message.error);
+          }
+          // Speech detection events
+          else if (message.type === 'input_audio_buffer.speech_started') {
+            console.log('🎤 Speech detected');
+          }
+          else if (message.type === 'input_audio_buffer.speech_stopped') {
+            console.log('🎤 Speech ended, triggering response...');
+            // Commit the audio buffer and request response
+            if (xaiWs.readyState === WebSocket.OPEN) {
+              xaiWs.send(JSON.stringify({
+                type: 'input_audio_buffer.commit'
+              }));
+              xaiWs.send(JSON.stringify({
+                type: 'response.create',
+                response: {
+                  modalities: ['text', 'audio'],
+                }
+              }));
+            }
+          }
+          // Session events
+          else if (message.type === 'session.created' || message.type === 'session.updated') {
+            console.log('✓ Session configured:', message.type);
+          }
+          // Error handling
+          else if (message.type === 'error') {
+            console.error('❌ xAI error:', message.error);
             if (clientWs.readyState === WebSocket.OPEN) {
               clientWs.send(JSON.stringify({
                 type: 'error',
                 message: message.error?.message || 'Voice API error',
               }));
             }
+          }
+          // Log unknown event types
+          else {
+            console.log('ℹ️  Unhandled event type:', message.type);
           }
         } catch (err) {
           console.error('Error processing xAI message:', err);

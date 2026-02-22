@@ -20,6 +20,7 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const audioQueueRef = useRef<AudioBufferSourceNode[]>([]);
+  const nextPlayTimeRef = useRef<number>(0);
 
   const updateState = useCallback((newState: VoiceChatState) => {
     setState(newState);
@@ -32,8 +33,10 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
     // Stop all audio sources
     audioQueueRef.current.forEach(source => {
       try { source.stop(); } catch (e) { /* ignore */ }
+      try { source.disconnect(); } catch (e) { /* ignore */ }
     });
     audioQueueRef.current = [];
+    nextPlayTimeRef.current = 0;
 
     // Disconnect audio processor
     if (processorRef.current) {
@@ -79,6 +82,7 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
+          sampleRate: 24000,
         } 
       });
       console.log("✓ Microphone granted");
@@ -89,7 +93,13 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
       const audioContext = new AudioContextClass({ sampleRate: 24000 });
       audioContextRef.current = audioContext;
 
-      // Connect to server WebSocket proxy
+      // Resume audio context (autoplay policy)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      console.log("✓ Audio context ready");
+
+      // Connect to server WebSocket
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${window.location.host}/ws/voice`;
       console.log("Connecting to:", wsUrl);
@@ -141,37 +151,70 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
                 setTranscript(`Orphie: ${text}`);
                 onTranscript?.(text, "assistant");
               }
-            } else if (msg.type === 'ai_speaking') {
-              updateState("speaking");
             } else if (msg.type === 'ai_done') {
-              updateState("listening");
+              setTimeout(() => {
+                if (audioQueueRef.current.length === 0) {
+                  updateState("listening");
+                }
+              }, 100);
             } else if (msg.type === 'error') {
               throw new Error(msg.message || "Server error");
             }
           } else if (event.data instanceof ArrayBuffer) {
             updateState("speaking");
             
-            const pcm16Data = new Int16Array(event.data);
-            const audioBuffer = audioContext.createBuffer(1, pcm16Data.length, 24000);
-            const channelData = audioBuffer.getChannelData(0);
-            
-            for (let i = 0; i < pcm16Data.length; i++) {
-              channelData[i] = pcm16Data[i] / (pcm16Data[i] < 0 ? 0x8000 : 0x7FFF);
+            if (audioContext.state === 'suspended') {
+              await audioContext.resume();
             }
-
-            const source = audioContext.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioContext.destination);
             
-            source.onended = () => {
-              audioQueueRef.current = audioQueueRef.current.filter(s => s !== source);
-              if (audioQueueRef.current.length === 0) {
-                updateState("listening");
+            try {
+              const pcm16Data = new Int16Array(event.data);
+              console.log("Received audio:", pcm16Data.length, "samples");
+              
+              const audioBuffer = audioContext.createBuffer(1, pcm16Data.length, 24000);
+              const channelData = audioBuffer.getChannelData(0);
+              
+              for (let i = 0; i < pcm16Data.length; i++) {
+                channelData[i] = pcm16Data[i] / (pcm16Data[i] < 0 ? 0x8000 : 0x7FFF);
               }
-            };
 
-            audioQueueRef.current.push(source);
-            source.start();
+              const source = audioContext.createBufferSource();
+              source.buffer = audioBuffer;
+              
+              const gainNode = audioContext.createGain();
+              gainNode.gain.value = 1.0;
+              
+              source.connect(gainNode);
+              gainNode.connect(audioContext.destination);
+              
+              const now = audioContext.currentTime;
+              const startTime = Math.max(now, nextPlayTimeRef.current);
+              
+              source.start(startTime);
+              nextPlayTimeRef.current = startTime + audioBuffer.duration;
+              
+              source.onended = () => {
+                try {
+                  source.disconnect();
+                  gainNode.disconnect();
+                } catch (e) { /* ignore */ }
+                
+                audioQueueRef.current = audioQueueRef.current.filter(s => s !== source);
+                
+                if (audioQueueRef.current.length === 0) {
+                  setTimeout(() => {
+                    if (audioQueueRef.current.length === 0) {
+                      updateState("listening");
+                    }
+                  }, 100);
+                }
+              };
+
+              audioQueueRef.current.push(source);
+              console.log("✓ Audio playing");
+            } catch (audioError: any) {
+              console.error("Audio error:", audioError);
+            }
           }
         } catch (err: any) {
           console.error("Message error:", err);
