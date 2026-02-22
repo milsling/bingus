@@ -211,12 +211,12 @@
      Design tokens: background, surface, accent, text, border
      Tweak here: dark-mode colors, gradients, blur
      ======================================== */
-  /* Primary text: off-white, secondary: muted gray */
+  /* Primary text: near-white for readability, secondary: muted gray */
   --background: 250 15% 4%;
-  --foreground: 0 0% 96%;
+  --foreground: 0 0% 98%;
 
   --card: 250 12% 7%;
-  --card-foreground: 0 0% 96%;
+  --card-foreground: 0 0% 98%;
 
   --popover: 250 12% 7%;
   --popover-foreground: 0 0% 96%;
@@ -228,7 +228,7 @@
   --secondary-foreground: 0 0% 96%;
 
   --muted: 250 8% 14%;
-  --muted-foreground: 220 8% 58%;
+  --muted-foreground: 220 8% 65%;
 
   --accent: 265 70% 60%;
   --accent-foreground: 0 0% 100%;
@@ -245,8 +245,8 @@
   /* Design tokens (semantic) - tweak: color system */
   --color-background-app: #050509;
   --color-background-gradient-end: #0a0a12;
-  --color-text-primary: #F5F5F7;
-  --color-text-secondary: #8E8E93;
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #A1A1A6;
   --color-border-subtle: rgba(255, 255, 255, 0.08);
   --color-accent: hsl(265 70% 60%);
   --color-accent-soft: rgba(168, 85, 247, 0.15);

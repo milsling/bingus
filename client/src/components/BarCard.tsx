@@ -661,7 +661,7 @@ export default function BarCard({ bar }: BarCardProps) {
             <Bookmark className="h-8 w-8 fill-current" />
           </div>
         )}
-        <Card className="glass-card border-border/08 overflow-hidden hover:border-border/15 hover:bg-card/06 transition-all duration-300">
+        <Card className="glass-card overflow-hidden transition-all duration-300 hover:border-white/[0.15]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-3">
               <Link href={`/u/${bar.user.username}`}>
@@ -770,7 +770,7 @@ export default function BarCard({ bar }: BarCardProps) {
           <CardContent className="space-y-4">
             <div className="relative pl-4 border-l-2 border-primary/50 py-1">
               <p 
-                className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground/90 [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
+                className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
                 style={{ color: 'inherit' }}
                 data-testid={`text-content-${bar.id}`}
                 dangerouslySetInnerHTML={createMarkup(bar.content)}
