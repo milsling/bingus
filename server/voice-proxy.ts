@@ -1,5 +1,7 @@
 import WebSocket from 'ws';
 import { IncomingMessage } from 'http';
+import { log } from './index';
+import { storage } from './storage';
 
 interface VoiceSession {
   clientWs: WebSocket;
@@ -13,18 +15,29 @@ const activeSessions = new Map<string, VoiceSession>();
 
 export function setupVoiceWebSocket(wss: WebSocket.Server) {
   wss.on('connection', async (clientWs: WebSocket, req: IncomingMessage) => {
-    console.log('Voice WebSocket connection received');
+    log('Voice WebSocket connection received', 'voice');
 
-    // Get user from session
-    const user = (req as any).user;
-    if (!user || !user.id) {
-      console.error('Voice WebSocket: No authenticated user');
+    // Get user from session — passport middleware doesn't run on WS upgrades,
+    // so we read the user ID from the raw session data (session.passport.user)
+    const session = (req as any).session;
+    const passportUserId = session?.passport?.user;
+    if (!passportUserId) {
+      log('Voice WebSocket: No authenticated user in session', 'voice');
       clientWs.close(4001, 'Unauthorized');
       return;
     }
 
+    // Look up the full user object (same as passport.deserializeUser)
+    const dbUser = await storage.getUser(passportUserId);
+    if (!dbUser) {
+      log(`Voice WebSocket: User ${passportUserId} not found in database`, 'voice');
+      clientWs.close(4001, 'Unauthorized');
+      return;
+    }
+
+    const user = { id: dbUser.id, username: dbUser.username };
     const sessionId = `${user.id}-${Date.now()}`;
-    console.log(`Starting voice session for user: ${user.username} (${sessionId})`);
+    log(`Starting voice session for user: ${user.username} (${sessionId})`, 'voice');
 
     const session: VoiceSession = {
       clientWs,
@@ -44,7 +57,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
       }
 
       const xaiWsUrl = `wss://api.x.ai/v1/realtime?model=grok-2-vision-1212`;
-      console.log('Connecting to xAI...');
+      log('Connecting to xAI...', 'voice');
       
       const xaiWs = new WebSocket(xaiWsUrl, {
         headers: {
@@ -56,7 +69,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
       session.xaiWs = xaiWs;
 
       xaiWs.on('open', () => {
-        console.log('✓ Connected to xAI');
+        log('Connected to xAI', 'voice');
 
         // Send session configuration
         xaiWs.send(JSON.stringify({
@@ -99,29 +112,29 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
           const message = JSON.parse(data.toString());
           
           // Log all message types for debugging
-          console.log('xAI message:', message.type, message.event_id ? `(${message.event_id})` : '');
+          log(`xAI message: ${message.type} ${message.event_id ? `(${message.event_id})` : ''}`, 'voice');
           
           // Handle different message types (OpenAI Realtime API compatible)
           // Audio response events
           if (message.type === 'response.audio.delta' || message.type === 'response.audio_transcript.delta') {
             if (message.delta && typeof message.delta === 'string') {
               try {
-                console.log('Received audio delta, base64 length:', message.delta.length);
+                log(`Received audio delta, base64 length: ${message.delta.length}`, 'voice');
                 const audioData = Buffer.from(message.delta, 'base64');
-                console.log('Decoded audio buffer size:', audioData.length, 'bytes');
+                log(`Decoded audio buffer size: ${audioData.length} bytes`, 'voice');
                 
                 if (audioData.length > 0 && clientWs.readyState === WebSocket.OPEN) {
                   clientWs.send(audioData);
-                  console.log('✓ Sent audio to client');
+                  log('Sent audio to client', 'voice');
                 }
               } catch (decodeError) {
-                console.error('Failed to decode audio:', decodeError);
+                log(`Failed to decode audio: ${decodeError}`, 'voice');
               }
             }
           } 
           // Response completed events
           else if (message.type === 'response.audio.done' || message.type === 'response.done') {
-            console.log('AI response completed');
+            log('AI response completed', 'voice');
             if (clientWs.readyState === WebSocket.OPEN) {
               clientWs.send(JSON.stringify({ type: 'ai_done' }));
             }
@@ -140,7 +153,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
             }
           }
           else if (message.type === 'conversation.item.input_audio_transcription.completed') {
-            console.log('User transcript:', message.transcript);
+            log(`User transcript: ${message.transcript}`, 'voice');
             if (clientWs.readyState === WebSocket.OPEN) {
               clientWs.send(JSON.stringify({
                 type: 'transcript',
@@ -151,10 +164,10 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
           }
           // Speech detection events
           else if (message.type === 'input_audio_buffer.speech_started') {
-            console.log('🎤 Speech detected');
+            log('Speech detected', 'voice');
           }
           else if (message.type === 'input_audio_buffer.speech_stopped') {
-            console.log('🎤 Speech ended, triggering response...');
+            log('Speech ended, triggering response...', 'voice');
             // Commit the audio buffer and request response
             if (xaiWs.readyState === WebSocket.OPEN) {
               xaiWs.send(JSON.stringify({
@@ -170,11 +183,11 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
           }
           // Session events
           else if (message.type === 'session.created' || message.type === 'session.updated') {
-            console.log('✓ Session configured:', message.type);
+            log(`Session configured: ${message.type}`, 'voice');
           }
           // Error handling
           else if (message.type === 'error') {
-            console.error('❌ xAI error:', message.error);
+            log(`xAI error: ${JSON.stringify(message.error)}`, 'voice');
             if (clientWs.readyState === WebSocket.OPEN) {
               clientWs.send(JSON.stringify({
                 type: 'error',
@@ -184,15 +197,15 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
           }
           // Log unknown event types
           else {
-            console.log('ℹ️  Unhandled event type:', message.type);
+            log(`Unhandled event type: ${message.type}`, 'voice');
           }
         } catch (err) {
-          console.error('Error processing xAI message:', err);
+          log(`Error processing xAI message: ${err}`, 'voice');
         }
       });
 
       xaiWs.on('error', (error) => {
-        console.error('xAI WebSocket error:', error);
+        log(`xAI WebSocket error: ${error}`, 'voice');
         if (clientWs.readyState === WebSocket.OPEN) {
           clientWs.send(JSON.stringify({
             type: 'error',
@@ -202,7 +215,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
       });
 
       xaiWs.on('close', () => {
-        console.log('xAI WebSocket closed');
+        log('xAI WebSocket closed', 'voice');
         session.isActive = false;
         if (clientWs.readyState === WebSocket.OPEN) {
           clientWs.close();
@@ -224,12 +237,12 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
             audio: base64Audio,
           }));
         } catch (err) {
-          console.error('Error forwarding audio to xAI:', err);
+          log(`Error forwarding audio to xAI: ${err}`, 'voice');
         }
       });
 
       clientWs.on('close', () => {
-        console.log('Client disconnected');
+        log('Client disconnected', 'voice');
         session.isActive = false;
         if (xaiWs && xaiWs.readyState === WebSocket.OPEN) {
           xaiWs.close();
@@ -238,7 +251,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
       });
 
       clientWs.on('error', (error) => {
-        console.error('Client WebSocket error:', error);
+        log(`Client WebSocket error: ${error}`, 'voice');
         session.isActive = false;
         if (xaiWs && xaiWs.readyState === WebSocket.OPEN) {
           xaiWs.close();
@@ -246,7 +259,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
       });
 
     } catch (error: any) {
-      console.error('Voice session setup error:', error);
+      log(`Voice session setup error: ${error}`, 'voice');
       if (clientWs.readyState === WebSocket.OPEN) {
         clientWs.send(JSON.stringify({
           type: 'error',
@@ -258,5 +271,5 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
     }
   });
 
-  console.log('Voice WebSocket server initialized');
+  log('Voice WebSocket server initialized', 'voice');
 }
