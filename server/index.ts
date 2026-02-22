@@ -7,9 +7,15 @@ import { storage } from "./storage";
 import { testDatabaseConnection } from "./db";
 import fs from "fs";
 import path from "path";
+import { Logtail } from "@logtail/node";
 
 const app = express();
 const httpServer = createServer(app);
+
+// BetterStack Logs (Logtail) — set BETTERSTACK_SOURCE_TOKEN in your environment
+const logtail = process.env.BETTERSTACK_SOURCE_TOKEN
+  ? new Logtail(process.env.BETTERSTACK_SOURCE_TOKEN)
+  : null;
 
 // Trust proxy for production (required for secure cookies behind Replit's proxy)
 if (process.env.NODE_ENV === "production") {
@@ -41,6 +47,11 @@ export function log(message: string, source = "express") {
   });
 
   console.log(`${formattedTime} [${source}] ${message}`);
+
+  // Send to BetterStack Logs
+  if (logtail) {
+    logtail.info(message, { source });
+  }
 }
 
 app.use((req, res, next) => {
@@ -155,10 +166,14 @@ async function startServer() {
     await registerRoutes(httpServer, app);
     log("Routes registered successfully");
 
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
       log(`Error: ${message}`);
+      // Send errors to BetterStack as error-level logs
+      if (logtail) {
+        logtail.error(message, { status, stack: err.stack });
+      }
       res.status(status).json({ message });
     });
 
@@ -188,8 +203,22 @@ async function startServer() {
   } catch (error) {
     log(`Fatal error during startup: ${error}`);
     console.error("Startup error:", error);
+    if (logtail) {
+      await logtail.error(`Fatal error during startup: ${error}`);
+      await logtail.flush();
+    }
     process.exit(1);
   }
 }
+
+// Flush logs on shutdown
+process.on("SIGTERM", async () => {
+  if (logtail) await logtail.flush();
+  process.exit(0);
+});
+process.on("SIGINT", async () => {
+  if (logtail) await logtail.flush();
+  process.exit(0);
+});
 
 startServer();
