@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Room, RoomEvent } from "livekit-client";
+import { Room, RoomEvent, Track, RemoteTrackPublication, RemoteParticipant } from "livekit-client";
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Loader2, Phone, PhoneOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>("");
   const roomRef = useRef<Room | null>(null);
+  const audioElementsRef = useRef<HTMLAudioElement[]>([]);
   const cleanupRef = useRef<(() => void) | null>(null);
 
   const updateState = useCallback((newState: VoiceChatState) => {
@@ -24,6 +25,13 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   }, [onStateChange]);
 
   const cleanup = useCallback(() => {
+    // Clean up audio elements
+    audioElementsRef.current.forEach(el => {
+      el.pause();
+      el.remove();
+    });
+    audioElementsRef.current = [];
+
     if (cleanupRef.current) {
       cleanupRef.current();
       cleanupRef.current = null;
@@ -61,22 +69,56 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
       console.log("✓ Connected to LiveKit room:", roomName);
       updateState("connected");
 
-      // LiveKit handles the xAI Voice Agent connection automatically
-      // No need to manually create WebSocket connection
-      
-      // Set up room event handlers
-      room.on('connected', () => {
-        console.log('✓ Room connected');
+      // Enable microphone and publish audio
+      try {
+        await room.localParticipant.setMicrophoneEnabled(true);
+        console.log("✓ Microphone enabled");
         updateState("listening");
+      } catch (micError: any) {
+        console.error("Failed to enable microphone:", micError);
+        throw new Error("Could not access microphone. Please grant permission.");
+      }
+
+      // Handle incoming audio tracks from the AI agent
+      room.on(RoomEvent.TrackSubscribed, (
+        track: Track,
+        publication: RemoteTrackPublication,
+        participant: RemoteParticipant
+      ) => {
+        if (track.kind === Track.Kind.Audio) {
+          console.log("✓ Received audio track from:", participant.identity);
+          updateState("speaking");
+          
+          // Attach audio to play it
+          const audioElement = track.attach();
+          audioElementsRef.current.push(audioElement);
+          audioElement.play().catch(err => {
+            console.error("Failed to play audio:", err);
+          });
+          
+          // Clean up when track ends
+          track.on('ended', () => {
+            audioElement.pause();
+            audioElement.remove();
+            audioElementsRef.current = audioElementsRef.current.filter(el => el !== audioElement);
+            updateState("listening");
+          });
+        }
+      });
+
+      // Handle track unsubscribed
+      room.on(RoomEvent.TrackUnsubscribed, (track: Track) => {
+        if (track.kind === Track.Kind.Audio) {
+          console.log("Track ended");
+          track.detach();
+          updateState("listening");
+        }
       });
       
-      room.on('disconnected', () => {
+      room.on(RoomEvent.Disconnected, () => {
         console.log('Room disconnected');
         updateState("disconnected");
-      });
-      
-      // Note: In a full implementation, you'd set up LiveKit's audio track handling here
-      // For now, this is a simplified version that shows the connection flow
+      })
       
       cleanupRef.current = () => {
         room.disconnect();
