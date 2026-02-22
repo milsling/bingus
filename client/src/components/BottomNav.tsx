@@ -28,6 +28,7 @@ import {
   UserCog,
   Palette,
   Volume2,
+  Radio,
   type LucideIcon
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
@@ -135,7 +136,7 @@ type NavItem = {
   label: string;
   subLabel: string;
   path?: string;
-  action?: "search";
+  action?: "search" | "orphie";
   id: string;
 };
 
@@ -214,6 +215,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
           path: "/orphanstudio",
           id: "guest-orphanstudio",
         },
+        { icon: Radio, label: "Orphie Voice", subLabel: "Talk with AI assistant", action: "orphie", id: "guest-orphie" },
         { icon: DoorOpen, label: "Orphanage", subLabel: "Adopt open bars", path: "/orphanage", id: "guest-orphanage" },
         { icon: Swords, label: "Challenges", subLabel: "Battles and events", path: "/challenges", id: "guest-challenges" },
         { icon: Search, label: "Search", subLabel: "Find bars and users", action: "search", id: "guest-search" },
@@ -252,6 +254,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
         path: "/orphanstudio",
         id: "main-orphanstudio",
       },
+      { icon: Radio, label: "Orphie Voice", subLabel: "Talk with AI assistant", action: "orphie", id: "main-orphie" },
       { icon: Swords, label: "Challenges", subLabel: "Compete with the community", path: "/challenges", id: "main-challenges" },
       { icon: DoorOpen, label: "Orphanage", subLabel: "Adopt open bars", path: "/orphanage", id: "main-orphanage" },
       { icon: User, label: "My Bars", subLabel: "Your profile and progress", path: "/profile", id: "main-my-bars" },
@@ -299,6 +302,11 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
       if (item.action === "search") {
         setIsOpen(false);
         setSearchOpen(true);
+        return;
+      }
+      if (item.action === "orphie") {
+        setIsOpen(false);
+        setAraOpen(true);
         return;
       }
       if (!item.path) return;

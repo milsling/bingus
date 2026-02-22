@@ -137,8 +137,8 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
                 setTranscript(`You: ${text}`);
                 onTranscript?.(text, "user");
               } else if (msg.role === 'assistant') {
-                console.log("Ara:", text);
-                setTranscript(`Ara: ${text}`);
+                console.log("Orphie:", text);
+                setTranscript(`Orphie: ${text}`);
                 onTranscript?.(text, "assistant");
               }
             } else if (msg.type === 'ai_speaking') {
@@ -240,7 +240,7 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
           {state === "connecting" && "Connecting..."}
           {state === "connected" && "Connected"}
           {state === "listening" && "Listening..."}
-          {state === "speaking" && "Ara speaking..."}
+          {state === "speaking" && "Orphie speaking..."}
           {state === "disconnected" && "Disconnected"}
           {state === "error" && "Error"}
         </span>

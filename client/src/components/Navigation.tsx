@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen, Radio } from "lucide-react";
 import headerLogo from "../assets/logo.png";
 import { useBars } from "@/context/BarContext";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -93,6 +93,13 @@ export default function Navigation() {
                   <NotebookPen className="h-4 w-4" />
                   <span>Orphan Studio</span>
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setAraOpen(true)}
+                className="flex items-center gap-3 cursor-pointer"
+              >
+                <Radio className="h-4 w-4" />
+                <span>Orphie Voice</span>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/challenges" className="flex items-center gap-3 cursor-pointer">

@@ -63,7 +63,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
           type: 'session.update',
           session: {
             modalities: ['text', 'audio'],
-            voice: 'ara',
+            voice: 'orphie',
             input_audio_format: 'pcm16',
             output_audio_format: 'pcm16',
             input_audio_transcription: {
@@ -75,7 +75,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
               prefix_padding_ms: 300,
               silence_duration_ms: 500,
             },
-            instructions: `You are Ara, the AI assistant for orphanbars.space. You're helpful, friendly, and conversational. Keep responses concise and natural.`,
+            instructions: `You are Orphie, the AI assistant for orphanbars.space. You're helpful, friendly, and conversational. Keep responses concise and natural.`,
           },
         }));
       });

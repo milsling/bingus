@@ -300,7 +300,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="glass-surface-strong border border-white/[0.1] bg-background/95 w-[95vw] h-[95vh] md:max-w-[min(95vw,48rem)] md:h-[85vh] lg:max-w-[min(90vw,64rem)] xl:max-w-[min(85vw,80rem)] lg:h-[90vh] overflow-hidden p-0">
+        <DialogContent className="glass-surface-strong border border-white/[0.1] bg-background/95 w-[95vw] h-[95vh] md:max-w-4xl md:h-[85vh] lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl lg:h-[90vh] overflow-hidden p-0">
           <DialogHeader className="border-b border-white/[0.08] bg-background/50 p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -336,7 +336,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   <div className="mb-4 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3">
                     <p className="text-sm font-semibold text-green-200">🎙️ Real Voice Mode Active</p>
                     <p className="mt-1 text-xs text-green-100/70">
-                      Using xAI's Grok Voice Agent API for true speech-to-speech. Speak naturally and Ara will respond in real-time with voice.
+                      Using xAI's Grok Voice Agent API for true speech-to-speech. Speak naturally and Orphie will respond in real-time with voice.
                     </p>
                   </div>
                   <VoiceChat 
