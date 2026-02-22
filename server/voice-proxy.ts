@@ -39,7 +39,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
     const sessionId = `${user.id}-${Date.now()}`;
     log(`Starting voice session for user: ${user.username} (${sessionId})`, 'voice');
 
-    const session: VoiceSession = {
+    const voiceSession: VoiceSession = {
       clientWs,
       xaiWs: null,
       userId: user.id,
@@ -47,7 +47,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
       isActive: true,
     };
 
-    activeSessions.set(sessionId, session);
+    activeSessions.set(sessionId, voiceSession);
 
     try {
       // Connect to xAI Realtime API
@@ -66,7 +66,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
         },
       });
 
-      session.xaiWs = xaiWs;
+      voiceSession.xaiWs = xaiWs;
 
       xaiWs.on('open', () => {
         log('Connected to xAI', 'voice');
@@ -94,7 +94,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
         
         // Send initial greeting to trigger first response
         setTimeout(() => {
-          if (session.isActive && xaiWs.readyState === WebSocket.OPEN) {
+          if (voiceSession.isActive && xaiWs.readyState === WebSocket.OPEN) {
             xaiWs.send(JSON.stringify({
               type: 'response.create',
               response: {
@@ -106,7 +106,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
       });
 
       xaiWs.on('message', (data: Buffer | string) => {
-        if (!session.isActive) return;
+        if (!voiceSession.isActive) return;
 
         try {
           const message = JSON.parse(data.toString());
@@ -216,7 +216,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
 
       xaiWs.on('close', () => {
         log('xAI WebSocket closed', 'voice');
-        session.isActive = false;
+        voiceSession.isActive = false;
         if (clientWs.readyState === WebSocket.OPEN) {
           clientWs.close();
         }
@@ -224,7 +224,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
 
       // Handle client messages (audio from browser)
       clientWs.on('message', (data: Buffer) => {
-        if (!session.isActive || !xaiWs || xaiWs.readyState !== WebSocket.OPEN) {
+        if (!voiceSession.isActive || !xaiWs || xaiWs.readyState !== WebSocket.OPEN) {
           return;
         }
 
@@ -243,7 +243,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
 
       clientWs.on('close', () => {
         log('Client disconnected', 'voice');
-        session.isActive = false;
+        voiceSession.isActive = false;
         if (xaiWs && xaiWs.readyState === WebSocket.OPEN) {
           xaiWs.close();
         }
@@ -252,7 +252,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
 
       clientWs.on('error', (error) => {
         log(`Client WebSocket error: ${error}`, 'voice');
-        session.isActive = false;
+        voiceSession.isActive = false;
         if (xaiWs && xaiWs.readyState === WebSocket.OPEN) {
           xaiWs.close();
         }
