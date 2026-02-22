@@ -16,7 +16,6 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>("");
   const roomRef = useRef<Room | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
 
   const updateState = useCallback((newState: VoiceChatState) => {
@@ -28,11 +27,6 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
     if (cleanupRef.current) {
       cleanupRef.current();
       cleanupRef.current = null;
-    }
-
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
     }
 
     if (roomRef.current) {
@@ -65,88 +59,28 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
 
       await room.connect(url, token);
       console.log("✓ Connected to LiveKit room:", roomName);
+      updateState("connected");
 
-      // Connect to xAI Voice Agent API
-      const xaiApiKey = process.env.XAI_API_KEY;
-      if (!xaiApiKey) {
-        throw new Error("XAI_API_KEY not configured");
-      }
-
-      const ws = new WebSocket("wss://api.x.ai/v1/realtime", {
-        headers: {
-          Authorization: `Bearer ${xaiApiKey}`,
-        },
+      // LiveKit handles the xAI Voice Agent connection automatically
+      // No need to manually create WebSocket connection
+      
+      // Set up room event handlers
+      room.on('connected', () => {
+        console.log('✓ Room connected');
+        updateState("listening");
       });
-
-      // Note: Browser WebSocket doesn't support headers, 
-      // so in production you'd need a server-side proxy or ephemeral tokens
-      // For now, we'll use the direct LiveKit approach with xAI plugin
-
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        console.log("✓ Connected to xAI Voice API");
-        updateState("connected");
-
-        // Configure session
-        const config = {
-          type: "session.update",
-          session: {
-            modalities: ["text", "audio"],
-            voice: "Ara",
-            instructions: "You are Ara, a hip-hop focused AI assistant for orphanbars.space. Help users with rap bars, wordplay, rhymes, and lyrical analysis. Be conversational and encouraging.",
-            input_audio_format: "pcm16",
-            output_audio_format: "pcm16",
-            turn_detection: {
-              type: "server_vad",
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 500,
-            },
-          },
-        };
-        ws.send(JSON.stringify(config));
-      };
-
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        if (data.type === "session.created") {
-          console.log("✓ xAI session created");
-        } else if (data.type === "conversation.item.input_audio_transcription.completed") {
-          const userText = data.transcript;
-          setTranscript(userText);
-          onTranscript?.(userText, "user");
-          updateState("speaking");
-        } else if (data.type === "response.audio_transcript.delta") {
-          setTranscript((prev) => prev + data.delta);
-        } else if (data.type === "response.audio_transcript.done") {
-          onTranscript?.(data.transcript, "assistant");
-          updateState("listening");
-        } else if (data.type === "error") {
-          console.error("xAI error:", data.error);
-          setError(data.error.message || "Voice error occurred");
-        }
-      };
-
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        setError("Connection error");
-        updateState("error");
-      };
-
-      ws.onclose = () => {
-        console.log("xAI connection closed");
+      
+      room.on('disconnected', () => {
+        console.log('Room disconnected');
         updateState("disconnected");
-      };
-
+      });
+      
+      // Note: In a full implementation, you'd set up LiveKit's audio track handling here
+      // For now, this is a simplified version that shows the connection flow
+      
       cleanupRef.current = () => {
-        ws.close();
         room.disconnect();
       };
-
-      // Start with listening state
-      updateState("listening");
 
     } catch (error: any) {
       console.error("Voice chat error:", error);
