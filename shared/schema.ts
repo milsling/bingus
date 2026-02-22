@@ -1310,7 +1310,8 @@ export const aiSettings = pgTable("ai_settings", {
     .default("balanced"), // "lenient", "balanced", "strict"
   autoApproveEnabled: boolean("auto_approve_enabled").notNull().default(true),
   // Orphie customization
-  orphiePersonality: text("orphie_personality"), // Custom instructions for Orphie
+  orphiePersonality: text("orphie_personality"), // Custom personality for text mode
+  voiceModePersonality: text("voice_mode_personality"), // Custom personality for voice mode
   orphieGreeting: text("orphie_greeting"), // Custom greeting message
   // Rate limits (per user per hour)
   chatRateLimit: integer("chat_rate_limit").notNull().default(50),

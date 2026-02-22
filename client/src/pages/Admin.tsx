@@ -3947,10 +3947,10 @@ export default function Admin() {
                             <p className="text-xs text-muted-foreground mt-1">Custom message Ara shows when users open the chat</p>
                           </div>
                           <div>
-                            <Label htmlFor="orphie-personality">Custom Personality/Instructions</Label>
+                            <Label htmlFor="orphie-personality">Text Mode Personality</Label>
                             <Textarea
                               id="orphie-personality"
-                              placeholder="Additional instructions for Ara's personality..."
+                              placeholder="Personality instructions for Ara in text chat..."
                               defaultValue={aiSettings?.orphiePersonality || ""}
                               onBlur={(e) => {
                                 if (e.target.value !== (aiSettings?.orphiePersonality || "")) {
@@ -3960,7 +3960,23 @@ export default function Admin() {
                               className="min-h-[100px]"
                               data-testid="input-orphie-personality"
                             />
-                            <p className="text-xs text-muted-foreground mt-1">Add personality traits or special instructions for how Ara should respond</p>
+                            <p className="text-xs text-muted-foreground mt-1">Personality traits and instructions for Ara's text chat responses</p>
+                          </div>
+                          <div>
+                            <Label htmlFor="voice-personality">Voice Mode Personality</Label>
+                            <Textarea
+                              id="voice-personality"
+                              placeholder="Personality instructions for Ara in voice mode..."
+                              defaultValue={aiSettings?.voiceModePersonality || ""}
+                              onBlur={(e) => {
+                                if (e.target.value !== (aiSettings?.voiceModePersonality || "")) {
+                                  updateAISettingsMutation.mutate({ voiceModePersonality: e.target.value || null });
+                                }
+                              }}
+                              className="min-h-[100px]"
+                              data-testid="input-voice-personality"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">Personality traits and instructions for Ara's voice chat responses</p>
                           </div>
                         </div>
                       </div>

@@ -77,6 +77,8 @@ export function useBackground() {
 
     if (selectedBackground.image) {
       document.documentElement.classList.add('has-custom-bg');
+      document.documentElement.style.background = 'transparent';
+      document.documentElement.style.backgroundColor = 'transparent';
 
       const bgElement = document.createElement('div');
       bgElement.id = 'app-background-image';
@@ -110,6 +112,8 @@ export function useBackground() {
       document.body.style.backgroundAttachment = 'initial';
     } else {
       document.documentElement.classList.remove('has-custom-bg');
+      document.documentElement.style.removeProperty('background');
+      document.documentElement.style.removeProperty('background-color');
     }
   }, [selectedId, selectedBackground, resolvedTheme]);
 

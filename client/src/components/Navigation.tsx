@@ -66,6 +66,10 @@ export default function Navigation() {
         onDropABar={() => setLocation(currentUser ? "/post" : "/auth")}
         onSwipeLeft={() => executeShortcut(leftTarget)}
         onSwipeRight={() => executeShortcut(rightTarget)}
+        onLongPress={() => {
+          if ("vibrate" in navigator) navigator.vibrate([12, 50, 8, 50, 12]);
+          setAraOpen(true);
+        }}
       />
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}

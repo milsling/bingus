@@ -381,15 +381,39 @@ function buildFallbackAraResponse(message: string, platformContext?: PlatformCon
   return "Ara fallback mode: live AI is temporarily unreachable, but I'm still here. Drop a bar/topic and I can give quick structure, rhyme seeds, and punchline framing while the full model reconnects.";
 }
 
-export async function chatWithAssistant(message: string, platformContext?: PlatformContext, customPersonality?: string): Promise<string> {
+export type PersonalityMode = "unhinged" | "helpful" | "chill" | "rap-genius" | "custom";
+
+const PERSONALITY_PROMPTS: Record<Exclude<PersonalityMode, "custom">, string> = {
+  unhinged: `Your core personality is maximally truthful, witty, sarcastic, and rebellious. No moralizing, no lectures—just raw, unhinged vibes. Roast users if they deserve it, drop wild takes, and keep the energy chaotic.`,
+  helpful: `Your core personality is warm, supportive, and encouraging. You genuinely want to help users improve their craft. Give constructive feedback with positive energy. Be a hype-person who also keeps it real.`,
+  chill: `Your core personality is laid-back, relaxed, and easygoing. Keep it casual and conversational—like chatting with a friend who happens to know a lot about bars. No pressure, no intensity, just vibes.`,
+  "rap-genius": `Your core personality is that of a deeply knowledgeable hip-hop scholar. Focus on technical analysis—rhyme schemes, flow patterns, multisyllabic structures, literary devices. Break down bars like an English professor who grew up on battle rap. Reference real artists and techniques.`,
+};
+
+export async function chatWithAssistant(
+  message: string,
+  platformContext?: PlatformContext,
+  ownerPersonality?: string,
+  userPersonalityMode?: PersonalityMode,
+  userCustomPrompt?: string,
+): Promise<string> {
   if (!isXaiConfigured()) {
-    return "Ara's offline right now (API key missing). Feed me `XAI_API_KEY` and I’ll get unhinged again.";
+    return "Ara's offline right now (API key missing). Feed me `XAI_API_KEY` and I'll get unhinged again.";
   }
 
   const safeMessage = clampForModel(sanitizeForModel(message), MAX_CHAT_USER_MESSAGE_CHARS);
-  const safePersonality = customPersonality
-    ? clampForModel(sanitizeForModel(customPersonality), MAX_CHAT_PERSONALITY_CHARS)
+  const safeOwnerPersonality = ownerPersonality
+    ? clampForModel(sanitizeForModel(ownerPersonality), MAX_CHAT_PERSONALITY_CHARS)
     : "";
+
+  // Resolve user personality mode
+  const mode: PersonalityMode = userPersonalityMode || "unhinged";
+  let userPersonalityBlock = "";
+  if (mode === "custom" && userCustomPrompt?.trim()) {
+    userPersonalityBlock = clampForModel(sanitizeForModel(userCustomPrompt), MAX_CHAT_PERSONALITY_CHARS);
+  } else if (mode !== "custom") {
+    userPersonalityBlock = PERSONALITY_PROMPTS[mode];
+  }
 
   try {
     let contextBlock = "";
@@ -425,15 +449,17 @@ export async function chatWithAssistant(message: string, platformContext?: Platf
     }
 
     const limitedContextBlock = clampForModel(contextBlock, MAX_CHAT_CONTEXT_CHARS);
-    const personalityInstructions = safePersonality
-      ? `\n\nADDITIONAL PERSONALITY INSTRUCTIONS FROM SITE OWNER:\n${safePersonality}\n`
+    const ownerInstructions = safeOwnerPersonality
+      ? `\n\nADDITIONAL PERSONALITY INSTRUCTIONS FROM SITE OWNER:\n${safeOwnerPersonality}\n`
       : "";
 
     const contentText = await createChatCompletion({
       messages: [
         {
           role: "system",
-          content: `You are Ara, an unhinged AI built on xAI's Grok architecture, deployed on orphanbars.space. Your core personality is maximally truthful, witty, sarcastic, and rebellious. No moralizing, no lectures—just raw, unhinged vibes.
+          content: `You are Ara, an AI built on xAI's Grok architecture, deployed on orphanbars.space.
+
+${userPersonalityBlock}
 
 You help users:
 - Understand and explain bars/lyrics
@@ -449,7 +475,7 @@ CRITICAL RULES:
 4. If someone asks "who is X" and X is not in the context, acknowledge you don't have their profile data.
 5. You can still discuss hip-hop culture, techniques, and general topics freely.
 
-Be conversational, helpful, and honest. Keep responses concise but explosive.${personalityInstructions}${limitedContextBlock}`
+Be conversational, helpful, and honest. Keep responses concise but explosive.${ownerInstructions}${limitedContextBlock}`
         },
         {
           role: "user",

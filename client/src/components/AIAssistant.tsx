@@ -1,15 +1,26 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X, Loader2, Radio, Maximize2, Minimize2 } from "lucide-react";
+import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X, Loader2, Radio, Maximize2, Minimize2, Settings2, Flame, Heart, Coffee, BookOpen, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import VoiceChat, { type VoiceChatState } from "@/components/VoiceChat";
+
+type PersonalityMode = "unhinged" | "helpful" | "chill" | "rap-genius" | "custom";
+
+const PERSONALITY_OPTIONS: { value: PersonalityMode; label: string; icon: typeof Flame; description: string }[] = [
+  { value: "unhinged", label: "Unhinged", icon: Flame, description: "Chaotic, witty, no filter" },
+  { value: "helpful", label: "Helpful", icon: Heart, description: "Warm, supportive, encouraging" },
+  { value: "chill", label: "Chill", icon: Coffee, description: "Laid-back, casual vibes" },
+  { value: "rap-genius", label: "Rap Genius", icon: BookOpen, description: "Technical scholar mode" },
+  { value: "custom", label: "Custom", icon: PenLine, description: "Your own prompt" },
+];
 
 interface Message {
   role: "user" | "assistant";
@@ -37,6 +48,15 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
   const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false);
+  const [personalityMode, setPersonalityMode] = useState<PersonalityMode>(() => {
+    if (typeof window === "undefined") return "unhinged";
+    return (localStorage.getItem("ara-personality-mode") as PersonalityMode) || "unhinged";
+  });
+  const [customPrompt, setCustomPrompt] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("ara-custom-prompt") || "";
+  });
+  const [personalityOpen, setPersonalityOpen] = useState(false);
   const [realVoiceMode, setRealVoiceMode] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("ara-real-voice-mode") === "true";
@@ -198,6 +218,17 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
     }
   }, [isRecording, startDictation, stopDictation]);
 
+  const updatePersonalityMode = useCallback((mode: PersonalityMode) => {
+    setPersonalityMode(mode);
+    localStorage.setItem("ara-personality-mode", mode);
+    setPersonalityOpen(false);
+  }, []);
+
+  const updateCustomPrompt = useCallback((prompt: string) => {
+    setCustomPrompt(prompt);
+    localStorage.setItem("ara-custom-prompt", prompt);
+  }, []);
+
   const toggleRealVoiceMode = useCallback(() => {
     setRealVoiceMode((prev) => {
       const next = !prev;
@@ -226,7 +257,11 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({
+          message: userMessage,
+          personalityMode,
+          customPrompt: personalityMode === "custom" ? customPrompt : undefined,
+        }),
       });
 
       let data: any = null;
@@ -258,7 +293,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, isRecording, stopDictation]);
+  }, [isLoading, isRecording, stopDictation, personalityMode, customPrompt]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -333,6 +368,65 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <Popover open={personalityOpen} onOpenChange={setPersonalityOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
+                        personalityOpen && "border-primary/50 bg-primary/10 text-primary"
+                      )}
+                      title="Personality mode"
+                      data-testid="button-personality-mode"
+                    >
+                      {(() => {
+                        const opt = PERSONALITY_OPTIONS.find(o => o.value === personalityMode);
+                        const Icon = opt?.icon || Flame;
+                        return <Icon className="h-4 w-4" />;
+                      })()}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" sideOffset={8} className="w-72 p-2">
+                    <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Personality</p>
+                    <div className="space-y-1">
+                      {PERSONALITY_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => updatePersonalityMode(opt.value)}
+                          className={cn(
+                            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                            personalityMode === opt.value
+                              ? "bg-primary/15 text-primary"
+                              : "hover:bg-white/[0.06] text-foreground"
+                          )}
+                          data-testid={`personality-${opt.value}`}
+                        >
+                          <opt.icon className="h-4 w-4 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium leading-none">{opt.label}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">{opt.description}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    {personalityMode === "custom" && (
+                      <div className="mt-2 px-1">
+                        <Textarea
+                          value={customPrompt}
+                          onChange={(e) => updateCustomPrompt(e.target.value)}
+                          placeholder="Describe how Ara should behave..."
+                          className="min-h-[80px] resize-none text-sm bg-white/[0.04] border-white/[0.1]"
+                          maxLength={1200}
+                          data-testid="input-custom-personality"
+                        />
+                        <p className="mt-1 text-right text-[10px] text-muted-foreground">{customPrompt.length}/1200</p>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
                 <Button
                   type="button"
                   variant="ghost"

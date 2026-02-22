@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { moderateContent, explainBar, suggestRhymes, chatWithAssistant, analyzeUserStyle, type PlatformContext, type StyleAnalysis } from "./barAssistant";
+import { moderateContent, explainBar, suggestRhymes, chatWithAssistant, analyzeUserStyle, type PlatformContext, type StyleAnalysis, type PersonalityMode } from "./barAssistant";
 import { storage } from "../../storage";
 import { getXaiRuntimeDiagnostics } from "./xaiClient";
 import { AccessToken } from "livekit-server-sdk";
@@ -239,10 +239,15 @@ export function registerAIRoutes(app: Express): void {
         return res.status(403).json({ error: "Ara chat is currently disabled" });
       }
       
-      const { message } = req.body;
+      const { message, personalityMode, customPrompt } = req.body;
       if (!message) {
         return res.status(400).json({ error: "Message is required" });
       }
+
+      // Validate personality mode
+      const validModes: PersonalityMode[] = ["unhinged", "helpful", "chill", "rap-genius", "custom"];
+      const mode: PersonalityMode | undefined = validModes.includes(personalityMode) ? personalityMode : undefined;
+      const userCustom: string | undefined = mode === "custom" && typeof customPrompt === "string" ? customPrompt.slice(0, 1200) : undefined;
       
       const potentialUsernames = extractPotentialUsernames(message);
       const needsStyleAnalysis = settings.styleAnalysisEnabled && isStyleAnalysisRequest(message) && potentialUsernames.length > 0;
@@ -270,7 +275,13 @@ Summary: ${analysis.summary}
         }
       }
       
-      const response = await chatWithAssistant(enrichedMessage, platformContext, settings.orphiePersonality || undefined);
+      const response = await chatWithAssistant(
+        enrichedMessage,
+        platformContext,
+        settings.orphiePersonality || undefined,
+        mode,
+        userCustom,
+      );
       res.json({ response });
     } catch (error) {
       console.error("Chat API error:", error);

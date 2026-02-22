@@ -13,7 +13,7 @@ interface NativeScreenProps {
 
 export function NativeScreen({ children, className, contentClassName }: NativeScreenProps) {
   return (
-    <div className={cn("relative isolate min-h-screen overflow-hidden", className)}>
+    <div data-page-bg className={cn("relative isolate min-h-screen overflow-hidden", className)}>
       <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/15 blur-[96px]" />
       <div className="pointer-events-none absolute bottom-6 right-[-5rem] h-56 w-56 rounded-full bg-cyan-500/10 blur-[88px]" />
       <main className={cn("relative z-[0] mx-auto w-full max-w-7xl", contentClassName)}>{children}</main>

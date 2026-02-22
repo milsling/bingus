@@ -321,6 +321,14 @@
    When user selects a custom background wallpaper,
    surfaces become translucent so the image shows through.
    ======================================== */
+
+/* Fix: @theme inline means --color-background overrides don't affect bg-background.
+   Target page-level containers directly to make them transparent. */
+.has-custom-bg [data-page-bg] {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
 .has-custom-bg.dark {
   --color-background: rgba(5, 5, 9, 0.15);
   --color-card: rgba(18, 18, 24, 0.4);
@@ -470,12 +478,17 @@
   }
 }
 
-/* Override inline color styles from rich text editor in dark mode */
+/* Override inline color/background styles from rich text editor in dark mode.
+   Prevents cross-theme display issues (e.g. light-mode highlights in dark mode). */
 .dark [data-testid^="text-content-"] * {
   color: inherit !important;
 }
 .dark [data-testid^="text-content-"] span[style*="color"] {
   color: inherit !important;
+}
+.dark [data-testid^="text-content-"] *[style*="background"] {
+  background-color: transparent !important;
+  background: none !important;
 }
 
 /* Maintenance banner marquee animation */

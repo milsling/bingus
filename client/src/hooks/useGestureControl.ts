@@ -34,6 +34,7 @@ export const useGestureControl = (
   onSwipeUp: () => void,
   onSwipeLeft: () => void,
   onSwipeRight: () => void,
+  onLongPress?: () => void,
 ) => {
   const [startPos, setStartPos] = useState<Point | null>(null);
   const [currentPos, setCurrentPos] = useState<Point | null>(null);
@@ -133,10 +134,10 @@ export const useGestureControl = (
           onSwipeLeft();
         } else if (direction === "right") {
           onSwipeRight();
-        } else {
-          // Long press with no clear direction: do nothing (no fallback to tap)
-          // This prevents accidental nav opens after a failed swipe
-        }
+      } else if (onLongPress) {
+        // Long press with no clear swipe direction: trigger long-press action (e.g. open Ara)
+        onLongPress();
+      }
       } else if (movementDistance < TAP_JITTER_THRESHOLD) {
         // Quick tap: open nav
         onTap();
@@ -146,7 +147,7 @@ export const useGestureControl = (
 
       resetTrackingState();
     },
-    [onTap, onSwipeUp, onSwipeLeft, onSwipeRight, resetTrackingState],
+    [onTap, onSwipeUp, onSwipeLeft, onSwipeRight, onLongPress, resetTrackingState],
   );
 
   const gestureVector = useMemo(() => {

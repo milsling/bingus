@@ -27,10 +27,16 @@ const FAB_DEBUG_ENABLED_KEY = "fab-debug-enabled";
 const FAB_DEBUG_LAUNCHER_HIDDEN_KEY = "fab-debug-launcher-hidden";
 const FAB_DEBUG_VISIBILITY_EVENT = "fab-debug-launcher-visibility-change";
 
+/** Fire a haptic vibration pattern (no-op on unsupported devices). */
+const haptic = (pattern: number | number[]) => {
+  if ("vibrate" in navigator) navigator.vibrate(pattern);
+};
+
 interface FloatingActionButtonProps {
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   onDropABar?: () => void;
+  onLongPress?: () => void;
 }
 
 type ShortcutDirection = "up" | "left" | "right";
@@ -52,6 +58,7 @@ export function FloatingActionButton({
   onSwipeLeft,
   onSwipeRight,
   onDropABar,
+  onLongPress,
 }: FloatingActionButtonProps) {
   const [location, setLocation] = useLocation();
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -214,6 +221,7 @@ export function FloatingActionButton({
 
   const queueShortcutAction = useCallback(
     (direction: ShortcutDirection) => {
+      haptic([10, 30, 15]);
       setIsNavOpen(false);
       setPendingShortcut(direction);
       updateDebugState((prev) => ({
@@ -244,6 +252,7 @@ export function FloatingActionButton({
 
   const handleTapAction = useCallback(() => {
     if (pendingShortcut) return;
+    haptic(6);
     updateDebugState((prev) => ({
       ...prev,
       lastEvent: "tap-open-menu",
@@ -277,10 +286,12 @@ export function FloatingActionButton({
     handleSwipeUpAction,
     handleSwipeLeftAction,
     handleSwipeRightAction,
+    onLongPress,
   );
 
   useEffect(() => {
     if (!isHolding) return;
+    haptic([8, 40, 12]);
     updateDebugState((prev) => ({
       ...prev,
       lastEvent: "hold-active",
@@ -288,6 +299,15 @@ export function FloatingActionButton({
       updatedAt: Date.now(),
     }));
   }, [isHolding, updateDebugState]);
+
+  // Micro-tick when swipe direction locks in
+  const prevDirectionRef = useRef<ShortcutDirection | null>(null);
+  useEffect(() => {
+    if (previewDirection && previewDirection !== prevDirectionRef.current) {
+      haptic(4);
+    }
+    prevDirectionRef.current = previewDirection;
+  }, [previewDirection]);
 
   const navItems = useMemo<NavOverlayItem[]>(() => {
     if (!currentUser) {

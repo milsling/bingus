@@ -2,6 +2,7 @@ import WebSocket from 'ws';
 import { IncomingMessage } from 'http';
 import { log } from './index';
 import { storage } from './storage';
+import type { AISettings } from '@shared/schema';
 
 interface VoiceSession {
   clientWs: WebSocket;
@@ -68,8 +69,23 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
 
       voiceSession.xaiWs = xaiWs;
 
+      // Load AI settings for voice personality
+      let aiSettingsData: AISettings | null = null;
+      try {
+        aiSettingsData = await storage.getAISettings();
+      } catch (e) {
+        log(`Failed to load AI settings for voice: ${e}`, 'voice');
+      }
+
       xaiWs.on('open', () => {
         log('Connected to xAI', 'voice');
+
+        // Build voice instructions with optional custom personality
+        const baseInstructions = `You are Orphie, the AI assistant for orphanbars.space. You're helpful, friendly, and conversational. Keep responses concise and natural.`;
+        const voicePersonality = aiSettingsData?.voiceModePersonality?.trim();
+        const instructions = voicePersonality
+          ? `${baseInstructions}\n\nADDITIONAL PERSONALITY INSTRUCTIONS FROM SITE OWNER:\n${voicePersonality}`
+          : baseInstructions;
 
         // Send session configuration
         xaiWs.send(JSON.stringify({
@@ -88,7 +104,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
               prefix_padding_ms: 300,
               silence_duration_ms: 500,
             },
-            instructions: `You are Orphie, the AI assistant for orphanbars.space. You're helpful, friendly, and conversational. Keep responses concise and natural.`,
+            instructions,
           },
         }));
         

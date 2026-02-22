@@ -124,6 +124,7 @@ export function SwipeBackNavigation({ children }: SwipeBackNavigationProps) {
       
       <div
         className="min-h-screen bg-background"
+        data-page-bg
         style={{
           transform: (isActive || isAnimatingOut) && offset > 0 ? `translateX(${offset}px)` : "none",
           transition: isAnimatingOut ? "transform 0.25s ease-out" : (offset === 0 && !isAnimatingOut ? "transform 0.2s ease-out" : "none"),
