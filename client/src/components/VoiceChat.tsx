@@ -48,6 +48,17 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
       updateState("connecting");
       setError(null);
 
+      // Request microphone permission FIRST to trigger browser prompt
+      let micStream: MediaStream | null = null;
+      try {
+        console.log("Requesting microphone permission...");
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("✓ Microphone permission granted");
+      } catch (micError: any) {
+        console.error("Microphone permission denied:", micError);
+        throw new Error("Microphone access denied. Please allow microphone access and try again.");
+      }
+
       // Get LiveKit token from server
       const tokenRes = await fetch("/api/ai/voice/token", {
         method: "POST",
@@ -55,6 +66,8 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
       });
 
       if (!tokenRes.ok) {
+        // Clean up mic stream if token fetch fails
+        micStream?.getTracks().forEach(track => track.stop());
         const data = await tokenRes.json().catch(() => ({ error: "Failed to connect" }));
         throw new Error(data.error || "Failed to get voice token");
       }
@@ -67,16 +80,18 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
 
       await room.connect(url, token);
       console.log("✓ Connected to LiveKit room:", roomName);
-      updateState("connected");
 
-      // Enable microphone and publish audio
+      // Stop the test stream and let LiveKit manage the mic
+      micStream?.getTracks().forEach(track => track.stop());
+      
+      // Enable microphone through LiveKit
       try {
         await room.localParticipant.setMicrophoneEnabled(true);
-        console.log("✓ Microphone enabled");
+        console.log("✓ Microphone enabled in LiveKit");
         updateState("listening");
       } catch (micError: any) {
-        console.error("Failed to enable microphone:", micError);
-        throw new Error("Could not access microphone. Please grant permission.");
+        console.error("Failed to enable microphone in LiveKit:", micError);
+        throw new Error("Could not enable microphone.");
       }
 
       // Handle incoming audio tracks from the AI agent
