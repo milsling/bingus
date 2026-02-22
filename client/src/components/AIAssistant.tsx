@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X, Loader2, Radio } from "lucide-react";
+import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X, Loader2, Radio, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
     return localStorage.getItem("ara-real-voice-mode") === "true";
   });
   const [voiceChatState, setVoiceChatState] = useState<VoiceChatState>("idle");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const lastScrollYRef = useRef(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { currentUser } = useBars();
@@ -300,7 +301,12 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="glass-surface-strong border border-white/[0.1] bg-background/95 w-[95vw] h-[95vh] md:max-w-4xl md:h-[85vh] lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl lg:h-[90vh] overflow-hidden p-0">
+        <DialogContent className={cn(
+          "glass-surface-strong border border-white/[0.1] bg-background/95 overflow-hidden p-0 transition-all",
+          isFullscreen
+            ? "w-screen h-screen max-w-none rounded-none"
+            : "w-[95vw] h-[95vh] md:max-w-4xl md:h-[85vh] lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl lg:h-[90vh]"
+        )}>
           <DialogHeader className="border-b border-white/[0.08] bg-background/50 p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -312,20 +318,33 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   <p className="text-xs text-muted-foreground">Ask for help with bars, rhymes, and more</p>
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={toggleRealVoiceMode}
-                className={cn(
-                  "h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
-                  realVoiceMode && "border-green-500/50 bg-green-500/10 text-green-400"
-                )}
-                title={realVoiceMode ? "Disable real voice chat (xAI STS)" : "Enable real voice chat (xAI STS)"}
-                data-testid="button-ara-real-voice"
-              >
-                <Radio className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsFullscreen(!isFullscreen)}
+                  className="h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]"
+                  title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  data-testid="button-fullscreen-toggle"
+                >
+                  {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleRealVoiceMode}
+                  className={cn(
+                    "h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
+                    realVoiceMode && "border-green-500/50 bg-green-500/10 text-green-400"
+                  )}
+                  title={realVoiceMode ? "Disable real voice chat (xAI STS)" : "Enable real voice chat (xAI STS)"}
+                  data-testid="button-ara-real-voice"
+                >
+                  <Radio className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </DialogHeader>
 
