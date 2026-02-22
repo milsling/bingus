@@ -63,7 +63,7 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
           type: 'session.update',
           session: {
             modalities: ['text', 'audio'],
-            voice: 'orphie',
+            voice: 'ara',
             input_audio_format: 'pcm16',
             output_audio_format: 'pcm16',
             input_audio_transcription: {
@@ -86,10 +86,15 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
         try {
           const message = JSON.parse(data.toString());
           
+          // Log all message types for debugging
+          console.log('xAI message type:', message.type);
+          
           // Handle different message types
           if (message.type === 'response.audio.delta') {
             // Forward audio data to client
+            console.log('Received audio delta, length:', message.delta?.length || 0);
             const audioData = Buffer.from(message.delta, 'base64');
+            console.log('Sending audio to client, buffer size:', audioData.length);
             if (clientWs.readyState === WebSocket.OPEN) {
               clientWs.send(audioData);
             }
