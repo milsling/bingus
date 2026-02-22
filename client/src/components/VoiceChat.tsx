@@ -81,15 +81,19 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
 
       const { apiKey } = await tokenRes.json();
 
-      // Connect to xAI WebSocket
-      const ws = new WebSocket("wss://api.x.ai/v1/realtime?model=grok-2-vision-1212");
+      // Connect to xAI WebSocket with authentication in URL
+      // Note: Browser WebSocket doesn't support custom headers
+      const wsUrl = `wss://api.x.ai/v1/realtime?model=grok-2-vision-1212&api_key=${encodeURIComponent(apiKey)}`;
+      console.log("Connecting to xAI WebSocket...");
+      
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log("✓ WebSocket connected");
+        console.log("✓ WebSocket connected to xAI");
         
-        // Authenticate
-        ws.send(JSON.stringify({
+        // Send initial session configuration
+        const config = {
           type: "session.update",
           session: {
             modalities: ["text", "audio"],
@@ -104,17 +108,13 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
               threshold: 0.5,
               prefix_padding_ms: 300,
               silence_duration_ms: 500
-            }
+            },
+            instructions: "You are Ara, a helpful AI assistant with a friendly voice. Keep responses conversational and concise."
           }
-        }));
-
-        // Send authorization
-        ws.send(JSON.stringify({
-          type: "session.update",
-          session: {
-            api_key: apiKey
-          }
-        }));
+        };
+        
+        console.log("Sending session config:", config);
+        ws.send(JSON.stringify(config));
 
         updateState("listening");
         console.log("✓ Ready to listen");
@@ -164,9 +164,9 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
         }
       };
 
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        setError("Connection error");
+      ws.onerror = (event) => {
+        console.error("WebSocket error event:", event);
+        setError("Connection error. Check console for details.");
         updateState("error");
       };
 
