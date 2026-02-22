@@ -150,23 +150,32 @@ export async function registerRoutes(
 
   registerObjectStorageRoutes(app);
   registerAIRoutes(app);
-  setupWebSocket(httpServer, sessionParser);
   
-  // Setup voice WebSocket server for xAI voice chat
+  // Setup WebSocket servers
+  const { wss: messageWss, sessionParser: wsSessionParser } = setupWebSocket(httpServer, sessionParser);
+  
   const WebSocket = require('ws');
   const voiceWss = new WebSocket.Server({ noServer: true });
   setupVoiceWebSocket(voiceWss);
   
+  // Handle WebSocket upgrade requests and route to correct server
   httpServer.on('upgrade', (request, socket, head) => {
     const pathname = new URL(request.url!, `http://${request.headers.host}`).pathname;
     
-    if (pathname === '/ws/voice') {
-      // Authenticate voice WebSocket connections
+    if (pathname === '/ws') {
+      // Handle message WebSocket
+      messageWss.handleUpgrade(request, socket, head, (ws) => {
+        messageWss.emit('connection', ws, request);
+      });
+    } else if (pathname === '/ws/voice') {
+      // Handle voice WebSocket with authentication
       sessionParser(request, {} as any, () => {
         voiceWss.handleUpgrade(request, socket, head, (ws) => {
           voiceWss.emit('connection', ws, request);
         });
       });
+    } else {
+      socket.destroy();
     }
   });
   app.use(appleNotifications);

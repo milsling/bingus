@@ -32,7 +32,7 @@ const messageQueues = new Map<string, any[]>();
 const BATCH_INTERVAL = 200;
 
 export function setupWebSocket(server: Server, sessionParser: any) {
-  const wss = new WebSocketServer({ server, path: "/ws" });
+  const wss = new WebSocketServer({ noServer: true });
 
   setInterval(() => {
     Array.from(messageQueues.entries()).forEach(([userId, queue]) => {
@@ -133,7 +133,7 @@ export function setupWebSocket(server: Server, sessionParser: any) {
     });
   });
 
-  return wss;
+  return { wss, sessionParser };
 }
 
 function removeClient(ws: AuthenticatedSocket) {
