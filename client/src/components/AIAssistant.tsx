@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X, Loader2 } from "lucide-react";
+import { MessageSquare, Mic, MicOff, Send, Sparkles, Edit3, Check, X, Loader2, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
+import VoiceChat, { type VoiceChatState } from "@/components/VoiceChat";
 
 interface Message {
   role: "user" | "assistant";
@@ -36,6 +37,11 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
   const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false);
+  const [realVoiceMode, setRealVoiceMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("ara-real-voice-mode") === "true";
+  });
+  const [voiceChatState, setVoiceChatState] = useState<VoiceChatState>("idle");
   const lastScrollYRef = useRef(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { currentUser } = useBars();
@@ -177,6 +183,18 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
     }
   }, [isRecording, startDictation, stopDictation]);
 
+  const toggleRealVoiceMode = useCallback(() => {
+    setRealVoiceMode((prev) => {
+      const next = !prev;
+      localStorage.setItem("ara-real-voice-mode", String(next));
+      return next;
+    });
+  }, []);
+
+  const handleVoiceTranscript = useCallback((text: string, role: "user" | "assistant") => {
+    setMessages(prev => [...prev, { role, content: text }]);
+  }, []);
+
   const sendMessageWithContent = useCallback(async (content: string) => {
     if (!content.trim() || isLoading) return;
     
@@ -284,32 +302,81 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="glass-surface-strong border border-white/[0.1] bg-background/95 w-[95vw] h-[95vh] md:max-w-[min(95vw,48rem)] md:h-[85vh] lg:max-w-[min(90vw,64rem)] xl:max-w-[min(85vw,80rem)] lg:h-[90vh] overflow-hidden p-0">
           <DialogHeader className="border-b border-white/[0.08] bg-background/50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15">
-                <Sparkles className="h-4 w-4 text-primary" />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <DialogTitle className="text-lg font-semibold">AI Assistant</DialogTitle>
+                  <p className="text-xs text-muted-foreground">Ask for help with bars, rhymes, and more</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <DialogTitle className="text-lg font-semibold">AI Assistant</DialogTitle>
-                <p className="text-xs text-muted-foreground">Ask for help with bars, rhymes, and more</p>
-              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={toggleRealVoiceMode}
+                className={cn(
+                  "h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
+                  realVoiceMode && "border-green-500/50 bg-green-500/10 text-green-400"
+                )}
+                title={realVoiceMode ? "Disable real voice chat (xAI STS)" : "Enable real voice chat (xAI STS)"}
+                data-testid="button-ara-real-voice"
+              >
+                <Radio className="h-4 w-4" />
+              </Button>
             </div>
           </DialogHeader>
 
           <ScrollArea className="flex-1">
             <div className="p-3 md:p-4 md:p-6 max-w-none">
-              {messages.length === 0 && (
-                <div className="flex h-32 flex-col items-center justify-center text-center">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                    <Sparkles className="h-5 w-5 text-primary" />
+              {realVoiceMode ? (
+                <div className="flex h-full flex-col">
+                  <div className="mb-4 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3">
+                    <p className="text-sm font-semibold text-green-200">🎙️ Real Voice Mode Active</p>
+                    <p className="mt-1 text-xs text-green-100/70">
+                      Using xAI's Grok Voice Agent API for true speech-to-speech. Speak naturally and Ara will respond in real-time with voice.
+                    </p>
                   </div>
-                  <p className="text-sm font-medium text-foreground">How can I help you?</p>
-                  <p className="mt-1 max-w-[300px] md:max-w-[400px] text-xs text-muted-foreground">
-                    Ask for punchline rewrites, rhyme chains, bar breakdowns, and strategy.
-                  </p>
+                  <VoiceChat 
+                    onTranscript={handleVoiceTranscript}
+                    onStateChange={setVoiceChatState}
+                  />
+                  {messages.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      {messages.map((msg, i) => (
+                        <div key={i} className={cn("mb-3", msg.role === "user" ? "text-right" : "text-left")}>
+                          <div
+                            className={cn(
+                              "inline-block rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap",
+                              msg.role === "user"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {messages.map((msg, i) => (
+              ) : (
+                <>
+                  {messages.length === 0 && (
+                    <div className="flex h-32 flex-col items-center justify-center text-center">
+                      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground">How can I help you?</p>
+                      <p className="mt-1 max-w-[300px] md:max-w-[400px] text-xs text-muted-foreground">
+                        Ask for punchline rewrites, rhyme chains, bar breakdowns, and strategy.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {messages.map((msg, i) => (
                 <div key={i} className={cn("mb-4", msg.role === "user" ? "text-right" : "text-left")}>
                   <div className={cn(
                       "inline-flex max-w-[95%] md:max-w-[85%] lg:max-w-[80%] items-start gap-2",
@@ -373,21 +440,24 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                 </div>
               ))}
               
-              {isLoading && (
-                <div className="mb-4 text-left">
-                  <div className="inline-flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Thinking...
-                  </div>
-                </div>
+                  {isLoading && (
+                    <div className="mb-4 text-left">
+                      <div className="inline-flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Thinking...
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div ref={messagesEndRef} />
+                </>
               )}
-              
-              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
 
-          <div className="border-t border-white/[0.08] bg-background/50 p-3 md:p-4 md:p-6">
-            <div className="flex items-center gap-2 md:gap-3">
+          {!realVoiceMode && (
+            <div className="border-t border-white/[0.08] bg-background/50 p-3 md:p-4 md:p-6">
+              <div className="flex items-center gap-2 md:gap-3">
               {isVoiceSupported && (
                 <Button
                   type="button"
@@ -439,15 +509,16 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
               </Button>
             </div>
             
-            {isVoiceSupported && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {isDictating 
-                  ? "🎤 Listening... Speak clearly and tap the mic button when done."
-                  : "💬 Tap the mic button to use voice dictation."
-                }
-              </p>
-            )}
-          </div>
+              {isVoiceSupported && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {isDictating 
+                    ? "🎤 Listening... Speak clearly and tap the mic button when done."
+                    : "💬 Tap the mic button to use voice dictation."
+                  }
+                </p>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>
