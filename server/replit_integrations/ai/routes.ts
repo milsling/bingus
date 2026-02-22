@@ -137,7 +137,7 @@ export function registerAIRoutes(app: Express): void {
   app.post("/api/ai/voice/token", async (req: Request, res: Response) => {
     try {
       // Check if voice is enabled
-      const voiceEnabled = process.env.XAI_API_KEY && process.env.LIVEKIT_API_KEY && process.env.LIVEKIT_API_SECRET;
+      const voiceEnabled = process.env.XAI_API_KEY;
       if (!voiceEnabled) {
         return res.status(503).json({ error: "Voice chat is not configured" });
       }
@@ -157,32 +157,9 @@ export function registerAIRoutes(app: Express): void {
       //   return res.status(403).json({ error: "Premium membership required" });
       // }
 
-      // Generate LiveKit token
-      const roomName = `voice-${user.id}-${Date.now()}`;
-      const participantName = user.username || `user-${user.id}`;
-
-      const at = new AccessToken(
-        process.env.LIVEKIT_API_KEY!,
-        process.env.LIVEKIT_API_SECRET!,
-        {
-          identity: participantName,
-          ttl: '5m', // Token valid for 5 minutes
-        }
-      );
-
-      at.addGrant({
-        roomJoin: true,
-        room: roomName,
-        canPublish: true,
-        canSubscribe: true,
-      });
-
-      const token = await at.toJwt();
-
+      // Return xAI API key securely
       return res.json({
-        token,
-        url: process.env.LIVEKIT_URL || 'wss://orphan-bars-kqcmttmh.livekit.cloud',
-        roomName,
+        apiKey: process.env.XAI_API_KEY,
       });
     } catch (error) {
       console.error("Voice token API error:", error);

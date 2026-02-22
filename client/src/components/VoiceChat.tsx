@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Room, RoomEvent, Track, RemoteTrackPublication, RemoteParticipant } from "livekit-client";
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Loader2, Phone, PhoneOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,9 +14,10 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   const [state, setState] = useState<VoiceChatState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>("");
-  const roomRef = useRef<Room | null>(null);
-  const audioElementsRef = useRef<HTMLAudioElement[]>([]);
-  const cleanupRef = useRef<(() => void) | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
   const updateState = useCallback((newState: VoiceChatState) => {
     setState(newState);
@@ -25,21 +25,28 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   }, [onStateChange]);
 
   const cleanup = useCallback(() => {
-    // Clean up audio elements
-    audioElementsRef.current.forEach(el => {
-      el.pause();
-      el.remove();
-    });
-    audioElementsRef.current = [];
-
-    if (cleanupRef.current) {
-      cleanupRef.current();
-      cleanupRef.current = null;
+    // Close WebSocket
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
     }
 
-    if (roomRef.current) {
-      roomRef.current.disconnect();
-      roomRef.current = null;
+    // Stop media stream
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+
+    // Clean up audio
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current.remove();
+      audioElementRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
     }
   }, []);
 
@@ -48,96 +55,150 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
       updateState("connecting");
       setError(null);
 
-      // Request microphone permission FIRST to trigger browser prompt
-      let micStream: MediaStream | null = null;
-      try {
-        console.log("Requesting microphone permission...");
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        console.log("✓ Microphone permission granted");
-      } catch (micError: any) {
-        console.error("Microphone permission denied:", micError);
-        throw new Error("Microphone access denied. Please allow microphone access and try again.");
-      }
+      // Request microphone permission
+      console.log("Requesting microphone permission...");
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 24000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        } 
+      });
+      console.log("✓ Microphone permission granted");
+      mediaStreamRef.current = stream;
 
-      // Get LiveKit token from server
+      // Get xAI API key from server (securely)
       const tokenRes = await fetch("/api/ai/voice/token", {
         method: "POST",
         credentials: "include",
       });
 
       if (!tokenRes.ok) {
-        // Clean up mic stream if token fetch fails
-        micStream?.getTracks().forEach(track => track.stop());
         const data = await tokenRes.json().catch(() => ({ error: "Failed to connect" }));
         throw new Error(data.error || "Failed to get voice token");
       }
 
-      const { token, url, roomName } = await tokenRes.json();
+      const { apiKey } = await tokenRes.json();
 
-      // Connect to LiveKit room
-      const room = new Room();
-      roomRef.current = room;
+      // Connect to xAI WebSocket
+      const ws = new WebSocket("wss://api.x.ai/v1/realtime?model=grok-2-vision-1212");
+      wsRef.current = ws;
 
-      await room.connect(url, token);
-      console.log("✓ Connected to LiveKit room:", roomName);
+      ws.onopen = () => {
+        console.log("✓ WebSocket connected");
+        
+        // Authenticate
+        ws.send(JSON.stringify({
+          type: "session.update",
+          session: {
+            modalities: ["text", "audio"],
+            voice: "ara",
+            input_audio_format: "pcm16",
+            output_audio_format: "pcm16",
+            input_audio_transcription: {
+              model: "whisper-1"
+            },
+            turn_detection: {
+              type: "server_vad",
+              threshold: 0.5,
+              prefix_padding_ms: 300,
+              silence_duration_ms: 500
+            }
+          }
+        }));
 
-      // Stop the test stream and let LiveKit manage the mic
-      micStream?.getTracks().forEach(track => track.stop());
-      
-      // Enable microphone through LiveKit
-      try {
-        await room.localParticipant.setMicrophoneEnabled(true);
-        console.log("✓ Microphone enabled in LiveKit");
+        // Send authorization
+        ws.send(JSON.stringify({
+          type: "session.update",
+          session: {
+            api_key: apiKey
+          }
+        }));
+
         updateState("listening");
-      } catch (micError: any) {
-        console.error("Failed to enable microphone in LiveKit:", micError);
-        throw new Error("Could not enable microphone.");
-      }
-
-      // Handle incoming audio tracks from the AI agent
-      room.on(RoomEvent.TrackSubscribed, (
-        track: Track,
-        publication: RemoteTrackPublication,
-        participant: RemoteParticipant
-      ) => {
-        if (track.kind === Track.Kind.Audio) {
-          console.log("✓ Received audio track from:", participant.identity);
-          updateState("speaking");
-          
-          // Attach audio to play it
-          const audioElement = track.attach();
-          audioElementsRef.current.push(audioElement);
-          audioElement.play().catch(err => {
-            console.error("Failed to play audio:", err);
-          });
-          
-          // Clean up when track ends
-          track.on('ended', () => {
-            audioElement.pause();
-            audioElement.remove();
-            audioElementsRef.current = audioElementsRef.current.filter(el => el !== audioElement);
-            updateState("listening");
-          });
-        }
-      });
-
-      // Handle track unsubscribed
-      room.on(RoomEvent.TrackUnsubscribed, (track: Track) => {
-        if (track.kind === Track.Kind.Audio) {
-          console.log("Track ended");
-          track.detach();
-          updateState("listening");
-        }
-      });
-      
-      room.on(RoomEvent.Disconnected, () => {
-        console.log('Room disconnected');
-        updateState("disconnected");
-      })
-      
-      cleanupRef.current = () => {
-        room.disconnect();
+        console.log("✓ Ready to listen");
       };
+
+      // Set up audio playback
+      const audioContext = new AudioContext({ sampleRate: 24000 });
+      audioContextRef.current = audioContext;
+      const audioElement = new Audio();
+      audioElement.autoplay = true;
+      audioElementRef.current = audioElement;
+
+      ws.onmessage = async (event) => {
+        const data = JSON.parse(event.data);
+        console.log("Received:", data.type);
+
+        if (data.type === "response.audio.delta") {
+          // Play audio chunk
+          updateState("speaking");
+          const audioData = Uint8Array.from(atob(data.delta), c => c.charCodeAt(0));
+          const audioBuffer = audioContext.createBuffer(1, audioData.length / 2, 24000);
+          const channelData = audioBuffer.getChannelData(0);
+          
+          for (let i = 0; i < channelData.length; i++) {
+            const int16 = (audioData[i * 2 + 1] << 8) | audioData[i * 2];
+            channelData[i] = int16 / 32768.0;
+          }
+
+          const source = audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioContext.destination);
+          source.start();
+        } else if (data.type === "response.audio.done") {
+          updateState("listening");
+        } else if (data.type === "input_audio_buffer.speech_started") {
+          console.log("Speech detected");
+        } else if (data.type === "conversation.item.input_audio_transcription.completed") {
+          console.log("User said:", data.transcript);
+          setTranscript(`You: ${data.transcript}`);
+          onTranscript?.(data.transcript, "user");
+        } else if (data.type === "response.text.delta") {
+          // Handle transcript from Ara
+          console.log("Ara:", data.delta);
+        } else if (data.type === "error") {
+          console.error("xAI error:", data.error);
+          throw new Error(data.error.message || "Voice API error");
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        setError("Connection error");
+        updateState("error");
+      };
+
+      ws.onclose = () => {
+        console.log("WebSocket closed");
+        updateState("disconnected");
+      };
+
+      // Stream microphone audio to WebSocket
+      const audioCtx = new AudioContext({ sampleRate: 24000 });
+      const source = audioCtx.createMediaStreamSource(stream);
+      const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+
+      processor.onaudioprocess = (e) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          const inputData = e.inputBuffer.getChannelData(0);
+          const pcm16 = new Int16Array(inputData.length);
+          
+          for (let i = 0; i < inputData.length; i++) {
+            pcm16[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
+          }
+
+          const base64 = btoa(String.fromCharCode(...new Uint8Array(pcm16.buffer)));
+          ws.send(JSON.stringify({
+            type: "input_audio_buffer.append",
+            audio: base64
+          }));
+        }
+      };
+
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
 
     } catch (error: any) {
       console.error("Voice chat error:", error);
