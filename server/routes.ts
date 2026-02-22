@@ -13,6 +13,7 @@ import { registerAIRoutes } from "./replit_integrations/ai";
 import appleNotifications from "./appleNotifications";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
+import { setupVoiceWebSocket } from "./voice-proxy";
 import { analyzeContent, normalizeText, type FlaggedPhraseRule } from "./moderation";
 import { moderateContent } from "./replit_integrations/ai/barAssistant";
 import { aiReviewRequests } from "@shared/schema";
@@ -150,6 +151,24 @@ export async function registerRoutes(
   registerObjectStorageRoutes(app);
   registerAIRoutes(app);
   setupWebSocket(httpServer, sessionParser);
+  
+  // Setup voice WebSocket server for xAI voice chat
+  const WebSocket = require('ws');
+  const voiceWss = new WebSocket.Server({ noServer: true });
+  setupVoiceWebSocket(voiceWss);
+  
+  httpServer.on('upgrade', (request, socket, head) => {
+    const pathname = new URL(request.url!, `http://${request.headers.host}`).pathname;
+    
+    if (pathname === '/ws/voice') {
+      // Authenticate voice WebSocket connections
+      sessionParser(request, {} as any, () => {
+        voiceWss.handleUpgrade(request, socket, head, (ws) => {
+          voiceWss.emit('connection', ws, request);
+        });
+      });
+    }
+  });
   app.use(appleNotifications);
   app.use(appleNotifications);
 

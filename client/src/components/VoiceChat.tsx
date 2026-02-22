@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Loader2, Phone, PhoneOff } from "lucide-react";
+import { Loader2, Phone, PhoneOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface VoiceChatProps {
@@ -14,10 +14,12 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   const [state, setState] = useState<VoiceChatState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>("");
+  
   const wsRef = useRef<WebSocket | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const audioQueueRef = useRef<AudioBufferSourceNode[]>([]);
 
   const updateState = useCallback((newState: VoiceChatState) => {
     setState(newState);
@@ -25,28 +27,42 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   }, [onStateChange]);
 
   const cleanup = useCallback(() => {
+    console.log("Cleaning up voice chat...");
+    
+    // Stop all audio sources
+    audioQueueRef.current.forEach(source => {
+      try { source.stop(); } catch (e) { /* ignore */ }
+    });
+    audioQueueRef.current = [];
+
+    // Disconnect audio processor
+    if (processorRef.current) {
+      try { processorRef.current.disconnect(); } catch (e) { /* ignore */ }
+      processorRef.current = null;
+    }
+
     // Close WebSocket
     if (wsRef.current) {
-      wsRef.current.close();
+      try { wsRef.current.close(); } catch (e) { /* ignore */ }
       wsRef.current = null;
     }
 
     // Stop media stream
     if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current.getTracks().forEach(track => {
+        try { track.stop(); } catch (e) { /* ignore */ }
+      });
       mediaStreamRef.current = null;
     }
 
-    // Clean up audio
-    if (audioElementRef.current) {
-      audioElementRef.current.pause();
-      audioElementRef.current.remove();
-      audioElementRef.current = null;
-    }
-
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
+    // Close audio context
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      setTimeout(() => {
+        if (audioContextRef.current) {
+          audioContextRef.current.close().catch(() => {});
+          audioContextRef.current = null;
+        }
+      }, 100);
     }
   }, []);
 
@@ -55,158 +71,140 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
       updateState("connecting");
       setError(null);
 
-      // Request microphone permission
-      console.log("Requesting microphone permission...");
+      // Request microphone
+      console.log("Requesting microphone...");
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          sampleRate: 24000,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
+          autoGainControl: true,
         } 
       });
-      console.log("✓ Microphone permission granted");
+      console.log("✓ Microphone granted");
       mediaStreamRef.current = stream;
 
-      // Get xAI API key from server (securely)
-      const tokenRes = await fetch("/api/ai/voice/token", {
-        method: "POST",
-        credentials: "include",
-      });
+      // Create audio context
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const audioContext = new AudioContextClass({ sampleRate: 24000 });
+      audioContextRef.current = audioContext;
 
-      if (!tokenRes.ok) {
-        const data = await tokenRes.json().catch(() => ({ error: "Failed to connect" }));
-        throw new Error(data.error || "Failed to get voice token");
-      }
-
-      const { apiKey } = await tokenRes.json();
-
-      // Connect to xAI WebSocket with authentication in URL
-      // Note: Browser WebSocket doesn't support custom headers
-      const wsUrl = `wss://api.x.ai/v1/realtime?model=grok-2-vision-1212&api_key=${encodeURIComponent(apiKey)}`;
-      console.log("Connecting to xAI WebSocket...");
+      // Connect to server WebSocket proxy
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws/voice`;
+      console.log("Connecting to:", wsUrl);
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
+      ws.binaryType = 'arraybuffer';
 
       ws.onopen = () => {
-        console.log("✓ WebSocket connected to xAI");
-        
-        // Send initial session configuration
-        const config = {
-          type: "session.update",
-          session: {
-            modalities: ["text", "audio"],
-            voice: "ara",
-            input_audio_format: "pcm16",
-            output_audio_format: "pcm16",
-            input_audio_transcription: {
-              model: "whisper-1"
-            },
-            turn_detection: {
-              type: "server_vad",
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 500
-            },
-            instructions: "You are Ara, a helpful AI assistant with a friendly voice. Keep responses conversational and concise."
+        console.log("✓ Connected");
+        updateState("listening");
+
+        // Set up microphone streaming
+        const source = audioContext.createMediaStreamSource(stream);
+        const processor = audioContext.createScriptProcessor(2048, 1, 1);
+        processorRef.current = processor;
+
+        processor.onaudioprocess = (e) => {
+          if (ws.readyState === WebSocket.OPEN) {
+            const inputData = e.inputBuffer.getChannelData(0);
+            const pcm16 = new Int16Array(inputData.length);
+            
+            for (let i = 0; i < inputData.length; i++) {
+              const s = Math.max(-1, Math.min(1, inputData[i]));
+              pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+            }
+
+            ws.send(pcm16.buffer);
           }
         };
-        
-        console.log("Sending session config:", config);
-        ws.send(JSON.stringify(config));
 
-        updateState("listening");
-        console.log("✓ Ready to listen");
+        source.connect(processor);
+        processor.connect(audioContext.destination);
       };
 
-      // Set up audio playback
-      const audioContext = new AudioContext({ sampleRate: 24000 });
-      audioContextRef.current = audioContext;
-      const audioElement = new Audio();
-      audioElement.autoplay = true;
-      audioElementRef.current = audioElement;
-
       ws.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
-        console.log("Received:", data.type);
+        try {
+          if (typeof event.data === 'string') {
+            const msg = JSON.parse(event.data);
+            
+            if (msg.type === 'transcript') {
+              const text = msg.text || '';
+              if (msg.role === 'user') {
+                console.log("You:", text);
+                setTranscript(`You: ${text}`);
+                onTranscript?.(text, "user");
+              } else if (msg.role === 'assistant') {
+                console.log("Ara:", text);
+                setTranscript(`Ara: ${text}`);
+                onTranscript?.(text, "assistant");
+              }
+            } else if (msg.type === 'ai_speaking') {
+              updateState("speaking");
+            } else if (msg.type === 'ai_done') {
+              updateState("listening");
+            } else if (msg.type === 'error') {
+              throw new Error(msg.message || "Server error");
+            }
+          } else if (event.data instanceof ArrayBuffer) {
+            updateState("speaking");
+            
+            const pcm16Data = new Int16Array(event.data);
+            const audioBuffer = audioContext.createBuffer(1, pcm16Data.length, 24000);
+            const channelData = audioBuffer.getChannelData(0);
+            
+            for (let i = 0; i < pcm16Data.length; i++) {
+              channelData[i] = pcm16Data[i] / (pcm16Data[i] < 0 ? 0x8000 : 0x7FFF);
+            }
 
-        if (data.type === "response.audio.delta") {
-          // Play audio chunk
-          updateState("speaking");
-          const audioData = Uint8Array.from(atob(data.delta), c => c.charCodeAt(0));
-          const audioBuffer = audioContext.createBuffer(1, audioData.length / 2, 24000);
-          const channelData = audioBuffer.getChannelData(0);
-          
-          for (let i = 0; i < channelData.length; i++) {
-            const int16 = (audioData[i * 2 + 1] << 8) | audioData[i * 2];
-            channelData[i] = int16 / 32768.0;
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            
+            source.onended = () => {
+              audioQueueRef.current = audioQueueRef.current.filter(s => s !== source);
+              if (audioQueueRef.current.length === 0) {
+                updateState("listening");
+              }
+            };
+
+            audioQueueRef.current.push(source);
+            source.start();
           }
-
-          const source = audioContext.createBufferSource();
-          source.buffer = audioBuffer;
-          source.connect(audioContext.destination);
-          source.start();
-        } else if (data.type === "response.audio.done") {
-          updateState("listening");
-        } else if (data.type === "input_audio_buffer.speech_started") {
-          console.log("Speech detected");
-        } else if (data.type === "conversation.item.input_audio_transcription.completed") {
-          console.log("User said:", data.transcript);
-          setTranscript(`You: ${data.transcript}`);
-          onTranscript?.(data.transcript, "user");
-        } else if (data.type === "response.text.delta") {
-          // Handle transcript from Ara
-          console.log("Ara:", data.delta);
-        } else if (data.type === "error") {
-          console.error("xAI error:", data.error);
-          throw new Error(data.error.message || "Voice API error");
+        } catch (err: any) {
+          console.error("Message error:", err);
         }
       };
 
-      ws.onerror = (event) => {
-        console.error("WebSocket error event:", event);
-        setError("Connection error. Check console for details.");
+      ws.onerror = () => {
+        setError("Connection error");
         updateState("error");
       };
 
       ws.onclose = () => {
         console.log("WebSocket closed");
-        updateState("disconnected");
-      };
-
-      // Stream microphone audio to WebSocket
-      const audioCtx = new AudioContext({ sampleRate: 24000 });
-      const source = audioCtx.createMediaStreamSource(stream);
-      const processor = audioCtx.createScriptProcessor(4096, 1, 1);
-
-      processor.onaudioprocess = (e) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          const inputData = e.inputBuffer.getChannelData(0);
-          const pcm16 = new Int16Array(inputData.length);
-          
-          for (let i = 0; i < inputData.length; i++) {
-            pcm16[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
-          }
-
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(pcm16.buffer)));
-          ws.send(JSON.stringify({
-            type: "input_audio_buffer.append",
-            audio: base64
-          }));
+        if (state !== "idle" && state !== "error") {
+          updateState("disconnected");
         }
       };
 
-      source.connect(processor);
-      processor.connect(audioCtx.destination);
-
     } catch (error: any) {
-      console.error("Voice chat error:", error);
-      setError(error.message || "Failed to start voice chat");
+      console.error("Connect error:", error);
+      let msg = "Failed to start";
+      
+      if (error.name === 'NotAllowedError') {
+        msg = "Microphone access denied";
+      } else if (error.message) {
+        msg = error.message;
+      }
+      
+      setError(msg);
       updateState("error");
       cleanup();
     }
-  }, [cleanup, onTranscript, updateState]);
+  }, [cleanup, onTranscript, updateState, state]);
 
   const disconnect = useCallback(() => {
     cleanup();
@@ -216,9 +214,7 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
   }, [cleanup, updateState]);
 
   useEffect(() => {
-    return () => {
-      cleanup();
-    };
+    return () => cleanup();
   }, [cleanup]);
 
   const isConnected = state === "connected" || state === "listening" || state === "speaking";
@@ -226,7 +222,6 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
-      {/* Status Indicator */}
       <div className="flex items-center gap-3">
         <div
           className={cn(
@@ -236,11 +231,12 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
             state === "connected" && "bg-green-400",
             state === "listening" && "bg-blue-400 animate-pulse",
             state === "speaking" && "bg-purple-400 animate-pulse",
+            state === "disconnected" && "bg-gray-400",
             state === "error" && "bg-red-400"
           )}
         />
         <span className="text-sm font-medium text-violet-100">
-          {state === "idle" && "Ready to connect"}
+          {state === "idle" && "Ready"}
           {state === "connecting" && "Connecting..."}
           {state === "connected" && "Connected"}
           {state === "listening" && "Listening..."}
@@ -250,21 +246,18 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
         </span>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div className="w-full rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-200">
           {error}
         </div>
       )}
 
-      {/* Transcript */}
       {transcript && (
         <div className="w-full rounded-lg border border-violet-300/20 bg-black/35 px-4 py-3 text-sm text-violet-50">
           {transcript}
         </div>
       )}
 
-      {/* Connect/Disconnect Button */}
       <Button
         onClick={isConnected ? disconnect : connect}
         disabled={isLoading}
@@ -285,15 +278,14 @@ export default function VoiceChat({ onTranscript, onStateChange }: VoiceChatProp
         )}
       </Button>
 
-      {/* Instructions */}
       {!isConnected && !isLoading && (
         <p className="text-center text-xs text-violet-100/70">
-          Click to start voice chat with Ara
+          Click to start voice chat
         </p>
       )}
       {isConnected && (
         <p className="text-center text-xs text-violet-100/70">
-          Speak naturally - Ara will respond automatically
+          Speak naturally
         </p>
       )}
     </div>

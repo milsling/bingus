@@ -134,38 +134,8 @@ export function registerAIRoutes(app: Express): void {
     }
   });
 
-  app.post("/api/ai/voice/token", async (req: Request, res: Response) => {
-    try {
-      // Check if voice is enabled
-      const voiceEnabled = process.env.XAI_API_KEY;
-      if (!voiceEnabled) {
-        return res.status(503).json({ error: "Voice chat is not configured" });
-      }
-
-      if (!req.isAuthenticated?.() || !req.user?.id) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      const user = await storage.getUser(req.user.id);
-      if (!user) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      // Check if user has access (you can add premium check here if needed)
-      // const isPremium = user.membershipTier === "donor_plus";
-      // if (!isPremium) {
-      //   return res.status(403).json({ error: "Premium membership required" });
-      // }
-
-      // Return xAI API key securely
-      return res.json({
-        apiKey: process.env.XAI_API_KEY,
-      });
-    } catch (error) {
-      console.error("Voice token API error:", error);
-      return res.status(500).json({ error: "Failed to generate voice token" });
-    }
-  });
+  // Voice chat is now handled via WebSocket at /ws/voice
+  // See server/voice-proxy.ts for implementation
 
   app.post("/api/ai/sts", async (req: Request, res: Response) => {
     try {
