@@ -50,6 +50,20 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
+  // Sync controlled open prop to internal state
+  useEffect(() => {
+    if (externalOpen !== undefined) {
+      setIsOpen(externalOpen);
+    }
+  }, [externalOpen]);
+
+  // Notify parent when internal state changes
+  useEffect(() => {
+    if (onOpenChange) {
+      onOpenChange(isOpen);
+    }
+  }, [isOpen, onOpenChange]);
+
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const supported = !!SpeechRecognition;

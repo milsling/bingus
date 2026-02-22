@@ -337,13 +337,12 @@ export default function Messages() {
 
   return (
     <NativeScreen
-      className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pb-4 md:pt-24"
-      contentClassName="max-w-full"
+      className="bg-background h-dvh min-h-0 pt-14 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-4 md:pt-24"
+      contentClassName="max-w-none h-full px-0 md:px-4"
     >
-      <main className="h-[calc(100dvh-56px)] w-full md:h-[calc(100vh-64px)] md:p-4">
-        <div className="h-full w-full overflow-hidden rounded-[1.35rem] border border-white/10 bg-black/20 backdrop-blur-xl md:rounded-[1.9rem] flex">
+        <div className="h-full w-full overflow-hidden bg-black/20 backdrop-blur-xl flex md:rounded-[1.9rem] md:border md:border-white/10">
           
-          <div className="hidden md:flex w-80 border-r border-white/10 flex-col">
+          <div className="hidden md:flex w-80 shrink-0 border-r border-white/10 flex-col">
             <div className="p-4 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
@@ -538,7 +537,6 @@ export default function Messages() {
             )}
           </div>
         </div>
-      </main>
     </NativeScreen>
   );
 }

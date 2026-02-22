@@ -236,10 +236,7 @@ export default function Home() {
         "bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8",
         hasCustomBackground && "bg-transparent"
       )}
-      contentClassName={cn(
-        "px-4 md:px-6",
-        hasCustomBackground && "glass-surface-strong"
-      )}
+      contentClassName="px-4 md:px-6"
     >
         <div
           className={cn(

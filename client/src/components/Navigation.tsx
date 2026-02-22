@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen, Radio } from "lucide-react";
 import headerLogo from "../assets/logo.png";
@@ -11,6 +11,7 @@ import { NewMessageDialog } from "@/components/NewMessageDialog";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import AIAssistant from "@/components/AIAssistant";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,7 @@ export default function Navigation() {
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [araOpen, setAraOpen] = useState(false);
+  const { leftTarget, rightTarget } = useFabShortcuts();
   
   const isOnMessagesPage = location.startsWith("/messages");
 
@@ -35,30 +37,35 @@ export default function Navigation() {
     setLocation("/");
   };
 
+  const executeShortcut = useCallback((target: ShortcutTarget) => {
+    if (!currentUser) {
+      setLocation("/auth");
+      return;
+    }
+    switch (target) {
+      case "messages":
+        if (isOnMessagesPage) setNewMessageOpen(true);
+        else setLocation("/messages");
+        break;
+      case "ai-assistant":
+        setAraOpen(true);
+        break;
+      case "profile":     setLocation("/profile"); break;
+      case "friends":     setLocation("/friends"); break;
+      case "saved":       setLocation("/saved"); break;
+      case "prompts":     setLocation("/prompts"); break;
+      case "challenges":  setLocation("/challenges"); break;
+      case "orphanage":   setLocation("/orphanage"); break;
+      case "orphanstudio": setLocation("/orphanstudio"); break;
+    }
+  }, [currentUser, isOnMessagesPage, setLocation]);
+
   return (
     <>
       <FloatingActionButton
         onDropABar={() => setLocation(currentUser ? "/post" : "/auth")}
-        onSwipeLeft={() => {
-          if (!currentUser) {
-            setLocation("/auth");
-            return;
-          }
-
-          if (isOnMessagesPage) {
-            setNewMessageOpen(true);
-            return;
-          }
-
-          setLocation("/messages");
-        }}
-        onSwipeRight={() => {
-          if (!currentUser) {
-            setLocation("/auth");
-            return;
-          }
-          setAraOpen(true);
-        }}
+        onSwipeLeft={() => executeShortcut(leftTarget)}
+        onSwipeRight={() => executeShortcut(rightTarget)}
       />
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}

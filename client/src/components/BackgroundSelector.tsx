@@ -76,6 +76,8 @@ export function useBackground() {
     document.body.style.removeProperty('background-color');
 
     if (selectedBackground.image) {
+      document.documentElement.classList.add('has-custom-bg');
+
       const bgElement = document.createElement('div');
       bgElement.id = 'app-background-image';
       const isLight = resolvedTheme === "light";
@@ -107,8 +109,7 @@ export function useBackground() {
       document.body.style.background = 'transparent';
       document.body.style.backgroundAttachment = 'initial';
     } else {
-      // For default background, ensure the body uses the theme's background
-      // This will be handled by the CSS variables automatically
+      document.documentElement.classList.remove('has-custom-bg');
     }
   }, [selectedId, selectedBackground, resolvedTheme]);
 

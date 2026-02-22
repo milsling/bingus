@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bell, Lock, Palette, Settings2, Shield, UserCog, Volume2 } from "lucide-react";
+import { ArrowLeft, Bell, Command, Lock, Palette, Settings2, Shield, UserCog, Volume2 } from "lucide-react";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
 import { playNotificationSound, notificationSoundLabels, messageSoundLabels } from "@/lib/notificationSounds";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
+import { useFabShortcuts, SHORTCUT_OPTIONS } from "@/hooks/useFabShortcuts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,7 @@ export default function Settings() {
   const [messagePrivacy, setMessagePrivacy] = useState(currentUser?.messagePrivacy || "friends_only");
   const [notificationSound, setNotificationSound] = useState(currentUser?.notificationSound || "chime");
   const [messageSound, setMessageSound] = useState(currentUser?.messageSound || "ding");
+  const { leftTarget, rightTarget, setLeft, setRight } = useFabShortcuts();
   const [hideFabDebugLauncher, setHideFabDebugLauncher] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem(FAB_DEBUG_LAUNCHER_HIDDEN_KEY) === "1";
@@ -261,6 +263,65 @@ export default function Settings() {
                   >
                     {changePasswordMutation.isPending ? "Updating..." : "Change Password"}
                   </Button>
+                </CardContent>
+              </Card>
+              <Card className="border-border/70 bg-background/40">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Command className="h-4 w-4 text-primary" />
+                    Nav Button Shortcuts
+                  </CardTitle>
+                  <CardDescription>
+                    Customize what happens when you hold and swipe the navigation button.
+                    Swipe up always opens "Drop a Bar".
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-0">
+                  <div className="space-y-2">
+                    <Label>Swipe Left</Label>
+                    <Select
+                      value={leftTarget}
+                      onValueChange={(v) => {
+                        setLeft(v as any);
+                        toast({ title: "Shortcut updated", description: `Swipe left → ${SHORTCUT_OPTIONS.find(o => o.value === v)?.label}` });
+                      }}
+                    >
+                      <SelectTrigger data-testid="select-shortcut-left">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SHORTCUT_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label} — {opt.description}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Swipe Right</Label>
+                    <Select
+                      value={rightTarget}
+                      onValueChange={(v) => {
+                        setRight(v as any);
+                        toast({ title: "Shortcut updated", description: `Swipe right → ${SHORTCUT_OPTIONS.find(o => o.value === v)?.label}` });
+                      }}
+                    >
+                      <SelectTrigger data-testid="select-shortcut-right">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SHORTCUT_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label} — {opt.description}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Hold the ◎ button and slide left or right to trigger these shortcuts.
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
