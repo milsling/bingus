@@ -348,41 +348,55 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
 
   return (
     <>
-      {/* Glassmorphic bottom sheet - compact overlay */}
+      {/* Glassmorphic bottom sheet - modern overlay */}
       <AnimatePresence>
         {isOpen && (
-          <div className="md:hidden">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="fixed inset-0 bg-black/50 z-[1100]"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-xl z-[1100]"
+            onClick={() => {
+              playMenuCloseSound();
+              setIsOpen(false);
+            }}
+          />
+        )}
+        <motion.div
+          initial={{ opacity: 0, y: "100%" }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: "100%" }}
+          transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          drag="y"
+          dragControls={sheetDragControls}
+          dragListener={false}
+          dragConstraints={{ top: 0, bottom: 280 }}
+          dragElastic={{ top: 0, bottom: 0.35 }}
+          dragSnapToOrigin
+          onDragEnd={handleSheetDragEnd}
+          className="fixed inset-x-0 bottom-0 z-[1110] flex flex-col rounded-t-[2rem] glass-surface-strong border border-white/[0.08] max-h-[85vh] shadow-[0_-28px_56px_rgba(0,0,0,0.4)] transform-gpu will-change-transform"
+        >
+          <div className="flex-shrink-0 px-6 pt-4 pb-3 border-b border-white/[0.06]">
+            <button
+              type="button"
+              onPointerDown={(event) => sheetDragControls.start(event)}
               onClick={() => {
                 playMenuCloseSound();
                 setIsOpen(false);
               }}
-            />
-            <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-              drag="y"
-              dragControls={sheetDragControls}
-              dragListener={false}
-              dragConstraints={{ top: 0, bottom: 280 }}
-              dragElastic={{ top: 0, bottom: 0.35 }}
-              dragMomentum={false}
-              dragSnapToOrigin
-              onDragEnd={handleSheetDragEnd}
-              className="fixed inset-x-0 bottom-0 z-[1110] flex flex-col rounded-t-[2rem] glass-sheet border border-b-0 border-white/[0.08] max-h-[85vh] shadow-[0_-28px_56px_rgba(0,0,0,0.4)] transform-gpu will-change-transform"
+              className="mx-auto mb-3 block h-5 w-14 touch-none rounded-full"
+              aria-label="Drag down to close menu"
             >
-              <div className="flex-shrink-0 px-6 pt-4 pb-3 border-b border-white/[0.06]">
+              <span className="mx-auto mt-1.5 block h-1.5 w-12 rounded-full bg-foreground/20" />
+            </button>
+            <div className="flex items-center justify-between">
+              {menuView === "settings" ? (
                 <button
                   type="button"
-                  onPointerDown={(event) => sheetDragControls.start(event)}
-                  onClick={() => {
+                  onClick={() => setMenuView("main")}
+                  className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-foreground/90 hover:bg-white/[0.06]"
+                  data-testid="button-settings-back"
                     playMenuCloseSound();
                     setIsOpen(false);
                   }}
@@ -396,7 +410,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                     <button
                       type="button"
                       onClick={() => setMenuView("main")}
-                      className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-foreground/90 hover:bg-white/[0.06]"
+                      className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm glass-surface border border-white/[0.08] text-foreground/90 hover:bg-white/[0.06] hover:text-foreground transition-all"
                       data-testid="button-settings-back"
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -426,55 +440,6 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
               </div>
 
               <div className="flex-1 flex flex-col px-6 py-4 overflow-y-auto overscroll-contain min-h-0">
-                {menuView === "settings" ? (
-                  <div className="space-y-4">
-                    <div className="glass-surface rounded-2xl border border-white/[0.08] p-4">
-                      <div className="flex items-center gap-2">
-                        <Settings2 className="h-4 w-4 text-primary" />
-                        <p className="text-sm font-semibold">Appearance</p>
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Choose how Orphan Bars looks.
-                      </p>
-                      <div className="mt-3 grid grid-cols-3 gap-2">
-                        <button
-                          onClick={() => setTheme("light")}
-                          className={cn(
-                            "rounded-xl border px-2 py-2 text-xs font-medium transition-all",
-                            theme === "light"
-                              ? "border-primary/40 bg-primary/15 text-foreground"
-                              : "border-white/[0.08] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]",
-                          )}
-                          data-testid="settings-theme-light"
-                        >
-                          <Sun className="mx-auto mb-1 h-4 w-4" />
-                          Light
-                        </button>
-                        <button
-                          onClick={() => setTheme("dark")}
-                          className={cn(
-                            "rounded-xl border px-2 py-2 text-xs font-medium transition-all",
-                            theme === "dark"
-                              ? "border-primary/40 bg-primary/15 text-foreground"
-                              : "border-white/[0.08] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]",
-                          )}
-                          data-testid="settings-theme-dark"
-                        >
-                          <Moon className="mx-auto mb-1 h-4 w-4" />
-                          Dark
-                        </button>
-                        <button
-                          onClick={() => setTheme("system")}
-                          className={cn(
-                            "rounded-xl border px-2 py-2 text-xs font-medium transition-all",
-                            theme === "system"
-                              ? "border-primary/40 bg-primary/15 text-foreground"
-                              : "border-white/[0.08] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]",
-                          )}
-                          data-testid="settings-theme-system"
-                        >
-                          <Monitor className="mx-auto mb-1 h-4 w-4" />
-                          System
                         </button>
                       </div>
                       <p className="mt-3 text-[11px] text-muted-foreground">
@@ -487,7 +452,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                       <>
                         <button
                           onClick={() => handleNavClick({ path: "/profile/edit" })}
-                          className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
+                          className="w-full rounded-2xl glass-surface border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
                           data-testid="settings-account-link"
                         >
                           <div className="flex items-center gap-3">
@@ -502,7 +467,7 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                         </button>
                         <button
                           onClick={() => handleNavClick({ path: "/settings" })}
-                          className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
+                          className="w-full rounded-2xl glass-surface border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
                           data-testid="settings-sounds-link"
                         >
                           <div className="flex items-center gap-3">
@@ -517,49 +482,140 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                         </button>
                         <button
                           onClick={() => handleNavClick({ path: "/settings" })}
-                          className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
-                          data-testid="settings-background-link"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-                              <Palette className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">Appearance</p>
-                              <p className="text-xs text-muted-foreground">Theme and background personalization</p>
-                            </div>
-                          </div>
-                        </button>
-                      </>
-                    ) : (
+                          className="w-full rounded-2xl glass-surface border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
                       <button
-                        onClick={() => handleNavClick({ path: "/auth" })}
-                        className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
-                        data-testid="settings-login-link"
+                        onClick={() => {
+                          setMenuSection("orphanbars");
+                          handleNavClick({ path: "/" });
+                        }}
+                        className={cn(
+                          "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
+                          menuSection === "orphanbars"
+                            ? "glass-surface border border-white/[0.08] text-foreground"
+                            : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+                        )}
+                        data-testid="nav-section-orphanbars"
                       >
-                        <p className="text-sm font-semibold text-foreground">Sign in for account settings</p>
-                        <p className="text-xs text-muted-foreground">Manage profile, privacy, and sounds.</p>
+                        <img src={headerLogo} alt="Orphan Bars" className="h-5 w-5" />
+                        <span>Orphan Bars</span>
                       </button>
-                    )}
+                      <button
+                        onClick={() => {
+                          setMenuSection("orphanage");
+                          handleNavClick({ path: "/orphanage" });
+                        }}
+                        className={cn(
+                          "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
+                          menuSection === "orphanage"
+                            ? "bg-primary/15 text-foreground"
+                            : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+                        )}
+                        data-testid="nav-section-orphanage"
+                      >
+                        <img
+                          src={resolvedTheme === "dark" ? orphanageFullLogoWhite : orphanageFullLogoDark}
+                          alt="The Orphanage"
+                          className="h-5 w-auto object-contain"
+                        />
+                        <span>The Orphanage</span>
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      <div className="glass-surface rounded-2xl p-1">
-                        <div className="grid grid-cols-2 gap-1">
+
+                  <button
+                    onClick={() => setMenuView("settings")}
+                    className="w-full rounded-2xl border border-primary/30 bg-primary/10 p-3.5 text-left transition-all hover:bg-primary/15"
+                    data-testid="button-open-mobile-settings"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20">
+                        <Settings2 className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Settings</p>
+                        <p className="text-xs text-muted-foreground">Theme, profile, privacy, and sounds</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <div>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/90">
+                      Quick Jump
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleNavClick({ path: "/settings" })}
+                  className="w-full rounded-2xl glass-surface border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
+                  data-testid="settings-sounds-link"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                      <Volume2 className="h-4 w-4 text-primary" />
+                    </p>
+                    <nav className="grid grid-cols-2 gap-2.5">
+                      {navItems.map((item) => {
+                        const isActive = isItemActive(item);
+                        return (
                           <button
-                            onClick={() => {
-                              setMenuSection("orphanbars");
-                              handleNavClick({ path: "/" });
-                            }}
+                            key={item.id}
+                            onClick={() => handleNavClick(item)}
                             className={cn(
-                              "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
-                              menuSection === "orphanbars"
-                                ? "bg-primary/15 text-foreground"
-                                : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+                              "group rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
+                              isActive
+                                ? "border-primary/40 bg-primary/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+                                : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08]",
                             )}
-                            data-testid="nav-section-orphanbars"
+                            data-testid={`nav-item-${item.label.toLowerCase().replace(/\s/g, "-")}`}
                           >
+                            <div className="mb-3 flex items-center justify-between gap-2">
+                              <div
+                                className={cn(
+                                  "flex h-9 w-9 items-center justify-center rounded-xl",
+                                  isActive ? "bg-primary/20" : "bg-white/[0.08]",
+                                )}
+                              >
+                                <item.icon
+                                  className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
+                                  strokeWidth={1.9}
+                                />
+                              </div>
+                              {isActive && (
+                                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary">
+                                  Live
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.subLabel}</p>
+                          </button>
+                        );
+                      })}
+                    </nav>
+                  </div>
+                </div>
+
+                {currentUser ? (
+                  <>
+                    <button
+                      onClick={() => handleNavClick({ path: "/profile/edit" })}
+                      className="w-full rounded-2xl glass-surface border border-white/[0.08] bg-white/[0.03] p-4 text-left transition-all hover:bg-white/[0.08]"
+                      data-testid="settings-account-link"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                          <UserCog className="h-4 w-4 text-primary" />
+                          onClick={() => {
+                            setMenuSection("orphanbars");
+                            handleNavClick({ path: "/" });
+                          }}
+                          className={cn(
+                            "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.98]",
+                            menuSection === "orphanbars"
+                              ? "glass-surface border border-white/[0.08] text-foreground"
+                              : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+                          )}
+                          data-testid="nav-section-orphanbars"
+                        >
                             <img src={headerLogo} alt="Orphan Bars" className="h-5 w-5" />
                             <span>Orphan Bars</span>
                           </button>
