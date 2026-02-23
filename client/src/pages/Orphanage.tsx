@@ -110,28 +110,28 @@ interface OrphanageStatsProps {
 function OrphanageStats({ totalBars, visibleBars, totalAdoptions, adoptedToday }: OrphanageStatsProps) {
   return (
     <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <div className="rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur shadow-[0_0_30px_rgba(139,92,246,0.18)]">
+      <div className="glass-surface rounded-2xl p-4 transition-all duration-300 hover:border-primary/30">
         <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
           Available
         </div>
         <p className="text-2xl font-semibold">{totalBars}</p>
       </div>
-      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur">
+      <div className="glass-surface rounded-2xl p-4 transition-all duration-300 hover:border-primary/30">
         <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
           <Search className="h-3.5 w-3.5 text-primary" />
           Visible
         </div>
         <p className="text-2xl font-semibold">{visibleBars}</p>
       </div>
-      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur">
+      <div className="glass-surface rounded-2xl p-4 transition-all duration-300 hover:border-primary/30">
         <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
           <Activity className="h-3.5 w-3.5 text-primary" />
           Total Adoptions
         </div>
         <p className="text-2xl font-semibold">{totalAdoptions}</p>
       </div>
-      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur">
+      <div className="glass-surface rounded-2xl p-4 transition-all duration-300 hover:border-primary/30">
         <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
           <Heart className="h-3.5 w-3.5 text-primary" />
           Adopted Today
@@ -156,7 +156,7 @@ function OrphanageFilters({
   onSearchChange,
 }: OrphanageFiltersProps) {
   return (
-    <section className="rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur">
+    <section className="glass-surface rounded-2xl p-4 transition-all duration-300">
       <div className="relative mb-3">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -266,7 +266,7 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
   return (
     <article
       className={cn(
-        "relative rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur transition-transform duration-200 hover:-translate-y-1 hover:border-primary hover:shadow-xl",
+        "glass-card overflow-hidden transition-all duration-300 hover:border-primary/30",
         adoptPulse && "border-emerald-400/70 shadow-[0_0_28px_rgba(16,185,129,0.35)] animate-pulse",
       )}
       data-testid={`orphan-bar-card-${bar.id}`}
@@ -345,7 +345,7 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
             {adopted ? "Adopted" : "Adopt"}
           </Button>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-2 rounded-xl border border-border/60 bg-background/50 p-3">
+          <form onSubmit={handleSubmit} className="space-y-2 glass-surface-strong rounded-xl p-3">
             <Input
               placeholder="Link to your work (optional)"
               value={usageLink}
@@ -399,7 +399,7 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
 
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="mt-3 flex w-full items-center justify-between rounded-lg border border-slate-700/60 bg-slate-950/70 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800/70"
+        className="mt-3 flex w-full items-center justify-between glass-surface rounded-lg p-2 transition-all duration-300 hover:border-primary/30"
         data-testid={`button-adoption-panel-${bar.id}`}
       >
         <div className="flex items-center gap-2">
@@ -425,7 +425,7 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
               {usages.map((usage) => (
                 <div
                   key={usage.id}
-                  className="flex gap-3 rounded-lg border border-slate-700/60 bg-slate-950/70 p-3"
+                  className="flex gap-3 glass-surface rounded-lg p-3 transition-all duration-300 hover:border-primary/30"
                   data-testid={`usage-${usage.id}`}
                 >
                   <Link href={`/u/${usage.user.username}`}>
@@ -559,7 +559,7 @@ export default function OrphanagePage() {
           {currentUser && myAdoptions.length > 0 && (
             <section
               id="my-adoptions"
-              className="scroll-mt-20 rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur"
+              className="glass-surface rounded-2xl p-4 transition-all duration-300"
               data-testid="my-adoptions"
             >
               <div className="flex items-center gap-2 mb-4">
@@ -571,7 +571,7 @@ export default function OrphanagePage() {
                   <a
                     key={adoption.id}
                     href={`#bar-${adoption.bar.id}`}
-                    className="group flex items-center gap-3 rounded-lg border border-transparent p-2.5 transition-colors hover:border-primary/30 hover:bg-muted/50"
+                    className="group flex items-center gap-3 glass-surface-strong rounded-lg p-2.5 transition-all duration-300 hover:border-primary/30"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="truncate text-sm text-foreground transition-colors group-hover:text-primary">

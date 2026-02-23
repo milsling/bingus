@@ -340,6 +340,31 @@ export default function Home() {
             <ActivityStrip items={activityItems} />
             <CommunitySpotlight spotlight={spotlight ?? null} />
 
+            {/* Orphanage Integration */}
+            <section className={cn(
+              "rounded-2xl border p-5",
+              hasCustomBackground 
+                ? "border-primary/35 bg-primary/10 glass-surface-strong" 
+                : "border-primary/25 bg-primary/6"
+            )}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-primary mb-2">The Orphanage</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Discover open-adopt bars cleared for commercial use
+                  </p>
+                </div>
+                <Link href="/orphanage">
+                  <Button 
+                    variant="outline" 
+                    className="border-primary/30 hover:border-primary hover:bg-primary/10"
+                  >
+                    Explore Orphanage
+                  </Button>
+                </Link>
+              </div>
+            </section>
+
             {currentPrompt && (
               <section className={cn(
                 "rounded-2xl border p-5",
