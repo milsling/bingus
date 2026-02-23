@@ -7,15 +7,15 @@ import { storage } from "./storage";
 import { testDatabaseConnection } from "./db";
 import fs from "fs";
 import path from "path";
-import { Logtail } from "@logtail/node";
+// import { Logtail } from "@logtail/node";
 
 const app = express();
 const httpServer = createServer(app);
 
 // BetterStack Logs (Logtail) — set BETTERSTACK_SOURCE_TOKEN in your environment
-const logtail = process.env.BETTERSTACK_SOURCE_TOKEN
-  ? new Logtail(process.env.BETTERSTACK_SOURCE_TOKEN)
-  : null;
+const logtail = null; // process.env.BETTERSTACK_SOURCE_TOKEN
+  // ? new Logtail(process.env.BETTERSTACK_SOURCE_TOKEN)
+  // : null;
 
 // Trust proxy for production (required for secure cookies behind Replit's proxy)
 if (process.env.NODE_ENV === "production") {
