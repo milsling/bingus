@@ -15,11 +15,14 @@ import { api } from "@/lib/api";
 import { shareContent, getProfileShareData } from "@/lib/share";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { useBackground } from "@/components/BackgroundSelector";
 
 export default function Profile() {
   const { bars, currentUser, logout, isLoadingUser } = useBars();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { selectedBackground } = useBackground();
+  const hasCustomBackground = selectedBackground.image !== null;
 
   const { data: stats } = useQuery({
     queryKey: ["user-stats", currentUser?.id],
@@ -156,11 +159,17 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 sm:pb-6 sm:pt-24">
+    <div className={cn(
+      "min-h-screen pt-20 pb-24 sm:pb-6 sm:pt-24",
+      hasCustomBackground ? "bg-transparent" : "bg-background"
+    )}>
       
       <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 lg:px-6">
         {/* Profile Header - Glass card on neutral dark */}
-        <div className="relative glass-panel overflow-hidden rounded-2xl">
+        <div className={cn(
+          "relative overflow-hidden rounded-2xl",
+          hasCustomBackground ? "glass-surface-strong border border-white/15" : "glass-panel"
+        )}>
           {currentUser.bannerUrl ? (
             <div className="h-32 sm:h-48 w-full overflow-hidden">
               <img
