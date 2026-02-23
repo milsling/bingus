@@ -168,10 +168,10 @@
     0 2px 8px rgba(31, 41, 55, 0.04);
 
   /* Unified glass system - warmer, more comfortable with increased opacity */
-  --glass-surface-bg: rgba(252, 251, 248, 0.96);
-  --glass-surface-bg-strong: rgba(254, 253, 250, 0.98);
-  --glass-surface-border: rgba(229, 231, 235, 0.8);  /* More visible borders */
-  --glass-surface-border-strong: rgba(209, 213, 219, 0.9);
+  --glass-surface-bg: rgba(252, 251, 248, 0.98);
+  --glass-surface-bg-strong: rgba(254, 253, 250, 0.99);
+  --glass-surface-border: rgba(229, 231, 235, 0.9);  /* More visible borders */
+  --glass-surface-border-strong: rgba(209, 213, 219, 0.95);
   --glass-surface-shadow:
     0 12px 28px rgba(31, 41, 55, 0.08),
     0 2px 8px rgba(31, 41, 55, 0.04);
@@ -215,7 +215,7 @@
   --background: 250 15% 4%;
   --foreground: 0 0% 98%;
 
-  --card: 250 12% 7% / 0.85;
+  --card: 250 12% 7% / 0.6;
   --card-foreground: 0 0% 98%;
 
   --popover: 250 12% 7%;
@@ -291,10 +291,10 @@
     0 3px 10px rgba(0, 0, 0, 0.28);
 
   /* Unified glass system - frosted glass, more opaque with increased opacity */
-  --glass-surface-bg: rgba(18, 18, 24, 0.94);
-  --glass-surface-bg-strong: rgba(20, 20, 28, 0.98);
-  --glass-surface-border: rgba(255, 255, 255, 0.15);  /* More visible borders */
-  --glass-surface-border-strong: rgba(255, 255, 255, 0.25);
+  --glass-surface-bg: rgba(18, 18, 24, 0.85);
+  --glass-surface-bg-strong: rgba(20, 20, 28, 0.88);
+  --glass-surface-border: rgba(255, 255, 255, 0.12);  /* More visible borders */
+  --glass-surface-border-strong: rgba(255, 255, 255, 0.18);
   --glass-surface-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.3);
@@ -333,10 +333,10 @@
   --color-background: rgba(5, 5, 9, 0.15);
   --color-card: rgba(18, 18, 24, 0.5);
 
-  --glass-surface-bg: rgba(18, 18, 24, 0.94);  /* Same as desktop */
-  --glass-surface-bg-strong: rgba(20, 20, 28, 0.98);
-  --glass-surface-border: rgba(255, 255, 255, 0.15);
-  --glass-surface-border-strong: rgba(255, 255, 255, 0.25);
+  --glass-surface-bg: rgba(18, 18, 24, 0.75);  /* Less opaque to show more background */
+  --glass-surface-bg-strong: rgba(20, 20, 28, 0.82);
+  --glass-surface-border: rgba(255, 255, 255, 0.12);
+  --glass-surface-border-strong: rgba(255, 255, 255, 0.18);
 
   --glass-bg: rgba(18, 18, 24, 0.4);
   --glass-bg-hover: rgba(20, 20, 28, 0.55);
@@ -966,14 +966,14 @@ html.dark {
 /* Glass card - bar cards - frosted glass with more visible borders */
 .glass-card {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(32px) saturate(150%);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
   border: 1px solid var(--glass-surface-border);
   border-radius: 1rem;
   transform: translateZ(0);
   will-change: transform;
   box-shadow: var(--glass-surface-shadow);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .glass-card:hover {
@@ -1005,17 +1005,19 @@ html.dark {
 .glass-surface {
   background: var(--glass-surface-bg);
   border: 1px solid var(--glass-surface-border);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(32px) saturate(150%);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
   box-shadow: var(--glass-surface-shadow);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .glass-surface-strong {
   background: var(--glass-surface-bg-strong);
   border: 1px solid var(--glass-surface-border-strong);
-  backdrop-filter: blur(20px) saturate(130%);
-  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
   box-shadow: var(--glass-surface-shadow);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .glass-field {
