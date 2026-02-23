@@ -24,6 +24,10 @@ export default function Messages() {
   const params = useParams<{ id?: string }>();
   const selectedUserId = params.id;
   const [message, setMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [onlineStatus, setOnlineStatus] = useState<'online' | 'away' | 'busy' | 'offline'>('online');
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('connected');
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const handleNewMessage = useCallback((wsMessage: any) => {
@@ -350,75 +354,7 @@ export default function Messages() {
               </div>
               <button
                 onClick={() => !isConnected && forceReconnect()}
-                className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-                title={
-                  connectionHealth === 'healthy' ? "Real-time connected" :
-                  connectionHealth === 'degraded' ? "Checking connection..." :
-                  "Disconnected - click to reconnect"
-                }
-                data-testid="button-connection-status"
-              >
-                {connectionHealth === 'healthy' ? (
-                  <Wifi className="h-3.5 w-3.5 text-green-500" />
-                ) : connectionHealth === 'degraded' ? (
-                  <RefreshCw className="h-3.5 w-3.5 text-yellow-500 animate-spin" />
-                ) : (
-                  <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
-                )}
-              </button>
-            </div>
-            <ConversationList />
-          </div>
-
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="md:hidden flex items-center gap-3 p-2 border-b border-white/10 bg-black/10 backdrop-blur-xl">
-              {selectedUserId && selectedUser ? (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 shrink-0"
-                    onClick={() => setLocation('/messages')}
-                    data-testid="button-back"
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </Button>
-                  <Link href={`/u/${selectedUser.username}`} className="flex items-center gap-3 min-w-0">
-                    <div className="relative">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={selectedUser.avatarUrl || undefined} />
-                        <AvatarFallback>{selectedUser.username[0].toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div className={cn(
-                        "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background",
-                        getStatusColor(selectedUser.onlineStatus, selectedUser.lastSeenAt)
-                      )} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">@{selectedUser.username}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{selectedUser.onlineStatus || 'offline'}</p>
-                    </div>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="h-5 w-5 text-primary" />
-                  <h1 className="font-display font-bold">Messages</h1>
-                  <button
-                    onClick={() => !isConnected && forceReconnect()}
-                    className="ml-auto flex items-center gap-1"
-                    title={connectionHealth === 'healthy' ? "Connected" : "Click to reconnect"}
-                  >
-                    {connectionHealth === 'healthy' ? (
-                      <Wifi className="h-3.5 w-3.5 text-green-500" />
-                    ) : connectionHealth === 'degraded' ? (
-                      <RefreshCw className="h-3.5 w-3.5 text-yellow-500 animate-spin" />
-                    ) : (
-                      <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                  </button>
-                </>
-              )}
+              />
             </div>
 
             {selectedUserId && (loadingUser || loadingConversations) ? (
@@ -430,7 +366,7 @@ export default function Messages() {
               </div>
             ) : selectedUserId && selectedUser ? (
               <>
-                <div className="hidden md:flex p-3 border-b border-white/10 items-center gap-3 bg-black/10">
+                <div className="hidden md:flex p-3 border-b border-white/10 items-center gap-3 bg-black/10 backdrop-blur-xl">
                   <Link href={`/u/${selectedUser.username}`} className="flex items-center gap-3">
                     <div className="relative">
                       <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
@@ -442,15 +378,24 @@ export default function Messages() {
                         getStatusColor(selectedUser.onlineStatus, selectedUser.lastSeenAt)
                       )} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-medium text-sm hover:text-primary cursor-pointer transition-colors">@{selectedUser.username}</p>
                       <p className="text-xs text-muted-foreground capitalize">{selectedUser.onlineStatus || 'offline'}</p>
                     </div>
                   </Link>
                 </div>
-
+                
                 <ScrollArea className="flex-1">
                   <div className="p-4 space-y-2 min-h-full flex flex-col justify-end">
+                    {isTyping && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-primary/20 rounded-full animate-pulse" />
+                          <span>{selectedUser.username} is typing...</span>
+                        </div>
+                      </div>
+                    )}
+                    
                     {loadingMessages ? (
                       <div className="flex-1 flex items-center justify-center">
                         <p className="text-center text-muted-foreground">Loading...</p>
@@ -458,85 +403,89 @@ export default function Messages() {
                     ) : reversedMessages.length === 0 ? (
                       <div className="flex-1 flex items-center justify-center">
                         <div className="text-center text-muted-foreground py-8">
-                          <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                          <p className="text-sm">No messages yet</p>
-                          <p className="text-xs mt-1 opacity-70">Say hi!</p>
+                          <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                          <p className="text-lg font-medium">No messages yet</p>
+                          <p className="text-sm mt-2 opacity-70">Start the conversation with a friendly greeting!</p>
+                              Browse Orphanage
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    ) : (
-                      reversedMessages.map((msg: any) => {
-                        const isSending = typeof msg.id === 'string' && msg.id.startsWith('temp-');
-                        const isMyMessage = msg.senderId === currentUser.id;
-                        return (
-                          <motion.div
-                            key={msg.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={cn("flex", isMyMessage ? "justify-end" : "justify-start")}
+                    </>
+                  ) : (
+                    reversedMessages.map((msg: any) => {
+                      const isSending = typeof msg.id === 'string' && msg.id.startsWith('temp-');
+                      const isMyMessage = msg.senderId === currentUser.id;
+                      return (
+                        <motion.div
+                          key={msg.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={cn("flex", isMyMessage ? "justify-end" : "justify-start")}
+                        >
+                          <div
+                            className={cn(
+                              "max-w-[75%] px-4 py-2.5 rounded-2xl",
+                              isMyMessage
+                                ? "bg-primary text-primary-foreground rounded-br-md"
+                                : "bg-muted rounded-bl-md",
+                              isSending && "opacity-70"
+                            )}
                           >
-                            <div
-                              className={cn(
-                                "max-w-[75%] px-4 py-2.5 rounded-2xl",
-                                isMyMessage
-                                  ? "bg-primary text-primary-foreground rounded-br-md"
-                                  : "bg-muted rounded-bl-md",
-                                isSending && "opacity-70"
-                              )}
-                            >
-                              <p className="text-sm leading-relaxed">{msg.content}</p>
-                              <p className={cn(
-                                "text-[10px] mt-1",
-                                isMyMessage ? "text-primary-foreground/60" : "text-muted-foreground"
-                              )}>
-                                {isSending ? 'Sending...' : formatTimestamp(msg.createdAt)}
-                              </p>
-                            </div>
-                          </motion.div>
-                        );
-                      })
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </ScrollArea>
+                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                            <p className={cn(
+                              "text-[10px] mt-1",
+                              isMyMessage ? "text-primary-foreground/60" : "text-muted-foreground"
+                            )}>
+                              {isSending ? 'Sending...' : formatTimestamp(msg.createdAt)}
+                            </p>
+                          </div>
+                        </motion.div>
+                      );
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
 
-                <div className="p-2 border-t border-white/10 bg-black/10 backdrop-blur-md">
-                  <div className="flex gap-2 items-end">
-                    <Input
-                      placeholder="Type a message..."
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                      className="flex-1 rounded-full px-4 bg-muted/50 border-0 focus-visible:ring-1"
-                      data-testid="input-message"
-                    />
-                    <Button
-                      onClick={handleSend}
-                      disabled={!message.trim() || sendMutation.isPending}
-                      size="icon"
-                      className="h-10 w-10 rounded-full shrink-0"
-                      data-testid="button-send-message"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex flex-col">
-                <div className="md:hidden flex-1">
-                  <ConversationList />
-                </div>
-                <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                    <p className="text-lg font-medium">Select a conversation</p>
-                    <p className="text-sm mt-1 opacity-70">Choose a chat from the list to start messaging</p>
-                  </div>
+              <div className="p-2 border-t border-white/10 bg-black/10 backdrop-blur-md">
+                <div className="flex gap-2 items-end">
+                  <Input
+                    placeholder="Type a message..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                    className="flex-1 rounded-full px-4 bg-muted/50 border-0 focus-visible:ring-1"
+                    data-testid="input-message"
+                  />
+                  <Button
+                    onClick={handleSend}
+                    disabled={!message.trim() || sendMutation.isPending}
+                    size="icon"
+                    className="h-10 w-10 rounded-full shrink-0"
+                    data-testid="button-send-message"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              <div className="md:hidden flex-1">
+                <ConversationList />
+              </div>
+              <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                  <p className="text-lg font-medium">Select a conversation</p>
+                  <p className="text-sm mt-1 opacity-70">Choose a chat from the list to start messaging</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
     </NativeScreen>
   );
 }

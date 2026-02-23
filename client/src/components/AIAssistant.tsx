@@ -447,22 +447,6 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                     "h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
                     realVoiceMode && "border-green-500/50 bg-green-500/10 text-green-400"
                   )}
-                  title={realVoiceMode ? "Disable real voice chat (xAI STS)" : "Enable real voice chat (xAI STS)"}
-                  data-testid="button-ara-real-voice"
-                >
-                  <Radio className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <ScrollArea className="flex-1">
-            <div className="p-3 md:p-4 md:p-6 max-w-none">
-              {realVoiceMode ? (
-                <div className="flex h-full flex-col">
-                  <div className="mb-4 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3">
-                    <p className="text-sm font-semibold text-green-200">🎙️ Real Voice Mode Active</p>
-                    <p className="mt-1 text-xs text-green-100/70">
                       Using xAI's Grok Voice Agent API for true speech-to-speech. Speak naturally and Orphie will respond in real-time with voice.
                     </p>
                   </div>
@@ -602,52 +586,30 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   <Mic className="h-4 w-4" />
                 </Button>
               )}
-              
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={
-                  isDictating 
-                    ? "Listening..." 
-                    : isVoiceSupported
-                      ? "Type your message or use voice dictation..."
-                      : "Type your message..."
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-                disabled={isLoading || isDictating}
-                className="flex-1 rounded-xl border border-white/[0.1] bg-white/[0.05] placeholder:text-muted-foreground/50 text-base md:text-lg px-4 py-3"
-                data-testid="input-ai-chat"
-              />
-              
-              <Button
-                type="button"
-                onClick={sendMessage}
-                disabled={isLoading || !input.trim() || isDictating}
-                size="icon"
-                className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                data-testid="button-ai-send"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-            
-              {isVoiceSupported && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {isDictating 
-                    ? "🎤 Listening... Speak clearly and tap the mic button when done."
-                    : "💬 Tap the mic button to use voice dictation."
-                  }
-                </p>
-              )}
-            </div>
           )}
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
+          title={isRecording ? "Stop dictation" : "Start voice dictation"}
+          data-testid="button-ai-voice"
+        >
+          <Mic className="h-4 w-4" />
+        </Button>
+      )}
+      
+      <Input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        className="flex-1 min-w-0"
+      />
+      {isVoiceSupported && (
+        <p className="text-xs text-muted-foreground">
+          {isDictating 
+            ? "🎤 Listening... Speak clearly and tap the mic button when done."
+            : "💬 Tap the mic button to use voice dictation."
+          }
+        </p>
+      )}
+    </div>
+  </div>
+)}
+</DialogContent>
+</Dialog>
+</NativeScreen>
