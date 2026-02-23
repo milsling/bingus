@@ -13,7 +13,7 @@ import { registerAIRoutes } from "./replit_integrations/ai";
 import appleNotifications from "./appleNotifications";
 import communityStatsRoutes from "./routes/community-stats";
 import messageOfTheDayRoutes from "./routes/message-of-the-day";
-import backgroundRoutes from "./backgrounds";
+import backgroundRoutes from "./routes/backgrounds";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
 import { setupVoiceWebSocket } from "./voice-proxy";
