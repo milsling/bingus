@@ -1375,3 +1375,31 @@ export const insertMessageOfTheDaySchema = createInsertSchema(messageOfTheDay).p
   message: true,
   isActive: true,
 });
+
+// Custom backgrounds table
+export const customBackgrounds = pgTable("custom_backgrounds", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  imageUrl: text("image_url").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const customBackgroundsRelations = relations(customBackgrounds, ({ one }) => ({
+  creator: one(users, {
+    fields: [customBackgrounds.createdBy],
+    references: [users.id],
+  }),
+}));
+
+export const insertCustomBackgroundSchema = createInsertSchema(customBackgrounds).pick({
+  name: true,
+  imageUrl: true,
+  isActive: true,
+  sortOrder: true,
+});

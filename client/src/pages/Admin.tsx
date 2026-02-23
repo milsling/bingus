@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Image, Plus, Trash2, Upload, ArrowUpDown } from "lucide-react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -117,6 +118,12 @@ export default function Admin() {
   const [showMotdDialog, setShowMotdDialog] = useState(false);
   const [editingMotd, setEditingMotd] = useState<any>(null);
 
+  // Background management state
+  const [backgroundName, setBackgroundName] = useState("");
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
+  const [showBackgroundDialog, setShowBackgroundDialog] = useState(false);
+  const [editingBackground, setEditingBackground] = useState<any>(null);
+
   const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ['admin', 'users'],
     queryFn: () => api.getAllUsers(),
@@ -191,6 +198,43 @@ export default function Admin() {
     },
   });
 
+  // Background management queries
+  const { data: customBackgrounds = [], isLoading: isLoadingBackgrounds } = useQuery({
+    queryKey: ['admin', 'backgrounds'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/backgrounds', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch backgrounds');
+      return res.json();
+    },
+    enabled: !!currentUser?.isOwner,
+  });
+
+  // Background management mutations
+  const createBackgroundMutation = useMutation({
+    mutationFn: async (data: { name: string; imageUrl: string; isActive: boolean; sortOrder?: number }) => {
+      const res = await fetch('/api/admin/backgrounds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to create background');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'backgrounds'] });
+      queryClient.invalidateQueries({ queryKey: ['backgrounds'] });
+      toast({ title: "Background created" });
+      setShowBackgroundDialog(false);
+      setBackgroundName("");
+      setBackgroundImageUrl("");
+      setEditingBackground(null);
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const updateMotdMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: { message?: string; isActive?: boolean } }) => {
       const res = await fetch(`/api/admin/message-of-the-day/${id}`, {
@@ -227,6 +271,49 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'message-of-the-day'] });
       queryClient.invalidateQueries({ queryKey: ['message-of-the-day'] });
       toast({ title: "Message deleted" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Background management mutations (continued)
+  const updateBackgroundMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: { name?: string; imageUrl?: string; isActive?: boolean; sortOrder?: number } }) => {
+      const res = await fetch(`/api/admin/backgrounds/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update background');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'backgrounds'] });
+      queryClient.invalidateQueries({ queryKey: ['backgrounds'] });
+      toast({ title: "Background updated" });
+      setShowBackgroundDialog(false);
+      setBackgroundName("");
+      setBackgroundImageUrl("");
+      setEditingBackground(null);
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteBackgroundMutation = useMutation({
+    mutationFn: (id: string) => {
+      return fetch(`/api/admin/backgrounds/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'backgrounds'] });
+      queryClient.invalidateQueries({ queryKey: ['backgrounds'] });
+      toast({ title: "Background deleted" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -1744,6 +1831,12 @@ export default function Admin() {
               <TabsTrigger value="motd" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
                 <MessageSquare className="h-4 w-4" />
                 <span className="hidden sm:inline">MOTD</span>
+              </TabsTrigger>
+            )}
+            {currentUser?.isOwner && (
+              <TabsTrigger value="backgrounds" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
+                <Image className="h-4 w-4" />
+                <span className="hidden sm:inline">Backgrounds</span>
               </TabsTrigger>
             )}
             {(currentUser?.isOwner || currentUser?.isAdminPlus) && (
@@ -4724,6 +4817,99 @@ export default function Admin() {
               </Card>
             </TabsContent>
           )}
+          {currentUser?.isOwner && (
+            <TabsContent value="backgrounds">
+              <Card className="border-border bg-card/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Image className="h-5 w-5 text-purple-500" />
+                    Custom Backgrounds
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">
+                      Manage custom backgrounds for users to select
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setEditingBackground(null);
+                        setBackgroundName("");
+                        setBackgroundImageUrl("");
+                        setShowBackgroundDialog(true);
+                      }}
+                      size="sm"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Background
+                    </Button>
+                  </div>
+
+                  {customBackgrounds.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Image className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No custom backgrounds yet</p>
+                      <p className="text-sm">Add your first custom background above</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4">
+                      {customBackgrounds.map((bg: any) => (
+                        <div key={bg.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                            <img 
+                              src={bg.imageUrl} 
+                              alt={bg.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium truncate">{bg.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Added by {bg.creatorName} • {new Date(bg.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={bg.isActive}
+                              onCheckedChange={(checked) => {
+                                updateBackgroundMutation.mutate({
+                                  id: bg.id,
+                                  data: { isActive: checked }
+                                });
+                              }}
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingBackground(bg);
+                                setBackgroundName(bg.name);
+                                setBackgroundImageUrl(bg.imageUrl);
+                                setShowBackgroundDialog(true);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm('Delete this background?')) {
+                                  deleteBackgroundMutation.mutate(bg.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
 
         <Dialog open={!!moderateBarId} onOpenChange={(open) => !open && setModerateBarId(null)}>
@@ -4821,6 +5007,90 @@ export default function Admin() {
                 {createMotdMutation.isPending || updateMotdMutation.isPending 
                   ? 'Saving...' 
                   : (editingMotd ? 'Update' : 'Create')
+                }
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Background Dialog */}
+        <Dialog open={showBackgroundDialog} onOpenChange={setShowBackgroundDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editingBackground ? 'Edit Background' : 'Add New Background'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingBackground ? 'Update the background details' : 'Add a new custom background for users to select'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="background-name">Name</Label>
+                <Input
+                  id="background-name"
+                  placeholder="Enter background name..."
+                  value={backgroundName}
+                  onChange={(e) => setBackgroundName(e.target.value)}
+                  maxLength={100}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {backgroundName.length}/100 characters
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="background-url">Image URL</Label>
+                <Input
+                  id="background-url"
+                  placeholder="https://example.com/image.jpg"
+                  value={backgroundImageUrl}
+                  onChange={(e) => setBackgroundImageUrl(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter a direct URL to the background image
+                </p>
+              </div>
+              {backgroundImageUrl && (
+                <div className="space-y-2">
+                  <Label>Preview</Label>
+                  <div className="w-full h-32 rounded-lg overflow-hidden border">
+                    <img 
+                      src={backgroundImageUrl} 
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = '';
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowBackgroundDialog(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (editingBackground) {
+                    updateBackgroundMutation.mutate({
+                      id: editingBackground.id,
+                      data: { name: backgroundName, imageUrl: backgroundImageUrl }
+                    });
+                  } else {
+                    createBackgroundMutation.mutate({
+                      name: backgroundName,
+                      imageUrl: backgroundImageUrl,
+                      isActive: true
+                    });
+                  }
+                }}
+                disabled={!backgroundName.trim() || !backgroundImageUrl.trim() || createBackgroundMutation.isPending || updateBackgroundMutation.isPending}
+              >
+                {createBackgroundMutation.isPending || updateBackgroundMutation.isPending 
+                  ? 'Saving...' 
+                  : (editingBackground ? 'Update' : 'Add')
                 }
               </Button>
             </DialogFooter>

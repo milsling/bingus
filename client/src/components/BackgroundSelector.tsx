@@ -3,6 +3,7 @@ import { Check, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBars } from "@/context/BarContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useQuery } from "@tanstack/react-query";
 
 import abstractWaves from '../assets/backgrounds/abstract-waves.webp';
 import purpleCosmos from '../assets/backgrounds/purple-cosmos.jpeg';
@@ -59,7 +60,30 @@ export function useBackground() {
     return "default";
   });
 
-  const selectedBackground = IMAGE_BACKGROUNDS.find(bg => bg.id === selectedId) || IMAGE_BACKGROUNDS[0];
+  // Fetch custom backgrounds
+  const { data: customBackgrounds = [] } = useQuery({
+    queryKey: ["backgrounds"],
+    queryFn: async () => {
+      const res = await fetch("/api/backgrounds");
+      if (!res.ok) throw new Error("Failed to fetch backgrounds");
+      return res.json();
+    },
+    staleTime: 300_000, // 5 minutes
+  });
+
+  // Combine built-in and custom backgrounds
+  const allBackgrounds = [
+    ...IMAGE_BACKGROUNDS,
+    ...customBackgrounds.map((bg: any) => ({
+      id: bg.id,
+      name: bg.name,
+      image: bg.imageUrl,
+      unlockLevel: 0,
+      isCustom: true,
+    })),
+  ];
+
+  const selectedBackground = allBackgrounds.find(bg => bg.id === selectedId) || allBackgrounds[0];
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, selectedId);
@@ -125,45 +149,37 @@ export function useBackground() {
     return userLevel >= background.unlockLevel;
   };
 
-  return { 
-    selectedId, 
-    selectedBackground, 
-    setBackground, 
-    isUnlocked,
-    backgrounds: IMAGE_BACKGROUNDS 
+  return {
+    selectedId,
+    setSelectedId,
+    setBackground,
+    selectedBackground,
+    allBackgrounds,
+    isUnlocked: (bg: Background) => true, // All backgrounds are unlocked
+    backgrounds: allBackgrounds,
   };
 }
 
 export function BackgroundSelector() {
   const { selectedId, setBackground, isUnlocked, backgrounds } = useBackground();
   const { currentUser } = useBars();
-  const userLevel = currentUser?.level || 1;
 
   return (
     <div className="space-y-4">
-      <div>
-        <h4 className="text-sm font-medium text-white/90 mb-1">Background Wallpaper</h4>
-        <p className="text-xs text-white/50">Unlock more as you level up</p>
-      </div>
-      
-      <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {backgrounds.map((bg) => {
-          const unlocked = isUnlocked(bg, userLevel);
           const isSelected = selectedId === bg.id;
           
           return (
             <button
               key={bg.id}
-              onClick={() => unlocked && setBackground(bg.id)}
-              disabled={!unlocked}
+              onClick={() => setBackground(bg.id)}
               className={cn(
                 "relative aspect-[3/4] rounded-xl overflow-hidden transition-all duration-200",
                 "border-2",
                 isSelected 
                   ? "border-purple-500 ring-2 ring-purple-500/40 scale-[1.03]" 
-                  : unlocked 
-                    ? "border-white/15 hover:border-white/30 hover:scale-[1.02]"
-                    : "border-white/10 opacity-50 cursor-not-allowed grayscale",
+                  : "border-white/15 hover:border-white/30 hover:scale-[1.02]",
               )}
               data-testid={`background-${bg.id}`}
             >
@@ -179,15 +195,6 @@ export function BackgroundSelector() {
                   className="w-full h-full"
                   style={{ background: bg.fallbackGradient }}
                 />
-              )}
-              
-              {!unlocked && (
-                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-0.5">
-                  <Lock className="w-4 h-4 text-white/50" />
-                  <span className="text-[9px] text-white/50 font-medium">
-                    {bg.unlockDescription}
-                  </span>
-                </div>
               )}
               
               {isSelected && (
