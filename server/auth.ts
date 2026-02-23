@@ -109,6 +109,30 @@ export const sessionParser = session({
   }),
 });
 
+// Ensure the sessions table is accessible (Supabase enables RLS by default on new tables,
+// which blocks all reads/writes when no policies exist).
+async function ensureSessionTableAccess() {
+  try {
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM pg_tables WHERE tablename = 'sessions' AND schemaname = 'public'
+        ) THEN
+          ALTER TABLE public.sessions DISABLE ROW LEVEL SECURITY;
+        END IF;
+      END
+      $$;
+    `);
+    console.log('Session table RLS check completed');
+  } catch (err) {
+    console.warn('Could not disable RLS on sessions table (non-fatal):', err);
+  }
+}
+
+// Run on import
+ensureSessionTableAccess();
+
 export function setupAuth(app: Express) {
   app.use(sessionParser);
   app.use(passport.initialize());
