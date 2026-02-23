@@ -4,6 +4,7 @@ import { type Express } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { storage } from "./storage";
+import { pool } from "./db";
 import type { User } from "@shared/schema";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
@@ -102,11 +103,35 @@ export const sessionParser = session({
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   },
   store: new PgStore({
-    conString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
+    pool: pool as any,
     createTableIfMissing: true,
     tableName: "sessions",
   }),
 });
+
+// Ensure the sessions table is accessible (Supabase enables RLS by default on new tables,
+// which blocks all reads/writes when no policies exist).
+async function ensureSessionTableAccess() {
+  try {
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM pg_tables WHERE tablename = 'sessions' AND schemaname = 'public'
+        ) THEN
+          ALTER TABLE public.sessions DISABLE ROW LEVEL SECURITY;
+        END IF;
+      END
+      $$;
+    `);
+    console.log('Session table RLS check completed');
+  } catch (err) {
+    console.warn('Could not disable RLS on sessions table (non-fatal):', err);
+  }
+}
+
+// Run on import
+ensureSessionTableAccess();
 
 export function setupAuth(app: Express) {
   app.use(sessionParser);
