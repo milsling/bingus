@@ -155,6 +155,16 @@ export default function Home() {
     refetchOnWindowFocus: false,
   });
 
+  const { data: messageOfTheDay } = useQuery({
+    queryKey: ["message-of-the-day"],
+    queryFn: async () => {
+      const res = await fetch("/api/message-of-the-day");
+      return res.json();
+    },
+    staleTime: 300_000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
   const visibleBars = useMemo<BarWithUser[]>(() => {
     if (tagFilter) return tagBars;
     if (activeTab === "top") return topBars;
@@ -272,7 +282,7 @@ export default function Home() {
                   Modern writer room
                 </Badge>
                 <h1 className="max-w-3xl text-[clamp(2rem,4.4vw,3.4rem)] font-black leading-tight tracking-tight">
-                  Drop the lines that do not fit anywhere else.
+                  {messageOfTheDay?.message || "Drop the lines that do not fit anywhere else."}
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm text-muted-foreground md:text-base">
                   Orphan Bars is a focused place to share loose bars, discover sharp writing,

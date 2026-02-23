@@ -1351,3 +1351,27 @@ export const insertNotebookSchema = createInsertSchema(notebooks).omit({
   createdAt: true,
   updatedAt: true,
 });
+
+// Message of the Day table
+export const messageOfTheDay = pgTable("message_of_the_day", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  message: text("message").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const messageOfTheDayRelations = relations(messageOfTheDay, ({ one }) => ({
+  creator: one(users, {
+    fields: [messageOfTheDay.createdBy],
+    references: [users.id],
+  }),
+}));
+
+export const insertMessageOfTheDaySchema = createInsertSchema(messageOfTheDay).pick({
+  message: true,
+  isActive: true,
+});

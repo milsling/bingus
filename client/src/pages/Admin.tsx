@@ -33,6 +33,8 @@ import {
   Image,
   Italic,
   Lock,
+  Message,
+  MessageCircle,
   MessageSquare,
   Music,
   Pencil,
@@ -110,6 +112,12 @@ export default function Admin() {
   const [grantBadgeId, setGrantBadgeId] = useState("");
   const [grantUsername, setGrantUsername] = useState("");
 
+  // Message of the Day state
+  const [motdMessage, setMotdMessage] = useState("");
+  const [motdIsActive, setMotdIsActive] = useState(true);
+  const [showMotdDialog, setShowMotdDialog] = useState(false);
+  const [editingMotd, setEditingMotd] = useState<any>(null);
+
   const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ['admin', 'users'],
     queryFn: () => api.getAllUsers(),
@@ -124,6 +132,16 @@ export default function Admin() {
       return res.json();
     },
     enabled: !!currentUser?.isAdmin,
+  });
+
+  const { data: motdMessages = [], isLoading: isLoadingMotd } = useQuery({
+    queryKey: ['admin', 'message-of-the-day'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/message-of-the-day', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch messages');
+      return res.json();
+    },
+    enabled: !!currentUser?.isOwner,
   });
 
   const deleteBarMutation = useMutation({
@@ -142,6 +160,74 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bars'] });
       toast({ title: "All bars deleted" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Message of the Day mutations
+  const createMotdMutation = useMutation({
+    mutationFn: async (data: { message: string; isActive: boolean }) => {
+      const res = await fetch('/api/admin/message-of-the-day', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to create message');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'message-of-the-day'] });
+      queryClient.invalidateQueries({ queryKey: ['message-of-the-day'] });
+      toast({ title: "Message created" });
+      setShowMotdDialog(false);
+      setMotdMessage("");
+      setMotdIsActive(true);
+      setEditingMotd(null);
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateMotdMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: { message?: string; isActive?: boolean } }) => {
+      const res = await fetch(`/api/admin/message-of-the-day/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update message');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'message-of-the-day'] });
+      queryClient.invalidateQueries({ queryKey: ['message-of-the-day'] });
+      toast({ title: "Message updated" });
+      setShowMotdDialog(false);
+      setMotdMessage("");
+      setMotdIsActive(true);
+      setEditingMotd(null);
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteMotdMutation = useMutation({
+    mutationFn: (id: string) => {
+      return fetch(`/api/admin/message-of-the-day/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'message-of-the-day'] });
+      queryClient.invalidateQueries({ queryKey: ['message-of-the-day'] });
+      toast({ title: "Message deleted" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -1653,6 +1739,12 @@ export default function Admin() {
               <TabsTrigger value="console" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
                 <Power className="h-4 w-4" />
                 <span className="hidden sm:inline">Console</span>
+              </TabsTrigger>
+            )}
+            {currentUser?.isOwner && (
+              <TabsTrigger value="motd" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
+                <Message className="h-4 w-4" />
+                <span className="hidden sm:inline">MOTD</span>
               </TabsTrigger>
             )}
             {(currentUser?.isOwner || currentUser?.isAdminPlus) && (
@@ -4536,6 +4628,103 @@ export default function Admin() {
               </Card>
             </TabsContent>
           )}
+          {currentUser?.isOwner && (
+            <TabsContent value="motd">
+              <Card className="border-border bg-card/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Message className="h-5 w-5 text-purple-500" />
+                    Message of the Day
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">
+                      Manage the message displayed on the home page
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setEditingMotd(null);
+                        setMotdMessage("");
+                        setMotdIsActive(true);
+                        setShowMotdDialog(true);
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      New Message
+                    </Button>
+                  </div>
+
+                  {isLoadingMotd ? (
+                    <p className="text-muted-foreground">Loading...</p>
+                  ) : motdMessages.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      No messages yet. Create your first message of the day!
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {motdMessages.map((msg: any) => (
+                        <div key={msg.id} className="flex items-center justify-between p-4 rounded-lg border bg-card/30">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium mb-2">{msg.message}</p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span>By {msg.creatorUsername}</span>
+                              <span>{new Date(msg.createdAt).toLocaleDateString()}</span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                msg.isActive 
+                                  ? 'bg-green-500/20 text-green-400' 
+                                  : 'bg-gray-500/20 text-gray-400'
+                              }`}>
+                                {msg.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 ml-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingMotd(msg);
+                                setMotdMessage(msg.message);
+                                setMotdIsActive(msg.isActive);
+                                setShowMotdDialog(true);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                updateMotdMutation.mutate({
+                                  id: msg.id,
+                                  data: { isActive: !msg.isActive }
+                                });
+                              }}
+                            >
+                              {msg.isActive ? 'Deactivate' : 'Activate'}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm('Delete this message?')) {
+                                  deleteMotdMutation.mutate(msg.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
 
         <Dialog open={!!moderateBarId} onOpenChange={(open) => !open && setModerateBarId(null)}>
@@ -4570,6 +4759,70 @@ export default function Admin() {
                 data-testid="button-confirm-moderate"
               >
                 {moderateBarMutation.isPending ? "Removing..." : "Remove & Notify"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* MOTD Dialog */}
+        <Dialog open={showMotdDialog} onOpenChange={setShowMotdDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editingMotd ? 'Edit Message' : 'Create New Message'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingMotd ? 'Update the message of the day' : 'Create a new message to display on the home page'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="motd-message">Message</Label>
+                <Textarea
+                  id="motd-message"
+                  placeholder="Enter your message of the day..."
+                  value={motdMessage}
+                  onChange={(e) => setMotdMessage(e.target.value)}
+                  className="min-h-[100px]"
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {motdMessage.length}/500 characters
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="motd-active"
+                  checked={motdIsActive}
+                  onCheckedChange={setMotdIsActive}
+                />
+                <Label htmlFor="motd-active">Active (will show on home page)</Label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowMotdDialog(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (editingMotd) {
+                    updateMotdMutation.mutate({
+                      id: editingMotd.id,
+                      data: { message: motdMessage, isActive: motdIsActive }
+                    });
+                  } else {
+                    createMotdMutation.mutate({
+                      message: motdMessage,
+                      isActive: motdIsActive
+                    });
+                  }
+                }}
+                disabled={!motdMessage.trim() || createMotdMutation.isPending || updateMotdMutation.isPending}
+              >
+                {createMotdMutation.isPending || updateMotdMutation.isPending 
+                  ? 'Saving...' 
+                  : (editingMotd ? 'Update' : 'Create')
+                }
               </Button>
             </DialogFooter>
           </DialogContent>

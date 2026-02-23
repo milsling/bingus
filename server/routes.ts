@@ -12,6 +12,7 @@ import { registerObjectStorageRoutes } from "./replit_integrations/object_storag
 import { registerAIRoutes } from "./replit_integrations/ai";
 import appleNotifications from "./appleNotifications";
 import communityStatsRoutes from "./community-stats";
+import messageOfTheDayRoutes from "./message-of-the-day";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
 import { setupVoiceWebSocket } from "./voice-proxy";
@@ -152,7 +153,8 @@ export async function registerRoutes(
   registerObjectStorageRoutes(app);
   registerAIRoutes(app);
   app.use("/api", communityStatsRoutes);
-  
+  app.use("/api", messageOfTheDayRoutes);
+
   // Setup WebSocket servers
   const { wss: messageWss, sessionParser: wsSessionParser } = setupWebSocket(httpServer, sessionParser);
   
