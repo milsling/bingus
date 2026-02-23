@@ -191,5 +191,12 @@ export function isAuthenticated(req: any, res: any, next: any) {
   res.status(401).json({ message: "Unauthorized" });
 }
 
+export function isOwner(req: any, res: any, next: any) {
+  if (req.isAuthenticated() && req.user?.isOwner) {
+    return next();
+  }
+  res.status(403).json({ message: "Forbidden - Owner access required" });
+}
+
 // Export sentinel value for use in routes
 export { OAUTH_ONLY_PASSWORD_SENTINEL };
