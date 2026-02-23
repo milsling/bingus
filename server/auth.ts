@@ -4,6 +4,7 @@ import { type Express } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { storage } from "./storage";
+import { pool } from "./db";
 import type { User } from "@shared/schema";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
@@ -102,7 +103,7 @@ export const sessionParser = session({
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   },
   store: new PgStore({
-    conString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
+    pool: pool as any,
     createTableIfMissing: true,
     tableName: "sessions",
   }),
