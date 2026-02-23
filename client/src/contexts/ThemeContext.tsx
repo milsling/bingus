@@ -8,10 +8,10 @@ interface ThemeContextType {
   resolvedTheme: 'light' | 'dark';
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({ theme: 'dark', setTheme: () => {}, resolvedTheme: 'dark' });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark'); // Force dark mode
+  const [theme, setTheme] = useState<Theme>('dark'); // Force dark mode as default
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
@@ -23,9 +23,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const applyTheme = () => {
       const resolved: 'light' | 'dark' = 'dark'; // Always dark
-
       setResolvedTheme(resolved);
-
       const root = document.documentElement;
       root.classList.remove('light', 'dark');
       root.classList.add(resolved);
@@ -33,8 +31,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     applyTheme();
     localStorage.setItem('theme', 'dark');
-
-    return undefined;
   }, [theme]);
 
   return (
