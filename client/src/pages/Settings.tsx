@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Bell, Command, Lock, Palette, Settings2, Shield, UserCog, Volume2 } from "lucide-react";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
 import { playNotificationSound, notificationSoundLabels, messageSoundLabels } from "@/lib/notificationSounds";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
@@ -27,7 +26,6 @@ export default function Settings() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const { theme, resolvedTheme, setTheme } = useTheme();
 
   const canDebugControls = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
 
@@ -466,51 +464,6 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="appearance" className="mt-0 space-y-4">
-              <Card className="border-border/70 bg-background/40">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Settings2 className="h-4 w-4 text-primary" />
-                    Theme
-                  </CardTitle>
-                  <CardDescription>Switch between light, dark, or system mode.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(theme === "light" && "border-primary/50 bg-primary/10")}
-                      onClick={() => setTheme("light")}
-                      data-testid="button-settings-theme-light"
-                    >
-                      Light
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(theme === "dark" && "border-primary/50 bg-primary/10")}
-                      onClick={() => setTheme("dark")}
-                      data-testid="button-settings-theme-dark"
-                    >
-                      Dark
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(theme === "system" && "border-primary/50 bg-primary/10")}
-                      onClick={() => setTheme("system")}
-                      data-testid="button-settings-theme-system"
-                    >
-                      System
-                    </Button>
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Active appearance: {resolvedTheme === "dark" ? "Dark" : "Light"}
-                    {theme === "system" ? " (system)" : ""}
-                  </p>
-                </CardContent>
-              </Card>
-
               <Card className="border-border/70 bg-background/40">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">

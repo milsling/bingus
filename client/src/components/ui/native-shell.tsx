@@ -117,7 +117,7 @@ export function NativeSegmentedControl<T extends string>({
             {active && (
               <motion.span
                 layoutId="native-segment-indicator"
-                className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-500 shadow-[0_0_16px_rgba(139,92,246,0.35)]"
+                className="absolute inset-0 rounded-xl bg-primary shadow-[0_0_16px_rgba(139,92,246,0.35)]"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}

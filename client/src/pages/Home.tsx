@@ -14,6 +14,7 @@ import { SearchBar } from "@/components/SearchBar";
 import BarCard from "@/components/BarCard";
 import ActivityStrip from "@/components/ActivityStrip";
 import CommunitySpotlight from "@/components/CommunitySpotlight";
+import { QuickStats } from "@/components/QuickStats";
 import { cn } from "@/lib/utils";
 import {
   NativeGlassCard,
@@ -434,14 +435,17 @@ export default function Home() {
             )}
 
             {!tagFilter && (
-              <NativeGlassCard className="p-2">
-                <NativeSegmentedControl
-                  value={activeTab}
-                  onChange={(tab) => setActiveTab(tab)}
-                  options={FEED_TAB_OPTIONS}
-                  className="w-full"
-                />
-              </NativeGlassCard>
+              <div className="flex flex-col md:flex-row gap-3">
+                <NativeGlassCard className="flex-1 p-2">
+                  <NativeSegmentedControl
+                    value={activeTab}
+                    onChange={(tab) => setActiveTab(tab)}
+                    options={FEED_TAB_OPTIONS}
+                    className="w-full"
+                  />
+                </NativeGlassCard>
+                <QuickStats className="md:w-80" />
+              </div>
             )}
 
             <PullToRefresh onRefresh={handleRefresh}>

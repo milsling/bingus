@@ -11,6 +11,7 @@ import { fromError } from "zod-validation-error";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { registerAIRoutes } from "./replit_integrations/ai";
 import appleNotifications from "./appleNotifications";
+import communityStatsRoutes from "./community-stats";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
 import { setupVoiceWebSocket } from "./voice-proxy";
@@ -150,6 +151,7 @@ export async function registerRoutes(
 
   registerObjectStorageRoutes(app);
   registerAIRoutes(app);
+  app.use("/api", communityStatsRoutes);
   
   // Setup WebSocket servers
   const { wss: messageWss, sessionParser: wsSessionParser } = setupWebSocket(httpServer, sessionParser);
