@@ -33,7 +33,6 @@ import {
   Image,
   Italic,
   Lock,
-  Message,
   MessageCircle,
   MessageSquare,
   Music,
@@ -1743,7 +1742,7 @@ export default function Admin() {
             )}
             {currentUser?.isOwner && (
               <TabsTrigger value="motd" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
-                <Message className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4" />
                 <span className="hidden sm:inline">MOTD</span>
               </TabsTrigger>
             )}
@@ -4633,7 +4632,7 @@ export default function Admin() {
               <Card className="border-border bg-card/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Message className="h-5 w-5 text-purple-500" />
+                    <MessageSquare className="h-5 w-5 text-purple-500" />
                     Message of the Day
                   </CardTitle>
                 </CardHeader>
