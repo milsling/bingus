@@ -418,11 +418,11 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                           value={customPrompt}
                           onChange={(e) => updateCustomPrompt(e.target.value)}
                           placeholder="Describe how Ara should behave..."
-                          className="min-h-[80px] resize-none text-sm bg-white/[0.04] border-white/[0.1]"
-                          maxLength={1200}
+                          className="min-h-[100px] resize-none text-sm bg-white/[0.04] border-white/[0.1]"
+                          maxLength={10000}
                           data-testid="input-custom-personality"
                         />
-                        <p className="mt-1 text-right text-[10px] text-muted-foreground">{customPrompt.length}/1200</p>
+                        <p className="mt-1 text-right text-[10px] text-muted-foreground">{customPrompt.length}/10000</p>
                       </div>
                     )}
                   </PopoverContent>
@@ -447,14 +447,19 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                     "h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
                     realVoiceMode && "border-green-500/50 bg-green-500/10 text-green-400"
                   )}
-                      Using xAI's Grok Voice Agent API for true speech-to-speech. Speak naturally and Orphie will respond in real-time with voice.
-                    </p>
-                  </div>
+                  title="Toggle real voice mode"
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+                
+                {realVoiceMode && (
                   <VoiceChat 
                     onTranscript={handleVoiceTranscript}
                     onStateChange={setVoiceChatState}
                   />
-                  {messages.length > 0 && (
+                )}
+                
+                {!realVoiceMode && messages.length > 0 && (
                     <div className="mt-4 space-y-3">
                       {messages.map((msg, i) => (
                         <div key={i} className={cn("mb-3", msg.role === "user" ? "text-right" : "text-left")}>
@@ -586,13 +591,6 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   <Mic className="h-4 w-4" />
                 </Button>
               )}
-          )}
-          title={isRecording ? "Stop dictation" : "Start voice dictation"}
-          data-testid="button-ai-voice"
-        >
-          <Mic className="h-4 w-4" />
-        </Button>
-      )}
       
       <Input
         value={input}
