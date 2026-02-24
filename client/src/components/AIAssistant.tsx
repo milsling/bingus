@@ -610,4 +610,6 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
 )}
 </DialogContent>
 </Dialog>
-</NativeScreen>
+    </>
+  );
+}
