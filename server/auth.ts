@@ -104,7 +104,7 @@ export const sessionParser = session({
   },
   store: new PgStore({
     conString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
-    createTableIfMissing: false, // Table created manually
+    createTableIfMissing: true,
     tableName: "sessions",
     schemaName: 'public'
   }),
