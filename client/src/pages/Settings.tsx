@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { playNotificationSound, notificationSoundLabels, messageSoundLabels } from "@/lib/notificationSounds";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { useBackground } from "@/components/BackgroundSelector";
+import ThemeSettings from "@/components/ThemeSettings";
 import { useFabShortcuts, SHORTCUT_OPTIONS } from "@/hooks/useFabShortcuts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -545,21 +546,8 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="appearance" className="mt-0 space-y-4">
-              <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Palette className="h-4 w-4 text-primary" />
-                    Background
-                  </CardTitle>
-                  <CardDescription>Give the app your own visual vibe.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <BackgroundSelector />
-                </CardContent>
-              </Card>
+              <BackgroundSelector />
+              <ThemeSettings />
             </TabsContent>
 
             {canDebugControls && (

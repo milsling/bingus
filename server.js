@@ -3,12 +3,47 @@ import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 import { RoomServiceClient, Room } from 'livekit-server-sdk';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
 const app = express();
 const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server });
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'backgrounds');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `bg-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
 
 // LiveKit client
 const livekitClient = new RoomServiceClient(
@@ -245,6 +280,77 @@ process.on('SIGINT', () => {
 
 // Serve static files
 app.use(express.static('public'));
+
+// File upload endpoints
+app.post('/api/upload/background', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/backgrounds/${req.file.filename}`;
+    
+    res.json({
+      success: true,
+      url: fileUrl,
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+// Delete background endpoint
+app.delete('/api/upload/background', (req, res) => {
+  try {
+    const { url } = req.query;
+    
+    if (!url) {
+      return res.status(400).json({ error: 'URL parameter required' });
+    }
+
+    // Extract filename from URL
+    const filename = path.basename(url);
+    const filePath = path.join(uploadsDir, filename);
+    
+    // Check if file exists and delete it
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      res.json({ success: true, message: 'Background deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'File not found' });
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({ error: 'Delete failed' });
+  }
+});
+
+// Get list of uploaded backgrounds
+app.get('/api/upload/backgrounds', (req, res) => {
+  try {
+    const files = fs.readdirSync(uploadsDir)
+      .filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext);
+      })
+      .map(file => ({
+        filename: file,
+        url: `/uploads/backgrounds/${file}`,
+        size: fs.statSync(path.join(uploadsDir, file)).size,
+        uploadedAt: fs.statSync(path.join(uploadsDir, file)).birthtime
+      }))
+      .sort((a, b) => b.uploadedAt - a.uploadedAt);
+
+    res.json({ success: true, files });
+  } catch (error) {
+    console.error('List backgrounds error:', error);
+    res.status(500).json({ error: 'Failed to list backgrounds' });
+  }
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {

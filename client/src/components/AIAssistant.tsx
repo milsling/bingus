@@ -330,6 +330,14 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
     cancelEdit();
   };
 
+  function handleKeyPress(event: KeyboardEvent<HTMLInputElement>): void {
+    throw new Error("Function not implemented.");
+  }
+
+  function handleSubmit(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <>
       {!hideFloatingButton && (
@@ -351,7 +359,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className={cn(
-          "glass-surface-strong border border-white/[0.1] bg-background/95 overflow-hidden p-0 transition-all",
+          "glass-surface-strong border border-white/[0.1] bg-background/95 overflow-hidden p-0 transition-all dialog-window",
           isFullscreen
             ? "w-screen h-screen max-w-none rounded-none"
             : "w-[95vw] h-[95vh] md:max-w-4xl md:h-[85vh] lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl lg:h-[90vh]"

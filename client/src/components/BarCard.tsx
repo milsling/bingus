@@ -661,7 +661,7 @@ export default function BarCard({ bar }: BarCardProps) {
             <Bookmark className="h-8 w-8 fill-current" />
           </div>
         )}
-        <Card className="glass-card overflow-hidden transition-all duration-300 hover:border-white/[0.15]">
+        <Card className="bar-card glass-card overflow-hidden transition-all duration-300 hover:border-white/[0.15]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-3">
               <Link href={`/u/${bar.user.username}`}>
