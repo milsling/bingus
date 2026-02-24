@@ -690,7 +690,12 @@ export default function Auth() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col md:flex-row pt-14 pb-20 md:pt-20 md:pb-8 w-full">
+      <div className="min-h-screen bg-background flex flex-col md:flex-row pt-14 pb-20 md:pt-20 md:pb-8 w-full transition-colors duration-300"
+           style={{
+             background: 'hsl(250 15% 4%)',
+             backgroundImage: 'radial-gradient(ellipse at 50% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 40%), radial-gradient(ellipse at 30% 30%, rgba(139, 69, 180, 0.06) 0%, transparent 45%), radial-gradient(ellipse at 70% 70%, rgba(99, 102, 241, 0.05) 0%, transparent 45%), radial-gradient(ellipse at 20% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 40%), radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.05) 0%, transparent 40%), linear-gradient(180deg, #050509 0%, #0a0a12 100%)',
+             backgroundAttachment: 'fixed'
+           }}>
         {/* Desktop: split layout - left branding, right form */}
         <div className="hidden md:flex md:flex-1 md:items-center md:justify-center md:min-w-0 md:p-8 lg:p-12">
           <div className="glass-panel rounded-3xl p-8 lg:p-10 max-w-md">
