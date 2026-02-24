@@ -9,6 +9,9 @@ export interface ThemeSettings {
   barCardTint: string;
   topBarTint: string;
   
+  // Opacity controls
+  barCardOpacity: number;
+  
   // Background settings
   backgroundType: 'default' | 'gradient' | 'image' | 'custom';
   backgroundValue: string;
@@ -30,6 +33,7 @@ const defaultThemeSettings: ThemeSettings = {
   panelTint: 'rgba(0, 0, 0, 0.05)',
   barCardTint: 'rgba(255, 255, 255, 0.05)',
   topBarTint: 'rgba(0, 0, 0, 0.2)',
+  barCardOpacity: 0.95,
   backgroundType: 'default',
   backgroundValue: '',
   customBackgrounds: [],
@@ -171,6 +175,7 @@ export function getThemeStyles(settings: ThemeSettings) {
     '--panel-tint': settings.panelTint,
     '--bar-card-tint': settings.barCardTint,
     '--top-bar-tint': settings.topBarTint,
+    '--bar-card-opacity': settings.barCardOpacity.toString(),
     '--glass-opacity': settings.glassOpacity.toString(),
     '--border-opacity': settings.borderOpacity.toString(),
     '--border-radius': `${settings.borderRadius}px`,

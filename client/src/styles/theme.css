@@ -5,6 +5,7 @@
   --panel-tint: rgba(0, 0, 0, 0.05);
   --bar-card-tint: rgba(255, 255, 255, 0.05);
   --top-bar-tint: rgba(0, 0, 0, 0.2);
+  --bar-card-opacity: 0.95;
   --glass-opacity: 0.95;
   --border-opacity: 0.1;
   --border-radius: 12px;
@@ -63,7 +64,7 @@ body[data-background-type="default"] {
 .list-item,
 .card {
   background: linear-gradient(135deg,
-    rgba(var(--background), var(--glass-opacity)) 0%,
+    rgba(var(--background), var(--bar-card-opacity)) 0%,
     var(--bar-card-tint) 100%
   );
   backdrop-filter: blur(10px);

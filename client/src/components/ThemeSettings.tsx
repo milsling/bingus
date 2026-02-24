@@ -180,6 +180,21 @@ export default function ThemeSettings() {
                 </div>
 
                 <div>
+                  <Label>Bar Card Opacity: {Math.round(settings.barCardOpacity * 100)}%</Label>
+                  <Slider
+                    value={[settings.barCardOpacity * 100]}
+                    onValueChange={([value]) => updateSettings({ barCardOpacity: value / 100 })}
+                    max={100}
+                    min={0}
+                    step={1}
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Transparency of bar cards and list items
+                  </p>
+                </div>
+
+                <div>
                   <Label htmlFor="top-bar-tint">Top Bar Tint</Label>
                   <Input
                     id="top-bar-tint"
