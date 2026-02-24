@@ -150,6 +150,12 @@ export default function Navigation() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
+                <Link href="/changelog" className="flex items-center gap-2 cursor-pointer">
+                  <Sparkles className="h-4 w-4" />
+                  <span>What's New</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link href={currentUser ? "/settings" : "/auth"} className="flex items-center gap-2 cursor-pointer">
                   <UserCog className="h-4 w-4" />
                   <span>{currentUser ? "Account Settings" : "Sign in for Settings"}</span>

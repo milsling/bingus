@@ -27,6 +27,7 @@ import RhymeDictionary from "@/pages/RhymeDictionary";
 import AuthCallback from "@/pages/AuthCallback";
 import Prompts from "@/pages/Prompts";
 import Challenges from "@/pages/Challenges";
+import Changelog from "@/pages/Changelog";
 import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
@@ -76,6 +77,7 @@ function Router() {
       <Route path="/prompts" component={Prompts} />
       <Route path="/prompts/:slug" component={Prompts} />
       <Route path="/challenges" component={Challenges} />
+      <Route path="/changelog" component={Changelog} />
       <Route path="/terms" component={Terms} />
       <Route path="/achievements" component={Achievements} />
       <Route path="/badges" component={Badges} />

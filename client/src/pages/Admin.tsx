@@ -4490,6 +4490,27 @@ export default function Admin() {
                     </div>
                     <div className="max-h-[400px] overflow-y-auto rounded-xl border border-white/[0.08] bg-muted/30 p-4">
                       <div className="space-y-3">
+                        {/* Version 2.7.0 */}
+                        <div className="border-l-2 border-green-500 pl-3">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-green-600 text-white text-xs">v2.7.0</Badge>
+                            <span className="text-xs text-muted-foreground">Feb 24, 2026</span>
+                            <Badge className="bg-yellow-500 text-black text-xs ml-auto">LATEST</Badge>
+                          </div>
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <li>• Mobile navigation completely redesigned with glass morphism styling</li>
+                            <li>• Framer-motion spring animations with staggered reveals</li>
+                            <li>• Enhanced user profile card with online status and role badges</li>
+                            <li>• Fixed mobile tab selector spacing and text overlay issues</li>
+                            <li>• Added custom background upload functionality (owner only)</li>
+                            <li>• Site-wide default background settings for owners</li>
+                            <li>• Separated user background selection from owner-only uploads</li>
+                            <li>• Public changelog page at /changelog with version history</li>
+                            <li>• Added "What's New" link to navigation dropdown</li>
+                            <li>• Enhanced appearance settings with save confirmation</li>
+                          </ul>
+                        </div>
+
                         {/* Version 2.6.0 */}
                         <div className="border-l-2 border-fuchsia-500 pl-3">
                           <div className="flex items-center gap-2">
