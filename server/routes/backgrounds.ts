@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import { db } from "../db";
 import { customBackgrounds, users } from "@shared/schema";
 import { eq, desc, asc } from "drizzle-orm";
@@ -9,10 +10,16 @@ import { insertCustomBackgroundSchema } from "@shared/schema";
 
 const router = Router();
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(process.cwd(), 'uploads', 'backgrounds');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/backgrounds/');
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -72,7 +79,7 @@ router.post("/backgrounds", isAuthenticated, isOwner, upload.single('image'), as
 
     const nextSortOrder = lastBg.length > 0 ? lastBg[0].sortOrder + 1 : 0;
 
-    // Create database record
+    // Create database record - don't use schema validation for file uploads
     const newBackground = await db.insert(customBackgrounds).values({
       name,
       imageUrl: `/uploads/backgrounds/${req.file.filename}`,
@@ -227,11 +234,13 @@ router.post("/site-settings", isAuthenticated, isOwner, async (req, res) => {
     if (defaultBackground) {
       // You could store this in a database table or environment
       console.log("Default background updated:", defaultBackground);
+      // For now, just log it - in production you'd save to database
     }
     
     // Update theme settings if provided
     if (themeSettings) {
       console.log("Theme settings updated:", themeSettings);
+      // For now, just log it - in production you'd save to database
     }
     
     res.json({ 
