@@ -131,12 +131,9 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
       <div
         ref={menuRef}
         className={cn(
-          "fixed left-0 top-0 bottom-0 w-80 bg-background/95 backdrop-blur-xl border-r border-border/50 z-[1301] transform transition-transform duration-300 ease-out overflow-hidden",
+          "fixed left-0 top-0 bottom-0 w-80 transform transition-transform duration-300 ease-out overflow-hidden mobile-nav",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
-        style={{
-          background: `linear-gradient(135deg, rgba(var(--background), ${settings.glassOpacity}) 0%, ${settings.panelTint} 100%)`,
-        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/30">
@@ -151,7 +148,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-white/[0.1] transition-colors"
+            className="p-2 rounded-xl transition-colors mobile-nav-button"
             aria-label="Close menu"
           >
             <X className="h-5 w-5 text-foreground/70" />

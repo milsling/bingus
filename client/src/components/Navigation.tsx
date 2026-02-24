@@ -83,8 +83,8 @@ export default function Navigation() {
             type="button"
             onClick={() => setMobileNavOpen(true)}
             className={cn(
-              "p-3 rounded-xl transition-all duration-200 group",
-              "hover:bg-white/[0.1] border border-white/[0.2] bg-white/[0.05]"
+              "p-3 rounded-xl transition-all duration-200 group mobile-nav-button",
+              mobileNavOpen ? "rotate-90" : ""
             )}
             aria-label="Open menu"
           >
@@ -191,7 +191,7 @@ export default function Navigation() {
 
       {/* Mobile Top Bar - Slim glass bar: logo, notifications, online */}
       <div className="md:hidden fixed mobile-topbar-offset left-3 right-3 z-[1200] overflow-visible">
-        <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-3 overflow-visible top-bar">
+        <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-3 overflow-visible top-bar mobile-nav">
           <Link href="/">
             <div className="flex items-center gap-1.5 cursor-pointer min-w-0">
               <img src={headerLogo} alt="" className="h-6 w-6" />
@@ -206,7 +206,7 @@ export default function Navigation() {
             <button
               type="button"
               onClick={() => setLocation(currentUser ? "/settings" : "/auth")}
-              className="h-8 px-2.5 rounded-full border border-white/15 bg-white/[0.06] text-foreground/90 hover:bg-white/[0.12] transition-colors flex items-center gap-1.5 shrink-0"
+              className="h-8 px-2.5 rounded-full transition-colors flex items-center gap-1.5 shrink-0 mobile-nav-button"
               aria-label="Open settings"
               data-testid="button-mobile-settings"
             >

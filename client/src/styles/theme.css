@@ -6,6 +6,7 @@
   --bar-card-tint: rgba(255, 255, 255, 0.05);
   --top-bar-tint: rgba(0, 0, 0, 0.2);
   --bar-card-opacity: 0.95;
+  --mobile-nav-opacity: 0.95;
   --glass-opacity: 0.95;
   --border-opacity: 0.1;
   --border-radius: 12px;
@@ -77,7 +78,7 @@ body[data-background-type="default"] {
 .mobile-menu,
 .mobile-panel {
   background: linear-gradient(135deg,
-    rgba(var(--background), var(--glass-opacity)) 0%,
+    rgba(var(--background), var(--mobile-nav-opacity)) 0%,
     var(--panel-tint) 100%
   );
   backdrop-filter: blur(20px);
@@ -88,7 +89,7 @@ body[data-background-type="default"] {
 .mobile-nav-button,
 .mobile-menu-button {
   background: linear-gradient(135deg,
-    rgba(var(--background), var(--glass-opacity)) 0%,
+    rgba(var(--background), var(--mobile-nav-opacity)) 0%,
     var(--panel-tint) 100%
   );
   backdrop-filter: blur(10px);
@@ -99,7 +100,7 @@ body[data-background-type="default"] {
 .mobile-nav-button:hover,
 .mobile-menu-button:hover {
   background: linear-gradient(135deg,
-    rgba(var(--background), calc(var(--glass-opacity) + 0.1)) 0%,
+    rgba(var(--background), calc(var(--mobile-nav-opacity) + 0.1)) 0%,
     var(--panel-tint) 100%
   );
   border-color: rgba(var(--border), calc(var(--border-opacity) + 0.1));

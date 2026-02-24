@@ -201,6 +201,21 @@ export default function ThemeSettings() {
                 </div>
 
                 <div>
+                  <Label>Mobile Navigation Opacity: {Math.round(settings.mobileNavOpacity * 100)}%</Label>
+                  <Slider
+                    value={[settings.mobileNavOpacity * 100]}
+                    onValueChange={([value]) => updateSettings({ mobileNavOpacity: value / 100 })}
+                    max={100}
+                    min={0}
+                    step={1}
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Transparency of mobile navigation panel and buttons
+                  </p>
+                </div>
+
+                <div>
                   <Label htmlFor="top-bar-tint">Top Bar Tint</Label>
                   <Input
                     id="top-bar-tint"
