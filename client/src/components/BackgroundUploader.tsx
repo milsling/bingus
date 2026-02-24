@@ -161,8 +161,8 @@ export function BackgroundUploader() {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm font-medium">Owner Only Feature</p>
-        <p className="text-xs mt-1">Only the site owner can upload custom backgrounds</p>
+        <p className="text-sm font-medium">Premium Feature</p>
+        <p className="text-xs mt-1">Custom background uploads will be available soon</p>
       </div>
     );
   }
