@@ -409,10 +409,8 @@ export default function Messages() {
                           <Button className="mt-4" onClick={() => window.location.href = '/orphanage'}>
                             Browse Orphanage
                           </Button>
-                          </div>
                         </div>
                       </div>
-                    </>
                   ) : (
                     reversedMessages.map((msg: any) => {
                       const isSending = typeof msg.id === 'string' && msg.id.startsWith('temp-');
