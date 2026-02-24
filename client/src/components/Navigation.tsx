@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen, Radio } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen, Radio, Sparkles, X } from "lucide-react";
 import headerLogo from "../assets/logo.png";
 import orphanageMenuLogo from "../assets/orphanage-menu-logo.png";
 import { useBars } from "@/context/BarContext";
@@ -13,6 +13,7 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import AIAssistant from "@/components/AIAssistant";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
+import MobileNav from "@/components/MobileNav";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +30,7 @@ export default function Navigation() {
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [araOpen, setAraOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { leftTarget, rightTarget } = useFabShortcuts();
   
   const isOnMessagesPage = location.startsWith("/messages");
@@ -75,128 +77,32 @@ export default function Navigation() {
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
       <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar top-bar overflow-visible">
-        {/* Left: Hamburger + Logo */}
+        {/* Left: Modern Hamburger + Logo */}
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="p-2.5 rounded-xl hover:bg-secondary/80 transition-colors"
-                aria-label="Open menu"
-              >
-                <Menu className="h-5 w-5 text-foreground/70" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem asChild>
-                <Link href="/" className="flex items-center gap-3 cursor-pointer">
-                  <Compass className="h-4 w-4" />
-                  <span>Explore</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/prompts" className="flex items-center gap-3 cursor-pointer">
-                  <PenLine className="h-4 w-4" />
-                  <span>Prompts</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/orphanstudio" className="flex items-center gap-3 cursor-pointer">
-                  <NotebookPen className="h-4 w-4" />
-                  <span>Orphan Studio</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setAraOpen(true)}
-                className="flex items-center gap-3 cursor-pointer"
-              >
-                <Radio className="h-4 w-4" />
-                <span>Orphie Voice</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/challenges" className="flex items-center gap-3 cursor-pointer">
-                  <Swords className="h-4 w-4" />
-                  <span>Challenges</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href={currentUser ? "/settings" : "/auth"} className="flex items-center gap-3 cursor-pointer">
-                  <Settings2 className="h-4 w-4" />
-                  <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
-              {currentUser && (
-                <>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center gap-3 cursor-pointer">
-                      <User className="h-4 w-4" />
-                      <span>My Bars</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/messages" className="flex items-center gap-3 cursor-pointer">
-                      <MessageCircle className="h-4 w-4" />
-                      <span>Messages</span>
-                      {unreadCount > 0 && (
-                        <span className="ml-auto text-xs bg-primary text-white px-1.5 rounded-full">{unreadCount}</span>
-                      )}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/friends" className="flex items-center gap-3 cursor-pointer">
-                      <Users className="h-4 w-4" />
-                      <span>Friends</span>
-                      {pendingFriendRequests > 0 && (
-                        <span className="ml-auto text-xs bg-primary text-white px-1.5 rounded-full">{pendingFriendRequests}</span>
-                      )}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/saved" className="flex items-center gap-3 cursor-pointer">
-                      <Bookmark className="h-4 w-4" />
-                      <span>Saved</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/orphanage" className="flex items-center gap-3 cursor-pointer">
-                      <img src={orphanageMenuLogo} alt="The Orphanage" className="h-4 w-4" />
-                      <span>The Orphanage</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  {currentUser.isAdmin && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin" className="flex items-center gap-3 cursor-pointer">
-                          <Shield className="h-4 w-4" />
-                          <span>Admin</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      void handleLogout();
-                    }}
-                    className="flex items-center gap-3 cursor-pointer"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className={cn(
+              "p-3 rounded-xl transition-all duration-200 group",
+              "hover:bg-white/[0.1] border border-white/[0.2] bg-white/[0.05]"
+            )}
+            aria-label="Open menu"
+          >
+            <div className="relative">
+              <Menu className={cn(
+                "h-5 w-5 text-foreground/70 transition-transform duration-200",
+                mobileNavOpen ? "rotate-90" : ""
+              )} />
+              <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </button>
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <img src={headerLogo} alt="" className="h-7 w-7" />
-              <span className="font-logo text-xl leading-none text-foreground flex items-center gap-1">
+            <div className="flex items-center gap-2 cursor-pointer min-w-0 group">
+              <div className="relative">
+                <img src={headerLogo} alt="" className="h-7 w-7 transition-transform duration-200 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <span className="font-logo text-sm leading-none text-foreground flex items-center gap-0.5 truncate group-hover:text-primary transition-colors">
                 <span>ORPHAN</span>
                 <span>BARS</span>
               </span>
@@ -314,6 +220,9 @@ export default function Navigation() {
       
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
       <AIAssistant open={araOpen} onOpenChange={setAraOpen} hideFloatingButton />
+      
+      {/* Mobile Navigation */}
+      <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
     </>
   );
 }
