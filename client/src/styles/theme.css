@@ -72,13 +72,45 @@ body[data-background-type="default"] {
   border-radius: var(--border-radius);
 }
 
-/* Top bar tinting */
-.top-bar,
-.navigation-bar,
-.header-bar {
+/* Mobile navigation tinting */
+.mobile-nav,
+.mobile-menu,
+.mobile-panel {
   background: linear-gradient(135deg,
     rgba(var(--background), var(--glass-opacity)) 0%,
-    var(--top-bar-tint) 100%
+    var(--panel-tint) 100%
+  );
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--border), var(--border-opacity));
+}
+
+/* Mobile navigation buttons */
+.mobile-nav-button,
+.mobile-menu-button {
+  background: linear-gradient(135deg,
+    rgba(var(--background), var(--glass-opacity)) 0%,
+    var(--panel-tint) 100%
+  );
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--border), var(--border-opacity));
+  transition: all 0.3s ease;
+}
+
+.mobile-nav-button:hover,
+.mobile-menu-button:hover {
+  background: linear-gradient(135deg,
+    rgba(var(--background), calc(var(--glass-opacity) + 0.1)) 0%,
+    var(--panel-tint) 100%
+  );
+  border-color: rgba(var(--border), calc(var(--border-opacity) + 0.1));
+}
+
+/* Mobile navigation opacity control */
+.mobile-nav-opacity-slider {
+  --mobile-nav-opacity: 0.95;
+  background: linear-gradient(135deg,
+    rgba(var(--background), var(--mobile-nav-opacity)) 0%,
+    var(--panel-tint) 100%
   );
   backdrop-filter: blur(15px);
   border: 1px solid rgba(var(--border), var(--border-opacity));

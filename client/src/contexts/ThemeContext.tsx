@@ -22,6 +22,7 @@ export interface ThemeSettings {
   
   // Opacity controls
   barCardOpacity: number;
+  mobileNavOpacity: number;
   
   // Background settings
   backgroundType: 'default' | 'gradient' | 'image' | 'custom';
