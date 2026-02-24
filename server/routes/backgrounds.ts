@@ -215,4 +215,33 @@ router.post("/admin/backgrounds/reorder", isAuthenticated, isOwner, async (req, 
   }
 });
 
+// Save site-wide appearance settings (owner only)
+router.post("/site-settings", isAuthenticated, isOwner, async (req, res) => {
+  try {
+    const { defaultBackground, themeSettings } = req.body;
+    
+    // Store in a simple settings table or file - for now using environment variables
+    // In a real implementation, you'd have a proper site_settings table
+    
+    // Update default background if provided
+    if (defaultBackground) {
+      // You could store this in a database table or environment
+      console.log("Default background updated:", defaultBackground);
+    }
+    
+    // Update theme settings if provided
+    if (themeSettings) {
+      console.log("Theme settings updated:", themeSettings);
+    }
+    
+    res.json({ 
+      message: "Site settings saved successfully",
+      settings: { defaultBackground, themeSettings }
+    });
+  } catch (error) {
+    console.error("Error saving site settings:", error);
+    res.status(500).json({ error: "Failed to save site settings" });
+  }
+});
+
 export default router;

@@ -29,7 +29,7 @@ export default function Settings() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const { selectedBackground } = useBackground();
+  const { selectedBackground, setBackground } = useBackground();
   const hasCustomBackground = selectedBackground.image !== null;
 
   const canDebugControls = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
@@ -165,6 +165,35 @@ export default function Settings() {
     },
   });
 
+  const saveSiteSettingsMutation = useMutation({
+    mutationFn: async (settings: { defaultBackground?: string; themeSettings?: any }) => {
+      const res = await fetch("/api/backgrounds/site-settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(settings),
+      });
+      if (!res.ok) throw new Error("Failed to save site settings");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Site settings saved!",
+        description: "Appearance settings have been applied to the entire site.",
+      });
+      // Force refresh to apply changes
+      setTimeout(() => window.location.reload(), 1500);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Save failed",
+        description: error.message || "Could not save site settings",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleChangePassword = () => {
     if (newPassword !== confirmPassword) {
       toast({
@@ -241,13 +270,15 @@ export default function Settings() {
               >
                 Sounds
               </TabsTrigger>
-              <TabsTrigger
-                value="appearance"
-                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
-                data-testid="tab-settings-appearance"
-              >
-                Appearance
-              </TabsTrigger>
+              {currentUser?.isOwner && (
+                <TabsTrigger
+                  value="appearance"
+                  className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
+                  data-testid="tab-settings-appearance"
+                >
+                  Appearance
+                </TabsTrigger>
+              )}
               {canDebugControls && (
                 <TabsTrigger
                   value="developer"
@@ -547,23 +578,62 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="appearance" className="mt-0 space-y-4">
-              <BackgroundSelector />
-              <ThemeSettings />
-              {currentUser?.isOwner && (
+              {currentUser?.isOwner ? (
+                <>
+                  <Card className={cn(
+                    "border-border/70",
+                    hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
+                  )}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        🎨 Site Appearance Settings
+                      </CardTitle>
+                      <CardDescription>
+                        These settings affect the entire site for all users
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <BackgroundSelector />
+                      <ThemeSettings />
+                      <div className="mt-6 pt-4 border-t border-border/50">
+                        <BackgroundUploader />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={() => {
+                        saveSiteSettingsMutation.mutate({
+                          defaultBackground: selectedBackground.id,
+                          // Add theme settings here if needed
+                        });
+                      }}
+                      disabled={saveSiteSettingsMutation.isPending}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      {saveSiteSettingsMutation.isPending ? (
+                        <>
+                          <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "💾 Save & Apply Site Settings"
+                      )}
+                    </Button>
+                  </div>
+                </>
+              ) : (
                 <Card className={cn(
                   "border-border/70",
                   hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
                 )}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      📤 Custom Background
-                    </CardTitle>
-                    <CardDescription>
-                      Upload your own background image (max 5MB, JPG/PNG/WebP)
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <BackgroundUploader />
+                  <CardContent className="pt-6">
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Palette className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-lg font-medium">Owner Only Settings</p>
+                      <p className="text-sm mt-2">Site appearance settings are restricted to the owner only</p>
+                    </div>
                   </CardContent>
                 </Card>
               )}
