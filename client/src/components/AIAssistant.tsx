@@ -556,20 +556,20 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                 </div>
               ))}
               
-                  {isLoading && (
-                    <div className="mb-4 text-left">
-                      <div className="inline-flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Thinking...
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div ref={messagesEndRef} />
-                </>
+              {isLoading && (
+                <div className="mb-4 text-left">
+                  <div className="inline-flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Thinking...
+                  </div>
+                </div>
               )}
-            </div>
-          </ScrollArea>
+              
+              <div ref={messagesEndRef} />
+            </>
+          )}
+        </div>
+      </ScrollArea>
 
           {!realVoiceMode && (
             <div className="border-t border-white/[0.08] bg-background/50 p-3 md:p-4 md:p-6">
