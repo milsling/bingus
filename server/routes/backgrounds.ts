@@ -1,4 +1,6 @@
 import { Router } from "express";
+import multer from "multer";
+import path from "path";
 import { db } from "../db";
 import { customBackgrounds, users } from "@shared/schema";
 import { eq, desc, asc } from "drizzle-orm";
@@ -6,6 +8,33 @@ import { isAuthenticated, isOwner } from "../auth";
 import { insertCustomBackgroundSchema } from "@shared/schema";
 
 const router = Router();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/backgrounds/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `bg-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, and WebP are allowed.'));
+    }
+  }
+});
 
 // Get all backgrounds (including custom ones)
 router.get("/backgrounds", async (req, res) => {
@@ -21,6 +50,41 @@ router.get("/backgrounds", async (req, res) => {
   } catch (error) {
     console.error("Error fetching backgrounds:", error);
     res.status(500).json({ error: "Failed to fetch backgrounds" });
+  }
+});
+
+// Upload custom background (owner only)
+router.post("/backgrounds", isAuthenticated, isOwner, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+
+    const { currentUser } = req;
+    const name = req.body.name || req.file.originalname.split('.')[0];
+
+    // Get the highest sort order to append at the end
+    const lastBg = await db
+      .select({ sortOrder: customBackgrounds.sortOrder })
+      .from(customBackgrounds)
+      .orderBy(desc(customBackgrounds.sortOrder))
+      .limit(1);
+
+    const nextSortOrder = lastBg.length > 0 ? lastBg[0].sortOrder + 1 : 0;
+
+    // Create database record
+    const newBackground = await db.insert(customBackgrounds).values({
+      name,
+      imageUrl: `/uploads/backgrounds/${req.file.filename}`,
+      createdBy: currentUser!.id,
+      sortOrder: nextSortOrder,
+      isActive: true,
+    }).returning();
+
+    res.status(201).json(newBackground[0]);
+  } catch (error) {
+    console.error("Error uploading background:", error);
+    res.status(500).json({ error: "Failed to upload background" });
   }
 });
 

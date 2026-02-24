@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { playNotificationSound, notificationSoundLabels, messageSoundLabels } from "@/lib/notificationSounds";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { useBackground } from "@/components/BackgroundSelector";
+import { BackgroundUploader } from "@/components/BackgroundUploader";
 import ThemeSettings from "@/components/ThemeSettings";
 import { useFabShortcuts, SHORTCUT_OPTIONS } from "@/hooks/useFabShortcuts";
 import { Button } from "@/components/ui/button";
@@ -218,31 +219,31 @@ export default function Settings() {
 
         <div className="glass-surface-strong rounded-3xl border border-white/[0.08] p-4 md:p-6">
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="mb-5 flex h-auto w-full items-stretch justify-start gap-2 overflow-x-auto rounded-2xl bg-white/[0.03] p-1">
+            <TabsList className="mb-5 flex h-auto w-full items-stretch justify-start gap-1.5 overflow-x-auto rounded-2xl bg-white/[0.03] p-1.5 scrollbar-hide">
               <TabsTrigger
                 value="general"
-                className="rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground"
+                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                 data-testid="tab-settings-general"
               >
                 General
               </TabsTrigger>
               <TabsTrigger
                 value="privacy"
-                className="rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground"
+                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                 data-testid="tab-settings-privacy"
               >
                 Privacy
               </TabsTrigger>
               <TabsTrigger
                 value="sounds"
-                className="rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground"
+                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                 data-testid="tab-settings-sounds"
               >
                 Sounds
               </TabsTrigger>
               <TabsTrigger
                 value="appearance"
-                className="rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground"
+                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                 data-testid="tab-settings-appearance"
               >
                 Appearance
@@ -250,7 +251,7 @@ export default function Settings() {
               {canDebugControls && (
                 <TabsTrigger
                   value="developer"
-                  className="rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground"
+                  className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                   data-testid="tab-settings-developer"
                 >
                   Developer
@@ -548,6 +549,24 @@ export default function Settings() {
             <TabsContent value="appearance" className="mt-0 space-y-4">
               <BackgroundSelector />
               <ThemeSettings />
+              {currentUser?.isOwner && (
+                <Card className={cn(
+                  "border-border/70",
+                  hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
+                )}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      📤 Custom Background
+                    </CardTitle>
+                    <CardDescription>
+                      Upload your own background image (max 5MB, JPG/PNG/WebP)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <BackgroundUploader />
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {canDebugControls && (
