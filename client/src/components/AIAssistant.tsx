@@ -458,23 +458,23 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                     onStateChange={setVoiceChatState}
                   />
                 )}
-                
-                {!realVoiceMode && messages.length > 0 && (
-                    <div className="mt-4 space-y-3">
-                      {messages.map((msg, i) => (
-                        <div key={i} className={cn("mb-3", msg.role === "user" ? "text-right" : "text-left")}>
-                          <div
-                            className={cn(
-                              "inline-block rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap",
-                              msg.role === "user"
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground"
-                            )}
-                          >
-                            {msg.content}
-                          </div>
-                        </div>
-                      ))}
+              </div>
+            </div>
+          </DialogHeader>
+          <ScrollArea className="flex-1">
+            <div className="p-4">
+              {realVoiceMode ? (
+                <div className="flex h-full flex-col items-center justify-center text-center">
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
+                    <Mic className="h-8 w-8 text-green-400" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold">Voice Chat Active</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    Speak naturally and I'll respond. Click the mic button again to exit.
+                  </p>
+                  {voiceChatState && (
+                    <div className="text-sm text-muted-foreground">
+                      Status: {voiceChatState}
                     </div>
                   )}
                 </div>
@@ -493,83 +493,83 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   )}
                   
                   {messages.map((msg, i) => (
-                <div key={i} className={cn("mb-4", msg.role === "user" ? "text-right" : "text-left")}>
-                  <div className={cn(
-                      "inline-flex max-w-[95%] md:max-w-[85%] lg:max-w-[80%] items-start gap-2",
-                      msg.role === "user" && "flex-row-reverse"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap relative group",
-                        msg.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {editingIndex === i && msg.role === "assistant" ? (
-                        <div className="min-w-[200px]">
-                          <Textarea
-                            value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            className="min-h-[60px] resize-none bg-background border-border text-foreground"
-                            autoFocus
-                          />
-                          <div className="flex gap-2 mt-2">
-                            <Button
-                              size="sm"
-                              onClick={saveEdit}
-                              className="h-7 px-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
-                            >
-                              <Check className="h-3 w-3 mr-1" />
-                              Save
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={cancelEdit}
-                              className="h-7 px-2 text-xs border-border/60 hover:bg-muted"
-                            >
-                              <X className="h-3 w-3 mr-1" />
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {msg.content}
-                          {msg.role === "assistant" && currentUser?.isAdmin && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => startEdit(i)}
-                              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20"
-                              data-testid={`button-edit-message-${i}`}
-                            >
-                              <Edit3 className="h-3 w-3" />
-                            </Button>
+                    <div key={i} className={cn("mb-4", msg.role === "user" ? "text-right" : "text-left")}>
+                      <div className={cn(
+                          "inline-flex max-w-[95%] md:max-w-[85%] lg:max-w-[80%] items-start gap-2",
+                          msg.role === "user" && "flex-row-reverse"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap relative group",
+                            msg.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground"
                           )}
-                        </>
-                      )}
+                        >
+                          {editingIndex === i && msg.role === "assistant" ? (
+                            <div className="min-w-[200px]">
+                              <Textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="min-h-[60px] resize-none bg-background border-border text-foreground"
+                                autoFocus
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <Button
+                                  size="sm"
+                                  onClick={saveEdit}
+                                  className="h-7 px-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                                >
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={cancelEdit}
+                                  className="h-7 px-2 text-xs border-border/60 hover:bg-muted"
+                                >
+                                  <X className="h-3 w-3 mr-1" />
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {msg.content}
+                              {msg.role === "assistant" && currentUser?.isAdmin && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => startEdit(i)}
+                                  className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20"
+                                  data-testid={`button-edit-message-${i}`}
+                                >
+                                  <Edit3 className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  ))}
               
-              {isLoading && (
-                <div className="mb-4 text-left">
-                  <div className="inline-flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Thinking...
-                  </div>
-                </div>
+                  {isLoading && (
+                    <div className="mb-4 text-left">
+                      <div className="inline-flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Thinking...
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div ref={messagesEndRef} />
+                </>
               )}
-              
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </div>
-      </ScrollArea>
+            </div>
+          </ScrollArea>
 
           {!realVoiceMode && (
             <div className="border-t border-white/[0.08] bg-background/50 p-3 md:p-4 md:p-6">
@@ -591,25 +591,38 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   <Mic className="h-4 w-4" />
                 </Button>
               )}
-      
-      <Input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        className="flex-1 min-w-0"
-      />
-      {isVoiceSupported && (
-        <p className="text-xs text-muted-foreground">
-          {isDictating 
-            ? "🎤 Listening... Speak clearly and tap the mic button when done."
-            : "💬 Tap the mic button to use voice dictation."
-          }
-        </p>
-      )}
-    </div>
-  </div>
-)}
-</DialogContent>
-</Dialog>
+
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Ask for help with bars, rhymes, and more..."
+                className="flex-1 min-w-0 bg-white/[0.04] border-white/[0.1] placeholder:text-muted-foreground/60"
+                disabled={isLoading}
+              />
+
+              <Button
+                onClick={handleSubmit}
+                disabled={!input.trim() || isLoading}
+                className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                data-testid="button-ai-send"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+              </div>
+
+              {isVoiceSupported && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {isRecording 
+                    ? "🎤 Listening... Speak clearly and tap the mic button when done."
+                    : "💬 Tap the mic button to use voice dictation."
+                  }
+                </p>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
