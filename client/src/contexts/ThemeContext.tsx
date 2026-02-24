@@ -40,7 +40,7 @@ export interface ThemeSettings {
   borderRadius: number;
 }
 
-const defaultThemeSettings: ThemeSettings = {
+export const defaultThemeSettings: ThemeSettings = {
   windowTint: 'rgba(0, 0, 0, 0.1)',
   panelTint: 'rgba(0, 0, 0, 0.05)',
   barCardTint: 'rgba(255, 255, 255, 0.05)',
