@@ -36,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import iconUrl from "@/assets/icon.png";
+const iconUrl = "/icon.png";
 import { getSupabase } from "@/lib/supabase";
 
 type SignupStep = "email" | "verify" | "details";
