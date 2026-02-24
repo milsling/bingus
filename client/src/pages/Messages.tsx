@@ -406,8 +406,9 @@ export default function Messages() {
                           <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-20" />
                           <p className="text-lg font-medium">No messages yet</p>
                           <p className="text-sm mt-2 opacity-70">Start the conversation with a friendly greeting!</p>
-                              Browse Orphanage
-                            </Button>
+                          <Button className="mt-4" onClick={() => window.location.href = '/orphanage'}>
+                            Browse Orphanage
+                          </Button>
                           </div>
                         </div>
                       </div>
