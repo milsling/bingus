@@ -28,6 +28,36 @@ interface MobileNavProps {
   onClose: () => void;
 }
 
+interface MenuItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<any>;
+}
+
+interface ActionItem {
+  action: () => void;
+  label: string;
+  icon: React.ComponentType<any>;
+  external?: boolean;
+}
+
+type MenuItemUnion = MenuItem | ActionItem;
+
+// Type guard functions
+function isMenuItem(item: MenuItemUnion): item is MenuItem {
+  return 'href' in item;
+}
+
+function isActionItem(item: MenuItemUnion): item is ActionItem {
+  return 'action' in item;
+}
+
+interface MenuSection {
+  title: string;
+  icon: React.ComponentType<any>;
+  items: MenuItemUnion[];
+}
+
 export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const { currentUser, logout } = useBars();
   const { settings } = useTheme();
@@ -68,7 +98,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
     onClose();
   };
 
-  const menuSections = [
+  const menuSections: MenuSection[] = [
     {
       title: 'Explore',
       icon: Compass,
@@ -198,7 +228,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
               <div className="space-y-1">
                 {section.items.map((item, itemIndex) => (
                   <div key={item.label}>
-                    {item.href ? (
+                    {isMenuItem(item) ? (
                       <Link
                         href={item.href}
                         onClick={onClose}
@@ -225,7 +255,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                     ) : (
                       <button
                         onClick={() => {
-                          item.action?.();
+                          item.action();
                           onClose();
                         }}
                         className="flex items-center gap-3 px-4 py-3 mx-2 rounded-xl hover:bg-white/[0.05] text-foreground border border-transparent transition-all duration-200 group w-full"

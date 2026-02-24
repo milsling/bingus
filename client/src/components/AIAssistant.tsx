@@ -330,11 +330,11 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
     cancelEdit();
   };
 
-  function handleKeyPress(event: KeyboardEvent<HTMLInputElement>): void {
+  function handleKeyPress(event: KeyboardEvent): void {
     throw new Error("Function not implemented.");
   }
 
-  function handleSubmit(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
+  function handleSubmit(event: MouseEvent): void {
     throw new Error("Function not implemented.");
   }
 

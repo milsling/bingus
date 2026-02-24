@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from "@/contexts/ThemeContext";
+import { defaultThemeSettings } from "@/contexts/ThemeContext";
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Palette, Image, Trash2, Download } from 'lucide-react';
 import ThemePresetSelector from './ThemePresetSelector';
