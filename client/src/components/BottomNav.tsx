@@ -395,53 +395,35 @@ export function BottomNav({ onNewMessage, searchOpen: searchOpenProp, onSearchOp
                 <button
                   type="button"
                   onClick={() => setMenuView("main")}
-                  className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-foreground/90 hover:bg-white/[0.06]"
+                  className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm glass-surface border border-white/[0.08] text-foreground/90 hover:bg-white/[0.06] hover:text-foreground transition-all"
                   data-testid="button-settings-back"
-                    playMenuCloseSound();
-                    setIsOpen(false);
-                  }}
-                  className="mx-auto mb-3 block h-5 w-14 touch-none rounded-full"
-                  aria-label="Drag down to close menu"
                 >
-                  <span className="mx-auto mt-1.5 block h-1.5 w-12 rounded-full bg-foreground/20" />
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Back to Menu</span>
                 </button>
-                <div className="flex items-center justify-between">
-                  {menuView === "settings" ? (
-                    <button
-                      type="button"
-                      onClick={() => setMenuView("main")}
-                      className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm glass-surface border border-white/[0.08] text-foreground/90 hover:bg-white/[0.06] hover:text-foreground transition-all"
-                      data-testid="button-settings-back"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      <span>Back to Menu</span>
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <img src={headerLogo} alt="Orphan Bars" className="h-8 w-8" />
-                      <span className="font-logo text-xl leading-none text-foreground flex items-center gap-0.5">
-                        <span>ORPHAN</span>
-                        <span>BARS</span>
-                      </span>
-                    </div>
-                  )}
-                  <motion.button
-                    onClick={() => {
-                      playMenuCloseSound();
-                      setIsOpen(false);
-                    }}
-                    className="w-10 h-10 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] flex items-center justify-center transition-colors"
-                    whileTap={{ scale: 0.9 }}
-                    data-testid="button-close-menu"
-                  >
-                    <X className="w-5 h-5 text-foreground" strokeWidth={2} />
-                  </motion.button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <img src={headerLogo} alt="Orphan Bars" className="h-8 w-8" />
+                  <span className="font-logo text-xl leading-none text-foreground flex items-center gap-0.5">
+                    <span>ORPHAN</span>
+                    <span>BARS</span>
+                  </span>
                 </div>
-              </div>
+              )}
+              <motion.button
+                onClick={() => {
+                  playMenuCloseSound();
+                  setIsOpen(false);
+                }}
+                className="w-10 h-10 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] flex items-center justify-center transition-colors"
+                whileTap={{ scale: 0.9 }}
+                data-testid="button-close-menu"
+              >
+                <X className="w-5 h-5 text-foreground" strokeWidth={2} />
+              </motion.button>
+            </div>
 
-              <div className="flex-1 flex flex-col px-6 py-4 overflow-y-auto overscroll-contain min-h-0">
-                        </button>
-                      </div>
+            <div className="flex-1 flex flex-col px-6 py-4 overflow-y-auto overscroll-contain min-h-0">
                       <p className="mt-3 text-[11px] text-muted-foreground">
                         Active: {resolvedTheme === "dark" ? "Dark mode" : "Light mode"}
                         {theme === "system" ? " (system)" : ""}
