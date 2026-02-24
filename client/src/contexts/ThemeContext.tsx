@@ -2,6 +2,17 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
 
+export interface ThemePreset {
+  id: string;
+  name: string;
+  description?: string;
+  settings: ThemeSettings;
+  isGlobal?: boolean;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ThemeSettings {
   // Window/Panel tinting
   windowTint: string;
@@ -53,6 +64,16 @@ interface ThemeContextType {
   addCustomBackground: (background: { url: string; name: string }) => void;
   removeCustomBackground: (id: string) => void;
   canCustomize: boolean;
+  
+  // Preset management
+  presets: ThemePreset[];
+  currentPresetId: string | null;
+  savePreset: (name: string, description?: string) => Promise<ThemePreset>;
+  loadPreset: (presetId: string) => void;
+  deletePreset: (presetId: string) => Promise<void>;
+  updatePreset: (presetId: string, updates: Partial<ThemePreset>) => Promise<void>;
+  publishGlobalTheme: (presetId: string) => Promise<void>;
+  unpublishGlobalTheme: (presetId: string) => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -62,6 +83,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
   const [settings, setSettings] = useState<ThemeSettings>(defaultThemeSettings);
   const [canCustomize, setCanCustomize] = useState(false);
+  const [presets, setPresets] = useState<ThemePreset[]>([]);
+  const [currentPresetId, setCurrentPresetId] = useState<string | null>(null);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -86,6 +109,38 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // This would typically check user permissions
     // For now, we'll assume all users can customize
     setCanCustomize(true);
+  }, []);
+
+  // Load presets from localStorage and server
+  useEffect(() => {
+    const loadPresets = async () => {
+      try {
+        // Load local presets
+        const localPresets = localStorage.getItem('theme-presets');
+        let loadedPresets: ThemePreset[] = [];
+        
+        if (localPresets) {
+          loadedPresets = JSON.parse(localPresets);
+        }
+
+        // Load global presets from server
+        try {
+          const response = await fetch('/api/themes/global');
+          if (response.ok) {
+            const globalPresets = await response.json();
+            loadedPresets = [...globalPresets, ...loadedPresets];
+          }
+        } catch (error) {
+          console.error('Failed to load global presets:', error);
+        }
+
+        setPresets(loadedPresets);
+      } catch (error) {
+        console.error('Failed to load presets:', error);
+      }
+    };
+
+    loadPresets();
   }, []);
 
   useEffect(() => {
@@ -143,6 +198,112 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  // Preset management functions
+  const savePreset = async (name: string, description?: string): Promise<ThemePreset> => {
+    const newPreset: ThemePreset = {
+      id: Date.now().toString(),
+      name,
+      description,
+      settings: { ...settings },
+      isGlobal: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedPresets = [...presets, newPreset];
+    setPresets(updatedPresets);
+    localStorage.setItem('theme-presets', JSON.stringify(updatedPresets.filter(p => !p.isGlobal)));
+    
+    return newPreset;
+  };
+
+  const loadPreset = (presetId: string) => {
+    const preset = presets.find(p => p.id === presetId);
+    if (preset) {
+      setSettings(preset.settings);
+      setCurrentPresetId(presetId);
+    }
+  };
+
+  const deletePreset = async (presetId: string): Promise<void> => {
+    const preset = presets.find(p => p.id === presetId);
+    if (!preset || preset.isGlobal) {
+      throw new Error('Cannot delete global preset');
+    }
+
+    const updatedPresets = presets.filter(p => p.id !== presetId);
+    setPresets(updatedPresets);
+    localStorage.setItem('theme-presets', JSON.stringify(updatedPresets.filter(p => !p.isGlobal)));
+
+    if (currentPresetId === presetId) {
+      setCurrentPresetId(null);
+    }
+  };
+
+  const updatePreset = async (presetId: string, updates: Partial<ThemePreset>): Promise<void> => {
+    const preset = presets.find(p => p.id === presetId);
+    if (!preset || preset.isGlobal) {
+      throw new Error('Cannot update global preset');
+    }
+
+    const updatedPresets = presets.map(p => 
+      p.id === presetId 
+        ? { ...p, ...updates, updatedAt: new Date().toISOString() }
+        : p
+    );
+    setPresets(updatedPresets);
+    localStorage.setItem('theme-presets', JSON.stringify(updatedPresets.filter(p => !p.isGlobal)));
+  };
+
+  const publishGlobalTheme = async (presetId: string): Promise<void> => {
+    const preset = presets.find(p => p.id === presetId);
+    if (!preset) {
+      throw new Error('Preset not found');
+    }
+
+    try {
+      const response = await fetch('/api/themes/global', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...preset,
+          isGlobal: true,
+          settings: preset.settings
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to publish global theme');
+      }
+
+      const updatedPresets = presets.map(p =>
+        p.id === presetId ? { ...p, isGlobal: true } : p
+      );
+      setPresets(updatedPresets);
+    } catch (error) {
+      throw new Error('Failed to publish global theme');
+    }
+  };
+
+  const unpublishGlobalTheme = async (presetId: string): Promise<void> => {
+    try {
+      const response = await fetch(`/api/themes/global/${presetId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to unpublish global theme');
+      }
+
+      const updatedPresets = presets.map(p =>
+        p.id === presetId ? { ...p, isGlobal: false } : p
+      );
+      setPresets(updatedPresets);
+    } catch (error) {
+      throw new Error('Failed to unpublish global theme');
+    }
+  };
+
   return (
     <ThemeContext.Provider value={{ 
       theme, 
@@ -154,6 +315,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       addCustomBackground,
       removeCustomBackground,
       canCustomize,
+      presets,
+      currentPresetId,
+      savePreset,
+      loadPreset,
+      deletePreset,
+      updatePreset,
+      publishGlobalTheme,
+      unpublishGlobalTheme,
     }}>
       {children}
     </ThemeContext.Provider>

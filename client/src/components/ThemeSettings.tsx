@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Palette, Image, Trash2, Download } from 'lucide-react';
+import ThemePresetSelector from './ThemePresetSelector';
 
 export default function ThemeSettings() {
   const { settings, updateSettings, addCustomBackground, removeCustomBackground, canCustomize } = useTheme();
@@ -129,11 +130,16 @@ export default function ThemeSettings() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="tints" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="presets">Presets</TabsTrigger>
               <TabsTrigger value="tints">Color Tints</TabsTrigger>
               <TabsTrigger value="backgrounds">Backgrounds</TabsTrigger>
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="presets" className="mt-0">
+              <ThemePresetSelector />
+            </TabsContent>
 
             <TabsContent value="tints" className="space-y-6">
               <div className="grid gap-4">

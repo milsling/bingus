@@ -352,6 +352,87 @@ app.get('/api/upload/backgrounds', (req, res) => {
   }
 });
 
+// Theme management endpoints
+const themesDir = path.join(process.cwd(), 'data', 'themes');
+if (!fs.existsSync(themesDir)) {
+  fs.mkdirSync(themesDir, { recursive: true });
+}
+
+// Get global themes
+app.get('/api/themes/global', (req, res) => {
+  try {
+    const themesFile = path.join(themesDir, 'global-themes.json');
+    if (fs.existsSync(themesFile)) {
+      const themesData = fs.readFileSync(themesFile, 'utf8');
+      const themes = JSON.parse(themesData);
+      res.json(themes);
+    } else {
+      res.json([]);
+    }
+  } catch (error) {
+    console.error('Failed to load global themes:', error);
+    res.status(500).json({ error: 'Failed to load global themes' });
+  }
+});
+
+// Save global theme
+app.post('/api/themes/global', (req, res) => {
+  try {
+    const themeData = req.body;
+    
+    // Validate theme data
+    if (!themeData.id || !themeData.name || !themeData.settings) {
+      return res.status(400).json({ error: 'Invalid theme data' });
+    }
+
+    const themesFile = path.join(themesDir, 'global-themes.json');
+    let themes = [];
+    
+    if (fs.existsSync(themesFile)) {
+      themes = JSON.parse(fs.readFileSync(themesFile, 'utf8'));
+    }
+
+    // Add or update theme
+    const existingIndex = themes.findIndex(t => t.id === themeData.id);
+    if (existingIndex >= 0) {
+      themes[existingIndex] = { ...themeData, updatedAt: new Date().toISOString() };
+    } else {
+      themes.push({ ...themeData, createdAt: new Date().toISOString() });
+    }
+
+    fs.writeFileSync(themesFile, JSON.stringify(themes, null, 2));
+    res.json({ success: true, theme: themeData });
+  } catch (error) {
+    console.error('Failed to save global theme:', error);
+    res.status(500).json({ error: 'Failed to save global theme' });
+  }
+});
+
+// Delete global theme
+app.delete('/api/themes/global/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const themesFile = path.join(themesDir, 'global-themes.json');
+    
+    if (!fs.existsSync(themesFile)) {
+      return res.status(404).json({ error: 'Theme not found' });
+    }
+
+    let themes = JSON.parse(fs.readFileSync(themesFile, 'utf8'));
+    const filteredThemes = themes.filter(t => t.id !== id);
+    
+    if (themes.length === filteredThemes.length) {
+      return res.status(404).json({ error: 'Theme not found' });
+    }
+
+    fs.writeFileSync(themesFile, JSON.stringify(filteredThemes, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to delete global theme:', error);
+    res.status(500).json({ error: 'Failed to delete global theme' });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
