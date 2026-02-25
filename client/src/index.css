@@ -1341,7 +1341,7 @@ html.dark {
 
 .nav-overlay {
   width: 100%;
-  border-radius: 9999px;
+  border-radius: 0;
   border: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(156, 163, 175, 0.08); /* bg-gray-400/[0.08] */
   box-shadow: 0 16px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.12); /* shadow-2xl shadow-black/30 */
