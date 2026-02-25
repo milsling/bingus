@@ -649,7 +649,7 @@ export default function BarCard({ bar }: BarCardProps) {
           transform: `translateX(${offset}px)`,
           transition: offset === 0 ? 'transform 0.2s ease-out' : 'none',
         }}
-        className="relative"
+        className="relative glass-surface-strong rounded-2xl p-1"
       >
         {offset > 40 && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 text-red-500">
@@ -661,7 +661,7 @@ export default function BarCard({ bar }: BarCardProps) {
             <Bookmark className="h-8 w-8 fill-current" />
           </div>
         )}
-        <Card className="bar-card glass-card overflow-hidden transition-all duration-300 hover:border-white/[0.15]">
+        <Card className="bar-card glass-card glass-surface-strong overflow-hidden transition-all duration-300 hover:border-white/[0.15]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-3">
               <Link href={`/u/${bar.user.username}`}>
