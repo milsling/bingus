@@ -661,7 +661,7 @@ export default function BarCard({ bar }: BarCardProps) {
             <Bookmark className="h-8 w-8 fill-current" />
           </div>
         )}
-        <Card className="bar-card glass-card glass-surface-strong overflow-hidden transition-all duration-300 hover:border-white/[0.15]">
+        <Card className="glass-surface-strong rounded-2xl border border-border/60 shadow-[0_14px_32px_rgba(2,6,23,0.36)] overflow-hidden transition-all duration-300 hover:border-primary/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-3">
               <Link href={`/u/${bar.user.username}`}>
@@ -768,9 +768,9 @@ export default function BarCard({ bar }: BarCardProps) {
           </CardHeader>
           
           <CardContent className="space-y-4">
-            <div className="relative pl-4 border-l-2 border-primary/50 py-1">
+            <div className="relative pl-4 border-l-2 border-primary/40 py-1">
               <p 
-                className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
+                className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground/90 [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
                 style={{ color: 'inherit' }}
                 data-testid={`text-content-${bar.id}`}
                 dangerouslySetInnerHTML={createMarkup(bar.content)}
@@ -886,7 +886,7 @@ export default function BarCard({ bar }: BarCardProps) {
             </div>
           </CardContent>
 
-          <CardFooter className="border-t border-white/5 py-3 flex-col px-2 sm:px-4">
+          <CardFooter className="border-t border-border/20 py-3 flex-col px-2 sm:px-4">
             <div className="flex w-full items-center justify-start gap-1 sm:gap-2 text-muted-foreground">
               <Button 
                 variant="ghost" 
