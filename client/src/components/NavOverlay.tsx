@@ -36,59 +36,80 @@ export function NavOverlay({ isOpen, onClose, items }: NavOverlayProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.25 }}
             className="nav-overlay-backdrop"
             onClick={onClose}
           />
 
-          <div className="nav-overlay-anchor">
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
-              className="nav-overlay"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Main navigation menu"
-            >
-              <div className="nav-overlay-header">
-                <p className="text-sm font-semibold text-foreground/90">Main Menu</p>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="nav-overlay-close"
-                  aria-label="Close navigation menu"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+          <motion.div
+            initial={{ y: 80, scale: 0.98, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            exit={{ y: 80, scale: 0.98, opacity: 0 }}
+            transition={{ type: "spring", bounce: 0.32, duration: 0.44 }}
+            className="nav-overlay nav-overlay-modern"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Main navigation menu"
+            style={{
+              position: "fixed",
+              left: "50%",
+              bottom: 0,
+              transform: "translateX(-50%)",
+              width: "min(96vw, 420px)",
+              maxHeight: "calc(100vh - 80px)",
+              zIndex: 9999,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+              boxSizing: "border-box",
+              paddingBottom: "env(safe-area-inset-bottom, 24px)",
+            }}
+          >
+            <div className="nav-overlay-header" style={{paddingTop: "1.2rem", paddingBottom: "0.8rem"}}>
+              <p className="text-base font-semibold text-foreground/90">Main Menu</p>
+              <button
+                type="button"
+                onClick={onClose}
+                className="nav-overlay-close"
+                aria-label="Close navigation menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-              <div className="nav-overlay-grid">
-                {items.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={cn("nav-overlay-item")}
-                    onClick={() => {
-                      item.onSelect();
-                      onClose();
-                    }}
-                  >
-                    <span className="nav-overlay-item-icon">
-                      <item.icon className="h-4 w-4" />
-                    </span>
-                    <span className="text-left">
-                      <span className="block text-sm font-semibold text-foreground">{item.label}</span>
-                      {item.subtitle && (
-                        <span className="block text-xs text-muted-foreground">{item.subtitle}</span>
-                      )}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          </div>
+            <div className="nav-overlay-grid" style={{paddingBottom: "1.2rem", gap: "0.8rem"}}>
+              {items.map((item, idx) => (
+                <motion.button
+                  key={item.id}
+                  type="button"
+                  className={cn("nav-overlay-item nav-overlay-modern-item")}
+                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.03, boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}
+                  transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                  onClick={() => {
+                    item.onSelect();
+                    onClose();
+                  }}
+                  style={{
+                    minHeight: "56px",
+                    fontSize: "1.05rem",
+                    fontWeight: 500,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  <span className="nav-overlay-item-icon" style={{width: "2.2rem", height: "2.2rem"}}>
+                    <item.icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-base font-semibold text-foreground">{item.label}</span>
+                    {item.subtitle && (
+                      <span className="block text-xs text-muted-foreground">{item.subtitle}</span>
+                    )}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
         </>
       )}
     </AnimatePresence>

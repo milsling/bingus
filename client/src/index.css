@@ -1,3 +1,25 @@
+/* Modern dynamic overlay enhancements */
+.nav-overlay-modern {
+  border-radius: 32px;
+  border: 1.5px solid rgba(255,255,255,0.07);
+  background: linear-gradient(180deg, rgba(156,163,175,0.12) 0%, rgba(34,34,44,0.18) 100%);
+  box-shadow: 0 32px 64px 0 rgba(3,7,18,0.38), 0 2px 8px rgba(0,0,0,0.12);
+  backdrop-filter: blur(36px) saturate(1.2);
+  -webkit-backdrop-filter: blur(36px) saturate(1.2);
+  transition: box-shadow 0.22s cubic-bezier(.4,2,.6,1), background 0.22s cubic-bezier(.4,2,.6,1);
+}
+
+.nav-overlay-modern-item {
+  border-radius: 18px;
+  border: 1.2px solid rgba(255,255,255,0.09);
+  background: linear-gradient(90deg, rgba(156,163,175,0.13) 0%, rgba(34,34,44,0.16) 100%);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: box-shadow 0.18s cubic-bezier(.4,2,.6,1), background 0.18s cubic-bezier(.4,2,.6,1);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  padding: 0.75rem 1rem;
+}
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./styles/theme.css";
@@ -1319,16 +1341,13 @@ html.dark {
 
 .nav-overlay {
   width: 100%;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: linear-gradient(
-    180deg,
-    hsl(var(--background) / 0.96),
-    hsl(var(--background) / 0.98)
-  );
-  box-shadow: 0 24px 52px rgba(3, 7, 18, 0.45);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(156, 163, 175, 0.08); /* bg-gray-400/[0.08] */
+  box-shadow: 0 16px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.12); /* shadow-2xl shadow-black/30 */
+  backdrop-filter: blur(36px);
+  -webkit-backdrop-filter: blur(36px);
+  padding: 0 1rem;
   overflow: hidden;
   transform-origin: bottom center;
 }
@@ -1339,7 +1358,7 @@ html.dark {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.9rem 1rem 0.65rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .nav-overlay-close {
@@ -1366,8 +1385,8 @@ html.dark {
   gap: 0.65rem;
   width: 100%;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(156, 163, 175, 0.08); /* bg-gray-400/[0.08] */
   padding: 0.65rem 0.75rem;
   transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
 }
