@@ -66,15 +66,28 @@ export default function Navigation() {
 
   return (
     <>
-      <FloatingActionButton
-        onDropABar={() => setLocation(currentUser ? "/post" : "/auth")}
-        onSwipeLeft={() => executeShortcut(leftTarget)}
-        onSwipeRight={() => executeShortcut(rightTarget)}
-        onLongPress={() => {
-          if ("vibrate" in navigator) navigator.vibrate([12, 50, 8, 50, 12]);
-          setAraOpen(true);
+
+      {/* Right-edge tab for opening nav overlay on mobile */}
+      <div
+        className="nav-overlay-tab md:hidden"
+        onClick={() => setMobileNavOpen(true)}
+        onTouchStart={(e) => {
+          const startX = e.touches[0].clientX;
+          const handleTouchMove = (moveEvent: TouchEvent) => {
+            const dx = startX - moveEvent.touches[0].clientX;
+            if (dx > 40) setMobileNavOpen(true);
+          };
+          const handleTouchEnd = () => {
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleTouchEnd);
+          };
+          window.addEventListener('touchmove', handleTouchMove);
+          window.addEventListener('touchend', handleTouchEnd);
         }}
-      />
+        aria-label="Open main menu"
+      >
+        <Menu className="w-6 h-6 text-foreground/80" />
+      </div>
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
       <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar top-bar overflow-visible">

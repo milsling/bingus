@@ -42,9 +42,9 @@ export function NavOverlay({ isOpen, onClose, items }: NavOverlayProps) {
           />
 
           <motion.div
-            initial={{ y: 80, scale: 0.98, opacity: 0 }}
-            animate={{ y: 0, scale: 1, opacity: 1 }}
-            exit={{ y: 80, scale: 0.98, opacity: 0 }}
+            initial={{ x: 420, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 420, opacity: 0 }}
             transition={{ type: "spring", bounce: 0.32, duration: 0.44 }}
             className="nav-overlay nav-overlay-modern"
             role="dialog"
@@ -52,15 +52,14 @@ export function NavOverlay({ isOpen, onClose, items }: NavOverlayProps) {
             aria-label="Main navigation menu"
             style={{
               position: "fixed",
-              left: "50%",
-              bottom: 0,
-              transform: "translateX(-50%)",
-              width: "min(96vw, 420px)",
-              maxHeight: "calc(100vh - 80px)",
+              top: 0,
+              right: 0,
+              height: "100vh",
+              width: "min(92vw, 360px)",
               zIndex: 9999,
               display: "flex",
               flexDirection: "column",
-              justifyContent: "flex-end",
+              justifyContent: "flex-start",
               boxSizing: "border-box",
               paddingBottom: "env(safe-area-inset-bottom, 24px)",
             }}
