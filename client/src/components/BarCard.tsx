@@ -1,3 +1,4 @@
+// BarCard component - Fixed JSX structure
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music, Flag, Info, LockKeyhole, Star, Crown, Sparkles } from "lucide-react";
