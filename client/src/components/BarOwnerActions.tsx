@@ -19,10 +19,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -42,18 +41,9 @@ import type { BarWithUser } from "@shared/schema";
 interface BarOwnerActionsProps {
   bar: BarWithUser;
   isLocked: boolean;
-  onEditComplete?: () => void;
-  onDeleteComplete?: () => void;
-  onLockComplete?: () => void;
 }
 
-export function BarOwnerActions({ 
-  bar, 
-  isLocked, 
-  onEditComplete,
-  onDeleteComplete,
-  onLockComplete 
-}: BarOwnerActionsProps) {
+export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
   
@@ -79,7 +69,8 @@ export function BarOwnerActions({
         description: "Your bar has been permanently deleted.",
       });
       setIsDeleteOpen(false);
-      onDeleteComplete?.();
+      // Navigate away after deletion
+      window.location.href = '/';
     },
     onError: (error: Error) => {
       toast({
@@ -103,7 +94,6 @@ export function BarOwnerActions({
         description: "Your bar now has a permanent proof-of-origin certificate.",
       });
       setIsLockDialogOpen(false);
-      onLockComplete?.();
     },
     onError: (error: Error) => {
       toast({
@@ -130,7 +120,6 @@ export function BarOwnerActions({
       setEditContent("");
       setEditExplanation("");
       setEditCategory("");
-      onEditComplete?.();
     },
     onError: (error: Error) => {
       toast({
@@ -205,7 +194,7 @@ export function BarOwnerActions({
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg glass-card">
           <DialogHeader>
             <DialogTitle>Edit Bar</DialogTitle>
           </DialogHeader>
@@ -246,7 +235,7 @@ export function BarOwnerActions({
               </Select>
             </div>
           </div>
-          <div className="flex justify-end gap-2">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditOpen(false)}>
               Cancel
             </Button>
@@ -256,13 +245,13 @@ export function BarOwnerActions({
             >
               {editMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Alert Dialog */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="glass-card">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this bar?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -284,7 +273,7 @@ export function BarOwnerActions({
 
       {/* Lock Alert Dialog */}
       <AlertDialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="glass-card">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <LockKeyhole className="h-5 w-5 text-primary" />

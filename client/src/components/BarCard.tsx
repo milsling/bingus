@@ -673,23 +673,8 @@ export default function BarCard({ bar }: BarCardProps) {
                   <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
                   Break It Down
                 </DropdownMenuItem>
-                <BarOwnerActions 
-                  bar={bar} 
-                  isLocked={isLocked}
-                  onEditComplete={() => {
-                    // Refresh bar data after edit
-                    queryClient.invalidateQueries({ queryKey: ['/api/bars'] });
-                  }}
-                  onDeleteComplete={() => {
-                    // Handle navigation after delete if needed
-                    window.location.href = '/';
-                  }}
-                  onLockComplete={() => {
-                    // Refresh bar data after lock
-                    queryClient.invalidateQueries({ queryKey: ['/api/bars'] });
-                  }}
-                />
-                {!isOwner && currentUser && (
+                <BarOwnerActions bar={bar} isLocked={isLocked} />
+                {currentUser && (
                   <DropdownMenuItem onClick={() => setIsReportOpen(true)} className="text-orange-500" data-testid={`button-report-${bar.id}`}>
                     <Flag className="h-4 w-4 mr-2" />
                     Report
