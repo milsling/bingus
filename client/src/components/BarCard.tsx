@@ -1,8 +1,9 @@
 // BarCard component - Fixed JSX structure
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music, Flag, Info, LockKeyhole, Star, Crown, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music, Flag, Info, Star, Crown, Sparkles } from "lucide-react";
 import AIAssistant from "@/components/AIAssistant";
+import { BarOwnerActions } from "@/components/BarOwnerActions";
 import { BarMediaPlayer } from "@/components/BarMediaPlayer";
 import { UserProfileBadges } from "@/components/UserProfileBadges";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
@@ -14,12 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatTimestamp } from "@/lib/formatDate";
@@ -290,27 +285,14 @@ export default function BarCard({ bar }: BarCardProps) {
     staleTime: 60000,
     refetchOnWindowFocus: false,
   });
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [editContent, setEditContent] = useState(bar.content);
-  const [editExplanation, setEditExplanation] = useState(bar.explanation || "");
-  const [editCategory, setEditCategory] = useState(bar.category);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
   const [editTags, setEditTags] = useState(bar.tags?.join(", ") || "");
-  const [editBarType, setEditBarType] = useState((bar as any).barType || "single_bar");
-  const [editFullRapLink, setEditFullRapLink] = useState((bar as any).fullRapLink || "");
-  const [showProofScreenshot, setShowProofScreenshot] = useState(false);
-  const [showOriginalityReport, setShowOriginalityReport] = useState(false);
-  const [originalityData, setOriginalityData] = useState<Array<{ id: string; proofBarId: string; similarity: number; username?: string }>>([]);
-  const [isCheckingOriginality, setIsCheckingOriginality] = useState(false);
-  const [isLockDialogOpen, setIsLockDialogOpen] = useState(false);
   const [isAraOpen, setIsAraOpen] = useState(false);
 
-  const isOwner = currentUser?.id === bar.user.id;
   const isLocked = (bar as any).isLocked;
 
   // Use pre-fetched like data from bar if available, otherwise fetch
@@ -469,18 +451,6 @@ export default function BarCard({ bar }: BarCardProps) {
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: () => api.deleteBar(bar.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bars'] });
-      queryClient.invalidateQueries({ queryKey: ['user-stats'] });
-      toast({ title: "Bar deleted" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
   const reportMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch('/api/reports', {
@@ -522,30 +492,6 @@ export default function BarCard({ bar }: BarCardProps) {
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to bookmark", variant: "destructive" });
-    },
-  });
-
-  const lockMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(`/api/bars/${bar.id}/lock`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error((await res.json()).message);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bars'] });
-      queryClient.invalidateQueries({ queryKey: ['bars-featured'] });
-      queryClient.invalidateQueries({ queryKey: ['bars-trending'] });
-      setIsLockDialogOpen(false);
-      toast({ 
-        title: "Bar Locked & Authenticated!", 
-        description: "Your bar now has a permanent proof-of-origin certificate and cannot be edited." 
-      });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -727,36 +673,22 @@ export default function BarCard({ bar }: BarCardProps) {
                   <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
                   Break It Down
                 </DropdownMenuItem>
-                {isOwner && (
-                  <>
-                    {!isLocked && (
-                      <DropdownMenuItem onClick={() => { setEditContent(stripHtml(bar.content)); setIsEditOpen(true); }} data-testid={`button-edit-${bar.id}`}>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                    )}
-                    {!isLocked && bar.isOriginal && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setIsLockDialogOpen(true)} className="text-primary" data-testid={`button-lock-${bar.id}`}>
-                          <LockKeyhole className="h-4 w-4 mr-2" />
-                          Lock & Authenticate
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    {isLocked && (
-                      <DropdownMenuItem disabled className="text-muted-foreground opacity-50">
-                        <Lock className="h-4 w-4 mr-2" />
-                        Locked (Cannot Edit)
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive" data-testid={`button-delete-${bar.id}`}>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </>
-                )}
+                <BarOwnerActions 
+                  bar={bar} 
+                  isLocked={isLocked}
+                  onEditComplete={() => {
+                    // Refresh bar data after edit
+                    queryClient.invalidateQueries({ queryKey: ['/api/bars'] });
+                  }}
+                  onDeleteComplete={() => {
+                    // Handle navigation after delete if needed
+                    window.location.href = '/';
+                  }}
+                  onLockComplete={() => {
+                    // Refresh bar data after lock
+                    queryClient.invalidateQueries({ queryKey: ['/api/bars'] });
+                  }}
+                />
                 {!isOwner && currentUser && (
                   <DropdownMenuItem onClick={() => setIsReportOpen(true)} className="text-orange-500" data-testid={`button-report-${bar.id}`}>
                     <Flag className="h-4 w-4 mr-2" />
@@ -1001,75 +933,6 @@ export default function BarCard({ bar }: BarCardProps) {
         </div>
       </motion.div>
 
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit Bar</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-content">Your Bar</Label>
-              <Textarea
-                id="edit-content"
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="min-h-[100px] font-mono"
-                data-testid="input-edit-content"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-explanation">Explanation (optional)</Label>
-              <Textarea
-                id="edit-explanation"
-                value={editExplanation}
-                onChange={(e) => setEditExplanation(e.target.value)}
-                placeholder="Explain the wordplay or meaning..."
-                data-testid="input-edit-explanation"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-category">Category</Label>
-              <Select value={editCategory} onValueChange={setEditCategory}>
-                <SelectTrigger data-testid="select-edit-category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-tags">Tags (comma separated)</Label>
-              <Input
-                id="edit-tags"
-                value={editTags}
-                onChange={(e) => setEditTags(e.target.value)}
-                placeholder="hiphop, bars, fire"
-                data-testid="input-edit-tags"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Bar Type</Label>
-              <div className="flex gap-2">
-                {[
-                  { value: "single_bar", label: "Single" },
-                  { value: "snippet", label: "Snippet" },
-                ].map((type) => (
-                  <button
-                    key={type.value}
-                    type="button"
-                    onClick={() => setEditBarType(type.value)}
-                    className={`flex-1 py-2 px-3 rounded-md border text-sm transition-all ${
-                      editBarType === type.value 
-                        ? 'border-primary bg-primary/10 text-primary' 
-                        : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
-                    }`}
-                    data-testid={`button-edit-type-${type.value}`}
-                  >
-                    {type.label}
-                  </button>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -1113,119 +976,6 @@ export default function BarCard({ bar }: BarCardProps) {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this bar?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. Your bar will be permanently deleted.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteMutation.mutate()}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              data-testid="button-confirm-delete"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <LockKeyhole className="h-5 w-5 text-primary" />
-              Lock & Authenticate This Bar?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
-              <p>Locking your bar will:</p>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li><strong>Generate a permanent proof-of-origin certificate</strong> that can be shared and verified</li>
-                <li><strong>Prevent further edits</strong> to maintain authenticity</li>
-                <li><strong>Add verification badges</strong> to show it's authenticated content</li>
-              </ul>
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                <p className="text-xs text-amber-400">
-                  <strong>Important:</strong> Once locked, the bar cannot be edited. 
-                  Make sure you're happy with your bar before locking.
-                </p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => lockMutation.mutate()}
-              disabled={lockMutation.isPending}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              data-testid="button-confirm-lock"
-            >
-              {lockMutation.isPending ? "Locking..." : "Lock & Authenticate"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Flag className="h-5 w-5 text-orange-500" />
-              Report this bar
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Reason</Label>
-              <Select value={reportReason} onValueChange={setReportReason}>
-                <SelectTrigger data-testid="select-report-reason">
-                  <SelectValue placeholder="Select a reason" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="illegal_content">Illegal Content (CSAM, exploitation)</SelectItem>
-                  <SelectItem value="harassment">Harassment / Threats</SelectItem>
-                  <SelectItem value="hate_speech">Hate Speech</SelectItem>
-                  <SelectItem value="self_harm">Self-Harm / Violence</SelectItem>
-                  <SelectItem value="spam">Spam / Scam</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Additional details (optional)</Label>
-              <Textarea
-                placeholder="Provide any additional context..."
-                value={reportDetails}
-                onChange={(e) => setReportDetails(e.target.value)}
-                data-testid="input-report-details"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReportOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={() => reportMutation.mutate()} 
-              disabled={!reportReason || reportMutation.isPending}
-              className="bg-orange-500 hover:bg-orange-600"
-              data-testid="button-submit-report"
-            >
-              {reportMutation.isPending ? "Submitting..." : "Submit Report"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <ProofScreenshot
-        bar={bar}
-        open={showProofScreenshot}
-        onOpenChange={setShowProofScreenshot}
-      />
-
-      <Dialog open={showOriginalityReport} onOpenChange={setShowOriginalityReport}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
