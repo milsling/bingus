@@ -1144,13 +1144,12 @@ export default function BarCard({ bar }: BarCardProps) {
               <p>Locking your bar will:</p>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li><strong>Generate a permanent proof-of-origin certificate</strong> that can be shared and verified</li>
-                <li><strong>Make the bar uneditable</strong> - you won't be able to change the content after locking</li>
-                <li><strong>Protect your authorship</strong> - the certificate proves you created this bar at this time</li>
+                <li><strong>Prevent further edits</strong> to maintain authenticity</li>
+                <li><strong>Add verification badges</strong> to show it's authenticated content</li>
               </ul>
-              <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md flex items-start gap-2">
-                <Info className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-amber-200">
-                  <strong>This action cannot be undone.</strong> Once locked, you cannot edit the bar content. 
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                <p className="text-xs text-amber-400">
+                  <strong>Important:</strong> Once locked, the bar cannot be edited. 
                   Make sure you're happy with your bar before locking.
                 </p>
               </div>
