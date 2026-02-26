@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -649,7 +648,7 @@ export default function BarCard({ bar }: BarCardProps) {
           transform: `translateX(${offset}px)`,
           transition: offset === 0 ? 'transform 0.2s ease-out' : 'none',
         }}
-        className="relative rounded-3xl border border-white/10 bg-[linear-gradient(170deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur-xl md:p-5 shadow-[0_14px_34px_rgba(15,23,42,0.16)] overflow-hidden"
+        className="relative glass-card rounded-2xl overflow-hidden"
       >
         {offset > 40 && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 text-red-500">
@@ -661,8 +660,8 @@ export default function BarCard({ bar }: BarCardProps) {
             <Bookmark className="h-8 w-8 fill-current" />
           </div>
         )}
-        <Card className="bg-transparent border-0 shadow-none overflow-hidden transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="p-4 md:p-5">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-3">
               <Link href={`/u/${bar.user.username}`}>
                 <Avatar className="h-10 w-10 border border-border/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
@@ -765,9 +764,10 @@ export default function BarCard({ bar }: BarCardProps) {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-          </CardHeader>
+            </div>
+          </div>
           
-          <CardContent className="space-y-4">
+          <div className="space-y-4">
             <div className="relative pl-4 border-l-2 border-primary/40 py-1">
               <p 
                 className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground/90 [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
@@ -884,9 +884,9 @@ export default function BarCard({ bar }: BarCardProps) {
                 <CollapsibleTags tags={bar.tags} barId={bar.id} customTags={customTags} />
               )}
             </div>
-          </CardContent>
+          </div>
 
-          <CardFooter className="border-t border-border/20 py-3 flex-col px-2 sm:px-4">
+          <div className="border-t border-border/20 py-3 flex-col px-2 sm:px-4">
             <div className="flex w-full items-center justify-start gap-1 sm:gap-2 text-muted-foreground">
               <Button 
                 variant="ghost" 
@@ -996,8 +996,8 @@ export default function BarCard({ bar }: BarCardProps) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
       </motion.div>
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
