@@ -593,13 +593,8 @@ export default function BarCard({ bar }: BarCardProps) {
             <Bookmark className="h-8 w-8 fill-current" />
           </div>
         )}
-<<<<<<< HEAD
         <div className="p-4 md:p-5">
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-=======
-        <div className="p-4 md:p-5">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
->>>>>>> c1772d273a6e6d95ac01cd08783f6e2a3052a902
             <div className="flex items-center gap-3">
               <Link href={`/u/${bar.user.username}`}>
                 <Avatar className="h-10 w-10 border border-border/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
