@@ -292,9 +292,6 @@ export default function BarCard({ bar }: BarCardProps) {
   const [reportDetails, setReportDetails] = useState("");
   const [editTags, setEditTags] = useState(bar.tags?.join(", ") || "");
   const [isAraOpen, setIsAraOpen] = useState(false);
-  const [isCheckingOriginality, setIsCheckingOriginality] = useState(false);
-  const [originalityData, setOriginalityData] = useState<any>(null);
-  const [showOriginalityReport, setShowOriginalityReport] = useState(false);
 
   const isLocked = (bar as any).isLocked;
 
@@ -432,6 +429,25 @@ export default function BarCard({ bar }: BarCardProps) {
     mutationFn: (commentId: string) => api.deleteComment(commentId),
     onSuccess: () => {
       refetchComments();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: () => api.updateBar(bar.id, {
+      content: editContent,
+      explanation: editExplanation || undefined,
+      category: editCategory,
+      tags: editTags.split(",").map(t => t.trim()).filter(Boolean),
+      barType: editBarType,
+      fullRapLink: editFullRapLink.trim() || undefined,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      toast({ title: "Bar updated" });
+      setIsEditOpen(false);
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -897,70 +913,87 @@ export default function BarCard({ bar }: BarCardProps) {
                   </div>
                 </motion.div>
               )}
-              <Input
-                placeholder="Add a comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleComment()}
-                className="flex-1 bg-secondary/30"
-                data-testid={`input-comment-${bar.id}`}
-              />
-              <Button 
-                size="icon" 
-                onClick={handleComment}
-                disabled={!newComment.trim() || commentMutation.isPending}
-                data-testid={`button-send-comment-${bar.id}`}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-          
-          <ScrollArea className="max-h-48">
-            <div className="space-y-2">
-              {commentsData.map((comment: any) => (
-                <CommentItem
-                  key={comment.id}
-                  comment={comment}
-                  currentUserId={currentUser?.id}
-                  onDelete={() => deleteCommentMutation.mutate(comment.id)}
-                />
-              ))}
-              {commentsData.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-2">No comments yet</p>
-              )}
-            </div>
-          </ScrollArea>
+            </AnimatePresence>
+          </div>
         </div>
       </motion.div>
-    )}
-  </AnimatePresence>
-</div>
 
-<DialogContent className="sm:max-w-md">
-  <DialogHeader>
-    <DialogTitle className="flex items-center gap-2">
-      {originalityData.length > 0 ? (
-        <><AlertTriangle className="h-5 w-5 text-orange-500" /> Originality Report</>
-      ) : (
-        <><CheckCircle className="h-5 w-5 text-green-500" /> Originality Report</>
-      )}
-    </DialogTitle>
-  </DialogHeader>
-  
-  <div className="space-y-3">
-    <div className={`p-3 rounded-lg ${originalityData.length > 0 ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
-      {originalityData.length > 0 ? (
-        <p className="text-sm text-orange-500">
-          Found {originalityData.length} similar bar{originalityData.length > 1 ? 's' : ''} on Orphan Bars
-        </p>
-      ) : (
-        <p className="text-sm text-green-500 flex items-center gap-2">
-          <CheckCircle className="h-4 w-4" />
-          No similar content found - this appears to be original!
-        </p>
-      )}
-    </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {BAR_TYPE_INFO[editBarType as BarType]?.detail}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-link">Full Rap Link (optional)</Label>
+              <Input
+                id="edit-link"
+                type="url"
+                value={editFullRapLink}
+                onChange={(e) => setEditFullRapLink(e.target.value)}
+                placeholder="https://soundcloud.com/..."
+                data-testid="input-edit-link"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={() => {
+                const lineBreaks = countLineBreaks(editContent);
+                const maxLines = LINE_BREAK_LIMITS[editBarType as BarType];
+                if (lineBreaks > maxLines) {
+                  toast({
+                    title: "Too many lines",
+                    description: `${BAR_TYPE_INFO[editBarType as BarType].label} allows max ${maxLines} line break${maxLines === 1 ? '' : 's'}. You have ${lineBreaks}.`,
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                updateMutation.mutate();
+              }} 
+              disabled={updateMutation.isPending || !editContent.trim()}
+              data-testid="button-save-edit"
+            >
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {originalityData.length > 0 ? (
+                <><AlertTriangle className="h-5 w-5 text-orange-500" /> Originality Report</>
+              ) : (
+                <><CheckCircle className="h-5 w-5 text-green-500" /> Originality Report</>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-3">
+            <div className={`p-3 rounded-lg ${originalityData.length > 0 ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
+              {originalityData.length > 0 ? (
+                <p className="text-sm text-orange-500">
+                  Found {originalityData.length} similar bar{originalityData.length > 1 ? 's' : ''} on Orphan Bars
+                </p>
+              ) : (
+                <p className="text-sm text-green-500 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  No similar content found - this appears to be original!
+                </p>
+              )}
+            </div>
+
+            {originalityData.length > 0 && (
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {originalityData.map((match) => (
+                  <div key={match.id} className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg border border-border/50">
+                    <div>
+                      <span className="text-sm font-mono text-primary">{match.proofBarId}</span>
+                      <p className="text-xs text-muted-foreground">by @{match.username || 'Unknown'}</p>
+                    </div>
                     <span className="text-sm font-bold text-orange-500">{match.similarity}% match</span>
                   </div>
                 ))}
