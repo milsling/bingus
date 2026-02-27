@@ -3,7 +3,7 @@ import { Pencil, Trash2, LockKeyhole, Lock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
+import { useBars } from "@/context/BarContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +44,7 @@ interface BarOwnerActionsProps {
 }
 
 export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useBars();
   const { toast } = useToast();
   
   const [isEditOpen, setIsEditOpen] = useState(false);
