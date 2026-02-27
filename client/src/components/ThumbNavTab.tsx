@@ -26,7 +26,10 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [pressProgress, setPressProgress] = useState(0);
+  const [dragProgress, setDragProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
 
   // Handle press and hold interaction
   const handlePressStart = () => {
@@ -56,6 +59,36 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
     
     // Reset progress with animation
     setTimeout(() => setPressProgress(0), 100);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartXRef.current === null || isOpen) return;
+
+    const currentX = event.touches[0]?.clientX ?? 0;
+    const delta = Math.max(0, touchStartXRef.current - currentX);
+    const progress = Math.min(1, delta / 170);
+
+    setIsDragging(progress > 0.03);
+    setDragProgress(progress);
+    setPressProgress(Math.round(progress * 100));
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartXRef.current = event.touches[0]?.clientX ?? null;
+    handlePressStart();
+  };
+
+  const handleTouchEnd = () => {
+    const shouldOpen = dragProgress > 0.35;
+    touchStartXRef.current = null;
+
+    if (shouldOpen) {
+      handleOpen();
+    }
+
+    setIsDragging(false);
+    setDragProgress(0);
+    handlePressEnd();
   };
 
   const handleOpen = () => {
@@ -165,14 +198,18 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
       <motion.div
         className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none"
         variants={tabVariants}
-        animate={isPressed ? 'pressed' : 'hover'}
+        animate={{
+          x: isOpen ? -10 : -(dragProgress * 52 + (isPressed ? 8 : 0)),
+          scale: isPressed ? 0.96 : 1,
+        }}
         whileHover="hover"
         whileTap="pressed"
         onMouseDown={handlePressStart}
         onMouseUp={handlePressEnd}
         onMouseLeave={handlePressEnd}
-        onTouchStart={handlePressStart}
-        onTouchEnd={handlePressEnd}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Tab Container */}
         <div className="relative">
@@ -274,24 +311,26 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
 
       {/* Navigation Panel */}
       <AnimatePresence>
-        {isOpen && (
+        {(isOpen || isDragging) && (
           <>
             {/* Backdrop */}
             <motion.div
-              variants={overlayVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isOpen ? 1 : Math.max(0.15, dragProgress * 0.85) }}
+              exit={{ opacity: 0 }}
               className="fixed inset-0 z-[1201] bg-black/40 backdrop-blur-sm"
               onClick={handleClose}
             />
 
             {/* Panel */}
             <motion.div
-              variants={panelVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial={{ x: 360, opacity: 0 }}
+              animate={{
+                x: isOpen ? 0 : (1 - dragProgress) * 360,
+                opacity: isOpen ? 1 : Math.max(0.35, dragProgress),
+              }}
+              exit={{ x: 360, opacity: 0 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 300, mass: 0.8 }}
               className="fixed right-0 top-0 bottom-0 z-[1202] w-[min(90vw,400px)] overflow-hidden"
               style={{
                 background: 'var(--glass-surface-bg)',

@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { 
   Home, 
   Compass, 
+  Plus,
+  LogIn,
   PenLine, 
   NotebookPen, 
   Radio, 
@@ -16,6 +18,10 @@ import {
   Sparkles,
   Shield,
   LogOut,
+  Sun,
+  Moon,
+  Monitor,
+  UserCog,
   ChevronRight,
   ExternalLink
 } from 'lucide-react';
@@ -23,6 +29,9 @@ import { useBars } from '@/context/BarContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import headerLogo from '@/assets/logo.png';
+import { SearchBar } from '@/components/SearchBar';
+import { NotificationBell } from '@/components/NotificationBell';
+import { OnlineStatusIndicator } from '@/components/OnlineStatus';
 import ThumbNavTab from './ThumbNavTab';
 
 interface MenuItem {
@@ -42,8 +51,9 @@ interface MenuSection {
 
 export default function ThumbNavigation() {
   const { currentUser, logout } = useBars();
-  const { settings } = useTheme();
-  const [location] = useLocation();
+  const { theme, setTheme } = useTheme();
+  const [location, setLocation] = useLocation();
+  const isOnMessagesPage = location.startsWith('/messages');
 
   const handleLogout = async () => {
     await logout();
@@ -133,6 +143,77 @@ export default function ThumbNavigation() {
               </h2>
               <p className="text-[10px] text-muted-foreground mt-0.5">Navigate your world</p>
             </div>
+          </div>
+        </div>
+
+        {/* Desktop-like controls */}
+        <div className="px-4 pb-3 space-y-3">
+          <SearchBar className="w-full" />
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setTheme('light')}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-colors',
+                theme === 'light' ? 'border-primary/35 bg-primary/10 text-primary' : 'border-border/30 hover:bg-foreground/[0.04]'
+              )}
+            >
+              <Sun className="h-4 w-4" />
+              <span>Light</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme('dark')}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-colors',
+                theme === 'dark' ? 'border-primary/35 bg-primary/10 text-primary' : 'border-border/30 hover:bg-foreground/[0.04]'
+              )}
+            >
+              <Moon className="h-4 w-4" />
+              <span>Dark</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme('system')}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-colors',
+                theme === 'system' ? 'border-primary/35 bg-primary/10 text-primary' : 'border-border/30 hover:bg-foreground/[0.04]'
+              )}
+            >
+              <Monitor className="h-4 w-4" />
+              <span>System</span>
+            </button>
+            <Link href={currentUser ? '/settings' : '/auth'} className="block">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/30 text-xs font-medium hover:bg-foreground/[0.04] transition-colors">
+                <UserCog className="h-4 w-4" />
+                <span>Settings</span>
+              </div>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {currentUser ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setLocation(isOnMessagesPage ? '/messages' : '/post')}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  {isOnMessagesPage ? <PenLine className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  <span>{isOnMessagesPage ? 'Messages' : 'Drop Bar'}</span>
+                </button>
+                <NotificationBell compact />
+                <OnlineStatusIndicator compact />
+              </>
+            ) : (
+              <Link href="/auth" className="block w-full">
+                <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
 
