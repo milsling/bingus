@@ -62,7 +62,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   };
 
   const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (touchStartXRef.current === null || isOpen) return;
+    if (touchStartXRef.current === null) return;
 
     const currentX = event.touches[0]?.clientX ?? 0;
     const delta = Math.max(0, touchStartXRef.current - currentX);
@@ -80,9 +80,13 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
 
   const handleTouchEnd = () => {
     const shouldOpen = dragProgress > 0.35;
+    const shouldClose = isOpen && dragProgress < 0.3;
+    
     touchStartXRef.current = null;
 
-    if (shouldOpen) {
+    if (shouldClose) {
+      handleClose();
+    } else if (shouldOpen) {
       handleOpen();
     }
 
@@ -202,6 +206,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
           x: isOpen ? -10 : -(dragProgress * 52 + (isPressed ? 8 : 0)),
           scale: isPressed ? 0.96 : 1,
         }}
+        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
         whileHover="hover"
         whileTap="pressed"
         onMouseDown={handlePressStart}
@@ -330,7 +335,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
                 opacity: isOpen ? 1 : Math.max(0.35, dragProgress),
               }}
               exit={{ x: 360, opacity: 0 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 300, mass: 0.8 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 350, mass: 0.7 }}
               className="fixed right-0 top-0 bottom-0 z-[1202] w-[min(90vw,400px)] overflow-hidden"
               style={{
                 background: 'var(--glass-surface-bg)',
