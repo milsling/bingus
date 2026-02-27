@@ -1414,6 +1414,8 @@ html.dark {
 }
 
 
+.mobile-header {
+  padding-top: calc(
     env(safe-area-inset-top)
     + var(--mobile-header-top-offset)
     + var(--mobile-header-height)
