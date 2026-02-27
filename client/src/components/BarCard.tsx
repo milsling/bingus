@@ -901,10 +901,8 @@ export default function BarCard({ bar }: BarCardProps) {
               )}
             </AnimatePresence>
           </div>
-        </div>
       </motion.div>
 
-      <>
       <Dialog open={showOriginalityReport} onOpenChange={setShowOriginalityReport}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

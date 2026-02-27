@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -26,10 +26,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [pressProgress, setPressProgress] = useState(0);
-  const controls = useAnimation();
-  const tabRef = useRef<HTMLDivElement>(null);
-  const pressTimerRef = useRef<NodeJS.Timeout>();
-  const progressTimerRef = useRef<NodeJS.Timeout>();
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Handle press and hold interaction
   const handlePressStart = () => {
@@ -43,7 +40,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
       setPressProgress(progress);
       
       if (progress >= 100) {
-        clearInterval(progressTimerRef.current!);
+        if (progressTimerRef.current) clearInterval(progressTimerRef.current);
         handleOpen();
       }
     }, 20);
@@ -166,7 +163,6 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
     <>
       {/* Thumb Tab */}
       <motion.div
-        ref={tabRef}
         className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none"
         variants={tabVariants}
         animate={isPressed ? 'pressed' : 'hover'}
