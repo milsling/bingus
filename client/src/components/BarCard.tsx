@@ -1,7 +1,9 @@
+// BarCard component - Fixed JSX structure
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music, Flag, Info, LockKeyhole, Star, Crown, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music, Flag, Info, Star, Crown, Sparkles } from "lucide-react";
 import AIAssistant from "@/components/AIAssistant";
+import { BarOwnerActions } from "@/components/BarOwnerActions";
 import { BarMediaPlayer } from "@/components/BarMediaPlayer";
 import { UserProfileBadges } from "@/components/UserProfileBadges";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
@@ -11,16 +13,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatTimestamp } from "@/lib/formatDate";
 import { useBars } from "@/context/BarContext";
@@ -290,27 +288,18 @@ export default function BarCard({ bar }: BarCardProps) {
     staleTime: 60000,
     refetchOnWindowFocus: false,
   });
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [editContent, setEditContent] = useState(bar.content);
-  const [editExplanation, setEditExplanation] = useState(bar.explanation || "");
-  const [editCategory, setEditCategory] = useState(bar.category);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
   const [editTags, setEditTags] = useState(bar.tags?.join(", ") || "");
-  const [editBarType, setEditBarType] = useState((bar as any).barType || "single_bar");
-  const [editFullRapLink, setEditFullRapLink] = useState((bar as any).fullRapLink || "");
-  const [showProofScreenshot, setShowProofScreenshot] = useState(false);
-  const [showOriginalityReport, setShowOriginalityReport] = useState(false);
-  const [originalityData, setOriginalityData] = useState<Array<{ id: string; proofBarId: string; similarity: number; username?: string }>>([]);
-  const [isCheckingOriginality, setIsCheckingOriginality] = useState(false);
-  const [isLockDialogOpen, setIsLockDialogOpen] = useState(false);
   const [isAraOpen, setIsAraOpen] = useState(false);
+  const [showOriginalityReport, setShowOriginalityReport] = useState(false);
+  const [isCheckingOriginality, setIsCheckingOriginality] = useState(false);
+  const [originalityData, setOriginalityData] = useState<any[]>([]);
+  const [showProofScreenshot, setShowProofScreenshot] = useState(false);
 
-  const isOwner = currentUser?.id === bar.user.id;
   const isLocked = (bar as any).isLocked;
 
   // Use pre-fetched like data from bar if available, otherwise fetch
@@ -361,14 +350,12 @@ export default function BarCard({ bar }: BarCardProps) {
       return { previousLikes };
     },
     onSuccess: (data) => {
-      console.log('[LIKE SUCCESS]', data);
       queryClient.setQueryData(['likes', bar.id], { count: data.count, liked: data.liked });
     },
     onError: (error: any, _, context) => {
       if (context?.previousLikes) {
         queryClient.setQueryData(['likes', bar.id], context.previousLikes);
       }
-      console.error('[LIKE ERROR]', error.message);
       if (error.message.includes("Not authenticated")) {
         toast({ title: "Login required", description: "You need to be logged in to like posts", variant: "destructive" });
       } else {
@@ -450,37 +437,6 @@ export default function BarCard({ bar }: BarCardProps) {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: () => api.updateBar(bar.id, {
-      content: editContent,
-      explanation: editExplanation || undefined,
-      category: editCategory,
-      tags: editTags.split(",").map(t => t.trim()).filter(Boolean),
-      barType: editBarType,
-      fullRapLink: editFullRapLink.trim() || undefined,
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bars'] });
-      toast({ title: "Bar updated" });
-      setIsEditOpen(false);
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: () => api.deleteBar(bar.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bars'] });
-      queryClient.invalidateQueries({ queryKey: ['user-stats'] });
-      toast({ title: "Bar deleted" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
   const reportMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch('/api/reports', {
@@ -522,30 +478,6 @@ export default function BarCard({ bar }: BarCardProps) {
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to bookmark", variant: "destructive" });
-    },
-  });
-
-  const lockMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(`/api/bars/${bar.id}/lock`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error((await res.json()).message);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bars'] });
-      queryClient.invalidateQueries({ queryKey: ['bars-featured'] });
-      queryClient.invalidateQueries({ queryKey: ['bars-trending'] });
-      setIsLockDialogOpen(false);
-      toast({ 
-        title: "Bar Locked & Authenticated!", 
-        description: "Your bar now has a permanent proof-of-origin certificate and cannot be edited." 
-      });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -649,7 +581,7 @@ export default function BarCard({ bar }: BarCardProps) {
           transform: `translateX(${offset}px)`,
           transition: offset === 0 ? 'transform 0.2s ease-out' : 'none',
         }}
-        className="relative glass-surface-strong rounded-2xl p-1"
+        className="relative glass-card rounded-2xl overflow-hidden"
       >
         {offset > 40 && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 text-red-500">
@@ -661,8 +593,13 @@ export default function BarCard({ bar }: BarCardProps) {
             <Bookmark className="h-8 w-8 fill-current" />
           </div>
         )}
-        <Card className="bar-card glass-surface-strong bg-white/10 dark:bg-black/20 border border-white/10 dark:border-white/15 shadow-xl shadow-black/20 backdrop-blur-2xl rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+<<<<<<< HEAD
+        <div className="p-4 md:p-5">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+=======
+        <div className="p-4 md:p-5">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+>>>>>>> c1772d273a6e6d95ac01cd08783f6e2a3052a902
             <div className="flex items-center gap-3">
               <Link href={`/u/${bar.user.username}`}>
                 <Avatar className="h-10 w-10 border border-border/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
@@ -727,37 +664,8 @@ export default function BarCard({ bar }: BarCardProps) {
                   <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
                   Break It Down
                 </DropdownMenuItem>
-                {isOwner && (
-                  <>
-                    {!isLocked && (
-                      <DropdownMenuItem onClick={() => { setEditContent(stripHtml(bar.content)); setIsEditOpen(true); }} data-testid={`button-edit-${bar.id}`}>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                    )}
-                    {!isLocked && bar.isOriginal && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setIsLockDialogOpen(true)} className="text-primary" data-testid={`button-lock-${bar.id}`}>
-                          <LockKeyhole className="h-4 w-4 mr-2" />
-                          Lock & Authenticate
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    {isLocked && (
-                      <DropdownMenuItem disabled className="text-muted-foreground opacity-50">
-                        <Lock className="h-4 w-4 mr-2" />
-                        Locked (Cannot Edit)
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive" data-testid={`button-delete-${bar.id}`}>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </>
-                )}
-                {!isOwner && currentUser && (
+                <BarOwnerActions bar={bar} isLocked={isLocked} />
+                {currentUser && (
                   <DropdownMenuItem onClick={() => setIsReportOpen(true)} className="text-orange-500" data-testid={`button-report-${bar.id}`}>
                     <Flag className="h-4 w-4 mr-2" />
                     Report
@@ -765,12 +673,13 @@ export default function BarCard({ bar }: BarCardProps) {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-          </CardHeader>
+            </div>
+          </div>
           
-          <CardContent className="space-y-4">
-            <div className="relative pl-4 border-l-2 border-primary/50 py-1">
+          <div className="space-y-4">
+            <div className="relative pl-4 border-l-2 border-primary/40 py-1">
               <p 
-                className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
+                className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground/90 [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
                 style={{ color: 'inherit' }}
                 data-testid={`text-content-${bar.id}`}
                 dangerouslySetInnerHTML={createMarkup(bar.content)}
@@ -884,9 +793,9 @@ export default function BarCard({ bar }: BarCardProps) {
                 <CollapsibleTags tags={bar.tags} barId={bar.id} customTags={customTags} />
               )}
             </div>
-          </CardContent>
+          </div>
 
-          <CardFooter className="border-t border-white/5 py-3 flex-col px-2 sm:px-4">
+          <div className="border-t border-border/20 py-3 flex-col px-2 sm:px-4">
             <div className="flex w-full items-center justify-start gap-1 sm:gap-2 text-muted-foreground">
               <Button 
                 variant="ghost" 
@@ -979,7 +888,7 @@ export default function BarCard({ bar }: BarCardProps) {
                     
                     <ScrollArea className="max-h-48">
                       <div className="space-y-2">
-                        {commentsData.map((comment: any) => (
+                        {commentsData?.map((comment: any) => (
                           <CommentItem
                             key={comment.id}
                             comment={comment}
@@ -987,7 +896,7 @@ export default function BarCard({ bar }: BarCardProps) {
                             onDelete={() => deleteCommentMutation.mutate(comment.id)}
                           />
                         ))}
-                        {commentsData.length === 0 && (
+                        {commentsData?.length === 0 && (
                           <p className="text-xs text-muted-foreground text-center py-2">No comments yet</p>
                         )}
                       </div>
@@ -996,240 +905,14 @@ export default function BarCard({ bar }: BarCardProps) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </CardFooter>
-        </Card>
+          </div>
       </motion.div>
-
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit Bar</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-content">Your Bar</Label>
-              <Textarea
-                id="edit-content"
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="min-h-[100px] font-mono"
-                data-testid="input-edit-content"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-explanation">Explanation (optional)</Label>
-              <Textarea
-                id="edit-explanation"
-                value={editExplanation}
-                onChange={(e) => setEditExplanation(e.target.value)}
-                placeholder="Explain the wordplay or meaning..."
-                data-testid="input-edit-explanation"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-category">Category</Label>
-              <Select value={editCategory} onValueChange={setEditCategory}>
-                <SelectTrigger data-testid="select-edit-category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-tags">Tags (comma separated)</Label>
-              <Input
-                id="edit-tags"
-                value={editTags}
-                onChange={(e) => setEditTags(e.target.value)}
-                placeholder="hiphop, bars, fire"
-                data-testid="input-edit-tags"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Bar Type</Label>
-              <div className="flex gap-2">
-                {[
-                  { value: "single_bar", label: "Single" },
-                  { value: "snippet", label: "Snippet" },
-                ].map((type) => (
-                  <button
-                    key={type.value}
-                    type="button"
-                    onClick={() => setEditBarType(type.value)}
-                    className={`flex-1 py-2 px-3 rounded-md border text-sm transition-all ${
-                      editBarType === type.value 
-                        ? 'border-primary bg-primary/10 text-primary' 
-                        : 'border-border/50 bg-secondary/30 hover:border-border text-muted-foreground'
-                    }`}
-                    data-testid={`button-edit-type-${type.value}`}
-                  >
-                    {type.label}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {BAR_TYPE_INFO[editBarType as BarType]?.detail}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-link">Full Rap Link (optional)</Label>
-              <Input
-                id="edit-link"
-                type="url"
-                value={editFullRapLink}
-                onChange={(e) => setEditFullRapLink(e.target.value)}
-                placeholder="https://soundcloud.com/..."
-                data-testid="input-edit-link"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={() => {
-                const lineBreaks = countLineBreaks(editContent);
-                const maxLines = LINE_BREAK_LIMITS[editBarType as BarType];
-                if (lineBreaks > maxLines) {
-                  toast({
-                    title: "Too many lines",
-                    description: `${BAR_TYPE_INFO[editBarType as BarType].label} allows max ${maxLines} line break${maxLines === 1 ? '' : 's'}. You have ${lineBreaks}.`,
-                    variant: "destructive",
-                  });
-                  return;
-                }
-                updateMutation.mutate();
-              }} 
-              disabled={updateMutation.isPending || !editContent.trim()}
-              data-testid="button-save-edit"
-            >
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this bar?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. Your bar will be permanently deleted.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteMutation.mutate()}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              data-testid="button-confirm-delete"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <LockKeyhole className="h-5 w-5 text-primary" />
-              Lock & Authenticate This Bar?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
-              <p>Locking your bar will:</p>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li><strong>Generate a permanent proof-of-origin certificate</strong> that can be shared and verified</li>
-                <li><strong>Make the bar uneditable</strong> - you won't be able to change the content after locking</li>
-                <li><strong>Protect your authorship</strong> - the certificate proves you created this bar at this time</li>
-              </ul>
-              <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md flex items-start gap-2">
-                <Info className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-amber-200">
-                  <strong>This action cannot be undone.</strong> Once locked, you cannot edit the bar content. 
-                  Make sure you're happy with your bar before locking.
-                </p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => lockMutation.mutate()}
-              disabled={lockMutation.isPending}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              data-testid="button-confirm-lock"
-            >
-              {lockMutation.isPending ? "Locking..." : "Lock & Authenticate"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Flag className="h-5 w-5 text-orange-500" />
-              Report this bar
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Reason</Label>
-              <Select value={reportReason} onValueChange={setReportReason}>
-                <SelectTrigger data-testid="select-report-reason">
-                  <SelectValue placeholder="Select a reason" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="illegal_content">Illegal Content (CSAM, exploitation)</SelectItem>
-                  <SelectItem value="harassment">Harassment / Threats</SelectItem>
-                  <SelectItem value="hate_speech">Hate Speech</SelectItem>
-                  <SelectItem value="self_harm">Self-Harm / Violence</SelectItem>
-                  <SelectItem value="spam">Spam / Scam</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Additional details (optional)</Label>
-              <Textarea
-                placeholder="Provide any additional context..."
-                value={reportDetails}
-                onChange={(e) => setReportDetails(e.target.value)}
-                data-testid="input-report-details"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReportOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={() => reportMutation.mutate()} 
-              disabled={!reportReason || reportMutation.isPending}
-              className="bg-orange-500 hover:bg-orange-600"
-              data-testid="button-submit-report"
-            >
-              {reportMutation.isPending ? "Submitting..." : "Submit Report"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <ProofScreenshot
-        bar={bar}
-        open={showProofScreenshot}
-        onOpenChange={setShowProofScreenshot}
-      />
 
       <Dialog open={showOriginalityReport} onOpenChange={setShowOriginalityReport}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {originalityData.length > 0 ? (
+              {originalityData?.length > 0 ? (
                 <><AlertTriangle className="h-5 w-5 text-orange-500" /> Originality Report</>
               ) : (
                 <><CheckCircle className="h-5 w-5 text-green-500" /> Originality Report</>
@@ -1238,8 +921,8 @@ export default function BarCard({ bar }: BarCardProps) {
           </DialogHeader>
           
           <div className="space-y-3">
-            <div className={`p-3 rounded-lg ${originalityData.length > 0 ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
-              {originalityData.length > 0 ? (
+            <div className={`p-3 rounded-lg ${originalityData?.length > 0 ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
+              {originalityData?.length > 0 ? (
                 <p className="text-sm text-orange-500">
                   Found {originalityData.length} similar bar{originalityData.length > 1 ? 's' : ''} on Orphan Bars
                 </p>
@@ -1251,7 +934,7 @@ export default function BarCard({ bar }: BarCardProps) {
               )}
             </div>
 
-            {originalityData.length > 0 && (
+            {originalityData?.length > 0 && (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {originalityData.map((match) => (
                   <div key={match.id} className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg border border-border/50">
@@ -1273,6 +956,65 @@ export default function BarCard({ bar }: BarCardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Report Bar</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="report-reason">Reason</Label>
+              <select
+                id="report-reason"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="w-full p-2 border rounded-md bg-secondary/30"
+                data-testid="select-report-reason"
+              >
+                <option value="">Select a reason</option>
+                <option value="spam">Spam</option>
+                <option value="inappropriate">Inappropriate Content</option>
+                <option value="harassment">Harassment</option>
+                <option value="copyright">Copyright Violation</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="report-details">Additional Details (optional)</Label>
+              <textarea
+                id="report-details"
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                className="w-full min-h-[80px] p-3 border rounded-md bg-secondary/30"
+                placeholder="Please provide any additional context..."
+                data-testid="textarea-report-details"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReportOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={() => reportMutation.mutate()}
+              disabled={!reportReason.trim() || reportMutation.isPending}
+              data-testid="button-submit-report"
+            >
+              {reportMutation.isPending ? "Submitting..." : "Submit Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {showProofScreenshot && (
+        <ProofScreenshot
+          bar={bar}
+          open={showProofScreenshot}
+          onOpenChange={setShowProofScreenshot}
+        />
+      )}
 
       <AIAssistant 
         open={isAraOpen} 

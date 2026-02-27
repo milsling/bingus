@@ -61,8 +61,8 @@ export default function ThemeSettings() {
       const formData = new FormData();
       formData.append('image', file);
 
-      // Upload to server
-      const response = await fetch('/api/upload/background', {
+      // Upload to server (owner-only endpoint)
+      const response = await fetch('/api/backgrounds', {
         method: 'POST',
         body: formData,
       });
@@ -98,8 +98,8 @@ export default function ThemeSettings() {
   };
 
   const handleRemoveBackground = (id: string, url: string) => {
-    // Also remove from server
-    fetch(`/api/upload/background?url=${encodeURIComponent(url)}`, {
+    // Also remove from server (owner-only endpoint)
+    fetch(`/api/admin/backgrounds/${id}`, {
       method: 'DELETE',
     }).catch(() => {
       // Continue even if server deletion fails

@@ -631,8 +631,8 @@ export default function Settings() {
                         <Button 
                           onClick={() => {
                             saveSiteSettingsMutation.mutate({
-                              defaultBackground: selectedBackground.id,
-                              // Add theme settings here if needed
+                              defaultBackground: String(selectedBackground?.id || "default"),
+                              // Add theme settings here if needed (pass object, not string)
                             });
                           }}
                           disabled={saveSiteSettingsMutation.isPending}

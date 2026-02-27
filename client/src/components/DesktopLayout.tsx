@@ -161,11 +161,11 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
                 <div className="flex justify-center gap-6 mt-4 pt-4 border-t border-white/5">
                   <div className="text-center">
                     <p className="text-lg font-bold text-white">{currentUser.xp || 0}</p>
-                    <p className="text-[10px] text-white/40 uppercase">XP</p>
+                    <p className="text-[10px] text-white/60 uppercase">XP</p>
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-bold text-white">{currentUser.level || 1}</p>
-                    <p className="text-[10px] text-white/40 uppercase">Level</p>
+                    <p className="text-[10px] text-white/60 uppercase">Level</p>
                   </div>
                 </div>
 
@@ -238,7 +238,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
 
               {/* Categories Section */}
               <div className="mt-4 pt-4 border-t border-white/5">
-                <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Compass className="h-3.5 w-3.5" />
                   Categories
                 </h3>
@@ -256,7 +256,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
               {/* Trending Hashtags */}
               {trendingHashtags.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <TrendingUp className="h-3.5 w-3.5" />
                     Trending Tags
                   </h3>
@@ -277,7 +277,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
               {/* Friends Online */}
               {currentUser && onlineFriends.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Circle className="h-3 w-3 fill-green-500 text-green-500" />
                     Friends Online ({onlineFriends.length})
                   </h3>
@@ -335,7 +335,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
               {/* Your Stats */}
               {currentUser && (
                 <div className="p-4 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-xl border border-white/5">
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Your Stats</h3>
+                  <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">Your Stats</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <StatBox icon={Flame} label="XP" value={currentUser.xp || 0} />
                     <StatBox icon={Star} label="Level" value={currentUser.level || 1} />
@@ -346,7 +346,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
               {/* Trending Bars */}
               {trendingBars.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Flame className="h-3.5 w-3.5 text-orange-400" />
                     Hot Bars
                   </h3>
@@ -373,7 +373,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
               {/* Leaderboard */}
               {leaderboard.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Trophy className="h-3.5 w-3.5 text-yellow-400" />
                     Top Lyricists
                   </h3>
@@ -411,7 +411,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
               {/* Suggested Follows */}
               {currentUser && suggestedUsers.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <UserPlus className="h-3.5 w-3.5" />
                     Discover Lyricists
                   </h3>
@@ -439,7 +439,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
 
               {/* Quick Links */}
               <div>
-                <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Zap className="h-3.5 w-3.5" />
                   Quick Links
                 </h3>
@@ -460,7 +460,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
                   <span>·</span>
                   <Link href="/terms"><span className="hover:text-white/50 cursor-pointer">Terms</span></Link>
                 </div>
-                <p className="text-xs text-white/20 mt-2">© 2024 Orphan Bars</p>
+                <p className="text-xs text-white/40 mt-2">© 2024 Orphan Bars</p>
               </div>
             </div>
           </aside>
@@ -507,7 +507,7 @@ function StatBox({ icon: Icon, label, value }: { icon: React.ComponentType<{ cla
     <div className="text-center p-2 rounded-lg bg-white/[0.03]">
       <Icon className="h-4 w-4 text-primary mx-auto mb-1" />
       <p className="text-lg font-bold text-white">{value}</p>
-      <p className="text-[10px] text-white/40 uppercase tracking-wider">{label}</p>
+      <p className="text-[10px] text-white/60 uppercase tracking-wider">{label}</p>
     </div>
   );
 }

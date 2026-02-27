@@ -165,9 +165,9 @@ export default function FeedBarCard({ bar }: { bar: BarWithUser }) {
   return (
     <article
       className={cn(
-        "group relative overflow-hidden rounded-2xl glass-card p-5",
+        "group relative overflow-hidden rounded-2xl glass-card p-4 md:p-5",
         "transition-all duration-200",
-        "hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.25)]",
+        "hover:-translate-y-0.5",
         "active:translate-y-0.5 active:scale-[0.99]",
         "md:hover:scale-[1.01]",
         THEME_CLASSES[theme]
