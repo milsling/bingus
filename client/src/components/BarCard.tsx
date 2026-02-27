@@ -16,6 +16,9 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatTimestamp } from "@/lib/formatDate";
 import { useBars } from "@/context/BarContext";
@@ -292,6 +295,10 @@ export default function BarCard({ bar }: BarCardProps) {
   const [reportDetails, setReportDetails] = useState("");
   const [editTags, setEditTags] = useState(bar.tags?.join(", ") || "");
   const [isAraOpen, setIsAraOpen] = useState(false);
+  const [showOriginalityReport, setShowOriginalityReport] = useState(false);
+  const [isCheckingOriginality, setIsCheckingOriginality] = useState(false);
+  const [originalityData, setOriginalityData] = useState<any[]>([]);
+  const [showProofScreenshot, setShowProofScreenshot] = useState(false);
 
   const isLocked = (bar as any).isLocked;
 
@@ -343,14 +350,12 @@ export default function BarCard({ bar }: BarCardProps) {
       return { previousLikes };
     },
     onSuccess: (data) => {
-      console.log('[LIKE SUCCESS]', data);
       queryClient.setQueryData(['likes', bar.id], { count: data.count, liked: data.liked });
     },
     onError: (error: any, _, context) => {
       if (context?.previousLikes) {
         queryClient.setQueryData(['likes', bar.id], context.previousLikes);
       }
-      console.error('[LIKE ERROR]', error.message);
       if (error.message.includes("Not authenticated")) {
         toast({ title: "Login required", description: "You need to be logged in to like posts", variant: "destructive" });
       } else {
@@ -429,25 +434,6 @@ export default function BarCard({ bar }: BarCardProps) {
     mutationFn: (commentId: string) => api.deleteComment(commentId),
     onSuccess: () => {
       refetchComments();
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: () => api.updateBar(bar.id, {
-      content: editContent,
-      explanation: editExplanation || undefined,
-      category: editCategory,
-      tags: editTags.split(",").map(t => t.trim()).filter(Boolean),
-      barType: editBarType,
-      fullRapLink: editFullRapLink.trim() || undefined,
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bars'] });
-      toast({ title: "Bar updated" });
-      setIsEditOpen(false);
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -897,7 +883,7 @@ export default function BarCard({ bar }: BarCardProps) {
                     
                     <ScrollArea className="max-h-48">
                       <div className="space-y-2">
-                        {commentsData.map((comment: any) => (
+                        {commentsData?.map((comment: any) => (
                           <CommentItem
                             key={comment.id}
                             comment={comment}
@@ -905,7 +891,7 @@ export default function BarCard({ bar }: BarCardProps) {
                             onDelete={() => deleteCommentMutation.mutate(comment.id)}
                           />
                         ))}
-                        {commentsData.length === 0 && (
+                        {commentsData?.length === 0 && (
                           <p className="text-xs text-muted-foreground text-center py-2">No comments yet</p>
                         )}
                       </div>
@@ -918,53 +904,12 @@ export default function BarCard({ bar }: BarCardProps) {
         </div>
       </motion.div>
 
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {BAR_TYPE_INFO[editBarType as BarType]?.detail}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-link">Full Rap Link (optional)</Label>
-              <Input
-                id="edit-link"
-                type="url"
-                value={editFullRapLink}
-                onChange={(e) => setEditFullRapLink(e.target.value)}
-                placeholder="https://soundcloud.com/..."
-                data-testid="input-edit-link"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={() => {
-                const lineBreaks = countLineBreaks(editContent);
-                const maxLines = LINE_BREAK_LIMITS[editBarType as BarType];
-                if (lineBreaks > maxLines) {
-                  toast({
-                    title: "Too many lines",
-                    description: `${BAR_TYPE_INFO[editBarType as BarType].label} allows max ${maxLines} line break${maxLines === 1 ? '' : 's'}. You have ${lineBreaks}.`,
-                    variant: "destructive",
-                  });
-                  return;
-                }
-                updateMutation.mutate();
-              }} 
-              disabled={updateMutation.isPending || !editContent.trim()}
-              data-testid="button-save-edit"
-            >
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
+      <>
+      <Dialog open={showOriginalityReport} onOpenChange={setShowOriginalityReport}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {originalityData.length > 0 ? (
+              {originalityData?.length > 0 ? (
                 <><AlertTriangle className="h-5 w-5 text-orange-500" /> Originality Report</>
               ) : (
                 <><CheckCircle className="h-5 w-5 text-green-500" /> Originality Report</>
@@ -973,8 +918,8 @@ export default function BarCard({ bar }: BarCardProps) {
           </DialogHeader>
           
           <div className="space-y-3">
-            <div className={`p-3 rounded-lg ${originalityData.length > 0 ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
-              {originalityData.length > 0 ? (
+            <div className={`p-3 rounded-lg ${originalityData?.length > 0 ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
+              {originalityData?.length > 0 ? (
                 <p className="text-sm text-orange-500">
                   Found {originalityData.length} similar bar{originalityData.length > 1 ? 's' : ''} on Orphan Bars
                 </p>
@@ -986,7 +931,7 @@ export default function BarCard({ bar }: BarCardProps) {
               )}
             </div>
 
-            {originalityData.length > 0 && (
+            {originalityData?.length > 0 && (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {originalityData.map((match) => (
                   <div key={match.id} className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg border border-border/50">
@@ -1008,6 +953,65 @@ export default function BarCard({ bar }: BarCardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Report Bar</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="report-reason">Reason</Label>
+              <select
+                id="report-reason"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="w-full p-2 border rounded-md bg-secondary/30"
+                data-testid="select-report-reason"
+              >
+                <option value="">Select a reason</option>
+                <option value="spam">Spam</option>
+                <option value="inappropriate">Inappropriate Content</option>
+                <option value="harassment">Harassment</option>
+                <option value="copyright">Copyright Violation</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="report-details">Additional Details (optional)</Label>
+              <textarea
+                id="report-details"
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                className="w-full min-h-[80px] p-3 border rounded-md bg-secondary/30"
+                placeholder="Please provide any additional context..."
+                data-testid="textarea-report-details"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReportOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={() => reportMutation.mutate()}
+              disabled={!reportReason.trim() || reportMutation.isPending}
+              data-testid="button-submit-report"
+            >
+              {reportMutation.isPending ? "Submitting..." : "Submit Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {showProofScreenshot && (
+        <ProofScreenshot
+          bar={bar}
+          open={showProofScreenshot}
+          onOpenChange={setShowProofScreenshot}
+        />
+      )}
 
       <AIAssistant 
         open={isAraOpen} 
