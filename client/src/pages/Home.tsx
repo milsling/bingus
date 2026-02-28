@@ -514,9 +514,7 @@ export default function Home() {
                   </div>
                 ) : (
                   visibleBars.map((bar) => (
-                    <div key={bar.id} className="glass-surface-strong rounded-2xl p-1">
-                      <BarCard bar={bar} />
-                    </div>
+                    <BarCard key={bar.id} bar={bar} />
                   ))
                 )}
               </div>
