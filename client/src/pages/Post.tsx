@@ -389,7 +389,7 @@ export default function Post() {
 
   return (
     <NativeScreen
-      className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-8 md:pt-24"
+      className="pt-14 pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-8 md:pt-24"
       contentClassName="max-w-5xl p-4 md:p-8"
     >
       <NativeSectionHeader

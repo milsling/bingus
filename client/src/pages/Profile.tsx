@@ -145,7 +145,7 @@ export default function Profile() {
   // Show loading while checking auth or if no user yet
   if (isLoadingUser || !currentUser) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
@@ -159,10 +159,7 @@ export default function Profile() {
   };
 
   return (
-    <div className={cn(
-      "min-h-screen pt-20 pb-24 sm:pb-6 sm:pt-24",
-      hasCustomBackground ? "bg-transparent" : "bg-background"
-    )}>
+    <div className="min-h-screen pt-20 pb-24 sm:pb-6 sm:pt-24">
       
       <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 lg:px-6">
         {/* Profile Header - Glass card on neutral dark */}

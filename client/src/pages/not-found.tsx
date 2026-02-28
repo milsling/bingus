@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background text-foreground p-4 pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center text-foreground p-4 pt-14 pb-20 md:pb-4 md:pt-24">
       <div className="flex flex-col items-center text-center space-y-6 max-w-md">
         <AlertTriangle className="h-24 w-24 text-primary animate-pulse" />
         

@@ -30,7 +30,7 @@ export default function Apps() {
   const { currentUser: user } = useBars();
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
       <div className="container max-w-4xl mx-auto p-4 pt-6">
         <div className="flex items-center gap-3 mb-6">
           <LayoutGrid className="h-8 w-8 text-primary" />

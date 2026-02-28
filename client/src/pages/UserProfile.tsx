@@ -250,7 +250,7 @@ export default function UserProfile() {
 
   if (userLoading || (!user && isFetching)) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
+      <div className="min-h-screen pt-14 pb-20 sm:pb-6 sm:pt-24">
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -260,7 +260,7 @@ export default function UserProfile() {
 
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
+      <div className="min-h-screen pt-14 pb-20 sm:pb-6 sm:pt-24">
         <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
           <Button
             variant="ghost"
@@ -279,7 +279,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
+    <div className="min-h-screen pt-14 pb-20 sm:pb-6 sm:pt-24">
       <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
         <Button
           variant="ghost"

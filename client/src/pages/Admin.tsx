@@ -1514,14 +1514,14 @@ export default function Admin() {
 
   if (isLoadingUser) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
+      <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
   if (!currentUser || !currentUser.isAdmin) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
+      <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
         <div className="text-muted-foreground">Redirecting...</div>
       </div>
     );
@@ -1588,7 +1588,7 @@ export default function Admin() {
   ].filter((section) => section.show);
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
       
       <main className="mx-auto w-full max-w-5xl p-4 md:p-8">
         <div className="mb-6 glass-surface-strong rounded-3xl border border-white/[0.1] p-4 md:p-6">

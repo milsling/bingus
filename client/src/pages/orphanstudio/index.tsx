@@ -211,7 +211,7 @@ export default function OrphanStudioPage() {
   }, [settings.autosave, pendingSave]);
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-24 md:pb-6">
+    <div className="min-h-screen pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-24 md:pb-6">
       <div className="container mx-auto max-w-7xl p-4">
         <div className="glass-surface mb-4 rounded-3xl border border-border/55 px-5 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">

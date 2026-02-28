@@ -145,10 +145,7 @@ export default function Settings() {
   };
 
   return (
-    <div className={cn(
-      "min-h-screen pt-14 pb-20 md:pt-24 md:pb-6",
-      hasCustomBackground ? "bg-transparent" : "bg-background"
-    )}>
+    <div className="min-h-screen pt-14 pb-20 md:pt-24 md:pb-6">
       <main className="mx-auto w-full max-w-3xl px-4 md:px-8">
         <div className="mb-5 flex items-center gap-3">
           <Link href="/profile">
@@ -205,10 +202,7 @@ export default function Settings() {
             </TabsList>
 
             <TabsContent value="general" className="mt-0 space-y-4">
-              <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
+              <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <UserCog className="h-4 w-4 text-primary" />
@@ -227,10 +221,7 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
+              <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Lock className="h-4 w-4 text-primary" />
@@ -279,10 +270,7 @@ export default function Settings() {
                   </Button>
                 </CardContent>
               </Card>
-              <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
+              <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Command className="h-4 w-4 text-primary" />
@@ -344,10 +332,7 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="privacy" className="mt-0 space-y-4">
-              <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
+              <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Shield className="h-4 w-4 text-primary" />
@@ -399,10 +384,7 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="sounds" className="mt-0 space-y-4">
-              <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
+              <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Bell className="h-4 w-4 text-primary" />
@@ -443,10 +425,7 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
+              <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Volume2 className="h-4 w-4 text-primary" />
@@ -492,10 +471,7 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="appearance" className="mt-0 space-y-4">
-              <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
+              <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     🎨 Background Selection
@@ -515,10 +491,7 @@ export default function Settings() {
 
             {canDebugControls && (
               <TabsContent value="developer" className="mt-0 space-y-4">
-                <Card className={cn(
-                "border-border/70",
-                hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-              )}>
+                <Card className={"glass-surface-strong border-white/15"}>
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <Shield className="h-4 w-4 text-primary" />

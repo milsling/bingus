@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 export default function Guidelines() {
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
       
       <main className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 py-8">
         <div className="mb-6">

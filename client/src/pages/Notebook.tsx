@@ -147,7 +147,7 @@ export default function NotebookPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center pt-14 pb-20 md:pb-4 md:pt-24">
+      <div className="min-h-screen flex items-center justify-center pt-14 pb-20 md:pb-4 md:pt-24">
         <Card className="max-w-md">
           <CardContent className="pt-6 text-center">
             <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -160,7 +160,7 @@ export default function NotebookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
       <div className="container max-w-6xl mx-auto p-4">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/apps')}>

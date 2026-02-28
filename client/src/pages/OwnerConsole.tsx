@@ -49,7 +49,7 @@ function OwnerConsoleContent() {
   const queryClient = useQueryClient();
   const { selectedBackground } = useBackground();
   const hasCustomBackground = selectedBackground.image !== null;
-  const cardCn = cn("border-border/70", hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40");
+  const cardCn = cn("glass-surface-strong border-white/15");
   const { settings, updateSettings, setCanCustomize } = useTheme();
 
   // Mark owner as able to customize
@@ -263,7 +263,7 @@ function OwnerConsoleContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
       <main className="mx-auto w-full max-w-3xl p-4 md:p-8">
 
         {/* Header */}

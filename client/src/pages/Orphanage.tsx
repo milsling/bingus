@@ -526,7 +526,7 @@ export default function OrphanagePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 text-foreground md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 text-foreground md:pb-4 md:pt-24">
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="space-y-6">
           <div className="flex flex-col items-center">
