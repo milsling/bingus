@@ -15,6 +15,7 @@ import AIAssistant from "@/components/AIAssistant";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
 import ThumbNavigation from "@/components/ThumbNavigation";
+import MobileNav from "@/components/MobileNav";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ export default function Navigation() {
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [araOpen, setAraOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { leftTarget, rightTarget } = useFabShortcuts();
   
   const isOnMessagesPage = location.startsWith("/messages");
@@ -77,25 +79,8 @@ export default function Navigation() {
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
       <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar top-bar overflow-visible">
-        {/* Left: Modern Hamburger + Logo */}
+        {/* Left: Logo Only (no hamburger on mobile) */}
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setMobileNavOpen(true)}
-            className={cn(
-              "p-3 rounded-xl transition-all duration-200 group mobile-nav-button",
-              mobileNavOpen ? "rotate-90" : ""
-            )}
-            aria-label="Open menu"
-          >
-            <div className="relative">
-              <Menu className={cn(
-                "h-5 w-5 text-foreground/70 transition-transform duration-200",
-                mobileNavOpen ? "rotate-90" : ""
-              )} />
-              <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </button>
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer min-w-0 group">
               <div className="relative">
@@ -226,6 +211,9 @@ export default function Navigation() {
       
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
       <AIAssistant open={araOpen} onOpenChange={setAraOpen} hideFloatingButton />
+      
+      {/* Desktop Navigation Sidebar */}
+      <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
       
       {/* Mobile Thumb Navigation - only visible on mobile */}
       <div className="md:hidden">
