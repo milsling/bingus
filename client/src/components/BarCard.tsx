@@ -668,7 +668,6 @@ export default function BarCard({ bar }: BarCardProps) {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            </div>
           </div>
           
           <div className="space-y-4">
@@ -901,6 +900,7 @@ export default function BarCard({ bar }: BarCardProps) {
               )}
             </AnimatePresence>
           </div>
+        </div>
       </motion.div>
 
       <Dialog open={showOriginalityReport} onOpenChange={setShowOriginalityReport}>
