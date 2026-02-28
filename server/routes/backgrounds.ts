@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import { db } from "../db";
 import { customBackgrounds, siteSettings, users } from "@shared/schema";
 import { eq, desc, asc } from "drizzle-orm";
@@ -27,12 +28,21 @@ const upload = multer({
   }
 });
 
-// Helper: upload buffer to Object Storage, return public proxy URL
+// Helper: upload buffer to Object Storage, return public proxy URL.
+// Falls back to local filesystem if PRIVATE_OBJECT_DIR is not configured.
 async function uploadToObjectStorage(buffer: Buffer, filename: string, contentType: string): Promise<string> {
   const privateDir = (process.env.PRIVATE_OBJECT_DIR || '').replace(/\/$/, '');
+
   if (!privateDir) {
-    throw new Error('PRIVATE_OBJECT_DIR not set — cannot upload to Object Storage');
+    // Local fallback: write to client/public/uploads/backgrounds/
+    const ext = path.extname(filename) || '.jpg';
+    const localName = `${randomUUID()}${ext}`;
+    const uploadDir = path.join(process.cwd(), 'client', 'public', 'uploads', 'backgrounds');
+    fs.mkdirSync(uploadDir, { recursive: true });
+    fs.writeFileSync(path.join(uploadDir, localName), buffer);
+    return `/uploads/backgrounds/${localName}`;
   }
+
   const ext = path.extname(filename) || '.jpg';
   const objectName = `backgrounds/${randomUUID()}${ext}`;
   const fullPath = `${privateDir}/${objectName}`;
@@ -42,7 +52,6 @@ async function uploadToObjectStorage(buffer: Buffer, filename: string, contentTy
   const bucket = objectStorageClient.bucket(bucketName);
   const file = bucket.file(blobName);
   await file.save(buffer, { contentType, resumable: false });
-  // Return a URL the server can serve via the /objects proxy
   return `/objects/${objectName}`;
 }
 
