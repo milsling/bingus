@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion } from 'framer-motion';
 import { 
@@ -32,7 +32,7 @@ import headerLogo from '@/assets/logo.png';
 import { SearchBar } from '@/components/SearchBar';
 import { NotificationBell } from '@/components/NotificationBell';
 import { OnlineStatusIndicator } from '@/components/OnlineStatus';
-import ThumbNavTab from './ThumbNavTab';
+import ThumbNavTab, { useThumbNavClose } from './ThumbNavTab';
 
 interface MenuItem {
   href?: string;
@@ -49,15 +49,32 @@ interface MenuSection {
   items: MenuItem[];
 }
 
-export default function ThumbNavigation() {
+function NavContent() {
   const { currentUser, logout } = useBars();
   const { theme, setTheme } = useTheme();
   const [location, setLocation] = useLocation();
+  const close = useThumbNavClose();
   const isOnMessagesPage = location.startsWith('/messages');
 
+  // Triple-tap logo for owner console secret access
+  const tapCountRef = useRef(0);
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoTap = () => {
+    if (!currentUser?.isOwner) return;
+    tapCountRef.current += 1;
+    if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+    tapTimerRef.current = setTimeout(() => { tapCountRef.current = 0; }, 600);
+    if (tapCountRef.current >= 3) {
+      tapCountRef.current = 0;
+      close();
+      setLocation('/owner-console');
+    }
+  };
+
   const handleLogout = async () => {
+    close();
     await logout();
-    // Navigation will be handled by the Link component
   };
 
   const menuSections: MenuSection[] = [
@@ -126,14 +143,13 @@ export default function ThumbNavigation() {
   };
 
   return (
-    <ThumbNavTab>
-      <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col">
         {/* Header */}
         <div className="relative flex items-center justify-between px-5 pt-[max(env(safe-area-inset-top),12px)] pb-4">
           {/* Gradient glow */}
           <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary/[0.07] to-transparent pointer-events-none" />
 
-          <div className="relative flex items-center gap-3">
+          <div className="relative flex items-center gap-3" onClick={handleLogoTap}>
             <div className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 flex items-center justify-center ring-1 ring-primary/20">
               <img src={headerLogo} alt="" className="h-6 w-6" />
             </div>
@@ -184,7 +200,7 @@ export default function ThumbNavigation() {
               <Monitor className="h-4 w-4" />
               <span>System</span>
             </button>
-            <Link href={currentUser ? '/settings' : '/auth'} className="block">
+            <Link href={currentUser ? '/settings' : '/auth'} className="block" onClick={close}>
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/30 text-xs font-medium hover:bg-foreground/[0.04] transition-colors">
                 <UserCog className="h-4 w-4" />
                 <span>Settings</span>
@@ -197,7 +213,7 @@ export default function ThumbNavigation() {
               <>
                 <button
                   type="button"
-                  onClick={() => setLocation(isOnMessagesPage ? '/messages' : '/post')}
+                  onClick={() => { close(); setLocation(isOnMessagesPage ? '/messages' : '/post'); }}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors"
                 >
                   {isOnMessagesPage ? <PenLine className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -207,7 +223,7 @@ export default function ThumbNavigation() {
                 <OnlineStatusIndicator compact />
               </>
             ) : (
-              <Link href="/auth" className="block w-full">
+              <Link href="/auth" className="block w-full" onClick={close}>
                 <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
                   <LogIn className="h-4 w-4" />
                   <span>Login</span>
@@ -228,6 +244,7 @@ export default function ThumbNavigation() {
             <Link
               href={`/u/${currentUser.username}`}
               className="group flex items-center gap-3 p-3 rounded-2xl transition-all duration-200 hover:bg-primary/[0.06] border border-transparent hover:border-primary/15"
+              onClick={close}
             >
               <div className="relative shrink-0">
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/30 via-primary/20 to-purple-500/15 flex items-center justify-center ring-2 ring-primary/20 ring-offset-1 ring-offset-background">
@@ -344,7 +361,7 @@ export default function ThumbNavigation() {
 
                   if (item.href) {
                     return (
-                      <Link key={item.label} href={item.href} className="block">
+                      <Link key={item.label} href={item.href} className="block" onClick={close}>
                         {content}
                       </Link>
                     );
@@ -353,7 +370,7 @@ export default function ThumbNavigation() {
                   return (
                     <button
                       key={item.label}
-                      onClick={item.action}
+                      onClick={() => { close(); item.action?.(); }}
                       className="block w-full text-left"
                     >
                       {content}
@@ -388,7 +405,7 @@ export default function ThumbNavigation() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <Link href="/auth" className="block">
+                <Link href="/auth" className="block" onClick={close}>
                   <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-medium text-sm transition-all hover:bg-primary/90 active:scale-[0.97]">
                     <User className="h-4 w-4" />
                     <span>Sign In</span>
@@ -401,6 +418,13 @@ export default function ThumbNavigation() {
           <div className="h-[env(safe-area-inset-bottom)]" />
         </div>
       </div>
+  );
+}
+
+export default function ThumbNavigation() {
+  return (
+    <ThumbNavTab>
+      <NavContent />
     </ThumbNavTab>
   );
 }

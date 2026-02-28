@@ -1,35 +1,19 @@
 import { Router } from "express";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
 import { db } from "../db";
-import { customBackgrounds, users } from "@shared/schema";
+import { customBackgrounds, siteSettings, users } from "@shared/schema";
 import { eq, desc, asc } from "drizzle-orm";
 import { isAuthenticated, isOwner } from "../auth";
 import { insertCustomBackgroundSchema } from "@shared/schema";
+import { objectStorageClient } from "../replit_integrations/object_storage";
+import { randomUUID } from "crypto";
 
 const router = Router();
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'uploads', 'backgrounds');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, `bg-${uniqueSuffix}${ext}`);
-  }
-});
-
+// Configure multer for in-memory storage (stream to Object Storage)
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
@@ -42,6 +26,25 @@ const upload = multer({
     }
   }
 });
+
+// Helper: upload buffer to Object Storage, return public proxy URL
+async function uploadToObjectStorage(buffer: Buffer, filename: string, contentType: string): Promise<string> {
+  const privateDir = (process.env.PRIVATE_OBJECT_DIR || '').replace(/\/$/, '');
+  if (!privateDir) {
+    throw new Error('PRIVATE_OBJECT_DIR not set — cannot upload to Object Storage');
+  }
+  const ext = path.extname(filename) || '.jpg';
+  const objectName = `backgrounds/${randomUUID()}${ext}`;
+  const fullPath = `${privateDir}/${objectName}`;
+  const parts = fullPath.replace(/^\//, '').split('/');
+  const bucketName = parts[0];
+  const blobName = parts.slice(1).join('/');
+  const bucket = objectStorageClient.bucket(bucketName);
+  const file = bucket.file(blobName);
+  await file.save(buffer, { contentType, resumable: false });
+  // Return a URL the server can serve via the /objects proxy
+  return `/objects/${objectName}`;
+}
 
 // Get all backgrounds (including custom ones)
 router.get("/backgrounds", async (req, res) => {
@@ -67,8 +70,15 @@ router.post("/backgrounds", isAuthenticated, isOwner, upload.single('image'), as
       return res.status(400).json({ error: "No image file provided" });
     }
 
-    const { currentUser } = req;
+    const user = req.user as any;
     const name = req.body.name || req.file.originalname.split('.')[0];
+
+    // Upload to Object Storage for persistence across deploys
+    const imageUrl = await uploadToObjectStorage(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype
+    );
 
     // Get the highest sort order to append at the end
     const lastBg = await db
@@ -79,11 +89,10 @@ router.post("/backgrounds", isAuthenticated, isOwner, upload.single('image'), as
 
     const nextSortOrder = lastBg.length > 0 ? lastBg[0].sortOrder + 1 : 0;
 
-    // Create database record - don't use schema validation for file uploads
     const newBackground = await db.insert(customBackgrounds).values({
       name,
-      imageUrl: `/uploads/backgrounds/${req.file.filename}`,
-      createdBy: currentUser!.id,
+      imageUrl,
+      createdBy: user.id,
       sortOrder: nextSortOrder,
       isActive: true,
     }).returning();
@@ -124,7 +133,7 @@ router.get("/admin/backgrounds", isAuthenticated, isOwner, async (req, res) => {
 // Create new background (admin only)
 router.post("/admin/backgrounds", isAuthenticated, isOwner, async (req, res) => {
   try {
-    const { currentUser } = req;
+    const user = req.user as any;
     const validatedData = insertCustomBackgroundSchema.parse(req.body);
 
     // Get the highest sort order to append at the end
@@ -138,7 +147,7 @@ router.post("/admin/backgrounds", isAuthenticated, isOwner, async (req, res) => 
 
     const newBackground = await db.insert(customBackgrounds).values({
       ...validatedData,
-      createdBy: currentUser!.id,
+      createdBy: user.id,
       sortOrder: validatedData.sortOrder || nextSortOrder,
     }).returning();
 
@@ -222,31 +231,42 @@ router.post("/admin/backgrounds/reorder", isAuthenticated, isOwner, async (req, 
   }
 });
 
+// Get site-wide settings (public - needed on load for all users)
+router.get("/site-settings", async (req, res) => {
+  try {
+    const rows = await db.select().from(siteSettings);
+    const settings: Record<string, string> = {};
+    for (const row of rows) {
+      settings[row.key] = row.value;
+    }
+    res.json(settings);
+  } catch (error) {
+    console.error("Error fetching site settings:", error);
+    res.status(500).json({ error: "Failed to fetch site settings" });
+  }
+});
+
 // Save site-wide appearance settings (owner only)
 router.post("/site-settings", isAuthenticated, isOwner, async (req, res) => {
   try {
     const { defaultBackground, themeSettings } = req.body;
-    
-    // Store in a simple settings table or file - for now using environment variables
-    // In a real implementation, you'd have a proper site_settings table
-    
-    // Update default background if provided
-    if (defaultBackground) {
-      // You could store this in a database table or environment
-      console.log("Default background updated:", defaultBackground);
-      // For now, just log it - in production you'd save to database
+
+    const upsertSetting = async (key: string, value: string) => {
+      await db
+        .insert(siteSettings)
+        .values({ key, value })
+        .onConflictDoUpdate({ target: siteSettings.key, set: { value, updatedAt: new Date() } });
+    };
+
+    if (defaultBackground !== undefined) {
+      await upsertSetting('defaultBackground', String(defaultBackground));
     }
-    
-    // Update theme settings if provided
-    if (themeSettings) {
-      console.log("Theme settings updated:", themeSettings);
-      // For now, just log it - in production you'd save to database
+
+    if (themeSettings !== undefined) {
+      await upsertSetting('themeSettings', JSON.stringify(themeSettings));
     }
-    
-    res.json({ 
-      message: "Site settings saved successfully",
-      settings: { defaultBackground, themeSettings }
-    });
+
+    res.json({ message: "Site settings saved successfully" });
   } catch (error) {
     console.error("Error saving site settings:", error);
     res.status(500).json({ error: "Failed to save site settings" });

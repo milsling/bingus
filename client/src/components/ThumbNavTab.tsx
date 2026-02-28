@@ -1,17 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { ChevronLeft } from 'lucide-react';
 
 /**
  * ThumbNavTab - A modern, native-feeling navigation drawer for mobile
  * 
  * Features:
  * - Slim edge tab attached to right side
+ * - Inverted color tab (always visible against any background)
  * - Smooth thumb-following drag interaction
- * - Swipe back to cancel opening
+ * - Swipe back to close (both from tab and open panel)
+ * - Auto-close on nav item selection
  * - Haptic feedback
  * - Native app feel with spring physics
  */
+
+export const ThumbNavCloseContext = createContext<() => void>(() => {});
+export const useThumbNavClose = () => useContext(ThumbNavCloseContext);
+
 interface ThumbNavTabProps {
   children: React.ReactNode;
 }
@@ -118,38 +123,55 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const backdropOpacity = useTransform(dragX, [0, panelWidth], [0, 0.5]);
   const tabX = useTransform(dragX, [0, panelWidth], [0, -panelWidth]);
 
+  // Touch handlers for slide-to-close on the open panel
+  const panelTouchStartXRef = useRef<number | null>(null);
+
+  const handlePanelTouchStart = (event: React.TouchEvent) => {
+    panelTouchStartXRef.current = event.touches[0].clientX;
+  };
+
+  const handlePanelTouchMove = (event: React.TouchEvent) => {
+    if (panelTouchStartXRef.current === null) return;
+    const deltaX = event.touches[0].clientX - panelTouchStartXRef.current;
+    if (deltaX > 0) {
+      // Dragging right — move panel with finger
+      dragX.set(Math.max(0, panelWidth - deltaX));
+    }
+  };
+
+  const handlePanelTouchEnd = (event: React.TouchEvent) => {
+    if (panelTouchStartXRef.current === null) return;
+    const deltaX = event.changedTouches[0].clientX - panelTouchStartXRef.current;
+    panelTouchStartXRef.current = null;
+    if (deltaX > panelWidth * 0.3) {
+      handleClose();
+    } else {
+      dragX.set(panelWidth);
+    }
+  };
+
   return (
-    <>
-      {/* Slim Edge Tab */}
+    <ThumbNavCloseContext.Provider value={handleClose}>
+      {/* Slim Edge Tab — uses mix-blend-mode: difference so it's always the inverse of whatever is behind it */}
       <motion.div
         className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] touch-none"
-        style={{ x: tabX }}
+        style={{ x: tabX, mixBlendMode: 'difference' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative h-24 w-1 bg-primary/30 rounded-l-full shadow-lg">
-          {/* Grip indicator */}
+        <div className="relative h-24 w-1.5 bg-white rounded-l-full shadow-lg">
+          {/* Grip dots */}
           <div className="absolute inset-y-0 -left-3 w-4 flex items-center justify-center">
             <div className="space-y-1.5">
               {[...Array(3)].map((_, i) => (
                 <div
                   key={i}
-                  className="w-0.5 h-0.5 bg-primary/50 rounded-full"
+                  className="w-0.5 h-0.5 bg-white rounded-full"
                 />
               ))}
             </div>
           </div>
-          
-          {/* Active indicator */}
-          <motion.div
-            className="absolute inset-0 bg-primary rounded-l-full"
-            initial={{ scaleY: 0 }}
-            animate={{ 
-              scaleY: isDragging ? Math.min(dragX.get() / panelWidth, 1) : (isOpen ? 1 : 0)
-            }}
-            transition={{ type: 'spring', damping: 25, stiffness: 400 }}
-          />
         </div>
       </motion.div>
 
@@ -179,6 +201,9 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
                 stiffness: isDragging ? 500 : 350,
                 mass: 0.5
               }}
+              onTouchStart={handlePanelTouchStart}
+              onTouchMove={handlePanelTouchMove}
+              onTouchEnd={handlePanelTouchEnd}
             >
               {/* Panel background with native app styling */}
               <div 
@@ -200,6 +225,6 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
           </>
         )}
       </AnimatePresence>
-    </>
+    </ThumbNavCloseContext.Provider>
   );
 }

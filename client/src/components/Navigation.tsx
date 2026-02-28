@@ -67,15 +67,17 @@ export default function Navigation() {
 
   return (
     <>
-      <FloatingActionButton
-        onDropABar={() => setLocation(currentUser ? "/post" : "/auth")}
-        onSwipeLeft={() => executeShortcut(leftTarget)}
-        onSwipeRight={() => executeShortcut(rightTarget)}
-        onLongPress={() => {
-          if ("vibrate" in navigator) navigator.vibrate([12, 50, 8, 50, 12]);
-          setAraOpen(true);
-        }}
-      />
+      <div className="hidden md:block">
+        <FloatingActionButton
+          onDropABar={() => setLocation(currentUser ? "/post" : "/auth")}
+          onSwipeLeft={() => executeShortcut(leftTarget)}
+          onSwipeRight={() => executeShortcut(rightTarget)}
+          onLongPress={() => {
+            if ("vibrate" in navigator) navigator.vibrate([12, 50, 8, 50, 12]);
+            setAraOpen(true);
+          }}
+        />
+      </div>
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
       <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar top-bar overflow-visible">

@@ -73,7 +73,7 @@ export function BackgroundUploader() {
       // Create promise to handle XHR
       const uploadPromise = new Promise<BackgroundUploadResponse>((resolve, reject) => {
         xhr.onload = () => {
-          if (xhr.status === 200) {
+          if (xhr.status >= 200 && xhr.status < 300) {
             try {
               const response = JSON.parse(xhr.responseText);
               resolve(response);
@@ -81,7 +81,12 @@ export function BackgroundUploader() {
               reject(new Error('Invalid response from server'));
             }
           } else {
-            reject(new Error(`Upload failed: ${xhr.statusText}`));
+            try {
+              const errBody = JSON.parse(xhr.responseText);
+              reject(new Error(errBody.error || `Upload failed with status ${xhr.status}`));
+            } catch {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
           }
         };
         

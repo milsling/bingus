@@ -1404,3 +1404,10 @@ export const insertCustomBackgroundSchema = createInsertSchema(customBackgrounds
   isActive: true,
   sortOrder: true,
 });
+
+// Site-wide settings table (key-value store for owner-controlled settings)
+export const siteSettings = pgTable("site_settings", {
+  key: varchar("key", { length: 255 }).primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
