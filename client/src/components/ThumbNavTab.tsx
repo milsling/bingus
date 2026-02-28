@@ -142,12 +142,12 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
       x: -8,
       scale: 0.95,
       rotate: -2,
-      transition: { type: 'spring', damping: 15, stiffness: 300 }
+      transition: { type: "spring" as const, damping: 15, stiffness: 300 }
     },
     hover: {
       x: -4,
       scale: 1.05,
-      transition: { type: 'spring', damping: 20, stiffness: 400 }
+      transition: { type: "spring" as const, damping: 20, stiffness: 400 }
     }
   };
 
@@ -156,7 +156,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
       x: '100%',
       opacity: 0,
       transition: {
-        type: 'spring',
+        type: "spring" as const,
         damping: 25,
         stiffness: 300,
         mass: 0.8
@@ -166,7 +166,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
       x: 0,
       opacity: 1,
       transition: {
-        type: 'spring',
+        type: "spring" as const,
         damping: 28,
         stiffness: 300,
         mass: 0.8,
