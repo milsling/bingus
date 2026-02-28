@@ -78,6 +78,13 @@ async function buildAll() {
 }
 
 buildAll().catch((err) => {
+  console.error("❌ BUILD FAILED:");
   console.error(err);
+  if (err instanceof Error) {
+    console.error("Error name:", err.name);
+    console.error("Error message:", err.message);
+    console.error("Error stack:", err.stack);
+  }
+  process.stderr.write(`\nBuild failed with error: ${err}\n`);
   process.exit(1);
 });
