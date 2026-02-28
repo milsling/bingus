@@ -219,7 +219,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed left-0 top-0 bottom-0 z-[1301] w-[min(85vw,340px)] flex flex-col overflow-hidden"
+            className="fixed left-0 top-0 bottom-0 z-[1301] w-[min(92vw,480px)] flex flex-col overflow-hidden"
             style={{
               background: 'var(--glass-surface-bg)',
               backdropFilter: 'blur(40px) saturate(160%)',
@@ -262,26 +262,21 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
             {/* ── User Profile Card ── */}
             {currentUser && (
               <motion.div variants={profileVariants} initial="hidden" animate="visible" className="px-4 pt-4 pb-2">
-                <Link
-                  href={`/u/${currentUser.username}`}
-                  onClick={onClose}
-                  className="group flex items-center gap-3 p-3 rounded-2xl transition-all duration-200 hover:bg-primary/[0.06] border border-transparent hover:border-primary/15"
-                >
-                  <div className="relative shrink-0">
-                    <div className="h-11 w-11 rounded-full bg-gradient-to-br from-primary/30 via-primary/20 to-purple-500/15 flex items-center justify-center ring-2 ring-primary/20 ring-offset-1 ring-offset-background">
-                      <span className="text-primary font-bold text-base">
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-primary/[0.05] border border-primary/10">
+                  <Link href={`/u/${currentUser.username}`} onClick={onClose} className="relative shrink-0 group">
+                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/30 via-primary/20 to-purple-500/15 flex items-center justify-center ring-2 ring-primary/20 ring-offset-2 ring-offset-background group-hover:ring-primary/40 transition-all">
+                      <span className="text-primary font-bold text-xl">
                         {currentUser.username[0]?.toUpperCase()}
                       </span>
                     </div>
-                    {/* Online dot */}
                     <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-background" />
-                  </div>
+                  </Link>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                    <div className="font-bold text-base text-foreground truncate">
                       {currentUser.displayName || currentUser.username}
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                      <span className="truncate">@{currentUser.username}</span>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <span>@{currentUser.username}</span>
                       {currentUser.isOwner && (
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-orange-500/15 text-orange-400 ring-1 ring-orange-500/20">Owner</span>
                       )}
@@ -293,8 +288,12 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                       )}
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary/70 transition-colors shrink-0" />
-                </Link>
+                  <Link href={`/u/${currentUser.username}`} onClick={onClose}>
+                    <div className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+                    </div>
+                  </Link>
+                </div>
               </motion.div>
             )}
 
@@ -303,7 +302,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
-              className="flex-1 overflow-y-auto overflow-x-hidden px-4 pt-2 pb-4 space-y-5"
+              className="flex-1 overflow-y-auto overflow-x-hidden px-4 pt-2 pb-4 space-y-4"
             >
               {menuSections.map((section) => (
                 <div key={section.title}>
@@ -316,8 +315,8 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                     <div className="flex-1 h-px bg-gradient-to-r from-border/30 to-transparent" />
                   </div>
 
-                  {/* Items */}
-                  <div className="space-y-1">
+                  {/* Items — two-column grid */}
+                  <div className="grid grid-cols-2 gap-1.5">
                     {section.items.map((item) => {
                       const isActive = isMenuItem(item) && location === item.href;
 
@@ -326,52 +325,45 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                           variants={itemVariants}
                           whileTap={{ scale: 0.97 }}
                           className={cn(
-                            "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150",
+                            "group relative flex items-center gap-2.5 px-3 py-3 rounded-xl transition-all duration-150",
                             isActive
                               ? "bg-primary/[0.12] border border-primary/25 shadow-[0_0_20px_rgba(168,85,247,0.08)]"
-                              : "border border-transparent hover:bg-foreground/[0.04] hover:border-border/20"
+                              : "border border-border/10 bg-foreground/[0.02] hover:bg-foreground/[0.05] hover:border-border/25"
                           )}
                         >
                           {/* Icon container */}
                           <div
                             className={cn(
-                              "relative shrink-0 h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200",
+                              "relative shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200",
                               isActive
                                 ? "bg-primary text-white shadow-[0_4px_12px_rgba(168,85,247,0.3)]"
-                                : "bg-foreground/[0.05] text-muted-foreground group-hover:bg-foreground/[0.08] group-hover:text-foreground"
+                                : "bg-foreground/[0.06] text-muted-foreground group-hover:bg-foreground/[0.1] group-hover:text-foreground"
                             )}
                           >
-                            <item.icon className="h-4 w-4" />
+                            <item.icon className="h-3.5 w-3.5" />
                             {isActive && (
-                              <div className="absolute inset-0 rounded-xl bg-primary/20 blur-md" />
+                              <div className="absolute inset-0 rounded-lg bg-primary/20 blur-md" />
                             )}
                           </div>
 
                           {/* Label + description */}
                           <div className="flex-1 min-w-0">
                             <div className={cn(
-                              "text-sm font-medium leading-tight",
+                              "text-xs font-semibold leading-tight",
                               isActive ? "text-primary" : "text-foreground"
                             )}>
                               {item.label}
                             </div>
                             {item.description && (
-                              <div className="text-[11px] text-muted-foreground/60 leading-tight mt-0.5">
+                              <div className="text-[10px] text-muted-foreground/60 leading-tight mt-0.5 truncate">
                                 {item.description}
                               </div>
                             )}
                           </div>
 
                           {/* Trailing icon */}
-                          {isActionItem(item) && item.external ? (
-                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-                          ) : (
-                            <ChevronRight className={cn(
-                              "h-3.5 w-3.5 shrink-0 transition-all duration-150",
-                              isActive
-                                ? "text-primary/60"
-                                : "text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5"
-                            )} />
+                          {isActionItem(item) && item.external && (
+                            <ExternalLink className="h-3 w-3 text-muted-foreground/40 shrink-0" />
                           )}
                         </motion.div>
                       );
