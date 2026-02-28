@@ -243,10 +243,7 @@ export default function Home() {
 
   return (
     <NativeScreen
-      className={cn(
-        "bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8",
-        hasCustomBackground && "bg-transparent"
-      )}
+      className="pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8"
       contentClassName="px-4 md:px-6"
     >
         <div
@@ -402,10 +399,7 @@ export default function Home() {
               <p className="mb-3 text-sm font-semibold">How it works</p>
               <div className="grid gap-3 md:grid-cols-3">
                 <div className={cn(
-                  "rounded-xl border p-3",
-                  hasCustomBackground 
-                    ? "border-white/15 bg-white/5" 
-                    : "border-border/50 bg-background/60"
+                  "rounded-xl border border-white/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Search className="h-4 w-4" />
@@ -416,10 +410,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className={cn(
-                  "rounded-xl border p-3",
-                  hasCustomBackground 
-                    ? "border-white/15 bg-white/5" 
-                    : "border-border/50 bg-background/60"
+                  "rounded-xl border border-white/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <PenLine className="h-4 w-4" />
@@ -430,10 +421,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className={cn(
-                  "rounded-xl border p-3",
-                  hasCustomBackground 
-                    ? "border-white/15 bg-white/5" 
-                    : "border-border/50 bg-background/60"
+                  "rounded-xl border border-white/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Flame className="h-4 w-4" />

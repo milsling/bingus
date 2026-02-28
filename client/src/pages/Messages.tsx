@@ -341,7 +341,7 @@ export default function Messages() {
 
   return (
     <NativeScreen
-      className="bg-background h-dvh min-h-0 pt-14 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-4 md:pt-24"
+      className="h-dvh min-h-0 pt-14 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-4 md:pt-24"
       contentClassName="max-w-none h-full px-0 md:px-4"
     >
         <div className="h-full w-full overflow-hidden bg-black/20 backdrop-blur-xl flex md:rounded-[1.9rem] md:border md:border-white/10">
