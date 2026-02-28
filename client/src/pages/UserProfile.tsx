@@ -291,8 +291,11 @@ export default function UserProfile() {
           Back to Feed
         </Button>
 
-        <div className="glass-panel rounded-2xl overflow-hidden mb-6">
-          {user.bannerUrl && (
+        <div className={cn(
+          "relative overflow-hidden rounded-2xl mb-6",
+          "glass-card border border-border/10"
+        )}>
+          {user.bannerUrl ? (
             <div className="w-full h-32 sm:h-40">
               <img 
                 src={user.bannerUrl} 
@@ -300,11 +303,13 @@ export default function UserProfile() {
                 className="w-full h-full object-cover"
               />
             </div>
+          ) : (
+            <div className="h-32 sm:h-40 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent w-full" />
           )}
-          <div className="p-4 sm:p-6">
+          <div className="p-4 sm:p-6 pt-0 sm:pt-0 -mt-12">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
             <div className="relative shrink-0">
-              <Avatar className={`h-20 w-20 ${user.bannerUrl ? '-mt-12 border-4 border-card' : ''}`}>
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 ring-4 ring-background/50 shadow-xl bg-background/50 backdrop-blur-sm">
                 <AvatarImage src={user.avatarUrl || undefined} />
                 <AvatarFallback className="text-2xl">
                   {user.username.charAt(0).toUpperCase()}

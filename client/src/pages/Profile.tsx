@@ -168,7 +168,7 @@ export default function Profile() {
         {/* Profile Header - Glass card on neutral dark */}
         <div className={cn(
           "relative overflow-hidden rounded-2xl",
-          hasCustomBackground ? "glass-surface-strong border border-white/15" : "glass-panel"
+          hasCustomBackground ? "glass-surface-strong border border-white/15" : "glass-card border border-border/10"
         )}>
           {currentUser.bannerUrl ? (
             <div className="h-32 sm:h-48 w-full overflow-hidden">
@@ -179,13 +179,13 @@ export default function Profile() {
               />
             </div>
           ) : (
-            <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/5 via-zinc-900/80 to-zinc-800/80 w-full" />
+            <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent w-full" />
           )}
           
-          <div className="px-4 sm:px-8 -mt-12 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+          <div className="px-4 sm:px-8 -mt-12 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 pb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
               <div className="relative">
-                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-background shadow-xl">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 ring-4 ring-background/50 shadow-xl bg-background/50 backdrop-blur-sm">
                   <AvatarImage src={currentUser.avatarUrl || undefined} />
                   <AvatarFallback>{currentUser.username[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
