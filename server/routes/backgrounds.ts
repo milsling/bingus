@@ -100,7 +100,7 @@ router.get("/admin/backgrounds", isAuthenticated, isOwner, async (req, res) => {
   try {
     const backgrounds = await db
       .select({
-        id: customBackgrounds.id,
+        sid: customBackgrounds.sid,
         name: customBackgrounds.name,
         imageUrl: customBackgrounds.imageUrl,
         isActive: customBackgrounds.isActive,
@@ -161,7 +161,7 @@ router.put("/admin/backgrounds/:id", isAuthenticated, isOwner, async (req, res) 
         ...validatedData,
         updatedAt: new Date(),
       })
-      .where(eq(customBackgrounds.id, id))
+      .where(eq(customBackgrounds.sid, id))
       .returning();
 
     if (updatedBackground.length === 0) {
@@ -182,7 +182,7 @@ router.delete("/admin/backgrounds/:id", isAuthenticated, isOwner, async (req, re
 
     const deletedBackground = await db
       .delete(customBackgrounds)
-      .where(eq(customBackgrounds.id, id))
+      .where(eq(customBackgrounds.sid, id))
       .returning();
 
     if (deletedBackground.length === 0) {
@@ -211,7 +211,7 @@ router.post("/admin/backgrounds/reorder", isAuthenticated, isOwner, async (req, 
         await tx
           .update(customBackgrounds)
           .set({ sortOrder: i, updatedAt: new Date() })
-          .where(eq(customBackgrounds.id, backgroundIds[i]));
+          .where(eq(customBackgrounds.sid, backgroundIds[i]));
       }
     });
 

@@ -1379,7 +1379,7 @@ export const insertMessageOfTheDaySchema = createInsertSchema(messageOfTheDay).p
 
 // Custom backgrounds table
 export const customBackgrounds = pgTable("custom_backgrounds", {
-  id: varchar("id")
+  sid: varchar("sid")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
