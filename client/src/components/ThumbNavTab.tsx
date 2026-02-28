@@ -1,22 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Menu } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { ChevronLeft } from 'lucide-react';
 
 /**
- * ThumbNavTab - A thumb-activated navigation tab for mobile devices
+ * ThumbNavTab - A modern, native-feeling navigation drawer for mobile
  * 
  * Features:
- * - Press and hold interaction (500ms to open)
- * - Visual progress feedback during press
- * - Haptic feedback on devices that support it
- * - Smooth slide-out animation from the right
- * - Touch-optimized for thumb reach
- * 
- * Usage:
- * <ThumbNavTab>
- *   <YourNavigationContent />
- * </ThumbNavTab>
+ * - Slim edge tab attached to right side
+ * - Smooth thumb-following drag interaction
+ * - Swipe back to cancel opening
+ * - Haptic feedback
+ * - Native app feel with spring physics
  */
 interface ThumbNavTabProps {
   children: React.ReactNode;
@@ -24,83 +18,71 @@ interface ThumbNavTabProps {
 
 export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isPressed, setIsPressed] = useState(false);
-  const [pressProgress, setPressProgress] = useState(0);
-  const [dragProgress, setDragProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const dragX = useMotionValue(0);
   const touchStartXRef = useRef<number | null>(null);
+  const panelWidth = 360;
 
-  // Handle press and hold interaction
-  const handlePressStart = () => {
-    setIsPressed(true);
-    setPressProgress(0);
+  // Handle touch start
+  const handleTouchStart = (event: React.TouchEvent) => {
+    const touch = event.touches[0];
+    if (!touch) return;
     
-    // Gradually increase press progress
-    let progress = 0;
-    progressTimerRef.current = setInterval(() => {
-      progress += 2;
-      setPressProgress(progress);
-      
-      if (progress >= 100) {
-        if (progressTimerRef.current) clearInterval(progressTimerRef.current);
-        handleOpen();
-      }
-    }, 20);
-  };
-
-  const handlePressEnd = () => {
-    setIsPressed(false);
+    touchStartXRef.current = touch.clientX;
+    setIsDragging(true);
     
-    // Clear progress timer
-    if (progressTimerRef.current) {
-      clearInterval(progressTimerRef.current);
+    // Light haptic feedback
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
     }
+  };
+
+  // Handle touch move - follow the thumb
+  const handleTouchMove = (event: React.TouchEvent) => {
+    if (touchStartXRef.current === null || !isDragging) return;
+
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    // Calculate drag distance (positive = dragging left to open)
+    const deltaX = touchStartXRef.current - touch.clientX;
     
-    // Reset progress with animation
-    setTimeout(() => setPressProgress(0), 100);
+    // Allow dragging from 0 to panelWidth, with slight overscroll
+    const clampedDelta = Math.max(-50, Math.min(panelWidth + 50, deltaX));
+    
+    dragX.set(clampedDelta);
   };
 
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (touchStartXRef.current === null) return;
-
-    const currentX = event.touches[0]?.clientX ?? 0;
-    const delta = Math.max(0, touchStartXRef.current - currentX);
-    const progress = Math.min(1, delta / 170);
-
-    setIsDragging(progress > 0.03);
-    setDragProgress(progress);
-    setPressProgress(Math.round(progress * 100));
-  };
-
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    touchStartXRef.current = event.touches[0]?.clientX ?? null;
-    handlePressStart();
-  };
-
+  // Handle touch end - determine if we should open/close
   const handleTouchEnd = () => {
-    const shouldOpen = dragProgress > 0.35;
-    const shouldClose = isOpen && dragProgress < 0.3;
+    if (!isDragging) return;
     
-    touchStartXRef.current = null;
-
-    if (shouldClose) {
-      handleClose();
-    } else if (shouldOpen) {
+    const currentDrag = dragX.get();
+    const threshold = panelWidth * 0.35;
+    
+    if (currentDrag > threshold) {
+      // Dragged far enough to open
       handleOpen();
+    } else if (currentDrag < -20) {
+      // Swiped back right to cancel
+      handleClose();
+    } else {
+      // Not far enough, return to current state
+      if (isOpen) {
+        dragX.set(panelWidth);
+      } else {
+        dragX.set(0);
+      }
     }
-
+    
     setIsDragging(false);
-    setDragProgress(0);
-    handlePressEnd();
+    touchStartXRef.current = null;
   };
 
   const handleOpen = () => {
     setIsOpen(true);
-    setIsPressed(false);
-    setPressProgress(0);
+    dragX.set(panelWidth);
     
-    // Haptic feedback if available
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
     }
@@ -108,8 +90,8 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
 
   const handleClose = () => {
     setIsOpen(false);
+    dragX.set(0);
     
-    // Haptic feedback if available
     if ('vibrate' in navigator) {
       navigator.vibrate(30);
     }
@@ -131,232 +113,87 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
     }
   }, [isOpen]);
 
-  // Animation variants
-  const tabVariants = {
-    idle: {
-      x: 0,
-      scale: 1,
-      rotate: 0,
-    },
-    pressed: {
-      x: -8,
-      scale: 0.95,
-      rotate: -2,
-      transition: { type: "spring" as const, damping: 15, stiffness: 300 }
-    },
-    hover: {
-      x: -4,
-      scale: 1.05,
-      transition: { type: "spring" as const, damping: 20, stiffness: 400 }
-    }
-  };
-
-  const panelVariants = {
-    hidden: {
-      x: '100%',
-      opacity: 0,
-      transition: {
-        type: "spring" as const,
-        damping: 25,
-        stiffness: 300,
-        mass: 0.8
-      }
-    },
-    visible: {
-      x: 0,
-      opacity: 1,
-      transition: {
-        type: "spring" as const,
-        damping: 28,
-        stiffness: 300,
-        mass: 0.8,
-        when: 'beforeChildren',
-        staggerChildren: 0.03
-      }
-    },
-    exit: {
-      x: '100%',
-      opacity: 0,
-      transition: {
-        duration: 0.25,
-        ease: [0.4, 0, 1, 1]
-      }
-    }
-  };
-
-  const overlayVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { duration: 0.2 }
-    },
-    exit: { 
-      opacity: 0,
-      transition: { duration: 0.15 }
-    }
-  };
+  // Transform drag value to panel position
+  const panelX = useTransform(dragX, [0, panelWidth], [panelWidth, 0]);
+  const backdropOpacity = useTransform(dragX, [0, panelWidth], [0, 0.5]);
+  const tabX = useTransform(dragX, [0, panelWidth], [0, -panelWidth]);
 
   return (
     <>
-      {/* Thumb Tab */}
+      {/* Slim Edge Tab */}
       <motion.div
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none"
-        variants={tabVariants}
-        animate={{
-          x: isOpen ? -10 : -(dragProgress * 52 + (isPressed ? 8 : 0)),
-          scale: isPressed ? 0.96 : 1,
-        }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        whileHover="hover"
-        whileTap="pressed"
-        onMouseDown={handlePressStart}
-        onMouseUp={handlePressEnd}
-        onMouseLeave={handlePressEnd}
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] touch-none"
+        style={{ x: tabX }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Tab Container */}
-        <div className="relative">
-          {/* Main Tab */}
-          <motion.div
-            className={cn(
-              "relative w-12 h-20 bg-gradient-to-b from-primary/20 to-primary/10",
-              "border-l border-t border-b border-primary/20",
-              "rounded-l-2xl shadow-lg shadow-primary/10",
-              "flex items-center justify-center",
-              "backdrop-blur-md",
-              "transition-all duration-200"
-            )}
-            style={{
-              background: isPressed 
-                ? `linear-gradient(135deg, rgba(168, 85, 247, ${0.3 + pressProgress * 0.004}), rgba(168, 85, 247, ${0.1 + pressProgress * 0.003}))`
-                : undefined,
-            }}
-          >
-            {/* Progress Indicator */}
-            <div className="absolute inset-0 rounded-l-2xl overflow-hidden">
-              <motion.div
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-primary/40 to-transparent"
-                style={{ height: `${pressProgress}%` }}
-                transition={{ duration: 0.1 }}
-              />
-            </div>
-
-            {/* Icon */}
-            <motion.div
-              animate={{
-                rotate: isPressed ? 180 : 0,
-                scale: isPressed ? 0.8 : 1
-              }}
-              transition={{
-                rotate: { duration: 0.3, ease: 'easeInOut' },
-                scale: { duration: 0.1 }
-              }}
-              className="relative z-10"
-            >
-              {isPressed ? (
-                <ChevronLeft className="h-5 w-5 text-primary" />
-              ) : (
-                <Menu className="h-5 w-5 text-primary/80" />
-              )}
-            </motion.div>
-
-            {/* Haptic Feedback Dots */}
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 space-y-1">
+        <div className="relative h-24 w-1 bg-primary/30 rounded-l-full shadow-lg">
+          {/* Grip indicator */}
+          <div className="absolute inset-y-0 -left-3 w-4 flex items-center justify-center">
+            <div className="space-y-1.5">
               {[...Array(3)].map((_, i) => (
-                <motion.div
+                <div
                   key={i}
-                  className="w-1 h-1 bg-primary/40 rounded-full"
-                  animate={{
-                    scale: isPressed ? [1, 1.5, 1] : 1,
-                    opacity: isPressed ? [0.4, 0.8, 0.4] : 0.4
-                  }}
-                  transition={{
-                    delay: i * 0.1,
-                    duration: 0.6,
-                    repeat: isPressed ? Infinity : 0,
-                    repeatDelay: 0.2
-                  }}
+                  className="w-0.5 h-0.5 bg-primary/50 rounded-full"
                 />
               ))}
             </div>
-
-            {/* Glow Effect */}
-            {isPressed && (
-              <motion.div
-                className="absolute inset-0 rounded-l-2xl bg-primary/20 blur-md"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1.2 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-              />
-            )}
-          </motion.div>
-
-          {/* Press Progress Ring */}
-          {isPressed && (
-            <svg className="absolute inset-0 w-12 h-20 -left-1">
-              <motion.circle
-                cx="6"
-                cy="10"
-                r="4"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray={`${2 * Math.PI * 4}`}
-                strokeDashoffset={`${2 * Math.PI * 4 * (1 - pressProgress / 100)}`}
-                className="text-primary/60"
-                animate={{ strokeDashoffset: 2 * Math.PI * 4 * (1 - pressProgress / 100) }}
-                transition={{ duration: 0.1 }}
-              />
-            </svg>
-          )}
+          </div>
+          
+          {/* Active indicator */}
+          <motion.div
+            className="absolute inset-0 bg-primary rounded-l-full"
+            initial={{ scaleY: 0 }}
+            animate={{ 
+              scaleY: isDragging ? Math.min(dragX.get() / panelWidth, 1) : (isOpen ? 1 : 0)
+            }}
+            transition={{ type: 'spring', damping: 25, stiffness: 400 }}
+          />
         </div>
       </motion.div>
 
-      {/* Navigation Panel */}
+      {/* Backdrop and Panel */}
       <AnimatePresence>
         {(isOpen || isDragging) && (
           <>
             {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isOpen ? 1 : Math.max(0.15, dragProgress * 0.85) }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[1201] bg-black/40 backdrop-blur-sm"
+              style={{ opacity: backdropOpacity }}
+              className="fixed inset-0 z-[1201] bg-black/60 backdrop-blur-sm"
               onClick={handleClose}
+              initial={{ opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
             />
 
-            {/* Panel */}
+            {/* Navigation Panel */}
             <motion.div
-              initial={{ x: 360, opacity: 0 }}
-              animate={{
-                x: isOpen ? 0 : (1 - dragProgress) * 360,
-                opacity: isOpen ? 1 : Math.max(0.35, dragProgress),
-              }}
-              exit={{ x: 360, opacity: 0 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 350, mass: 0.7 }}
-              className="fixed right-0 top-0 bottom-0 z-[1202] w-[min(90vw,400px)] overflow-hidden"
-              style={{
-                background: 'var(--glass-surface-bg)',
-                backdropFilter: 'blur(40px) saturate(160%)',
-                WebkitBackdropFilter: 'blur(40px) saturate(160%)',
-                borderLeft: '1px solid var(--glass-surface-border)',
-                boxShadow: '-8px 0 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.04) inset',
+              style={{ x: panelX }}
+              className="fixed right-0 top-0 bottom-0 z-[1202] w-[min(85vw,380px)] overflow-hidden"
+              initial={{ x: panelWidth }}
+              exit={{ x: panelWidth }}
+              transition={{ 
+                type: 'spring', 
+                damping: isDragging ? 40 : 30, 
+                stiffness: isDragging ? 500 : 350,
+                mass: 0.5
               }}
             >
-              {/* Close Tab */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleClose}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-12 bg-gradient-to-l from-primary/20 to-primary/10 border-l border-t border-b border-primary/20 rounded-l-xl shadow-lg flex items-center justify-center z-10"
-              >
-                <ChevronLeft className="h-4 w-4 text-primary" />
-              </motion.button>
+              {/* Panel background with native app styling */}
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: 'var(--glass-surface-bg)',
+                  backdropFilter: 'blur(40px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                  borderLeft: '1px solid var(--glass-surface-border)',
+                  boxShadow: '-12px 0 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05) inset',
+                }}
+              />
 
               {/* Content */}
-              <div className="h-full overflow-y-auto pl-12">
+              <div className="relative h-full overflow-y-auto">
                 {children}
               </div>
             </motion.div>
