@@ -1,47 +1,6 @@
-    // Touch handlers for closing menu by dragging left
-    const [menuDragStartX, setMenuDragStartX] = useState<number | null>(null);
-    const [menuDragOffset, setMenuDragOffset] = useState(0);
-    const handleMenuTouchStart = (e: React.TouchEvent) => {
-      setMenuDragStartX(e.touches[0].clientX);
-    };
-    const handleMenuTouchMove = (e: React.TouchEvent) => {
-      if (menuDragStartX !== null) {
-        const offset = e.touches[0].clientX - menuDragStartX;
-        setMenuDragOffset(Math.min(0, offset)); // Only allow left drag
-      }
-    };
-    const handleMenuTouchEnd = () => {
-      if (menuDragOffset < -60) {
-        setMobileMenuOpen(false);
-      }
-      setMenuDragStartX(null);
-      setMenuDragOffset(0);
-    };
-  // Mobile menu state
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dragStartX, setDragStartX] = useState<number | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
-
-  // Touch handlers for drag-to-open/close
-  const handleTabTouchStart = (e: React.TouchEvent) => {
-    setDragStartX(e.touches[0].clientX);
-  };
-  const handleTabTouchMove = (e: React.TouchEvent) => {
-    if (dragStartX !== null) {
-      const offset = e.touches[0].clientX - dragStartX;
-      setDragOffset(Math.max(0, offset));
-    }
-  };
-  const handleTabTouchEnd = () => {
-    if (dragOffset > 60) {
-      setMobileMenuOpen(true);
-    }
-    setDragStartX(null);
-    setDragOffset(0);
-  };
 import { useCallback, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen, Radio, Sparkles, X } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen, Radio, Sparkles, X } from "lucide-react";
 import headerLogo from "../assets/logo.png";
 import orphanageMenuLogo from "../assets/orphanage-menu-logo.png";
 import { useBars } from "@/context/BarContext";
@@ -57,7 +16,6 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
 import ThumbNavigation from "@/components/ThumbNavigation";
 import {
-  import { motion, AnimatePresence } from "framer-motion";
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -87,107 +45,57 @@ export default function Navigation() {
       setLocation("/auth");
       return;
     }
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            className="fixed inset-0 z-[1400] md:hidden"
-            style={{ background: "rgba(0,0,0,0.32)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <motion.div
-              className="fixed bottom-0 right-0 w-4/5 max-w-xs h-[80vh] bg-background rounded-tl-2xl shadow-2xl flex flex-col p-4"
-              initial={{ x: 320, opacity: 0 }}
-              animate={{ x: menuDragOffset, opacity: 1 }}
-              exit={{ x: 320, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 420, damping: 38 }}
-              onTouchStart={handleMenuTouchStart}
-              onTouchMove={handleMenuTouchMove}
-              onTouchEnd={handleMenuTouchEnd}
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="flex flex-col gap-4">
-                <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <Home className="w-5 h-5" /> Home
-                </Link>
-                <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <User className="w-5 h-5" /> Profile
-                </Link>
-                <Link href="/messages" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5" /> Messages
-                </Link>
-                <Link href="/saved" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <Bookmark className="w-5 h-5" /> Saved
-                </Link>
-                <Link href="/friends" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <Users className="w-5 h-5" /> Friends
-                </Link>
-                <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <Settings2 className="w-5 h-5" /> Settings
-                </Link>
-                <Link href="/challenges" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <Swords className="w-5 h-5" /> Challenges
-                </Link>
-                <Link href="/orphanage" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <DoorOpen className="w-5 h-5" /> Orphanage
-                </Link>
-                <Link href="/orphanstudio" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <NotebookPen className="w-5 h-5" /> OrphanStudio
-                </Link>
-                <Link href="/post" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                  <Plus className="w-5 h-5" /> Drop Bar
-                </Link>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-                    <Users className="w-5 h-5" /> Friends
-                  </Link>
-                  <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                    <Settings2 className="w-5 h-5" /> Settings
-                  </Link>
-                  <Link href="/challenges" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                    <Swords className="w-5 h-5" /> Challenges
-                  </Link>
-                  <Link href="/orphanage" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                    <DoorOpen className="w-5 h-5" /> Orphanage
-                  </Link>
-                  <Link href="/orphanstudio" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                    <NotebookPen className="w-5 h-5" /> OrphanStudio
-                  </Link>
-                  <Link href="/post" onClick={() => setMobileMenuOpen(false)} className="text-base py-2 flex items-center gap-2">
-                    <Plus className="w-5 h-5" /> Drop Bar
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
+    switch (target) {
+      case "messages":
+        if (isOnMessagesPage) setNewMessageOpen(true);
+        else setLocation("/messages");
+        break;
+      case "ai-assistant":
+        setAraOpen(true);
+        break;
+      case "profile":     setLocation("/profile"); break;
+      case "friends":     setLocation("/friends"); break;
+      case "saved":       setLocation("/saved"); break;
+      case "prompts":     setLocation("/prompts"); break;
+      case "challenges":  setLocation("/challenges"); break;
+      case "orphanage":   setLocation("/orphanage"); break;
+      case "orphanstudio": setLocation("/orphanstudio"); break;
+    }
+  }, [currentUser, isOnMessagesPage, setLocation]);
+
+  return (
     <>
-      {/* Mobile draggable tab (bottom right) */}
-      <div
-        className="fixed bottom-6 right-4 z-[1300] md:hidden"
-        style={{ touchAction: "pan-x" }}
-      >
-        <div
-          className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg active:scale-95 transition-transform cursor-pointer"
-          onTouchStart={handleTabTouchStart}
-          onTouchMove={handleTabTouchMove}
-          onTouchEnd={handleTabTouchEnd}
-          style={{ transform: `translateX(${dragOffset}px)` }}
-          aria-label="Open menu"
-        >
-          <img src={orphanageMenuLogo} alt="Menu" className="w-7 h-7" />
-        </div>
-      </div>
+      <FloatingActionButton
+        onDropABar={() => setLocation(currentUser ? "/post" : "/auth")}
+        onSwipeLeft={() => executeShortcut(leftTarget)}
+        onSwipeRight={() => executeShortcut(rightTarget)}
+        onLongPress={() => {
+          if ("vibrate" in navigator) navigator.vibrate([12, 50, 8, 50, 12]);
+          setAraOpen(true);
+        }}
+      />
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
       <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar top-bar overflow-visible">
-        {/* Left: Logo Only (no hamburger on mobile) */}
+        {/* Left: Modern Hamburger + Logo */}
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className={cn(
+              "p-3 rounded-xl transition-all duration-200 group mobile-nav-button",
+              mobileNavOpen ? "rotate-90" : ""
+            )}
+            aria-label="Open menu"
+          >
+            <div className="relative">
+              <Menu className={cn(
+                "h-5 w-5 text-foreground/70 transition-transform duration-200",
+                mobileNavOpen ? "rotate-90" : ""
+              )} />
+              <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </button>
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer min-w-0 group">
               <div className="relative">
