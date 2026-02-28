@@ -65,6 +65,13 @@ export default function Navigation() {
     }
   }, [currentUser, isOnMessagesPage, setLocation]);
 
+  const navLinks = [
+    { href: "/", label: "Feed", icon: Home },
+    { href: "/prompts", label: "Prompts", icon: PenLine },
+    { href: "/challenges", label: "Challenges", icon: Swords },
+    { href: "/orphanstudio", label: "Studio", icon: NotebookPen },
+  ];
+
   return (
     <>
       <div className="hidden md:block">
@@ -79,80 +86,72 @@ export default function Navigation() {
         />
       </div>
       
-      {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar top-bar overflow-visible">
-        {/* Left: Hamburger + Logo */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setMobileNavOpen(true)}
-            className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-foreground/80"
-            aria-label="Open menu"
-            data-testid="button-hamburger-menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+      {/* Desktop Floating Top Bar */}
+      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-3 rounded-2xl floating-bar top-bar overflow-visible gap-3">
+        
+        {/* Left: Logo + inline nav links */}
+        <div className="flex items-center gap-1 shrink-0">
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer min-w-0 group">
+            <div className="flex items-center gap-2 cursor-pointer group px-2 py-1.5 rounded-xl hover:bg-white/[0.05] transition-colors">
               <div className="relative">
                 <img src={headerLogo} alt="" className="h-7 w-7 transition-transform duration-200 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <span className="font-logo text-sm leading-none text-foreground flex items-center gap-0.5 truncate group-hover:text-primary transition-colors">
+              <span className="font-logo text-sm leading-none text-foreground flex items-center gap-0.5 group-hover:text-primary transition-colors">
                 <span>ORPHAN</span>
                 <span>BARS</span>
               </span>
             </div>
           </Link>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-border/30 mx-1" />
+
+          {/* Inline nav links — hide on smaller desktops */}
+          <nav className="hidden lg:flex items-center gap-0.5">
+            {navLinks.map(({ href, label, icon: Icon }) => {
+              const isActive = location === href;
+              return (
+                <Link key={href} href={href}>
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-150",
+                      isActive
+                        ? "bg-primary/15 text-primary"
+                        : "text-foreground/60 hover:text-foreground hover:bg-white/[0.05]"
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    <span>{label}</span>
+                  </button>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
-        
-        {/* Center: Search Bar */}
-        <div className="flex-1 max-w-xl mx-8">
+
+        {/* Center: Search bar — expands to fill available space */}
+        <div className="flex-1 min-w-0 max-w-2xl">
           <SearchBar className="w-full" />
         </div>
-        
+
         {/* Right: Actions */}
-        <div className="flex items-center gap-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-foreground/80"
-                aria-label="Open settings"
-                data-testid="button-desktop-settings"
-              >
-                <Settings2 className="h-5 w-5" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem asChild>
-                <Link href="/changelog" className="flex items-center gap-2 cursor-pointer">
-                  <Sparkles className="h-4 w-4" />
-                  <span>What's New</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={currentUser ? "/settings" : "/auth"} className="flex items-center gap-2 cursor-pointer">
-                  <UserCog className="h-4 w-4" />
-                  <span>{currentUser ? "Account Settings" : "Sign in for Settings"}</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center gap-1 shrink-0">
           {currentUser ? (
             <>
               {isOnMessagesPage ? (
                 <button
                   onClick={() => setNewMessageOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-medium text-sm transition-all hover:bg-primary/90 active:scale-95"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary text-white font-medium text-sm transition-all hover:bg-primary/90 active:scale-95"
                   data-testid="button-new-message"
                 >
                   <PenLine className="h-4 w-4" />
-                  <span>New Message</span>
+                  <span className="hidden xl:inline">New Message</span>
                 </button>
               ) : (
                 <Link href="/post">
-                  <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-medium text-sm transition-all hover:bg-primary/90 active:scale-95">
+                  <button className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary text-white font-medium text-sm transition-all hover:bg-primary/90 active:scale-95">
                     <Plus className="h-4 w-4" />
                     <span>Drop Bar</span>
                   </button>
@@ -160,14 +159,103 @@ export default function Navigation() {
               )}
               <NotificationBell />
               <OnlineStatusIndicator />
+              {/* User avatar chip */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl hover:bg-white/[0.06] transition-colors"
+                    data-testid="button-desktop-user"
+                  >
+                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center ring-1 ring-primary/20 text-primary font-bold text-xs">
+                      {currentUser.username[0]?.toUpperCase()}
+                    </div>
+                    <span className="hidden xl:block text-sm font-medium text-foreground/80 max-w-[100px] truncate">
+                      {currentUser.displayName || currentUser.username}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-2 border-b border-border/20 mb-1">
+                    <p className="text-sm font-semibold">{currentUser.displayName || currentUser.username}</p>
+                    <p className="text-xs text-muted-foreground">@{currentUser.username}</p>
+                  </div>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
+                      <User className="h-4 w-4" />
+                      <span>My Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/messages" className="flex items-center gap-2 cursor-pointer">
+                      <MessageCircle className="h-4 w-4" />
+                      <span>Messages</span>
+                      {unreadCount > 0 && <span className="ml-auto text-xs bg-primary text-white px-1.5 py-0.5 rounded-full">{unreadCount}</span>}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/friends" className="flex items-center gap-2 cursor-pointer">
+                      <Users className="h-4 w-4" />
+                      <span>Friends</span>
+                      {pendingFriendRequests > 0 && <span className="ml-auto text-xs bg-primary text-white px-1.5 py-0.5 rounded-full">{pendingFriendRequests}</span>}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/saved" className="flex items-center gap-2 cursor-pointer">
+                      <Bookmark className="h-4 w-4" />
+                      <span>Saved</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/changelog" className="flex items-center gap-2 cursor-pointer">
+                      <Sparkles className="h-4 w-4" />
+                      <span>What's New</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center gap-2 cursor-pointer">
+                      <UserCog className="h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer text-red-400 focus:text-red-400">
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
-            <Link href="/auth">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-medium text-sm transition-all hover:bg-primary/90">
-                <LogIn className="h-4 w-4" />
-                <span>Login</span>
-              </button>
-            </Link>
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-foreground/80"
+                    aria-label="Open settings"
+                    data-testid="button-desktop-settings"
+                  >
+                    <Settings2 className="h-5 w-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link href="/changelog" className="flex items-center gap-2 cursor-pointer">
+                      <Sparkles className="h-4 w-4" />
+                      <span>What's New</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Link href="/auth">
+                <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-medium text-sm transition-all hover:bg-primary/90">
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
+                </button>
+              </Link>
+            </>
           )}
         </div>
       </header>
