@@ -509,7 +509,7 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <ThemeSettings />
+              {currentUser?.isOwner && <ThemeSettings />}
 
             </TabsContent>
 

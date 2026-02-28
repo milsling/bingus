@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useBars } from "@/context/BarContext";
@@ -18,6 +18,7 @@ import {
   Palette, Power, RefreshCw, Settings2, Shield, Trash2,
   Trophy, Wrench, Key, Radio
 } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
 export default function OwnerConsole() {
@@ -49,6 +50,12 @@ function OwnerConsoleContent() {
   const { selectedBackground } = useBackground();
   const hasCustomBackground = selectedBackground.image !== null;
   const cardCn = cn("border-border/70", hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40");
+  const { settings, updateSettings, setCanCustomize } = useTheme();
+
+  // Mark owner as able to customize
+  useEffect(() => {
+    if (typeof setCanCustomize === 'function') setCanCustomize(true);
+  }, [setCanCustomize]);
 
   const [activeTab, setActiveTab] = useState("appearance");
 
@@ -86,7 +93,7 @@ function OwnerConsoleContent() {
     const s = window.localStorage.getItem("owner-border-opacity-dark"); return s ? parseFloat(s) : 0.12;
   });
 
-  // Apply opacity to CSS variables in real time
+  // Apply opacity to CSS variables in real time + sync to ThemeContext
   const applyOpacity = (key: string, val: number) => {
     const root = document.documentElement;
     const setters: Record<string, () => void> = {
@@ -95,6 +102,7 @@ function OwnerConsoleContent() {
         root.style.setProperty("--owner-glass-surface-bg-strong", `rgba(254,253,250,${Math.min(val + 0.01, 1)})`);
         window.localStorage.setItem("owner-glass-opacity", val.toString());
         setGlassOpacity(val);
+        updateSettings({ glassOpacity: val });
       },
       glassOpacityDark: () => {
         root.style.setProperty("--owner-glass-surface-bg-dark", `rgba(18,18,24,${val})`);
@@ -111,6 +119,7 @@ function OwnerConsoleContent() {
         root.style.setProperty("--owner-glass-surface-border", `rgba(229,231,235,${val})`);
         window.localStorage.setItem("owner-border-opacity", val.toString());
         setBorderOpacity(val);
+        updateSettings({ borderOpacity: val });
       },
       borderOpacityDark: () => {
         root.style.setProperty("--owner-glass-surface-border-dark", `rgba(255,255,255,${val})`);
@@ -388,12 +397,15 @@ function OwnerConsoleContent() {
                 </div>
                 <Button
                   onClick={() => saveSiteSettingsMutation.mutate({
-                    themeSettings: { glassOpacity, glassOpacityDark, glassOpacityCustom, borderOpacity, borderOpacityDark }
+                    themeSettings: {
+                      ...settings,
+                      glassOpacity, glassOpacityDark, glassOpacityCustom, borderOpacity, borderOpacityDark
+                    }
                   })}
                   disabled={saveSiteSettingsMutation.isPending}
                   className="w-full bg-primary hover:bg-primary/90"
                 >
-                  {saveSiteSettingsMutation.isPending ? "Saving..." : "🌐 Push Opacity to All Users"}
+                  {saveSiteSettingsMutation.isPending ? "Saving..." : "🌐 Push Theme to All Users"}
                 </Button>
               </CardContent>
             </Card>

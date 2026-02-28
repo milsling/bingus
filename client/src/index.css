@@ -987,22 +987,17 @@ html.dark {
   border-color: var(--glass-surface-border-strong);
 }
 
-/* Glass card - bar cards - frosted glass, more transparent with gradient like Post page */
+/* Glass card - bar cards - uses theme-aware CSS variables */
 .glass-card {
-  background: linear-gradient(170deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%);
+  background: var(--glass-surface-bg, var(--owner-glass-surface-bg));
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid var(--glass-surface-border, var(--owner-glass-surface-border));
   border-radius: 1rem;
   transform: translateZ(0);
   will-change: transform;
   box-shadow: var(--glass-surface-shadow);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-:root .glass-card {
-  background: linear-gradient(170deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.45) 100%);
-  border: 1px solid rgba(0, 0, 0, 0.07);
 }
 
 .glass-card:hover {

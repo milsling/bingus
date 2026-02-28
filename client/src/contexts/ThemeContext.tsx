@@ -66,6 +66,7 @@ interface ThemeContextType {
   addCustomBackground: (background: { url: string; name: string }) => void;
   removeCustomBackground: (id: string) => void;
   canCustomize: boolean;
+  setCanCustomize: (value: boolean) => void;
   
   // Preset management
   presets: ThemePreset[];
@@ -106,11 +107,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('theme-settings', JSON.stringify(settings));
   }, [settings]);
 
-  // Check if user can customize (owner/admin check)
+  // canCustomize is set externally via setCanCustomize (owner-only)
+  // Default false — ThemeProvider consumers call setCanCustomize when user loads
+
+  // On mount: fetch site-wide theme settings from DB and apply for all users
   useEffect(() => {
-    // This would typically check user permissions
-    // For now, we'll assume all users can customize
-    setCanCustomize(true);
+    const loadSiteSettings = async () => {
+      try {
+        const res = await fetch('/api/backgrounds/site-settings');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.themeSettings) {
+          try {
+            const serverSettings: Partial<ThemeSettings> = typeof data.themeSettings === 'string'
+              ? JSON.parse(data.themeSettings)
+              : data.themeSettings;
+            // Merge server settings into local — server wins over defaults but not user's saved prefs
+            setSettings(prev => ({ ...defaultThemeSettings, ...serverSettings, ...prev }));
+          } catch (e) {
+            console.error('Failed to parse server themeSettings:', e);
+          }
+        }
+      } catch (e) {
+        // Silently fail — site settings are optional
+      }
+    };
+    loadSiteSettings();
   }, []);
 
   // Load presets from localStorage and server
@@ -317,6 +339,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       addCustomBackground,
       removeCustomBackground,
       canCustomize,
+      setCanCustomize,
       presets,
       currentPresetId,
       savePreset,
