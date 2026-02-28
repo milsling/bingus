@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bell, Command, Lock, Palette, Settings2, Shield, UserCog, Volume2 } from "lucide-react";
+import { ArrowLeft, Bell, Command, Lock, Settings2, Shield, UserCog, Volume2 } from "lucide-react";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { playNotificationSound, notificationSoundLabels, messageSoundLabels } from "@/lib/notificationSounds";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { useBackground } from "@/components/BackgroundSelector";
-import { BackgroundUploader } from "@/components/BackgroundUploader";
 import ThemeSettings from "@/components/ThemeSettings";
 import { useFabShortcuts, SHORTCUT_OPTIONS } from "@/hooks/useFabShortcuts";
 import { Button } from "@/components/ui/button";
@@ -46,32 +45,6 @@ export default function Settings() {
     return window.localStorage.getItem(FAB_DEBUG_LAUNCHER_HIDDEN_KEY) === "1";
   });
 
-  // Owner-only opacity controls
-  const [glassOpacity, setGlassOpacity] = useState(() => {
-    if (typeof window === "undefined") return 0.98;
-    const saved = window.localStorage.getItem("owner-glass-opacity");
-    return saved ? parseFloat(saved) : 0.98;
-  });
-  const [glassOpacityDark, setGlassOpacityDark] = useState(() => {
-    if (typeof window === "undefined") return 0.85;
-    const saved = window.localStorage.getItem("owner-glass-opacity-dark");
-    return saved ? parseFloat(saved) : 0.85;
-  });
-  const [glassOpacityCustom, setGlassOpacityCustom] = useState(() => {
-    if (typeof window === "undefined") return 0.75;
-    const saved = window.localStorage.getItem("owner-glass-opacity-custom");
-    return saved ? parseFloat(saved) : 0.75;
-  });
-  const [borderOpacity, setBorderOpacity] = useState(() => {
-    if (typeof window === "undefined") return 0.9;
-    const saved = window.localStorage.getItem("owner-border-opacity");
-    return saved ? parseFloat(saved) : 0.9;
-  });
-  const [borderOpacityDark, setBorderOpacityDark] = useState(() => {
-    if (typeof window === "undefined") return 0.12;
-    const saved = window.localStorage.getItem("owner-border-opacity-dark");
-    return saved ? parseFloat(saved) : 0.12;
-  });
 
   useEffect(() => {
     if (!currentUser) return;
@@ -80,35 +53,6 @@ export default function Settings() {
     setMessageSound(currentUser.messageSound || "ding");
   }, [currentUser]);
 
-  // Apply opacity changes to CSS variables for owner
-  useEffect(() => {
-    if (!currentUser?.isOwner) return;
-    
-    const root = document.documentElement;
-    
-    // Light mode
-    root.style.setProperty('--owner-glass-surface-bg', `rgba(252, 251, 248, ${glassOpacity})`);
-    root.style.setProperty('--owner-glass-surface-bg-strong', `rgba(254, 253, 250, ${Math.min(glassOpacity + 0.01, 1)})`);
-    root.style.setProperty('--owner-glass-surface-border', `rgba(229, 231, 235, ${borderOpacity})`);
-    root.style.setProperty('--owner-glass-surface-border-strong', `rgba(209, 213, 219, ${Math.min(borderOpacity + 0.05, 1)})`);
-    
-    // Dark mode
-    root.style.setProperty('--owner-glass-surface-bg-dark', `rgba(18, 18, 24, ${glassOpacityDark})`);
-    root.style.setProperty('--owner-glass-surface-bg-strong-dark', `rgba(20, 20, 28, ${Math.min(glassOpacityDark + 0.03, 1)})`);
-    root.style.setProperty('--owner-glass-surface-border-dark', `rgba(255, 255, 255, ${borderOpacityDark})`);
-    root.style.setProperty('--owner-glass-surface-border-strong-dark', `rgba(255, 255, 255, ${Math.min(borderOpacityDark + 0.06, 1)})`);
-    
-    // Custom background
-    root.style.setProperty('--owner-glass-surface-bg-custom', `rgba(18, 18, 24, ${glassOpacityCustom})`);
-    root.style.setProperty('--owner-glass-surface-bg-strong-custom', `rgba(20, 20, 28, ${Math.min(glassOpacityCustom + 0.07, 1)})`);
-    
-    // Save to localStorage
-    window.localStorage.setItem("owner-glass-opacity", glassOpacity.toString());
-    window.localStorage.setItem("owner-glass-opacity-dark", glassOpacityDark.toString());
-    window.localStorage.setItem("owner-glass-opacity-custom", glassOpacityCustom.toString());
-    window.localStorage.setItem("owner-border-opacity", borderOpacity.toString());
-    window.localStorage.setItem("owner-border-opacity-dark", borderOpacityDark.toString());
-  }, [glassOpacity, glassOpacityDark, glassOpacityCustom, borderOpacity, borderOpacityDark, currentUser?.isOwner]);
 
   if (!currentUser) {
     setLocation("/auth");
@@ -165,34 +109,6 @@ export default function Settings() {
     },
   });
 
-  const saveSiteSettingsMutation = useMutation({
-    mutationFn: async (settings: { defaultBackground?: string; themeSettings?: any }) => {
-      const res = await fetch("/api/backgrounds/site-settings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(settings),
-      });
-      if (!res.ok) throw new Error("Failed to save site settings");
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Site settings saved!",
-        description: "Appearance settings have been applied to the entire site.",
-      });
-      // Force refresh to apply changes
-      setTimeout(() => window.location.reload(), 1500);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Save failed",
-        description: error.message || "Could not save site settings",
-        variant: "destructive",
-      });
-    },
-  });
 
   const handleChangePassword = () => {
     if (newPassword !== confirmPassword) {
@@ -595,63 +511,6 @@ export default function Settings() {
 
               <ThemeSettings />
 
-              {currentUser?.isOwner && (
-                <>
-                  <Card className={cn(
-                    "border-border/70",
-                    hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-                  )}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        📤 Upload Custom Background
-                      </CardTitle>
-                      <CardDescription>
-                        Add new backgrounds to the site (Owner only)
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <BackgroundUploader />
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className={cn(
-                    "border-border/70",
-                    hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-                  )}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        🌐 Site-Wide Settings
-                      </CardTitle>
-                      <CardDescription>
-                        Set the default appearance for all users (Owner only)
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="flex justify-end">
-                        <Button 
-                          onClick={() => {
-                            saveSiteSettingsMutation.mutate({
-                              defaultBackground: String(selectedBackground?.id || "default"),
-                              // Add theme settings here if needed (pass object, not string)
-                            });
-                          }}
-                          disabled={saveSiteSettingsMutation.isPending}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          {saveSiteSettingsMutation.isPending ? (
-                            <>
-                              <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            "💾 Set as Site Default"
-                          )}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </>
-              )}
             </TabsContent>
 
             {canDebugControls && (
@@ -686,139 +545,6 @@ export default function Settings() {
                   </CardContent>
                 </Card>
 
-                {currentUser?.isOwner && (
-                  <Card className={cn(
-                    "border-border/70",
-                    hasCustomBackground ? "glass-surface-strong border-white/15" : "bg-background/40"
-                  )}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <Palette className="h-4 w-4 text-primary" />
-                        Opacity Controls (Owner Only)
-                      </CardTitle>
-                      <CardDescription>
-                        Fine-tune the opacity of all glass panels across the site. Changes apply in real-time.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0 space-y-6">
-                      {/* Light Mode Controls */}
-                      <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-foreground/80">Light Mode</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="glass-opacity-light" className="text-xs text-muted-foreground">
-                              Glass Surface Opacity: {(glassOpacity * 100).toFixed(0)}%
-                            </Label>
-                            <input
-                              id="glass-opacity-light"
-                              type="range"
-                              min="0.7"
-                              max="1.0"
-                              step="0.01"
-                              value={glassOpacity}
-                              onChange={(e) => setGlassOpacity(parseFloat(e.target.value))}
-                              className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="border-opacity-light" className="text-xs text-muted-foreground">
-                              Border Opacity: {(borderOpacity * 100).toFixed(0)}%
-                            </Label>
-                            <input
-                              id="border-opacity-light"
-                              type="range"
-                              min="0.5"
-                              max="1.0"
-                              step="0.01"
-                              value={borderOpacity}
-                              onChange={(e) => setBorderOpacity(parseFloat(e.target.value))}
-                              className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Dark Mode Controls */}
-                      <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-foreground/80">Dark Mode</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="glass-opacity-dark" className="text-xs text-muted-foreground">
-                              Glass Surface Opacity: {(glassOpacityDark * 100).toFixed(0)}%
-                            </Label>
-                            <input
-                              id="glass-opacity-dark"
-                              type="range"
-                              min="0.6"
-                              max="0.95"
-                              step="0.01"
-                              value={glassOpacityDark}
-                              onChange={(e) => setGlassOpacityDark(parseFloat(e.target.value))}
-                              className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="border-opacity-dark" className="text-xs text-muted-foreground">
-                              Border Opacity: {(borderOpacityDark * 100).toFixed(0)}%
-                            </Label>
-                            <input
-                              id="border-opacity-dark"
-                              type="range"
-                              min="0.05"
-                              max="0.3"
-                              step="0.01"
-                              value={borderOpacityDark}
-                              onChange={(e) => setBorderOpacityDark(parseFloat(e.target.value))}
-                              className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Custom Background Controls */}
-                      <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-foreground/80">Custom Background</h4>
-                        <div className="space-y-2">
-                          <Label htmlFor="glass-opacity-custom" className="text-xs text-muted-foreground">
-                            Glass Surface Opacity: {(glassOpacityCustom * 100).toFixed(0)}%
-                          </Label>
-                          <input
-                            id="glass-opacity-custom"
-                            type="range"
-                            min="0.5"
-                            max="0.9"
-                            step="0.01"
-                            value={glassOpacityCustom}
-                            onChange={(e) => setGlassOpacityCustom(parseFloat(e.target.value))}
-                            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Reset Button */}
-                      <div className="pt-2 border-t border-border/50">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setGlassOpacity(0.98);
-                            setGlassOpacityDark(0.85);
-                            setGlassOpacityCustom(0.75);
-                            setBorderOpacity(0.9);
-                            setBorderOpacityDark(0.12);
-                            toast({
-                              title: "Opacity settings reset",
-                              description: "All opacity values have been reset to defaults.",
-                            });
-                          }}
-                          className="text-xs"
-                        >
-                          Reset to Defaults
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
               </TabsContent>
             )}
           </Tabs>

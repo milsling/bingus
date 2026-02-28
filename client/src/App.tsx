@@ -12,6 +12,7 @@ import EditProfile from "@/pages/EditProfile";
 import Settings from "@/pages/Settings";
 import Auth from "@/pages/Auth";
 import Admin from "@/pages/Admin";
+import OwnerConsole from "@/pages/OwnerConsole";
 import BarDetail from "@/pages/BarDetail";
 import UserProfile from "@/pages/UserProfile";
 import Saved from "@/pages/Saved";
@@ -68,6 +69,7 @@ function Router() {
       <Route path="/profile/edit" component={EditProfile} />
       <Route path="/settings" component={Settings} />
       <Route path="/admin" component={Admin} />
+      <Route path="/owner-console" component={OwnerConsole} />
       <Route path="/saved" component={Saved} />
       <Route path="/friends" component={Friends} />
       <Route path="/messages" component={Messages} />

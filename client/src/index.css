@@ -987,12 +987,12 @@ html.dark {
   border-color: var(--glass-surface-border-strong);
 }
 
-/* Glass card - bar cards - frosted glass with more visible borders */
+/* Glass card - bar cards - frosted glass, more transparent with gradient like Post page */
 .glass-card {
-  background: var(--glass-surface-bg, var(--owner-glass-surface-bg));
-  backdrop-filter: blur(32px) saturate(150%);
-  -webkit-backdrop-filter: blur(32px) saturate(150%);
-  border: 1px solid var(--glass-surface-border, var(--owner-glass-surface-border));
+  background: linear-gradient(170deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 1rem;
   transform: translateZ(0);
   will-change: transform;
@@ -1000,8 +1000,13 @@ html.dark {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
+:root .glass-card {
+  background: linear-gradient(170deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.45) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+}
+
 .glass-card:hover {
-  border-color: var(--glass-surface-border-strong);
+  border-color: rgba(168, 85, 247, 0.25);
   box-shadow: var(--glass-surface-shadow), 0 0 0 1px rgba(168, 85, 247, 0.1);
 }
 

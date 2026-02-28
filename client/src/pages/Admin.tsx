@@ -1579,39 +1579,11 @@ export default function Admin() {
       show: true,
     },
     {
-      value: "console",
-      label: "Owner Console",
-      icon: Power,
-      badge: 0,
-      show: currentUser.isOwner,
-    },
-    {
       value: "achievements",
       label: "Badges",
       icon: Trophy,
       badge: 0,
-      show: currentUser.isOwner || currentUser.isAdminPlus,
-    },
-    {
-      value: "protected",
-      label: "Protected",
-      icon: Lock,
-      badge: protectedBars.length,
-      show: currentUser.isOwner,
-    },
-    {
-      value: "ai-settings",
-      label: "AI Settings",
-      icon: Bot,
-      badge: 0,
-      show: currentUser.isOwner,
-    },
-    {
-      value: "oauth",
-      label: "OAuth",
-      icon: Shield,
-      badge: 0,
-      show: currentUser.isOwner,
+      show: currentUser.isAdminPlus,
     },
   ].filter((section) => section.show);
 
@@ -1720,7 +1692,7 @@ export default function Admin() {
           {currentUser?.isOwner && (
             <Card 
               className="glass-surface cursor-pointer border border-purple-500/35 bg-gradient-to-br from-purple-600/20 to-pink-600/20 transition-all hover:border-purple-500 hover:from-purple-600/30 hover:to-pink-600/30"
-              onClick={() => setActiveTab("console")}
+              onClick={() => setLocation("/owner-console")}
               data-testid="card-owner-console"
             >
               <CardContent className="pt-4">
