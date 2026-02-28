@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, Sun, Moon, Monitor, UserCog, DoorOpen, Radio, Sparkles, X } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, DoorOpen, Radio, Sparkles, X, UserCog } from "lucide-react";
 import headerLogo from "@/assets/logo.png";
 import orphanageMenuLogo from "@/assets/orphanage-menu-logo.png";
 import { useBars } from "@/context/BarContext";
@@ -125,25 +125,6 @@ export default function Navigation() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Appearance
-              </div>
-              <DropdownMenuItem onClick={() => setTheme("light")} className="flex items-center gap-2 cursor-pointer">
-                <Sun className="h-4 w-4" />
-                <span>Light</span>
-                {theme === "light" && <span className="ml-auto text-primary">✓</span>}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")} className="flex items-center gap-2 cursor-pointer">
-                <Moon className="h-4 w-4" />
-                <span>Dark</span>
-                {theme === "dark" && <span className="ml-auto text-primary">✓</span>}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")} className="flex items-center gap-2 cursor-pointer">
-                <Monitor className="h-4 w-4" />
-                <span>System</span>
-                {theme === "system" && <span className="ml-auto text-primary">✓</span>}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/changelog" className="flex items-center gap-2 cursor-pointer">
                   <Sparkles className="h-4 w-4" />

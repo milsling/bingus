@@ -18,9 +18,6 @@ import {
   Sparkles,
   Shield,
   LogOut,
-  Sun,
-  Moon,
-  Monitor,
   UserCog,
   ChevronRight,
   ExternalLink
@@ -166,41 +163,8 @@ function NavContent() {
         <div className="px-4 pb-3 space-y-3">
           <SearchBar className="w-full" />
 
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setTheme('light')}
-              className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-colors',
-                theme === 'light' ? 'border-primary/35 bg-primary/10 text-primary' : 'border-border/30 hover:bg-foreground/[0.04]'
-              )}
-            >
-              <Sun className="h-4 w-4" />
-              <span>Light</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('dark')}
-              className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-colors',
-                theme === 'dark' ? 'border-primary/35 bg-primary/10 text-primary' : 'border-border/30 hover:bg-foreground/[0.04]'
-              )}
-            >
-              <Moon className="h-4 w-4" />
-              <span>Dark</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('system')}
-              className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-colors',
-                theme === 'system' ? 'border-primary/35 bg-primary/10 text-primary' : 'border-border/30 hover:bg-foreground/[0.04]'
-              )}
-            >
-              <Monitor className="h-4 w-4" />
-              <span>System</span>
-            </button>
-            <Link href={currentUser ? '/settings' : '/auth'} className="block" onClick={close}>
+          <div className="flex gap-2">
+            <Link href={currentUser ? '/settings' : '/auth'} className="block flex-1" onClick={close}>
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/30 text-xs font-medium hover:bg-foreground/[0.04] transition-colors">
                 <UserCog className="h-4 w-4" />
                 <span>Settings</span>
