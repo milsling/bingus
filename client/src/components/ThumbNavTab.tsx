@@ -160,14 +160,16 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative h-24 w-1.5 bg-white rounded-l-full shadow-lg">
+        {/* Invisible larger touch target */}
+        <div className="absolute inset-y-0 -left-6 right-0" />
+        <div className="relative h-32 w-2.5 bg-white rounded-l-full shadow-lg">
           {/* Grip dots */}
-          <div className="absolute inset-y-0 -left-3 w-4 flex items-center justify-center">
+          <div className="absolute inset-y-0 -left-2 w-4 flex items-center justify-center">
             <div className="space-y-1.5">
-              {[...Array(3)].map((_, i) => (
+              {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="w-0.5 h-0.5 bg-white rounded-full"
+                  className="w-1 h-1 bg-white/60 rounded-full"
                 />
               ))}
             </div>

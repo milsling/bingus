@@ -315,13 +315,6 @@ export default function UserProfile() {
                   {user.username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              {user.isOwner && (
-                <img 
-                  src="/owner-crown.png"
-                  alt="Owner crown"
-                  className="absolute -top-[28px] left-1/2 -translate-x-[calc(50%+8px)] w-22 h-15 rotate-[-8deg] drop-shadow-lg pointer-events-none z-10"
-                />
-              )}
             </div>
             <div className="flex-1 min-w-0 text-center sm:text-left w-full">
               <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">

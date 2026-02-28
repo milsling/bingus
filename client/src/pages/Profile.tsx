@@ -189,13 +189,6 @@ export default function Profile() {
                   <AvatarImage src={currentUser.avatarUrl || undefined} />
                   <AvatarFallback>{currentUser.username[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
-                {currentUser.isOwner && (
-                  <img 
-                    src="/owner-crown.png"
-                    alt="Owner crown"
-                    className="absolute -top-[33px] left-1/2 -translate-x-[calc(50%+10px)] w-24 h-18 sm:w-36 sm:h-22 rotate-[-8deg] drop-shadow-lg pointer-events-none z-10"
-                  />
-                )}
               </div>
               
               <div className="mb-2">
