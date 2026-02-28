@@ -81,8 +81,17 @@ export default function Navigation() {
       
       {/* Desktop Floating Top Bar - overflow-visible so bar isn't clipped */}
       <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-2 rounded-2xl floating-bar top-bar overflow-visible">
-        {/* Left: Logo Only (no hamburger on mobile) */}
+        {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-foreground/80"
+            aria-label="Open menu"
+            data-testid="button-hamburger-menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer min-w-0 group">
               <div className="relative">
