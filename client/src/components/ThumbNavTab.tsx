@@ -152,28 +152,31 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
 
   return (
     <ThumbNavCloseContext.Provider value={handleClose}>
-      {/* Slim Edge Tab — uses mix-blend-mode: difference so it's always the inverse of whatever is behind it */}
+      {/* Modern Edge Tab — larger, more visible, with clear affordances */}
       <motion.div
         className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] touch-none"
-        style={{ x: tabX, mixBlendMode: 'difference' }}
+        style={{ x: tabX }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Invisible larger touch target */}
-        <div className="absolute inset-y-0 -left-6 right-0" />
-        <div className="relative h-32 w-2.5 bg-white rounded-l-full shadow-lg">
-          {/* Grip dots */}
-          <div className="absolute inset-y-0 -left-2 w-4 flex items-center justify-center">
-            <div className="space-y-1.5">
-              {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-1 h-1 bg-white/60 rounded-full"
-                />
-              ))}
-            </div>
+        {/* Expanded touch target for easier grab */}
+        <div className="absolute inset-y-0 -left-8 right-2" />
+        <div className="relative h-40 w-4 bg-gradient-to-l from-white/20 to-white/10 backdrop-blur-md rounded-l-2xl border-l border-t border-b border-white/20 shadow-2xl">
+          {/* Visual grip indicator */}
+          <div className="absolute inset-y-0 left-1 w-2 flex flex-col items-center justify-center gap-1.5">
+            <div className="w-1.5 h-1.5 bg-white/80 rounded-full shadow-lg" />
+            <div className="w-1.5 h-1.5 bg-white/80 rounded-full shadow-lg" />
+            <div className="w-1.5 h-1.5 bg-white/80 rounded-full shadow-lg" />
           </div>
+          {/* Subtle animated pulse when idle */}
+          <motion.div
+            className="absolute inset-0 bg-white/5 rounded-l-2xl"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          {/* Hover/active state highlight */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10 rounded-l-2xl opacity-0 hover:opacity-100 transition-opacity duration-200" />
         </div>
       </motion.div>
 

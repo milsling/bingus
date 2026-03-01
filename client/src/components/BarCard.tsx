@@ -1,7 +1,7 @@
 // BarCard component - Fixed JSX structure
 import { useState } from "react";
 import type { BarWithUser } from "@shared/schema";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music, Flag, Info, Star, Crown, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Bookmark, MessageSquarePlus, Shield, Users, Lock, Copy, QrCode, FileCheck, Image, ThumbsDown, Search, AlertTriangle, CheckCircle, ExternalLink, Music, Flag, Info, Star, Crown, Sparkles, MessageSquare } from "lucide-react";
 import AIAssistant from "@/components/AIAssistant";
 import { BarOwnerActions } from "@/components/BarOwnerActions";
 import { BarMediaPlayer } from "@/components/BarMediaPlayer";
@@ -783,8 +783,17 @@ export default function BarCard({ bar }: BarCardProps) {
               <Badge variant="outline" className="border-primary/20 text-primary/80 hover:bg-primary/10" data-testid={`badge-category-${bar.id}`}>
                 {bar.category}
               </Badge>
+              {/* Prompt attribution badge */}
+              {(bar as any).promptSlug && (bar as any).promptText && (
+                <Link href={`/prompts/${(bar as any).promptSlug}`}>
+                  <Badge variant="outline" className="gap-1 text-xs font-medium border-primary/30 text-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                    <MessageSquare className="w-3 h-3" />
+                    Prompt response: "{(bar as any).promptText}"
+                  </Badge>
+                </Link>
+              )}
               {bar.tags && bar.tags.length > 0 && (
-                <CollapsibleTags tags={bar.tags} barId={bar.id} customTags={customTags} />
+                <CollapsibleTags tags={bar.tags.filter((tag: string) => !tag.startsWith("prompt:"))} barId={bar.id} customTags={customTags} />
               )}
             </div>
           </div>

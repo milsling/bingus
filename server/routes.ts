@@ -924,12 +924,27 @@ export async function registerRoutes(
       // Create the bar (no proofBarId yet - assigned when locked)
       const bar = await storage.createBar(barData);
       
+      // Detect prompt tag and persist prompt metadata
+      const promptTag = result.data.tags?.find((tag: string) => tag.startsWith("prompt:"));
+      let promptSlug: string | undefined;
+      let promptText: string | undefined;
+      if (promptTag) {
+        const slug = promptTag.replace("prompt:", "");
+        const prompt = PROMPT_LIBRARY.find((p) => p.slug === slug);
+        if (prompt) {
+          promptSlug = slug;
+          promptText = prompt.text;
+        }
+      }
+
       // Update bar with metadata (proofBarId assigned later when user locks the bar)
       await db.update(bars).set({ 
         permissionStatus: req.body.permissionStatus || "share_only",
         barType: req.body.barType || "single_bar",
         fullRapLink: req.body.fullRapLink || null,
-        beatLink: req.body.beatLink || null
+        beatLink: req.body.beatLink || null,
+        promptSlug,
+        promptText,
       }).where(eq(bars.id, bar.id));
       
       // Notify followers about new bar (only if not private)
@@ -987,10 +1002,21 @@ export async function registerRoutes(
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
           const dislikeCount = await storage.getDislikeCount(bar.id);
           const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
-          if (liked) {
-            console.log(`[BARS] Bar ${bar.id} is liked by user ${userId}`);
+          // Backward compatibility: derive prompt metadata from tags if missing
+          let promptSlug = bar.promptSlug;
+          let promptText = bar.promptText;
+          if (!promptSlug && bar.tags) {
+            const promptTag = bar.tags.find((tag: string) => tag.startsWith("prompt:"));
+            if (promptTag) {
+              const slug = promptTag.replace("prompt:", "");
+              const prompt = PROMPT_LIBRARY.find((p) => p.slug === slug);
+              if (prompt) {
+                promptSlug = slug;
+                promptText = prompt.text;
+              }
+            }
           }
-          return { ...bar, likeCount, liked, dislikeCount, disliked };
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
         })
       );
       
@@ -1012,7 +1038,21 @@ export async function registerRoutes(
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
           const dislikeCount = await storage.getDislikeCount(bar.id);
           const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked, dislikeCount, disliked };
+          // Backward compatibility: derive prompt metadata from tags if missing
+          let promptSlug = bar.promptSlug;
+          let promptText = bar.promptText;
+          if (!promptSlug && bar.tags) {
+            const promptTag = bar.tags.find((tag: string) => tag.startsWith("prompt:"));
+            if (promptTag) {
+              const slug = promptTag.replace("prompt:", "");
+              const prompt = PROMPT_LIBRARY.find((p) => p.slug === slug);
+              if (prompt) {
+                promptSlug = slug;
+                promptText = prompt.text;
+              }
+            }
+          }
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
         })
       );
       
@@ -1034,7 +1074,21 @@ export async function registerRoutes(
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
           const dislikeCount = await storage.getDislikeCount(bar.id);
           const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked, dislikeCount, disliked };
+          // Backward compatibility: derive prompt metadata from tags if missing
+          let promptSlug = bar.promptSlug;
+          let promptText = bar.promptText;
+          if (!promptSlug && bar.tags) {
+            const promptTag = bar.tags.find((tag: string) => tag.startsWith("prompt:"));
+            if (promptTag) {
+              const slug = promptTag.replace("prompt:", "");
+              const prompt = PROMPT_LIBRARY.find((p) => p.slug === slug);
+              if (prompt) {
+                promptSlug = slug;
+                promptText = prompt.text;
+              }
+            }
+          }
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
         })
       );
       
@@ -1145,7 +1199,21 @@ export async function registerRoutes(
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
           const dislikeCount = await storage.getDislikeCount(bar.id);
           const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked, dislikeCount, disliked };
+          // Backward compatibility: derive prompt metadata from tags if missing
+          let promptSlug = bar.promptSlug;
+          let promptText = bar.promptText;
+          if (!promptSlug && bar.tags) {
+            const promptTag = bar.tags.find((tag: string) => tag.startsWith("prompt:"));
+            if (promptTag) {
+              const slug = promptTag.replace("prompt:", "");
+              const prompt = PROMPT_LIBRARY.find((p) => p.slug === slug);
+              if (prompt) {
+                promptSlug = slug;
+                promptText = prompt.text;
+              }
+            }
+          }
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
         })
       );
       
@@ -1166,7 +1234,21 @@ export async function registerRoutes(
           const liked = userId ? await storage.hasUserLiked(userId, bar.id) : false;
           const dislikeCount = await storage.getDislikeCount(bar.id);
           const disliked = userId ? await storage.hasUserDisliked(userId, bar.id) : false;
-          return { ...bar, likeCount, liked, dislikeCount, disliked };
+          // Backward compatibility: derive prompt metadata from tags if missing
+          let promptSlug = bar.promptSlug;
+          let promptText = bar.promptText;
+          if (!promptSlug && bar.tags) {
+            const promptTag = bar.tags.find((tag: string) => tag.startsWith("prompt:"));
+            if (promptTag) {
+              const slug = promptTag.replace("prompt:", "");
+              const prompt = PROMPT_LIBRARY.find((p) => p.slug === slug);
+              if (prompt) {
+                promptSlug = slug;
+                promptText = prompt.text;
+              }
+            }
+          }
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
         })
       );
       
@@ -4460,10 +4542,16 @@ export async function registerRoutes(
       }
 
       const promptBars = await storage.getBarsByTag(`prompt:${slug}`);
+      // Also fetch bars by explicit promptSlug for robustness (covers new rows)
+      const promptBarsBySlug = await storage.getBarsByPromptSlug(slug);
+      // Deduplicate by ID
+      const allPromptBars = Array.from(
+        new Map([...promptBars, ...promptBarsBySlug].map(bar => [bar.id, bar])).values()
+      );
       const userId = req.isAuthenticated() ? req.user!.id : undefined;
 
       const barsWithEngagement = await Promise.all(
-        promptBars.map(async (bar) => {
+        allPromptBars.map(async (bar) => {
           const likeCount = await storage.getLikeCount(bar.id);
           const liked = userId
             ? await storage.hasUserLiked(userId, bar.id)
@@ -4472,6 +4560,20 @@ export async function registerRoutes(
           const disliked = userId
             ? await storage.hasUserDisliked(userId, bar.id)
             : false;
+          // Backward compatibility: derive prompt metadata from tags if missing
+          let promptSlug = bar.promptSlug;
+          let promptText = bar.promptText;
+          if (!promptSlug && bar.tags) {
+            const promptTag = bar.tags.find((tag: string) => tag.startsWith("prompt:"));
+            if (promptTag) {
+              const slug = promptTag.replace("prompt:", "");
+              const prompt = PROMPT_LIBRARY.find((p) => p.slug === slug);
+              if (prompt) {
+                promptSlug = slug;
+                promptText = prompt.text;
+              }
+            }
+          }
 
           return {
             ...bar,
@@ -4480,6 +4582,8 @@ export async function registerRoutes(
             dislikeCount,
             disliked,
             quickReactions: getQuickReactionSummary(bar.id, userId),
+            promptSlug,
+            promptText,
           };
         }),
       );

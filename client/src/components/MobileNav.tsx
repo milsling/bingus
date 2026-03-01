@@ -44,7 +44,7 @@ interface ActionItem {
   description?: string;
   external?: boolean;
 }
-
+r5
 type MenuItemUnion = MenuItem | ActionItem;
 
 // Type guard functions
@@ -60,8 +60,8 @@ interface MenuSection {
   title: string;
   icon: React.ComponentType<any>;
   items: MenuItemUnion[];
+  
 }
-
 // Animation variants
 const overlayVariants = {
   hidden: { opacity: 0 },
