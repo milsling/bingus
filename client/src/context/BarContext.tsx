@@ -47,8 +47,8 @@ export function BarProvider({ children }: { children: ReactNode }) {
         const user = await api.getCurrentUser();
         console.log('Current user fetched:', user ? 'logged in' : 'not logged in');
         return user;
-      } catch (error) {
-        console.error('Error fetching current user:', error);
+      } catch (error: any) {
+        console.log('Not logged in or auth error:', error?.message);
         return null;
       }
     },
@@ -59,14 +59,9 @@ export function BarProvider({ children }: { children: ReactNode }) {
     queryKey: ['bars'],
     queryFn: async () => {
       console.log('Fetching bars...');
-      try {
-        const fetchedBars = await api.getBars();
-        console.log('Bars fetched:', fetchedBars?.length || 0);
-        return fetchedBars;
-      } catch (error) {
-        console.error('Failed to fetch bars:', error);
-        return [];
-      }
+      const fetchedBars = await api.getBars();
+      console.log('Bars fetched:', fetchedBars?.length || 0);
+      return fetchedBars;
     },
     retry: false,
     staleTime: 30000,
