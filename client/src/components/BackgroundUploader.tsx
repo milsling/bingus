@@ -1,4 +1,4 @@
-import { useState, useRef, useContext } from "react";
+import { useState, useRef } from "react";
 import { Upload, X, Check, AlertCircle, Pencil, Trash2, Wand2, Loader2 } from "lucide-react";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
@@ -6,7 +6,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { SupabaseAuthContext } from "@/context/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 
 interface BackgroundUploadResponse {
   id: string;
@@ -25,7 +25,7 @@ interface CustomBackground {
 
 export function BackgroundUploader() {
   const { currentUser } = useBars();
-  const { session } = useContext(SupabaseAuthContext);
+  const { session } = useSupabaseAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);

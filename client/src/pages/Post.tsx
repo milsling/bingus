@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useContext } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { ArrowLeft, Bold, Italic, Underline, MessageSquare, Shield, Share2, User
 import { validateBeatUrl } from "@/components/BarMediaPlayer";
 import { Link, useLocation, useSearch } from "wouter";
 import { useBars } from "@/context/BarContext";
-import { SupabaseAuthContext } from "@/context/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -78,7 +78,7 @@ const getPlainText = (html: string) =>
 
 export default function Post() {
   const { addBar, currentUser } = useBars();
-  const { session } = useContext(SupabaseAuthContext);
+  const { session } = useSupabaseAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
