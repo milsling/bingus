@@ -59,8 +59,7 @@ export function BarProvider({ children }: { children: ReactNode }) {
         return [];
       }
     },
-    retry: 2,
-    retryDelay: 1000,
+    retry: false,
     staleTime: 30000,
   });
 
