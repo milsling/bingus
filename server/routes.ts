@@ -14,6 +14,7 @@ import appleNotifications from "./appleNotifications";
 import communityStatsRoutes from "./routes/community-stats";
 import messageOfTheDayRoutes from "./routes/message-of-the-day";
 import backgroundRoutes from "./routes/backgrounds";
+import billingRoutes from "./routes/billing";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
 import { setupVoiceWebSocket } from "./voice-proxy";
@@ -156,6 +157,7 @@ export async function registerRoutes(
   app.use("/api", communityStatsRoutes);
   app.use("/api", messageOfTheDayRoutes);
   app.use("/api", backgroundRoutes);
+  app.use("/api", billingRoutes);
 
   // Setup WebSocket servers
   const { wss: messageWss, sessionParser: wsSessionParser } = setupWebSocket(httpServer, sessionParser);
@@ -175,8 +177,8 @@ export async function registerRoutes(
       });
     } else if (pathname === '/ws/voice') {
       // Handle voice WebSocket with authentication
-      sessionParser(request, {} as any, () => {
-        voiceWss.handleUpgrade(request, socket, head, (ws) => {
+      sessionParser(request as any, {} as any, () => {
+        voiceWss.handleUpgrade(request, socket, head, (ws: any) => {
           voiceWss.emit('connection', ws, request);
         });
       });

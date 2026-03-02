@@ -27,3 +27,22 @@ declare module '*.svg' {
   const value: string;
   export default value;
 }
+
+declare module '*.webp' {
+  const value: string;
+  export default value;
+}
+
+declare module 'lucide-react';
+declare module 'drizzle-orm';
+declare module 'drizzle-orm/pg-core';
+declare module 'drizzle-orm/node-postgres';
+declare module 'date-fns';
+
+interface ImportMetaEnv {
+  readonly [key: string]: string | undefined;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

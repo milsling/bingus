@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { 
   Home, 
   Compass, 
@@ -123,17 +124,17 @@ function NavContent() {
     });
   }
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, x: 20, scale: 0.96 },
     visible: {
       opacity: 1,
       x: 0,
       scale: 1,
-      transition: { type: 'spring', damping: 22, stiffness: 260 }
+      transition: { type: 'spring' as const, damping: 22, stiffness: 260 }
     }
   };
 
-  const staggerContainer = {
+  const staggerContainer: Variants = {
     visible: {
       transition: { staggerChildren: 0.04, delayChildren: 0.1 }
     }

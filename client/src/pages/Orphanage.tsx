@@ -81,7 +81,7 @@ function stripHtml(value: string) {
 }
 
 function estimateSyllables(text: string) {
-  const words = text.toLowerCase().match(/[a-z]+/g) || [];
+  const words: string[] = text.toLowerCase().match(/[a-z]+/g) ?? [];
   return words.reduce((sum, word) => {
     const groups = word.match(/[aeiouy]+/g);
     return sum + Math.max(1, groups?.length || 0);

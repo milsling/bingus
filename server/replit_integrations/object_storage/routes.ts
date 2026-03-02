@@ -1,5 +1,6 @@
 import type { Express, RequestHandler } from "express";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { hasProAccess } from "../../auth";
 
 const isAuthenticated: RequestHandler = (req, res, next) => {
   if (req.isAuthenticated()) {
@@ -63,11 +64,7 @@ export function registerObjectStorageRoutes(app: Express): void {
 
       if (purpose === "message_image") {
         const user = req.user as any;
-        const isOwner = !!user?.isOwner;
-        const membershipTier = user?.membershipTier;
-        const isPremium = membershipTier === "donor_plus";
-
-        if (!isOwner && !isPremium) {
+        if (!hasProAccess(user)) {
           return res.status(403).json({ error: "Premium required" });
         }
 

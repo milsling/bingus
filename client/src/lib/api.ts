@@ -130,6 +130,47 @@ export const api = {
     return handleResponse<User>(response);
   },
 
+  // Billing
+  getBillingStatus: async (): Promise<{
+    membershipTier: string;
+    membershipExpiresAt: string | null;
+    isPro: boolean;
+    stripeConfigured: boolean;
+    hasBillingCustomer: boolean;
+    pricePerMonthUsd: number;
+  }> => {
+    const response = await apiFetch('/api/billing/status');
+    return handleResponse(response);
+  },
+
+  syncBillingStatus: async (): Promise<{
+    synced: boolean;
+    membershipTier: string;
+    membershipExpiresAt: string | null;
+    isPro: boolean;
+  }> => {
+    const response = await apiFetch('/api/billing/sync', { method: 'POST' });
+    return handleResponse(response);
+  },
+
+  createCheckoutSession: async (): Promise<{ url: string }> => {
+    const response = await apiFetch('/api/billing/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    return handleResponse(response);
+  },
+
+  createBillingPortalSession: async (): Promise<{ url: string }> => {
+    const response = await apiFetch('/api/billing/create-portal-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    return handleResponse(response);
+  },
+
   // Bars
   getBars: async (limit = 50): Promise<BarWithUser[]> => {
     const response = await apiFetch(`/api/bars?limit=${limit}`);

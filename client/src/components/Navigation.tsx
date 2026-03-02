@@ -15,7 +15,6 @@ import AIAssistant from "@/components/AIAssistant";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
 import ThumbNavigation from "@/components/ThumbNavigation";
-import MobileNav from "@/components/MobileNav";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +31,6 @@ export default function Navigation() {
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [araOpen, setAraOpen] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { leftTarget, rightTarget } = useFabShortcuts();
   
   const isOnMessagesPage = location.startsWith("/messages");

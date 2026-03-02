@@ -198,5 +198,16 @@ export function isOwner(req: any, res: any, next: any) {
   res.status(403).json({ message: "Forbidden - Owner access required" });
 }
 
+export function hasProAccess(user: any): boolean {
+  return Boolean(user?.isOwner || user?.membershipTier === "donor_plus");
+}
+
+export function isProMember(req: any, res: any, next: any) {
+  if (req.isAuthenticated() && hasProAccess(req.user)) {
+    return next();
+  }
+  res.status(403).json({ message: "Forbidden - Orphan Bars Pro membership required" });
+}
+
 // Export sentinel value for use in routes
 export { OAUTH_ONLY_PASSWORD_SENTINEL };

@@ -5,7 +5,7 @@ import fs from "fs";
 import { db } from "../db";
 import { customBackgrounds, siteSettings, users } from "@shared/schema";
 import { eq, desc, asc } from "drizzle-orm";
-import { isAuthenticated, isOwner } from "../auth";
+import { isAuthenticated, isOwner, isProMember } from "../auth";
 import { insertCustomBackgroundSchema } from "@shared/schema";
 import { objectStorageClient } from "../replit_integrations/object_storage";
 import { randomUUID } from "crypto";
@@ -72,8 +72,8 @@ router.get("/backgrounds", async (req, res) => {
   }
 });
 
-// Upload custom background (owner only)
-router.post("/backgrounds", isAuthenticated, isOwner, upload.single('image'), async (req, res) => {
+// Upload custom background (Orphan Bars Pro)
+router.post("/backgrounds", isAuthenticated, isProMember, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No image file provided" });
@@ -110,6 +110,93 @@ router.post("/backgrounds", isAuthenticated, isOwner, upload.single('image'), as
   } catch (error) {
     console.error("Error uploading background:", error);
     res.status(500).json({ error: "Failed to upload background" });
+  }
+});
+
+// Get current user's custom backgrounds (Orphan Bars Pro)
+router.get("/backgrounds/mine", isAuthenticated, isProMember, async (req, res) => {
+  try {
+    const user = req.user as any;
+    const backgrounds = await db
+      .select()
+      .from(customBackgrounds)
+      .where(eq(customBackgrounds.createdBy, user.id))
+      .orderBy(desc(customBackgrounds.createdAt));
+
+    res.json(backgrounds);
+  } catch (error) {
+    console.error("Error fetching user backgrounds:", error);
+    res.status(500).json({ error: "Failed to fetch your backgrounds" });
+  }
+});
+
+// Update one of current user's backgrounds (or owner can update any)
+router.put("/backgrounds/:id", isAuthenticated, isProMember, async (req, res) => {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+    const validatedData = insertCustomBackgroundSchema.partial().parse(req.body);
+
+    const existing = await db
+      .select({ sid: customBackgrounds.sid, createdBy: customBackgrounds.createdBy })
+      .from(customBackgrounds)
+      .where(eq(customBackgrounds.sid, id))
+      .limit(1);
+
+    if (!existing.length) {
+      return res.status(404).json({ error: "Background not found" });
+    }
+
+    const canManage = user.isOwner || existing[0].createdBy === user.id;
+    if (!canManage) {
+      return res.status(403).json({ error: "You can only edit your own backgrounds" });
+    }
+
+    const updatedBackground = await db
+      .update(customBackgrounds)
+      .set({
+        ...validatedData,
+        updatedAt: new Date(),
+      })
+      .where(eq(customBackgrounds.sid, id))
+      .returning();
+
+    res.json(updatedBackground[0]);
+  } catch (error) {
+    console.error("Error updating user background:", error);
+    res.status(500).json({ error: "Failed to update background" });
+  }
+});
+
+// Delete one of current user's backgrounds (or owner can delete any)
+router.delete("/backgrounds/:id", isAuthenticated, isProMember, async (req, res) => {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+
+    const existing = await db
+      .select({ sid: customBackgrounds.sid, createdBy: customBackgrounds.createdBy })
+      .from(customBackgrounds)
+      .where(eq(customBackgrounds.sid, id))
+      .limit(1);
+
+    if (!existing.length) {
+      return res.status(404).json({ error: "Background not found" });
+    }
+
+    const canManage = user.isOwner || existing[0].createdBy === user.id;
+    if (!canManage) {
+      return res.status(403).json({ error: "You can only delete your own backgrounds" });
+    }
+
+    await db
+      .delete(customBackgrounds)
+      .where(eq(customBackgrounds.sid, id));
+
+    res.json({ message: "Background deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user background:", error);
+    res.status(500).json({ error: "Failed to delete background" });
   }
 });
 
@@ -153,11 +240,15 @@ router.post("/admin/backgrounds", isAuthenticated, isOwner, async (req, res) => 
       .limit(1);
 
     const nextSortOrder = lastBg.length > 0 ? lastBg[0].sortOrder + 1 : 0;
+    const requestedSortOrder =
+      typeof (validatedData as any).sortOrder === "number"
+        ? (validatedData as any).sortOrder
+        : nextSortOrder;
 
     const newBackground = await db.insert(customBackgrounds).values({
       ...validatedData,
       createdBy: user.id,
-      sortOrder: validatedData.sortOrder || nextSortOrder,
+      sortOrder: requestedSortOrder,
     }).returning();
 
     res.status(201).json(newBackground[0]);
@@ -224,7 +315,7 @@ router.post("/admin/backgrounds/reorder", isAuthenticated, isOwner, async (req, 
     }
 
     // Update sort orders in a transaction
-    await db.transaction(async (tx) => {
+    await db.transaction(async (tx: any) => {
       for (let i = 0; i < backgroundIds.length; i++) {
         await tx
           .update(customBackgrounds)

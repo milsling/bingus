@@ -75,7 +75,7 @@ export function useBackground() {
   const allBackgrounds = [
     ...IMAGE_BACKGROUNDS,
     ...customBackgrounds.map((bg: any) => ({
-      id: bg.id,
+      id: bg.sid || bg.id,
       name: bg.name,
       image: bg.imageUrl,
       unlockLevel: 0,

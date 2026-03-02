@@ -45,6 +45,8 @@ export const users = pgTable("users", {
   bannerUrl: text("banner_url"),
   membershipTier: text("membership_tier").notNull().default("free"),
   membershipExpiresAt: timestamp("membership_expires_at"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   isAdmin: boolean("is_admin").notNull().default(false),
   isAdminPlus: boolean("is_admin_plus").notNull().default(false),
   isOwner: boolean("is_owner").notNull().default(false),
@@ -1164,6 +1166,8 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   membershipTier: true,
   membershipExpiresAt: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
 });
 
 export const insertBarSchema = createInsertSchema(bars).omit({

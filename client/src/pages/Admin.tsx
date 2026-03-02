@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Image, Plus, Trash2, Upload, ArrowUpDown } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -2498,8 +2498,8 @@ export default function Admin() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="free">Free</SelectItem>
-                                  <SelectItem value="basic">Basic</SelectItem>
-                                  <SelectItem value="premium">Premium</SelectItem>
+                                  <SelectItem value="donor">Donor</SelectItem>
+                                  <SelectItem value="donor_plus">Orphan Bars Pro</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>

@@ -1,8 +1,9 @@
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import { IncomingMessage } from 'http';
 import { log } from './index';
 import { storage } from './storage';
 import type { AISettings } from '@shared/schema';
+import { hasProAccess } from './auth';
 
 interface VoiceSession {
   clientWs: WebSocket;
@@ -14,7 +15,7 @@ interface VoiceSession {
 
 const activeSessions = new Map<string, VoiceSession>();
 
-export function setupVoiceWebSocket(wss: WebSocket.Server) {
+export function setupVoiceWebSocket(wss: WebSocketServer) {
   wss.on('connection', async (clientWs: WebSocket, req: IncomingMessage) => {
     log('Voice WebSocket connection received', 'voice');
 
@@ -33,6 +34,12 @@ export function setupVoiceWebSocket(wss: WebSocket.Server) {
     if (!dbUser) {
       log(`Voice WebSocket: User ${passportUserId} not found in database`, 'voice');
       clientWs.close(4001, 'Unauthorized');
+      return;
+    }
+
+    if (!hasProAccess(dbUser)) {
+      log(`Voice WebSocket: User ${dbUser.username} lacks Pro access`, 'voice');
+      clientWs.close(4003, 'Orphan Bars Pro required');
       return;
     }
 

@@ -43,21 +43,28 @@ export function BackgroundUploader() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
 
-  // Fetch custom backgrounds (admin endpoint for manage panel)
+  const isOwner = Boolean(currentUser?.isOwner);
+  const isProMember = Boolean(currentUser?.isOwner || currentUser?.membershipTier === "donor_plus");
+  const manageListQueryKey = isOwner ? ["admin-backgrounds"] : ["my-backgrounds"];
+  const manageListEndpoint = isOwner ? "/api/admin/backgrounds" : "/api/backgrounds/mine";
+  const manageItemEndpoint = (id: string) => (isOwner ? `/api/admin/backgrounds/${id}` : `/api/backgrounds/${id}`);
+
+  // Fetch custom backgrounds for management panel
   const { data: customBackgrounds = [] } = useQuery<CustomBackground[]>({
-    queryKey: ["admin-backgrounds"],
+    queryKey: manageListQueryKey,
     queryFn: async () => {
-      const res = await fetch("/api/admin/backgrounds", { credentials: "include" });
+      const res = await fetch(manageListEndpoint, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch backgrounds");
       return res.json();
     },
+    enabled: Boolean(currentUser && isProMember),
     staleTime: 60_000,
   });
 
   // Rename mutation
   const renameMutation = useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      const res = await fetch(`/api/admin/backgrounds/${id}`, {
+      const res = await fetch(manageItemEndpoint(id), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -68,6 +75,7 @@ export function BackgroundUploader() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-backgrounds"] });
+      queryClient.invalidateQueries({ queryKey: ["my-backgrounds"] });
       queryClient.invalidateQueries({ queryKey: ["backgrounds"] });
       setEditingId(null);
       toast({ title: "Background renamed" });
@@ -78,7 +86,7 @@ export function BackgroundUploader() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/admin/backgrounds/${id}`, {
+      const res = await fetch(manageItemEndpoint(id), {
         method: "DELETE",
         credentials: "include",
       });
@@ -86,6 +94,7 @@ export function BackgroundUploader() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-backgrounds"] });
+      queryClient.invalidateQueries({ queryKey: ["my-backgrounds"] });
       queryClient.invalidateQueries({ queryKey: ["backgrounds"] });
       toast({ title: "Background deleted" });
     },
@@ -246,6 +255,7 @@ export function BackgroundUploader() {
       // Refresh backgrounds list
       queryClient.invalidateQueries({ queryKey: ["backgrounds"] });
       queryClient.invalidateQueries({ queryKey: ["admin-backgrounds"] });
+      queryClient.invalidateQueries({ queryKey: ["my-backgrounds"] });
       
       // Reset form
       cancelPending();
@@ -298,12 +308,12 @@ export function BackgroundUploader() {
     );
   }
 
-  if (!currentUser.isOwner) {
+  if (!isProMember) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
         <p className="text-sm font-medium">Premium Feature</p>
-        <p className="text-xs mt-1">Custom background uploads will be available soon</p>
+        <p className="text-xs mt-1">Upgrade to Orphan Bars Pro to upload your own backgrounds.</p>
       </div>
     );
   }

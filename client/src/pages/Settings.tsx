@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bell, Command, Lock, Settings2, Shield, UserCog, Volume2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Bell, Command, Crown, Lock, Settings2, Shield, UserCog, Volume2 } from "lucide-react";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { playNotificationSound, notificationSoundLabels, messageSoundLabels } from "@/lib/notificationSounds";
+import { BackgroundUploader } from "@/components/BackgroundUploader";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { useBackground } from "@/components/BackgroundSelector";
 import ThemeSettings from "@/components/ThemeSettings";
@@ -32,6 +33,7 @@ export default function Settings() {
   const hasCustomBackground = selectedBackground.image !== null;
 
   const canDebugControls = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
+  const isProMember = Boolean(currentUser?.isOwner || currentUser?.membershipTier === "donor_plus");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -78,6 +80,67 @@ export default function Settings() {
       });
     },
   });
+
+  const { data: billingStatus } = useQuery({
+    queryKey: ["billing", "status"],
+    queryFn: () => api.getBillingStatus(),
+    enabled: Boolean(currentUser),
+    staleTime: 60_000,
+  });
+
+  const syncBillingMutation = useMutation({
+    mutationFn: () => api.syncBillingStatus(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: ["billing", "status"] });
+    },
+  });
+
+  const checkoutMutation = useMutation({
+    mutationFn: () => api.createCheckoutSession(),
+    onSuccess: ({ url }: { url: string }) => {
+      window.location.href = url;
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upgrade failed",
+        description: error.message || "Could not open checkout",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const billingPortalMutation = useMutation({
+    mutationFn: () => api.createBillingPortalSession(),
+    onSuccess: ({ url }: { url: string }) => {
+      window.location.href = url;
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Billing portal unavailable",
+        description: error.message || "Could not open billing portal",
+        variant: "destructive",
+      });
+    },
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const billingResult = params.get("billing");
+    if (!billingResult) return;
+
+    if (billingResult === "success") {
+      syncBillingMutation.mutate();
+      toast({ title: "Payment successful", description: "Welcome to Orphan Bars Pro." });
+    } else if (billingResult === "cancelled") {
+      toast({ title: "Checkout cancelled" });
+    }
+
+    params.delete("billing");
+    const nextSearch = params.toString();
+    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}`;
+    window.history.replaceState({}, "", nextUrl);
+  }, [syncBillingMutation, toast]);
 
   const updatePrivacyMutation = useMutation({
     mutationFn: (privacy: string) => api.updateProfile({ messagePrivacy: privacy }),
@@ -202,6 +265,54 @@ export default function Settings() {
             </TabsList>
 
             <TabsContent value="general" className="mt-0 space-y-4">
+              <Card className={"glass-surface-strong border-white/15"}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Crown className="h-4 w-4 text-primary" />
+                    Orphan Bars Pro — $10/month
+                  </CardTitle>
+                  <CardDescription>
+                    Unlock real-time Orphie voice assistant and upload your own custom backgrounds.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-0">
+                  {billingStatus && (
+                    <p className="text-xs text-muted-foreground">
+                      Status: {billingStatus.isPro ? "Pro active" : "Free"}
+                      {billingStatus.membershipExpiresAt
+                        ? ` • Renews ${new Date(billingStatus.membershipExpiresAt).toLocaleDateString()}`
+                        : ""}
+                    </p>
+                  )}
+
+                  {billingStatus && !billingStatus.stripeConfigured && (
+                    <p className="text-xs text-amber-500">
+                      Billing is not configured yet. Add Stripe environment variables on the server.
+                    </p>
+                  )}
+
+                  <div className="flex gap-2">
+                    {isProMember ? (
+                      <Button
+                        className="w-full"
+                        onClick={() => billingPortalMutation.mutate()}
+                        disabled={billingPortalMutation.isPending || (billingStatus ? !billingStatus.stripeConfigured : false)}
+                      >
+                        {billingPortalMutation.isPending ? "Opening..." : "Manage Billing"}
+                      </Button>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        onClick={() => checkoutMutation.mutate()}
+                        disabled={checkoutMutation.isPending || (billingStatus ? !billingStatus.stripeConfigured : false)}
+                      >
+                        {checkoutMutation.isPending ? "Redirecting..." : "Upgrade to Pro"}
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -482,6 +593,20 @@ export default function Settings() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <BackgroundSelector />
+                </CardContent>
+              </Card>
+
+              <Card className={"glass-surface-strong border-white/15"}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    🖼️ Upload Custom Background
+                  </CardTitle>
+                  <CardDescription>
+                    Available with Orphan Bars Pro membership.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <BackgroundUploader />
                 </CardContent>
               </Card>
 
