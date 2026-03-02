@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Pencil, Trash2, LockKeyhole, Lock } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useBars } from "@/context/BarContext";
 import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
@@ -48,6 +47,7 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
   const { currentUser } = useBars();
   const { session } = useSupabaseAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
