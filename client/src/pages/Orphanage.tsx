@@ -476,14 +476,32 @@ export default function OrphanagePage() {
   const [activeFilter, setActiveFilter] = useState<StyleFilter>("All");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: adoptableBars = [], isLoading } = useQuery<OrphanBar[]>({
+  const { data: adoptableBars = [], isLoading, isError, error } = useQuery<OrphanBar[]>({
     queryKey: ["adoptable-bars"],
     queryFn: async () => {
-      const res = await fetch("/api/bars/adoptable", { credentials: "include" });
-      return res.json();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
+      try {
+        const res = await fetch("/api/bars/adoptable", { 
+          credentials: "include",
+          signal: controller.signal 
+        });
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+          throw new Error(`Failed to fetch adoptable bars: ${res.status}`);
+        }
+        return res.json();
+      } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+      }
     },
     staleTime: 30000,
     refetchOnWindowFocus: false,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const { data: myAdoptions = [] } = useQuery<UserAdoption[]>({
@@ -593,6 +611,17 @@ export default function OrphanagePage() {
           <section className="space-y-4">
             {isLoading ? (
               <BarSkeletonList count={6} />
+            ) : isError ? (
+              <div className="text-center py-12">
+                <Trophy className="h-12 w-12 mx-auto mb-4 text-destructive/50" />
+                <h3 className="text-lg font-medium text-foreground mb-2">Failed to load bars</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {error instanceof Error ? error.message : "An error occurred while loading adoptable bars"}
+                </p>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Reload Page
+                </Button>
+              </div>
             ) : filteredBars.length === 0 ? (
               <div className="text-center py-12">
                 <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
