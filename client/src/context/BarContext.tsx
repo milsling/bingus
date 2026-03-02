@@ -36,13 +36,19 @@ export function BarProvider({ children }: { children: ReactNode }) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<number | null>(null);
 
+  console.log('BarProvider initializing...');
+
   // Fetch current user
   const { data: currentUser = null, isLoading: isLoadingUser } = useQuery<User | null>({
     queryKey: ['currentUser'],
     queryFn: async () => {
+      console.log('Fetching current user...');
       try {
-        return await api.getCurrentUser();
+        const user = await api.getCurrentUser();
+        console.log('Current user fetched:', user ? 'logged in' : 'not logged in');
+        return user;
       } catch (error) {
+        console.error('Error fetching current user:', error);
         return null;
       }
     },
@@ -52,8 +58,11 @@ export function BarProvider({ children }: { children: ReactNode }) {
   const { data: bars = [], isLoading: isLoadingBars, refetch: refetchBarsQuery } = useQuery<BarWithUser[]>({
     queryKey: ['bars'],
     queryFn: async () => {
+      console.log('Fetching bars...');
       try {
-        return await api.getBars();
+        const fetchedBars = await api.getBars();
+        console.log('Bars fetched:', fetchedBars?.length || 0);
+        return fetchedBars;
       } catch (error) {
         console.error('Failed to fetch bars:', error);
         return [];

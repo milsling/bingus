@@ -24,7 +24,6 @@ export async function apiRequest(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
-// Modified query function to handle server failures gracefully
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
@@ -39,17 +38,14 @@ export const getQueryFn: <T>(options: {
         return null;
       }
 
-      // Handle server not available or other errors
       if (!res.ok) {
-        console.warn(`API request failed with status ${res.status} for ${queryKey.join("/")}`);
-        return null;
+        const text = (await res.text()) || res.statusText;
+        throw new Error(`${res.status}: ${text}`);
       }
 
-      await throwIfResNotOk(res);
       return await res.json();
     } catch (error) {
       console.error("API request error:", error);
-      // Return null instead of throwing error to prevent app from hanging
       return null;
     }
   };
