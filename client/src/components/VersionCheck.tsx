@@ -10,7 +10,10 @@ export function VersionCheck() {
     async function checkVersion() {
       try {
         const res = await fetch("/api/version");
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.warn("Version check failed, server may not be available");
+          return;
+        }
 
         const data = await res.json();
         const newVersion = data?.version;
@@ -29,6 +32,7 @@ export function VersionCheck() {
         }
         window.location.href = window.location.href;
       } catch {
+        console.warn("Version check failed, continuing without reload");
         /* ignore */
       }
     }
