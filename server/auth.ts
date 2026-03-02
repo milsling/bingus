@@ -104,7 +104,7 @@ export const sessionParser = session({
   },
   store: new PgStore({
     conString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
-    createTableIfMissing: true,
+    createTableIfMissing: false,
     tableName: "sessions",
     schemaName: 'public'
   }),
@@ -114,6 +114,19 @@ export const sessionParser = session({
 // which blocks all reads/writes when no policies exist).
 async function ensureSessionTableAccess() {
   try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.sessions (
+        sid text PRIMARY KEY,
+        sess json NOT NULL,
+        expire timestamp(6) NOT NULL
+      );
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS "IDX_session_expire"
+      ON public.sessions (expire);
+    `);
+
     await pool.query(`
       DO $$
       BEGIN
