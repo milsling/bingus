@@ -51,7 +51,17 @@ export function BarProvider({ children }: { children: ReactNode }) {
   // Fetch all bars
   const { data: bars = [], isLoading: isLoadingBars, refetch: refetchBarsQuery } = useQuery<BarWithUser[]>({
     queryKey: ['bars'],
-    queryFn: () => api.getBars(),
+    queryFn: async () => {
+      try {
+        return await api.getBars();
+      } catch (error) {
+        console.error('Failed to fetch bars:', error);
+        return [];
+      }
+    },
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 30000,
   });
 
   const refetchBars = async () => {

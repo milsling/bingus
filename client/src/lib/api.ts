@@ -33,11 +33,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 // Helper to make fetch requests with credentials included
-function apiFetch(url: string, options?: RequestInit): Promise<Response> {
+function apiFetch(url: string, options?: RequestInit, timeout = 30000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
   return fetch(url, {
     ...options,
     credentials: 'include',
-  });
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeoutId));
 }
 
 export const api = {
