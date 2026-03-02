@@ -1,11 +1,12 @@
-import { useState, useRef } from "react";
-import { Upload, X, Check, AlertCircle, Pencil, Trash2 } from "lucide-react";
+import { useState, useRef, useContext } from "react";
+import { Upload, X, Check, AlertCircle, Pencil, Trash2, Wand2, Loader2 } from "lucide-react";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { SupabaseAuthContext } from "@/context/SupabaseAuthContext";
 
 interface BackgroundUploadResponse {
   id: string;
@@ -24,10 +25,12 @@ interface CustomBackground {
 
 export function BackgroundUploader() {
   const { currentUser } = useBars();
+  const { session } = useContext(SupabaseAuthContext);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSuggestingName, setIsSuggestingName] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
 
@@ -112,6 +115,58 @@ export function BackgroundUploader() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const suggestNameWithAI = async (file: File) => {
+    if (isSuggestingName) return;
+
+    setIsSuggestingName(true);
+    try {
+      const existingName = pendingName.trim();
+      const normalizedFileName = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          message: `Suggest one short, creative background image name (2-4 words, title case, no quotes, no punctuation at the end).\n\nImage filename: ${file.name}\nNormalized filename: ${normalizedFileName || "(none)"}\nFile type: ${file.type}\nFile size KB: ${Math.round(file.size / 1024)}\nCurrent draft name: ${existingName || "(none)"}\n\nReturn only the name.`,
+          personalityMode: "helpful",
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || data?.response || "AI naming is unavailable right now");
+      }
+
+      const raw = (data?.response || data?.message || "").toString().trim();
+      const cleaned = raw
+        .split("\n")[0]
+        .replace(/^['"`]+|['"`]+$/g, "")
+        .replace(/[.!?]+$/g, "")
+        .trim()
+        .slice(0, 60);
+
+      if (!cleaned) {
+        throw new Error("AI did not return a usable name");
+      }
+
+      setPendingName(cleaned);
+      toast({ title: "Name suggested", description: `Try \"${cleaned}\"` });
+    } catch (error: any) {
+      const fallback = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim().slice(0, 60);
+      if (fallback && !pendingName.trim()) {
+        setPendingName(fallback);
+      }
+      toast({
+        title: "Couldn't generate AI name",
+        description: error?.message || "Using a filename-based suggestion instead",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSuggestingName(false);
+    }
+  };
+
   const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast({
@@ -138,7 +193,7 @@ export function BackgroundUploader() {
       const formData = new FormData();
       formData.append('image', file);
       formData.append('name', pendingName || file.name.split('.')[0]);
-
+      
       const xhr = new XMLHttpRequest();
       
       // Track progress
@@ -174,7 +229,11 @@ export function BackgroundUploader() {
       });
 
       xhr.open('POST', '/api/backgrounds');
-      xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token') || ''}`);
+      // Use Supabase session token if available, otherwise fallback to localStorage token
+      const token = session?.access_token || localStorage.getItem('token') || '';
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
       xhr.send(formData);
 
       const result = await uploadPromise;
@@ -267,13 +326,30 @@ export function BackgroundUploader() {
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Background Name</label>
-            <Input
-              value={pendingName}
-              onChange={(e) => setPendingName(e.target.value)}
-              placeholder="Enter a name..."
-              className="h-9 text-sm"
-              maxLength={60}
-            />
+            <div className="flex gap-2">
+              <Input
+                value={pendingName}
+                onChange={(e) => setPendingName(e.target.value)}
+                placeholder="Enter a name..."
+                className="h-9 text-sm"
+                maxLength={60}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="h-9 shrink-0"
+                onClick={() => pendingFile && suggestNameWithAI(pendingFile)}
+                disabled={!pendingFile || isSuggestingName || isUploading}
+              >
+                {isSuggestingName ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Wand2 className="h-4 w-4" />
+                )}
+                <span className="ml-1.5">Suggest</span>
+              </Button>
+            </div>
           </div>
           {isUploading ? (
             <div className="space-y-1.5">

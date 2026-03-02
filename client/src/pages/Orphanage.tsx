@@ -588,6 +588,31 @@ export default function OrphanagePage() {
               </div>
             </section>
           )}
+
+          {/* Render the filtered bars */}
+          <section className="space-y-4">
+            {isLoading ? (
+              <BarSkeletonList count={6} />
+            ) : filteredBars.length === 0 ? (
+              <div className="text-center py-12">
+                <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <h3 className="text-lg font-medium text-foreground mb-2">No bars found</h3>
+                <p className="text-sm text-muted-foreground">
+                  {adoptableBars.length === 0 
+                    ? "No adoptable bars are available at the moment."
+                    : "Try adjusting your filters or search terms."}
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredBars.map((bar) => (
+                  <div key={bar.id} id={`bar-${bar.id}`}>
+                    <OrphanBarCard bar={bar} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </main>
     </div>

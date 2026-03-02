@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Pencil, Trash2, LockKeyhole, Lock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useBars } from "@/context/BarContext";
+import { SupabaseAuthContext } from "@/context/SupabaseAuthContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,7 @@ interface BarOwnerActionsProps {
 
 export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
   const { currentUser } = useBars();
+  const { session } = useContext(SupabaseAuthContext);
   const { toast } = useToast();
   
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -58,7 +60,12 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("DELETE", `/api/bars/${bar.id}`);
+      const token = session?.access_token || localStorage.getItem("token") || "";
+      const res = await fetch(`/api/bars/${bar.id}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (!res.ok) throw new Error("Failed to delete bar");
       return res.json();
     },
@@ -83,7 +90,12 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
 
   const lockMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", `/api/bars/${bar.id}/lock`);
+      const token = session?.access_token || localStorage.getItem("token") || "";
+      const res = await fetch(`/api/bars/${bar.id}/lock`, {
+        method: "POST",
+        credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (!res.ok) throw new Error("Failed to lock bar");
       return res.json();
     },
@@ -106,7 +118,13 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
 
   const editMutation = useMutation({
     mutationFn: async (data: { content: string; explanation?: string; category?: string }) => {
-      const res = await apiRequest("PATCH", `/api/bars/${bar.id}`, data);
+      const token = session?.access_token || localStorage.getItem("token") || "";
+      const res = await fetch(`/api/bars/${bar.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
       if (!res.ok) throw new Error("Failed to update bar");
       return res.json();
     },
@@ -147,7 +165,7 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
       {/* Edit Dropdown Menu Item */}
       {!isLocked && (
         <DropdownMenuItem 
-          onClick={() => { 
+          onSelect={() => { 
             setEditContent(bar.content.replace(/<[^>]*>/g, "")); 
             setIsEditOpen(true); 
           }} 
@@ -163,7 +181,7 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
         <>
           <DropdownMenuSeparator />
           <DropdownMenuItem 
-            onClick={() => setIsLockDialogOpen(true)} 
+            onSelect={() => setIsLockDialogOpen(true)} 
             className="text-primary" 
             data-testid={`button-lock-${bar.id}`}
           >
@@ -184,7 +202,7 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
       {/* Delete Dropdown Menu Item */}
       <DropdownMenuSeparator />
       <DropdownMenuItem 
-        onClick={() => setIsDeleteOpen(true)} 
+        onSelect={() => setIsDeleteOpen(true)} 
         className="text-destructive" 
         data-testid={`button-delete-${bar.id}`}
       >

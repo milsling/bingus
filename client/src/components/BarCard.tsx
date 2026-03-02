@@ -650,18 +650,18 @@ export default function BarCard({ bar }: BarCardProps) {
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCheckOriginality} disabled={isCheckingOriginality} data-testid={`button-originality-${bar.id}`}>
+              <DropdownMenuContent align="end" forceMount>
+                <DropdownMenuItem onSelect={handleCheckOriginality} disabled={isCheckingOriginality} data-testid={`button-originality-${bar.id}`}>
                   <Search className="h-4 w-4 mr-2" />
                   {isCheckingOriginality ? "Checking..." : "Originality Check"}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsAraOpen(true)} data-testid={`button-ara-${bar.id}`}>
+                <DropdownMenuItem onSelect={() => setIsAraOpen(true)} data-testid={`button-ara-${bar.id}`}>
                   <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
                   Break It Down
                 </DropdownMenuItem>
                 <BarOwnerActions bar={bar} isLocked={isLocked} />
                 {currentUser && (
-                  <DropdownMenuItem onClick={() => setIsReportOpen(true)} className="text-orange-500" data-testid={`button-report-${bar.id}`}>
+                  <DropdownMenuItem onSelect={() => setIsReportOpen(true)} className="text-orange-500" data-testid={`button-report-${bar.id}`}>
                     <Flag className="h-4 w-4 mr-2" />
                     Report
                   </DropdownMenuItem>

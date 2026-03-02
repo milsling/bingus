@@ -357,6 +357,10 @@ export default function Messages() {
               />
             </div>
 
+            <ConversationList />
+          </div>
+
+          <div className="flex-1 min-w-0 flex flex-col">
             {selectedUserId && (loadingUser || loadingConversations) ? (
               <div className="flex-1 flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
@@ -471,7 +475,7 @@ export default function Messages() {
             </>
           ) : (
             <div className="flex-1 flex flex-col">
-              <div className="md:hidden flex-1">
+              <div className="flex-1 md:hidden">
                 <ConversationList />
               </div>
               <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground">
