@@ -292,9 +292,6 @@ export default function Navigation() {
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
       <AIAssistant open={araOpen} onOpenChange={setAraOpen} hideFloatingButton />
       
-      {/* Desktop Navigation Sidebar */}
-      <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
-      
       {/* Mobile Thumb Navigation - only visible on mobile */}
       <div className="md:hidden">
         <ThumbNavigation />
