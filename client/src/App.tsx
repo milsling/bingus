@@ -37,6 +37,7 @@ import { SwipeBackNavigation } from "@/components/SwipeBackNavigation";
 import { useBackground } from "@/components/BackgroundSelector";
 import Navigation from "@/components/Navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SupabaseAuthProvider } from "@/context/SupabaseAuthContext";
 
 const OrphanStudio = lazy(() => import("@/pages/orphanstudio"));
 
@@ -123,18 +124,20 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary minimal>
         <ThemeProvider>
-          <BarProvider>
-            <TooltipProvider>
-              <VersionCheck />
-              <BackgroundInitializer />
-              <MaintenanceBanner />
-              <Navigation />
-              <Toaster />
-              <SwipeBackNavigation>
-                <Router />
-              </SwipeBackNavigation>
-            </TooltipProvider>
-          </BarProvider>
+          <SupabaseAuthProvider>
+            <BarProvider>
+              <TooltipProvider>
+                <VersionCheck />
+                <BackgroundInitializer />
+                <MaintenanceBanner />
+                <Navigation />
+                <Toaster />
+                <SwipeBackNavigation>
+                  <Router />
+                </SwipeBackNavigation>
+              </TooltipProvider>
+            </BarProvider>
+          </SupabaseAuthProvider>
         </ThemeProvider>
       </ErrorBoundary>
     </QueryClientProvider>

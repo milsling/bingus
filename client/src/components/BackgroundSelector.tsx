@@ -50,14 +50,15 @@ export const IMAGE_BACKGROUNDS: Background[] = [
 ];
 
 const STORAGE_KEY = "orphanbars-background";
+const DEFAULT_BACKGROUND_ID = "purple-cosmos";
 
 export function useBackground() {
   const { resolvedTheme } = useTheme();
   const [selectedId, setSelectedId] = useState<string>(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(STORAGE_KEY) || "default";
+      return localStorage.getItem(STORAGE_KEY) || DEFAULT_BACKGROUND_ID;
     }
-    return "default";
+    return DEFAULT_BACKGROUND_ID;
   });
 
   // Fetch custom backgrounds
@@ -83,7 +84,10 @@ export function useBackground() {
     })),
   ];
 
-  const selectedBackground = allBackgrounds.find(bg => bg.id === selectedId) || allBackgrounds[0];
+  const selectedBackground =
+    allBackgrounds.find((bg) => bg.id === selectedId) ||
+    allBackgrounds.find((bg) => bg.id === DEFAULT_BACKGROUND_ID) ||
+    allBackgrounds[0];
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, selectedId);
