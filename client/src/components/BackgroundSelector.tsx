@@ -61,6 +61,30 @@ export function useBackground() {
     return DEFAULT_BACKGROUND_ID;
   });
 
+  const { data: siteSettings } = useQuery<Record<string, string>>({
+    queryKey: ["background-site-settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/backgrounds/site-settings");
+      if (!res.ok) return {};
+      return res.json();
+    },
+    staleTime: 300_000,
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const configuredDefault = siteSettings?.defaultBackground;
+    if (!configuredDefault) return;
+
+    const storedId = localStorage.getItem(STORAGE_KEY);
+    const shouldApplySiteDefault = !storedId || storedId === "default";
+
+    if (shouldApplySiteDefault && storedId !== configuredDefault) {
+      setSelectedId(configuredDefault);
+    }
+  }, [siteSettings?.defaultBackground]);
+
   // Fetch custom backgrounds
   const { data: customBackgrounds = [] } = useQuery({
     queryKey: ["backgrounds"],
