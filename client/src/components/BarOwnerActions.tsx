@@ -1,10 +1,10 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Pencil, Trash2, LockKeyhole, Lock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useBars } from "@/context/BarContext";
-import { SupabaseAuthContext } from "@/context/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,7 +46,7 @@ interface BarOwnerActionsProps {
 
 export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
   const { currentUser } = useBars();
-  const { session } = useContext(SupabaseAuthContext);
+  const { session } = useSupabaseAuth();
   const { toast } = useToast();
   
   const [isEditOpen, setIsEditOpen] = useState(false);
