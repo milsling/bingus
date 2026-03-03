@@ -18,7 +18,10 @@
   font-size: 1.05rem;
   font-weight: 500;
   letter-spacing: -0.01em;
-  padding: 0.75rem 1rem;
+  padding: 1.1rem 1.5rem; /* Increased for easier thumb access */
+  min-width: 56px;
+  min-height: 56px;
+  touch-action: manipulation;
 }
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -228,7 +231,7 @@
 .light {
   /* Light Mode: frosted-glass surfaces like the composer page */
   --background: 45 15% 97%;
-  --foreground: 220 25% 2%;  /* Extremely dark text: almost black */
+  --foreground: 220 15% 8%;  /* Super dark gray: #18181B */
 
   --card: 45 25% 94%;  /* Light gray: #EFEFF1 */
   --card-foreground: 220 25% 2%;  /* Extremely dark text */
