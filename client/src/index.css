@@ -492,23 +492,40 @@
     overflow-x: hidden;
   }
   
-  /* Enhanced readability for light mode */
+  /* Font classes */
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .font-logo {
+    font-family: var(--font-logo);
+  }
+
+  /* Enhanced text color for light mode */
   :root:not(.dark):not(.light) {
     font-size: 16px;  /* Base 16px for better readability */
     line-height: 1.7;  /* Increased line-height for comfort */
-    color: hsl(220 25% 8%); /* Very dark default text */
+    color: hsl(220 25% 5%) !important; /* Very dark default text - force override */
   }
   
   :root:not(.dark):not(.light) body {
     font-family: var(--font-sans);
     letter-spacing: 0.01em;  /* Slightly increased letter spacing */
-    color: hsl(220 25% 8%); /* Very dark body text */
+    color: hsl(220 25% 5%) !important; /* Very dark body text - force override */
   }
   
   :root:not(.dark):not(.light) p, 
   :root:not(.dark):not(.light) .text-sm,
   :root:not(.dark):not(.light) .text-xs {
-    color: hsl(220 25% 10%); /* Very dark gray for body text */
+    color: hsl(220 25% 5%) !important; /* Very dark gray for body text - force override */
     line-height: 1.75;  /* Even more line-height for body text */
   }
   
@@ -521,7 +538,7 @@
   :root:not(.dark):not(.light) h1, 
   :root:not(.dark):not(.light) h2, 
   :root:not(.dark):not(.light) h3 {
-    color: hsl(220 25% 8%);  /* Very dark gray almost black */
+    color: hsl(220 25% 5%) !important;  /* Very dark gray almost black - force override */
     font-weight: 600;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);  /* Stronger shadow for contrast */
   }
