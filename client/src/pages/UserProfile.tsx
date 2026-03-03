@@ -250,7 +250,7 @@ export default function UserProfile() {
 
   if (userLoading || (!user && isFetching)) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
+      <div className="min-h-screen pt-14 pb-20 sm:pb-6 sm:pt-24">
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -260,7 +260,7 @@ export default function UserProfile() {
 
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
+      <div className="min-h-screen pt-14 pb-20 sm:pb-6 sm:pt-24">
         <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
           <Button
             variant="ghost"
@@ -279,7 +279,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 sm:pb-6 sm:pt-24">
+    <div className="min-h-screen pt-14 pb-20 sm:pb-6 sm:pt-24">
       <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
         <Button
           variant="ghost"
@@ -291,8 +291,11 @@ export default function UserProfile() {
           Back to Feed
         </Button>
 
-        <div className="glass-panel rounded-2xl overflow-hidden mb-6">
-          {user.bannerUrl && (
+        <div className={cn(
+          "relative overflow-hidden rounded-2xl mb-6",
+          "glass-card border border-border/10"
+        )}>
+          {user.bannerUrl ? (
             <div className="w-full h-32 sm:h-40">
               <img 
                 src={user.bannerUrl} 
@@ -300,23 +303,18 @@ export default function UserProfile() {
                 className="w-full h-full object-cover"
               />
             </div>
+          ) : (
+            <div className="h-32 sm:h-40 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent w-full" />
           )}
-          <div className="p-4 sm:p-6">
+          <div className="p-4 sm:p-6 pt-0 sm:pt-0 -mt-12">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
             <div className="relative shrink-0">
-              <Avatar className={`h-20 w-20 ${user.bannerUrl ? '-mt-12 border-4 border-card' : ''}`}>
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 ring-4 ring-background/50 shadow-xl bg-background/50 backdrop-blur-sm">
                 <AvatarImage src={user.avatarUrl || undefined} />
                 <AvatarFallback className="text-2xl">
                   {user.username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              {user.isOwner && (
-                <img 
-                  src="/owner-crown.png"
-                  alt="Owner crown"
-                  className="absolute -top-[28px] left-1/2 -translate-x-[calc(50%+8px)] w-22 h-15 rotate-[-8deg] drop-shadow-lg pointer-events-none z-10"
-                />
-              )}
             </div>
             <div className="flex-1 min-w-0 text-center sm:text-left w-full">
               <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
@@ -325,7 +323,9 @@ export default function UserProfile() {
                 </h1>
                 <UserProfileBadges userId={user.id} size="sm" maxBadges={5} />
                 {user.membershipTier !== "free" && (
-                  <Badge variant="secondary">{user.membershipTier}</Badge>
+                  <Badge className="bg-primary/20 text-primary border border-primary/40 text-[10px] px-1.5 py-0 h-5">
+                    [PRO]
+                  </Badge>
                 )}
                 {user.isAdmin && (
                   <Badge variant="default" className="bg-primary">{user.username === "Milsling" ? "Owner" : "Admin"}</Badge>

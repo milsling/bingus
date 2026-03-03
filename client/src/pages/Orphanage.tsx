@@ -81,7 +81,7 @@ function stripHtml(value: string) {
 }
 
 function estimateSyllables(text: string) {
-  const words = text.toLowerCase().match(/[a-z]+/g) || [];
+  const words: string[] = text.toLowerCase().match(/[a-z]+/g) ?? [];
   return words.reduce((sum, word) => {
     const groups = word.match(/[aeiouy]+/g);
     return sum + Math.max(1, groups?.length || 0);
@@ -266,12 +266,12 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
   return (
     <article
       className={cn(
-        "glass-card overflow-hidden transition-all duration-300 hover:border-primary/30",
+        "glass-card overflow-hidden p-4 transition-all duration-300 hover:border-primary/30",
         adoptPulse && "border-emerald-400/70 shadow-[0_0_28px_rgba(16,185,129,0.35)] animate-pulse",
       )}
       data-testid={`orphan-bar-card-${bar.id}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className="mb-3 space-y-3">
         <div className="min-w-0">
           <p className="text-sm leading-relaxed text-foreground">{plainText}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -286,34 +286,34 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/40 px-2.5 py-1.5">
+          <div className="flex items-center gap-2 min-w-0">
           <Avatar className="h-8 w-8 border-2 border-border/50">
             <AvatarImage src={bar.user.avatarUrl || undefined} />
             <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
               {bar.user.username[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="text-right">
+          <div className="min-w-0">
             <p className="text-xs font-medium text-foreground">@{bar.user.username}</p>
             <Link href={`/u/${bar.user.username}`} className="text-xs text-primary hover:underline">
               View Profile
             </Link>
           </div>
+          </div>
+          <span className="shrink-0 text-[11px] text-muted-foreground text-right">
+            {formatDistanceToNow(new Date(bar.createdAt), { addSuffix: true })}
+          </span>
         </div>
       </div>
 
       <div className="mb-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5">
+        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5 text-center font-medium">
           {wordCount} words
         </div>
-        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5">
+        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5 text-center font-medium">
           ~{syllableCount} syllables
         </div>
-      </div>
-
-      <div className="mb-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span>@{bar.user.username}</span>
-        <span>{formatDistanceToNow(new Date(bar.createdAt), { addSuffix: true })}</span>
       </div>
 
       <div className="space-y-2">
@@ -476,14 +476,32 @@ export default function OrphanagePage() {
   const [activeFilter, setActiveFilter] = useState<StyleFilter>("All");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: adoptableBars = [], isLoading } = useQuery<OrphanBar[]>({
+  const { data: adoptableBars = [], isLoading, isError, error } = useQuery<OrphanBar[]>({
     queryKey: ["adoptable-bars"],
     queryFn: async () => {
-      const res = await fetch("/api/bars/adoptable", { credentials: "include" });
-      return res.json();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
+      try {
+        const res = await fetch("/api/bars/adoptable", { 
+          credentials: "include",
+          signal: controller.signal 
+        });
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+          throw new Error(`Failed to fetch adoptable bars: ${res.status}`);
+        }
+        return res.json();
+      } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+      }
     },
     staleTime: 30000,
     refetchOnWindowFocus: false,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const { data: myAdoptions = [] } = useQuery<UserAdoption[]>({
@@ -526,7 +544,7 @@ export default function OrphanagePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 text-foreground md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 text-foreground md:pb-4 md:pt-24">
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="space-y-6">
           <div className="flex flex-col items-center">
@@ -588,6 +606,42 @@ export default function OrphanagePage() {
               </div>
             </section>
           )}
+
+          {/* Render the filtered bars */}
+          <section className="space-y-4">
+            {isLoading ? (
+              <BarSkeletonList count={6} />
+            ) : isError ? (
+              <div className="text-center py-12">
+                <Trophy className="h-12 w-12 mx-auto mb-4 text-destructive/50" />
+                <h3 className="text-lg font-medium text-foreground mb-2">Failed to load bars</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {error instanceof Error ? error.message : "An error occurred while loading adoptable bars"}
+                </p>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Reload Page
+                </Button>
+              </div>
+            ) : filteredBars.length === 0 ? (
+              <div className="text-center py-12">
+                <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <h3 className="text-lg font-medium text-foreground mb-2">No bars found</h3>
+                <p className="text-sm text-muted-foreground">
+                  {adoptableBars.length === 0 
+                    ? "No adoptable bars are available at the moment."
+                    : "Try adjusting your filters or search terms."}
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredBars.map((bar) => (
+                  <div key={bar.id} id={`bar-${bar.id}`}>
+                    <OrphanBarCard bar={bar} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </main>
     </div>

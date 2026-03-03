@@ -38,6 +38,10 @@ export interface ThemeSettings {
   glassOpacity: number;
   borderOpacity: number;
   borderRadius: number;
+  
+  // Accent color settings
+  accentColor: string; // HSL string like "265 70% 60%"
+  accentColorMode: 'manual' | 'auto'; // auto extracts from background
 }
 
 export const defaultThemeSettings: ThemeSettings = {
@@ -53,6 +57,8 @@ export const defaultThemeSettings: ThemeSettings = {
   glassOpacity: 0.95,
   borderOpacity: 0.1,
   borderRadius: 12,
+  accentColor: '265 70% 60%', // Default purple
+  accentColorMode: 'manual',
 };
 
 interface ThemeContextType {
@@ -66,6 +72,7 @@ interface ThemeContextType {
   addCustomBackground: (background: { url: string; name: string }) => void;
   removeCustomBackground: (id: string) => void;
   canCustomize: boolean;
+  setCanCustomize: (value: boolean) => void;
   
   // Preset management
   presets: ThemePreset[];
@@ -81,8 +88,15 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark'); // Force dark mode as default
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "light";
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+      return savedTheme;
+    }
+    return "light";
+  });
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   const [settings, setSettings] = useState<ThemeSettings>(defaultThemeSettings);
   const [canCustomize, setCanCustomize] = useState(false);
   const [presets, setPresets] = useState<ThemePreset[]>([]);
@@ -106,11 +120,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('theme-settings', JSON.stringify(settings));
   }, [settings]);
 
-  // Check if user can customize (owner/admin check)
+  // canCustomize is set externally via setCanCustomize (owner-only)
+  // Default false — ThemeProvider consumers call setCanCustomize when user loads
+
+  // On mount: fetch site-wide theme settings from DB and apply for all users
   useEffect(() => {
-    // This would typically check user permissions
-    // For now, we'll assume all users can customize
-    setCanCustomize(true);
+    const loadSiteSettings = async () => {
+      try {
+        const res = await fetch('/api/backgrounds/site-settings');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.themeSettings) {
+          try {
+            const serverSettings: Partial<ThemeSettings> = typeof data.themeSettings === 'string'
+              ? JSON.parse(data.themeSettings)
+              : data.themeSettings;
+            // Merge server settings into local — server wins over defaults but not user's saved prefs
+            setSettings(prev => ({ ...defaultThemeSettings, ...serverSettings, ...prev }));
+          } catch (e) {
+            console.error('Failed to parse server themeSettings:', e);
+          }
+        }
+      } catch (e) {
+        // Silently fail — site settings are optional
+      }
+    };
+    loadSiteSettings();
   }, []);
 
   // Load presets from localStorage and server
@@ -146,14 +181,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Always force dark mode
-    setTheme('dark');
-    localStorage.setItem('theme', 'dark');
-  }, []);
-
-  useEffect(() => {
     const applyTheme = () => {
-      const resolved: 'light' | 'dark' = 'dark'; // Always dark
+      const resolved: 'light' | 'dark' =
+        theme === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : theme;
       setResolvedTheme(resolved);
       const root = document.documentElement;
       root.classList.remove('light', 'dark');
@@ -167,7 +199,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
 
     applyTheme();
-    localStorage.setItem('theme', 'dark');
+    localStorage.setItem('theme', theme);
   }, [theme, settings]);
 
   const updateSettings = (updates: Partial<ThemeSettings>) => {
@@ -317,6 +349,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       addCustomBackground,
       removeCustomBackground,
       canCustomize,
+      setCanCustomize,
       presets,
       currentPresetId,
       savePreset,
@@ -353,5 +386,85 @@ export function getThemeStyles(settings: ThemeSettings) {
     '--border-radius': `${settings.borderRadius}px`,
     '--background-type': settings.backgroundType,
     '--background-value': settings.backgroundValue,
+    '--accent-color': settings.accentColor,
+    '--accent-color-mode': settings.accentColorMode,
   } as React.CSSProperties;
+}
+
+// Function to extract accent color from background image
+export async function extractAccentColorFromBackground(imageUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve('265 70% 60%'); // fallback to purple
+        return;
+      }
+      
+      // Sample the image at multiple points to get dominant color
+      canvas.width = 50;
+      canvas.height = 50;
+      ctx.drawImage(img, 0, 0, 50, 50);
+      
+      const imageData = ctx.getImageData(0, 0, 50, 50);
+      const data = imageData.data;
+      
+      let r = 0, g = 0, b = 0;
+      let count = 0;
+      
+      // Sample every 4th pixel for performance
+      for (let i = 0; i < data.length; i += 16) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+      }
+      
+      r = Math.floor(r / count);
+      g = Math.floor(g / count);
+      b = Math.floor(b / count);
+      
+      // Convert RGB to HSL
+      const hsl = rgbToHsl(r, g, b);
+      resolve(`${hsl.h} ${hsl.s}% ${hsl.l}%`);
+    };
+    
+    img.onerror = () => {
+      resolve('265 70% 60%'); // fallback to purple
+    };
+    
+    img.src = imageUrl;
+  });
+}
+
+// RGB to HSL conversion
+function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100)
+  };
 }

@@ -11,6 +11,11 @@ import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
 const PgStore = connectPgSimple(session);
+const DEFAULT_PRO_USERNAMES = new Set(["milsling", "notmilsling"]);
+
+function isDefaultProUsername(username?: string | null): boolean {
+  return Boolean(username && DEFAULT_PRO_USERNAMES.has(username.toLowerCase()));
+}
 
 // Sentinel value for OAuth-only users - impossible to match via comparePasswords
 const OAUTH_ONLY_PASSWORD_SENTINEL = "__OAUTH_ONLY_NO_PASSWORD__";
@@ -104,7 +109,7 @@ export const sessionParser = session({
   },
   store: new PgStore({
     conString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
-    createTableIfMissing: true,
+    createTableIfMissing: false,
     tableName: "sessions",
     schemaName: 'public'
   }),
@@ -114,6 +119,19 @@ export const sessionParser = session({
 // which blocks all reads/writes when no policies exist).
 async function ensureSessionTableAccess() {
   try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.sessions (
+        sid text PRIMARY KEY,
+        sess json NOT NULL,
+        expire timestamp(6) NOT NULL
+      );
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS "IDX_session_expire"
+      ON public.sessions (expire);
+    `);
+
     await pool.query(`
       DO $$
       BEGIN
@@ -152,6 +170,13 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "Invalid username or password" });
         }
 
+        if (isDefaultProUsername(user.username) && user.membershipTier !== "donor_plus") {
+          const upgradedUser = await storage.updateUser(user.id, { membershipTier: "donor_plus" });
+          if (upgradedUser) {
+            user = upgradedUser;
+          }
+        }
+
         const isValid = await comparePasswords(password, user.password);
         if (!isValid) {
           return done(null, false, { message: "Invalid username or password" });
@@ -176,7 +201,14 @@ export function setupAuth(app: Express) {
       if (!user) {
         return done(null, false);
       }
-      const { password: _, ...userWithoutPassword } = user;
+      let normalizedUser = user;
+      if (isDefaultProUsername(user.username) && user.membershipTier !== "donor_plus") {
+        const upgradedUser = await storage.updateUser(user.id, { membershipTier: "donor_plus" });
+        if (upgradedUser) {
+          normalizedUser = upgradedUser;
+        }
+      }
+      const { password: _, ...userWithoutPassword } = normalizedUser;
       done(null, userWithoutPassword);
     } catch (error) {
       done(error);
@@ -196,6 +228,21 @@ export function isOwner(req: any, res: any, next: any) {
     return next();
   }
   res.status(403).json({ message: "Forbidden - Owner access required" });
+}
+
+export function hasProAccess(user: any): boolean {
+  return Boolean(
+    user?.isOwner ||
+      user?.membershipTier === "donor_plus" ||
+      isDefaultProUsername(user?.username)
+  );
+}
+
+export function isProMember(req: any, res: any, next: any) {
+  if (req.isAuthenticated() && hasProAccess(req.user)) {
+    return next();
+  }
+  res.status(403).json({ message: "Forbidden - Orphan Bars Pro membership required" });
 }
 
 // Export sentinel value for use in routes

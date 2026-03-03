@@ -72,7 +72,7 @@ export default function BarDetail() {
   });
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-6 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 md:pb-6 md:pt-24">
       <main className="mx-auto max-w-5xl px-4 py-6 space-y-5">
         <Button
           variant="ghost"

@@ -10,8 +10,10 @@ import { ArrowLeft, Bold, Italic, Underline, MessageSquare, Shield, Share2, User
 import { validateBeatUrl } from "@/components/BarMediaPlayer";
 import { Link, useLocation, useSearch } from "wouter";
 import { useBars } from "@/context/BarContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, useReducedMotion } from "framer-motion";
 import { NativeGlassCard, NativeScreen, NativeSectionHeader } from "@/components/ui/native-shell";
 
@@ -76,7 +78,9 @@ const getPlainText = (html: string) =>
 
 export default function Post() {
   const { addBar, currentUser } = useBars();
+  const { session } = useSupabaseAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
@@ -170,12 +174,15 @@ export default function Post() {
 
       if (lockImmediately && isOriginal && newBar?.id) {
         try {
+          const token = session?.access_token || localStorage.getItem("token") || "";
           const res = await fetch(`/api/bars/${newBar.id}/lock`, {
             method: 'POST',
             credentials: 'include',
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           });
           if (res.ok) {
             const lockedBar = await res.json();
+            queryClient.invalidateQueries({ queryKey: ['bars'] });
             toast({
               title: "Bars Dropped & Locked!",
               description: `Your bar is authenticated as ${lockedBar.proofBarId}`,
@@ -389,7 +396,7 @@ export default function Post() {
 
   return (
     <NativeScreen
-      className="bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-8 md:pt-24"
+      className="pt-14 pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-8 md:pt-24"
       contentClassName="max-w-5xl p-4 md:p-8"
     >
       <NativeSectionHeader

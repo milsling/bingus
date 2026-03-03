@@ -341,7 +341,7 @@ export default function Messages() {
 
   return (
     <NativeScreen
-      className="bg-background h-dvh min-h-0 pt-14 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-4 md:pt-24"
+      className="h-dvh min-h-0 pt-14 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-4 md:pt-24"
       contentClassName="max-w-none h-full px-0 md:px-4"
     >
         <div className="h-full w-full overflow-hidden bg-black/20 backdrop-blur-xl flex md:rounded-[1.9rem] md:border md:border-white/10">
@@ -357,6 +357,10 @@ export default function Messages() {
               />
             </div>
 
+            <ConversationList />
+          </div>
+
+          <div className="flex-1 min-w-0 flex flex-col">
             {selectedUserId && (loadingUser || loadingConversations) ? (
               <div className="flex-1 flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
@@ -471,7 +475,7 @@ export default function Messages() {
             </>
           ) : (
             <div className="flex-1 flex flex-col">
-              <div className="md:hidden flex-1">
+              <div className="flex-1 md:hidden">
                 <ConversationList />
               </div>
               <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground">

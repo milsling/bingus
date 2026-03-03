@@ -19,8 +19,8 @@ export const permissionStatusOptions = [
   "private",
 ] as const;
 export const messagePrivacyOptions = ["friends_only", "everyone"] as const;
-export const notificationSoundOptions = ["none", "chime", "pop", "bell", "whoosh"] as const;
-export const messageSoundOptions = ["none", "ding", "bubble", "soft", "alert"] as const;
+export const notificationSoundOptions = ["none", "chime", "pop", "bell", "whoosh", "notify", "808", "scratch", "hihat", "boombap"] as const;
+export const messageSoundOptions = ["none", "ding", "bubble", "soft", "alert", "hihat", "scratch", "boombap"] as const;
 export const barTypeOptions = ["single_bar", "snippet", "half_verse"] as const;
 export const moderationStatusOptions = [
   "approved",
@@ -45,6 +45,8 @@ export const users = pgTable("users", {
   bannerUrl: text("banner_url"),
   membershipTier: text("membership_tier").notNull().default("free"),
   membershipExpiresAt: timestamp("membership_expires_at"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   isAdmin: boolean("is_admin").notNull().default(false),
   isAdminPlus: boolean("is_admin_plus").notNull().default(false),
   isOwner: boolean("is_owner").notNull().default(false),
@@ -119,6 +121,8 @@ export const bars = pgTable("bars", {
   deletedReason: text("deleted_reason"),
   isLocked: boolean("is_locked").notNull().default(false),
   lockedAt: timestamp("locked_at"),
+  promptSlug: text("prompt_slug"),
+  promptText: text("prompt_text"),
 });
 
 export const barsRelations = relations(bars, ({ one, many }) => ({
@@ -1162,6 +1166,8 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   membershipTier: true,
   membershipExpiresAt: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
 });
 
 export const insertBarSchema = createInsertSchema(bars).omit({
@@ -1379,7 +1385,7 @@ export const insertMessageOfTheDaySchema = createInsertSchema(messageOfTheDay).p
 
 // Custom backgrounds table
 export const customBackgrounds = pgTable("custom_backgrounds", {
-  id: varchar("id")
+  sid: varchar("sid")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -1403,4 +1409,11 @@ export const insertCustomBackgroundSchema = createInsertSchema(customBackgrounds
   imageUrl: true,
   isActive: true,
   sortOrder: true,
+});
+
+// Site-wide settings table (key-value store for owner-controlled settings)
+export const siteSettings = pgTable("site_settings", {
+  key: varchar("key", { length: 255 }).primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

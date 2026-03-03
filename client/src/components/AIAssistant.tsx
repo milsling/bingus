@@ -67,6 +67,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { currentUser } = useBars();
   const { toast } = useToast();
+  const hasProAccess = Boolean(currentUser?.isOwner || currentUser?.membershipTier === "donor_plus");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -230,12 +231,27 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
   }, []);
 
   const toggleRealVoiceMode = useCallback(() => {
+    if (!hasProAccess) {
+      toast({
+        title: "Orphie Voice is Pro-only",
+        description: "Upgrade to Orphan Bars Pro in Settings to unlock real-time voice chat.",
+      });
+      return;
+    }
+
     setRealVoiceMode((prev) => {
       const next = !prev;
       localStorage.setItem("ara-real-voice-mode", String(next));
       return next;
     });
-  }, []);
+  }, [hasProAccess, toast]);
+
+  useEffect(() => {
+    if (!hasProAccess && realVoiceMode) {
+      setRealVoiceMode(false);
+      localStorage.setItem("ara-real-voice-mode", "false");
+    }
+  }, [hasProAccess, realVoiceMode]);
 
   const handleVoiceTranscript = useCallback((text: string, role: "user" | "assistant") => {
     setMessages(prev => [...prev, { role, content: text }]);
@@ -330,13 +346,17 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
     cancelEdit();
   };
 
-  function handleKeyPress(event: KeyboardEvent): void {
-    throw new Error("Function not implemented.");
-  }
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void sendMessage();
+    }
+  };
 
-  function handleSubmit(event: MouseEvent): void {
-    throw new Error("Function not implemented.");
-  }
+  const handleSubmit = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    void sendMessage();
+  };
 
   return (
     <>
@@ -459,6 +479,12 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                 >
                   <Mic className="h-4 w-4" />
                 </Button>
+
+                {!hasProAccess && (
+                  <span className="hidden text-xs text-muted-foreground md:inline">
+                    Voice chat requires Pro
+                  </span>
+                )}
                 
                 {realVoiceMode && (
                   <VoiceChat 

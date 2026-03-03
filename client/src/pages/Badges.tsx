@@ -177,7 +177,10 @@ export default function Badges() {
   };
 
   const unlockedIds = new Set(userAchievements.map((a: { achievementId: string }) => a.achievementId));
-  const displayedBadges = new Set(userData?.displayedBadges || []);
+  const displayedBadgeIds = Array.isArray(userData?.displayedBadges)
+    ? (userData.displayedBadges as string[])
+    : [];
+  const displayedBadges = new Set<string>(displayedBadgeIds);
 
   const toggleBadgeDisplay = (achievementId: string) => {
     const newDisplayed = new Set(displayedBadges);
@@ -264,7 +267,7 @@ export default function Badges() {
           {displayedBadges.size === 0 ? (
             <span className="text-sm text-muted-foreground italic">No badges selected</span>
           ) : (
-            Array.from(displayedBadges).map((badgeId) => {
+            Array.from(displayedBadges).map((badgeId: string) => {
               let achievement: { name: string; emoji: string; description: string; rarity: string } | null = null;
               
               if (badgeId.startsWith("custom_")) {

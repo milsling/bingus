@@ -3,7 +3,7 @@ import type { BarWithUser } from "@shared/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Flame, Lightbulb, Brain, ArrowRight } from "lucide-react";
+import { Heart, Flame, Lightbulb, Brain, ArrowRight, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatTimestamp } from "@/lib/formatDate";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -185,8 +185,13 @@ export default function FeedBarCard({ bar }: { bar: BarWithUser }) {
         </Link>
         <div className="min-w-0">
           <Link href={`/u/${bar.user.username}`}>
-            <p className="truncate text-sm font-semibold hover:text-primary transition-colors">
-              @{bar.user.username}
+            <p className="truncate text-sm font-semibold hover:text-primary transition-colors flex items-center gap-1">
+              <span>@{bar.user.username}</span>
+              {bar.user.membershipTier !== "free" && (
+                <Badge className="bg-primary/20 text-primary border border-primary/40 text-[9px] px-1.5 py-0 h-4 leading-none">
+                  [PRO]
+                </Badge>
+              )}
             </p>
           </Link>
           <p className="text-xs text-muted-foreground">
@@ -202,17 +207,32 @@ export default function FeedBarCard({ bar }: { bar: BarWithUser }) {
       </Link>
       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{snippet}</p>
 
+      {/* Prompt attribution badge */}
+      {bar.promptSlug && bar.promptText && (
+        <div className="mt-3">
+          <Link href={`/prompts/${bar.promptSlug}`}>
+            <Badge variant="outline" className="gap-1 text-xs font-medium border-primary/30 text-primary hover:bg-primary/5 transition-colors cursor-pointer">
+              <MessageSquare className="w-3 h-3" />
+              Prompt response: "{bar.promptText}"
+            </Badge>
+          </Link>
+        </div>
+      )}
+
       {bar.tags && bar.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {bar.tags.slice(0, 4).map((tag) => (
-            <Badge
-              key={`${bar.id}-${tag}`}
-              variant="secondary"
-              className="text-[11px] font-medium bg-secondary/70"
-            >
-              #{tag}
-            </Badge>
-          ))}
+          {bar.tags
+            .filter((tag) => !tag.startsWith("prompt:"))
+            .slice(0, 4)
+            .map((tag) => (
+              <Badge
+                key={`${bar.id}-${tag}`}
+                variant="secondary"
+                className="text-[11px] font-medium bg-secondary/70"
+              >
+                #{tag}
+              </Badge>
+            ))}
         </div>
       )}
 

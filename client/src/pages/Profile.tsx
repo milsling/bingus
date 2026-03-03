@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import BarCard from "@/components/BarCard";
 import { UserProfileBadges } from "@/components/UserProfileBadges";
@@ -145,7 +146,7 @@ export default function Profile() {
   // Show loading while checking auth or if no user yet
   if (isLoadingUser || !currentUser) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
@@ -159,16 +160,13 @@ export default function Profile() {
   };
 
   return (
-    <div className={cn(
-      "min-h-screen pt-20 pb-24 sm:pb-6 sm:pt-24",
-      hasCustomBackground ? "bg-transparent" : "bg-background"
-    )}>
+    <div className="min-h-screen pt-20 pb-24 sm:pb-6 sm:pt-24">
       
       <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 lg:px-6">
         {/* Profile Header - Glass card on neutral dark */}
         <div className={cn(
           "relative overflow-hidden rounded-2xl",
-          hasCustomBackground ? "glass-surface-strong border border-white/15" : "glass-panel"
+          hasCustomBackground ? "glass-surface-strong border border-white/15" : "glass-card border border-border/10"
         )}>
           {currentUser.bannerUrl ? (
             <div className="h-32 sm:h-48 w-full overflow-hidden">
@@ -179,30 +177,27 @@ export default function Profile() {
               />
             </div>
           ) : (
-            <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/5 via-zinc-900/80 to-zinc-800/80 w-full" />
+            <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent w-full" />
           )}
           
-          <div className="px-4 sm:px-8 -mt-12 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+          <div className="px-4 sm:px-8 -mt-12 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 pb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
               <div className="relative">
-                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-background shadow-xl">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 ring-4 ring-background/50 shadow-xl bg-background/50 backdrop-blur-sm">
                   <AvatarImage src={currentUser.avatarUrl || undefined} />
                   <AvatarFallback>{currentUser.username[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
-                {currentUser.isOwner && (
-                  <img 
-                    src="/owner-crown.png"
-                    alt="Owner crown"
-                    className="absolute -top-[33px] left-1/2 -translate-x-[calc(50%+10px)] w-24 h-18 sm:w-36 sm:h-22 rotate-[-8deg] drop-shadow-lg pointer-events-none z-10"
-                  />
-                )}
               </div>
               
               <div className="mb-2">
                 <h1 className="text-2xl sm:text-3xl font-display font-bold flex items-center gap-2 flex-wrap">
                   @{currentUser.username}
                   <UserProfileBadges userId={currentUser.id} size="sm" maxBadges={5} />
-                  {currentUser.membershipTier !== "free" && <span className="text-primary text-xl">✓</span>}
+                  {currentUser.membershipTier !== "free" && (
+                    <Badge className="bg-primary/20 text-primary border border-primary/40 text-[10px] px-1.5 py-0 h-5">
+                      [PRO]
+                    </Badge>
+                  )}
                   {currentUser.username.toLowerCase() === "milsling" && (
                     <span className="ml-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-normal">
                       Creator

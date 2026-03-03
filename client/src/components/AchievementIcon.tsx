@@ -34,11 +34,10 @@ import {
   BadgeCheck,
   ShieldCheck,
   HelpCircle,
-  LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const iconMap: Record<string, LucideIcon> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Flame,
   Skull,
   Crown,

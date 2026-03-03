@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Image, Plus, Trash2, Upload, ArrowUpDown } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -1514,14 +1514,14 @@ export default function Admin() {
 
   if (isLoadingUser) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
+      <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
   if (!currentUser || !currentUser.isAdmin) {
     return (
-      <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
+      <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
         <div className="text-muted-foreground">Redirecting...</div>
       </div>
     );
@@ -1579,44 +1579,16 @@ export default function Admin() {
       show: true,
     },
     {
-      value: "console",
-      label: "Owner Console",
-      icon: Power,
-      badge: 0,
-      show: currentUser.isOwner,
-    },
-    {
       value: "achievements",
       label: "Badges",
       icon: Trophy,
       badge: 0,
-      show: currentUser.isOwner || currentUser.isAdminPlus,
-    },
-    {
-      value: "protected",
-      label: "Protected",
-      icon: Lock,
-      badge: protectedBars.length,
-      show: currentUser.isOwner,
-    },
-    {
-      value: "ai-settings",
-      label: "AI Settings",
-      icon: Bot,
-      badge: 0,
-      show: currentUser.isOwner,
-    },
-    {
-      value: "oauth",
-      label: "OAuth",
-      icon: Shield,
-      badge: 0,
-      show: currentUser.isOwner,
+      show: currentUser.isAdminPlus,
     },
   ].filter((section) => section.show);
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
       
       <main className="mx-auto w-full max-w-5xl p-4 md:p-8">
         <div className="mb-6 glass-surface-strong rounded-3xl border border-white/[0.1] p-4 md:p-6">
@@ -1720,7 +1692,7 @@ export default function Admin() {
           {currentUser?.isOwner && (
             <Card 
               className="glass-surface cursor-pointer border border-purple-500/35 bg-gradient-to-br from-purple-600/20 to-pink-600/20 transition-all hover:border-purple-500 hover:from-purple-600/30 hover:to-pink-600/30"
-              onClick={() => setActiveTab("console")}
+              onClick={() => setLocation("/owner-console")}
               data-testid="card-owner-console"
             >
               <CardContent className="pt-4">
@@ -2526,8 +2498,8 @@ export default function Admin() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="free">Free</SelectItem>
-                                  <SelectItem value="basic">Basic</SelectItem>
-                                  <SelectItem value="premium">Premium</SelectItem>
+                                  <SelectItem value="donor">Donor</SelectItem>
+                                  <SelectItem value="donor_plus">Orphan Bars Pro</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>

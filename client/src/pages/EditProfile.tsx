@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useBackground } from "@/components/BackgroundSelector";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,8 @@ export default function EditProfile() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const { selectedBackground } = useBackground();
+  const hasCustomBackground = selectedBackground.image !== null;
 
   const [bio, setBio] = useState(currentUser?.bio || "");
   const [location, setLocationField] = useState(currentUser?.location || "");
@@ -170,6 +173,12 @@ export default function EditProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['user', currentUser.username] });
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-top'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-trending'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-challenges'] });
+      queryClient.invalidateQueries({ queryKey: ['adoptable-bars'] });
+      queryClient.invalidateQueries({ queryKey: ['userBars', currentUser.id] });
       toast({
         title: "Profile updated!",
         description: "Your changes have been saved.",
@@ -333,7 +342,7 @@ export default function EditProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
       
       <main className="max-w-2xl mx-auto p-4 md:p-8">
         <div className="mb-6 flex items-center gap-4">
@@ -520,7 +529,7 @@ export default function EditProfile() {
         setCropDialogOpen(open);
         if (!open) setImageSrc(null);
       }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg bg-background border border-border">
           <DialogHeader>
             <DialogTitle>Crop Profile Picture</DialogTitle>
           </DialogHeader>

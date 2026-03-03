@@ -12,6 +12,7 @@ import EditProfile from "@/pages/EditProfile";
 import Settings from "@/pages/Settings";
 import Auth from "@/pages/Auth";
 import Admin from "@/pages/Admin";
+import OwnerConsole from "@/pages/OwnerConsole";
 import BarDetail from "@/pages/BarDetail";
 import UserProfile from "@/pages/UserProfile";
 import Saved from "@/pages/Saved";
@@ -36,6 +37,7 @@ import { SwipeBackNavigation } from "@/components/SwipeBackNavigation";
 import { useBackground } from "@/components/BackgroundSelector";
 import Navigation from "@/components/Navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SupabaseAuthProvider } from "@/context/SupabaseAuthContext";
 
 const OrphanStudio = lazy(() => import("@/pages/orphanstudio"));
 
@@ -68,6 +70,7 @@ function Router() {
       <Route path="/profile/edit" component={EditProfile} />
       <Route path="/settings" component={Settings} />
       <Route path="/admin" component={Admin} />
+      <Route path="/owner-console" component={OwnerConsole} />
       <Route path="/saved" component={Saved} />
       <Route path="/friends" component={Friends} />
       <Route path="/messages" component={Messages} />
@@ -121,18 +124,20 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary minimal>
         <ThemeProvider>
-          <BarProvider>
-            <TooltipProvider>
-              <VersionCheck />
-              <BackgroundInitializer />
-              <MaintenanceBanner />
-              <Navigation />
-              <Toaster />
-              <SwipeBackNavigation>
-                <Router />
-              </SwipeBackNavigation>
-            </TooltipProvider>
-          </BarProvider>
+          <SupabaseAuthProvider>
+            <BarProvider>
+              <TooltipProvider>
+                <VersionCheck />
+                <BackgroundInitializer />
+                <MaintenanceBanner />
+                <Navigation />
+                <Toaster />
+                <SwipeBackNavigation>
+                  <Router />
+                </SwipeBackNavigation>
+              </TooltipProvider>
+            </BarProvider>
+          </SupabaseAuthProvider>
         </ThemeProvider>
       </ErrorBoundary>
     </QueryClientProvider>

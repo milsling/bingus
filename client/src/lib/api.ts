@@ -33,11 +33,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 // Helper to make fetch requests with credentials included
-function apiFetch(url: string, options?: RequestInit): Promise<Response> {
+function apiFetch(url: string, options?: RequestInit, timeout = 30000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
   return fetch(url, {
     ...options,
     credentials: 'include',
-  });
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeoutId));
 }
 
 export const api = {
@@ -124,6 +128,47 @@ export const api = {
   getCurrentUser: async (): Promise<User> => {
     const response = await apiFetch('/api/auth/user');
     return handleResponse<User>(response);
+  },
+
+  // Billing
+  getBillingStatus: async (): Promise<{
+    membershipTier: string;
+    membershipExpiresAt: string | null;
+    isPro: boolean;
+    stripeConfigured: boolean;
+    hasBillingCustomer: boolean;
+    pricePerMonthUsd: number;
+  }> => {
+    const response = await apiFetch('/api/billing/status');
+    return handleResponse(response);
+  },
+
+  syncBillingStatus: async (): Promise<{
+    synced: boolean;
+    membershipTier: string;
+    membershipExpiresAt: string | null;
+    isPro: boolean;
+  }> => {
+    const response = await apiFetch('/api/billing/sync', { method: 'POST' });
+    return handleResponse(response);
+  },
+
+  createCheckoutSession: async (): Promise<{ url: string }> => {
+    const response = await apiFetch('/api/billing/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    return handleResponse(response);
+  },
+
+  createBillingPortalSession: async (): Promise<{ url: string }> => {
+    const response = await apiFetch('/api/billing/create-portal-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    return handleResponse(response);
   },
 
   // Bars

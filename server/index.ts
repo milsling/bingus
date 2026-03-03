@@ -12,8 +12,14 @@ import path from "path";
 const app = express();
 const httpServer = createServer(app);
 
+type OptionalLogger = {
+  info: (message: string, context?: Record<string, unknown>) => void;
+  error: (message: string, context?: Record<string, unknown>) => Promise<void> | void;
+  flush: () => Promise<void> | void;
+};
+
 // BetterStack Logs (Logtail) — set BETTERSTACK_SOURCE_TOKEN in your environment
-const logtail = null; // process.env.BETTERSTACK_SOURCE_TOKEN
+let logtail: OptionalLogger | null = null; // process.env.BETTERSTACK_SOURCE_TOKEN
   // ? new Logtail(process.env.BETTERSTACK_SOURCE_TOKEN)
   // : null;
 
@@ -49,9 +55,7 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 
   // Send to BetterStack Logs
-  if (logtail) {
-    logtail.info(message, { source });
-  }
+  logtail?.info(message, { source });
 }
 
 app.use((req, res, next) => {
@@ -171,9 +175,7 @@ async function startServer() {
       const message = err.message || "Internal Server Error";
       log(`Error: ${message}`);
       // Send errors to BetterStack as error-level logs
-      if (logtail) {
-        logtail.error(message, { status, stack: err.stack });
-      }
+      void logtail?.error(message, { status, stack: err.stack });
       res.status(status).json({ message });
     });
 
@@ -203,21 +205,19 @@ async function startServer() {
   } catch (error) {
     log(`Fatal error during startup: ${error}`);
     console.error("Startup error:", error);
-    if (logtail) {
-      await logtail.error(`Fatal error during startup: ${error}`);
-      await logtail.flush();
-    }
+    await logtail?.error(`Fatal error during startup: ${error}`);
+    await logtail?.flush();
     process.exit(1);
   }
 }
 
 // Flush logs on shutdown
 process.on("SIGTERM", async () => {
-  if (logtail) await logtail.flush();
+  await logtail?.flush();
   process.exit(0);
 });
 process.on("SIGINT", async () => {
-  if (logtail) await logtail.flush();
+  await logtail?.flush();
   process.exit(0);
 });
 

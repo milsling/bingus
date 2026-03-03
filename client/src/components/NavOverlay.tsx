@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, type LucideIcon } from "lucide-react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface NavOverlayItem {
   id: string;
   label: string;
   subtitle?: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   onSelect: () => void;
 }
 

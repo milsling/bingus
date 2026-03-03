@@ -3,6 +3,12 @@ import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne, inArray } from "drizzle-orm";
 import { createHash } from "crypto";
 
+const DEFAULT_PRO_USERNAMES = new Set(["milsling", "notmilsling"]);
+
+function isDefaultProUsername(username?: string | null): boolean {
+  return Boolean(username && DEFAULT_PRO_USERNAMES.has(username.toLowerCase()));
+}
+
 // User metrics cache for evaluating compound achievements
 export interface UserMetrics {
   bars_posted: number;
@@ -190,6 +196,7 @@ export interface IStorage {
   searchUsers(query: string, limit?: number): Promise<Array<Pick<User, 'id' | 'username' | 'avatarUrl' | 'bio' | 'membershipTier'>>>;
   searchTags(query: string, limit?: number): Promise<string[]>;
   getBarsByTag(tag: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
+  getBarsByPromptSlug(promptSlug: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
 
   // Bookmark methods
   toggleBookmark(userId: string, barId: string): Promise<boolean>;
@@ -331,9 +338,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const userPayload: InsertUser = {
+      ...insertUser,
+      ...(isDefaultProUsername(insertUser.username) ? { membershipTier: "donor_plus" } : {}),
+    };
+
     const [user] = await db
       .insert(users)
-      .values(insertUser)
+      .values(userPayload)
       .returning();
     return user;
   }
@@ -923,6 +935,35 @@ export class DatabaseStorage implements IStorage {
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
       .where(and(sql`LOWER(${lowerTag}) = ANY(SELECT LOWER(unnest(${bars.tags})))`, sql`${bars.deletedAt} IS NULL`))
+      .orderBy(desc(bars.createdAt));
+    return result.map(r => ({
+      ...r.bar,
+      user: r.user as User,
+      commentCount: Number(r.commentCount) || 0,
+    }));
+  }
+
+  async getBarsByPromptSlug(promptSlug: string): Promise<Array<Bar & { user: User; commentCount: number }>> {
+    const result = await db
+      .select({
+        bar: bars,
+        user: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          location: users.location,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+          membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
+          isAdminPlus: users.isAdminPlus,
+          isOwner: users.isOwner,
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+      })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(and(eq(bars.promptSlug, promptSlug), sql`${bars.deletedAt} IS NULL`))
       .orderBy(desc(bars.createdAt));
     return result.map(r => ({
       ...r.bar,

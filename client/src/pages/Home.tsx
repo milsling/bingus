@@ -243,10 +243,7 @@ export default function Home() {
 
   return (
     <NativeScreen
-      className={cn(
-        "bg-background pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8",
-        hasCustomBackground && "bg-transparent"
-      )}
+      className="pt-14 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-20 md:pb-8"
       contentClassName="px-4 md:px-6"
     >
         <div
@@ -342,10 +339,10 @@ export default function Home() {
 
             {/* Orphanage Integration */}
             <section className={cn(
-              "rounded-2xl border p-5",
+              "rounded-2xl border p-5 glass-surface",
               hasCustomBackground 
-                ? "border-primary/35 bg-primary/10 glass-surface-strong" 
-                : "border-primary/25 bg-primary/6"
+                ? "border-primary/40 bg-primary/16 glass-surface-strong" 
+                : "border-primary/30 bg-primary/10"
             )}>
               <div className="flex items-center justify-between">
                 <div>
@@ -367,10 +364,10 @@ export default function Home() {
 
             {currentPrompt && (
               <section className={cn(
-                "rounded-2xl border p-5",
+                "rounded-2xl border p-5 glass-surface",
                 hasCustomBackground 
-                  ? "border-primary/35 bg-primary/10 glass-surface-strong" 
-                  : "border-primary/25 bg-primary/6"
+                  ? "border-primary/40 bg-primary/16 glass-surface-strong" 
+                  : "border-primary/30 bg-primary/10"
               )}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
                   Current prompt
@@ -394,18 +391,15 @@ export default function Home() {
             )}
 
             <section className={cn(
-              "rounded-2xl border p-4 md:p-5",
+              "rounded-2xl border p-4 md:p-5 glass-surface",
               hasCustomBackground 
                 ? "border-white/20 bg-white/5 glass-surface-strong" 
-                : "border-border/60 bg-card/60"
+                : "border-border/60 bg-background/45"
             )}>
               <p className="mb-3 text-sm font-semibold">How it works</p>
               <div className="grid gap-3 md:grid-cols-3">
                 <div className={cn(
-                  "rounded-xl border p-3",
-                  hasCustomBackground 
-                    ? "border-white/15 bg-white/5" 
-                    : "border-border/50 bg-background/60"
+                  "rounded-xl border border-white/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Search className="h-4 w-4" />
@@ -416,10 +410,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className={cn(
-                  "rounded-xl border p-3",
-                  hasCustomBackground 
-                    ? "border-white/15 bg-white/5" 
-                    : "border-border/50 bg-background/60"
+                  "rounded-xl border border-white/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <PenLine className="h-4 w-4" />
@@ -430,10 +421,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className={cn(
-                  "rounded-xl border p-3",
-                  hasCustomBackground 
-                    ? "border-white/15 bg-white/5" 
-                    : "border-border/50 bg-background/60"
+                  "rounded-xl border border-white/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Flame className="h-4 w-4" />
@@ -514,9 +502,7 @@ export default function Home() {
                   </div>
                 ) : (
                   visibleBars.map((bar) => (
-                    <div key={bar.id} className="glass-surface-strong rounded-2xl p-1">
-                      <BarCard bar={bar} />
-                    </div>
+                    <BarCard key={bar.id} bar={bar} />
                   ))
                 )}
               </div>

@@ -50,15 +50,40 @@ export const IMAGE_BACKGROUNDS: Background[] = [
 ];
 
 const STORAGE_KEY = "orphanbars-background";
+const DEFAULT_BACKGROUND_ID = "purple-cosmos";
 
 export function useBackground() {
   const { resolvedTheme } = useTheme();
   const [selectedId, setSelectedId] = useState<string>(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(STORAGE_KEY) || "default";
+      return localStorage.getItem(STORAGE_KEY) || DEFAULT_BACKGROUND_ID;
     }
-    return "default";
+    return DEFAULT_BACKGROUND_ID;
   });
+
+  const { data: siteSettings } = useQuery<Record<string, string>>({
+    queryKey: ["background-site-settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/backgrounds/site-settings");
+      if (!res.ok) return {};
+      return res.json();
+    },
+    staleTime: 300_000,
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const configuredDefault = siteSettings?.defaultBackground;
+    if (!configuredDefault) return;
+
+    const storedId = localStorage.getItem(STORAGE_KEY);
+    const shouldApplySiteDefault = !storedId || storedId === "default";
+
+    if (shouldApplySiteDefault && storedId !== configuredDefault) {
+      setSelectedId(configuredDefault);
+    }
+  }, [siteSettings?.defaultBackground]);
 
   // Fetch custom backgrounds
   const { data: customBackgrounds = [] } = useQuery({
@@ -75,7 +100,7 @@ export function useBackground() {
   const allBackgrounds = [
     ...IMAGE_BACKGROUNDS,
     ...customBackgrounds.map((bg: any) => ({
-      id: bg.id,
+      id: bg.sid || bg.id,
       name: bg.name,
       image: bg.imageUrl,
       unlockLevel: 0,
@@ -83,7 +108,10 @@ export function useBackground() {
     })),
   ];
 
-  const selectedBackground = allBackgrounds.find(bg => bg.id === selectedId) || allBackgrounds[0];
+  const selectedBackground =
+    allBackgrounds.find((bg) => bg.id === selectedId) ||
+    allBackgrounds.find((bg) => bg.id === DEFAULT_BACKGROUND_ID) ||
+    allBackgrounds[0];
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, selectedId);

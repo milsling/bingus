@@ -3,6 +3,7 @@ import { moderateContent, explainBar, suggestRhymes, chatWithAssistant, analyzeU
 import { storage } from "../../storage";
 import { getXaiRuntimeDiagnostics } from "./xaiClient";
 import { AccessToken } from "livekit-server-sdk";
+import { hasProAccess } from "../../auth";
 
 function extractPotentialUsernames(message: string): string[] {
   const usernames: string[] = [];
@@ -153,7 +154,7 @@ export function registerAIRoutes(app: Express): void {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const isPremium = user.membershipTier === "donor_plus";
+      const isPremium = hasProAccess(user);
       const { message } = req.body as { message?: string };
       if (!message) {
         return res.status(400).json({ error: "Message is required" });
