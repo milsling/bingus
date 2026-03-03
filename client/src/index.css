@@ -191,10 +191,10 @@
     0 2px 8px rgba(31, 41, 55, 0.04);
 
   /* Unified glass system - warmer, more comfortable with increased opacity */
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(252, 251, 248, 0.98));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(254, 253, 250, 0.99));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(229, 231, 235, 0.9));  /* More visible borders */
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(209, 213, 219, 0.95));
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(252, 251, 248, 0.6));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(254, 253, 250, 0.7));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(229, 231, 235, 0.62));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(209, 213, 219, 0.74));
   --glass-surface-shadow:
     0 12px 28px rgba(31, 41, 55, 0.08),
     0 2px 8px rgba(31, 41, 55, 0.04);
@@ -445,14 +445,14 @@
   --color-background: rgba(250, 250, 252, 0.15);
   --color-card: rgba(255, 255, 255, 0.5);
 
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(252, 251, 248, 0.96));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(254, 253, 250, 0.98));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(229, 231, 235, 0.8));
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(252, 251, 248, 0.58));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(254, 253, 250, 0.68));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(229, 231, 235, 0.62));
 
   --glass-bg: rgba(252, 251, 248, 0.45);
   --glass-bg-hover: rgba(254, 253, 250, 0.55);
 
-  --floating-bar-bg: rgba(252, 251, 248, 0.96);  /* Same as desktop */
+  --floating-bar-bg: rgba(252, 251, 248, 0.78);
 
   --sheet-bg: rgba(254, 253, 250, 0.7);
 
