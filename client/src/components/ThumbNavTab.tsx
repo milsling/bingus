@@ -1,6 +1,14 @@
 import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
+// Framer Motion variants for the tab
+const tabVariants = {
+  initial: { opacity: 0, x: 40, scale: 0.9 },
+  animate: { opacity: 1, x: 0, scale: 1 },
+  hover: { scale: 1.04, boxShadow: "0 2px 12px rgba(0,0,0,0.10)" },
+  pressed: { scale: 0.97 },
+};
+
 /**
  * ThumbNavTab - A modern, native-feeling navigation drawer for mobile
  * 
