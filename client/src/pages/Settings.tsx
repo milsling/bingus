@@ -590,7 +590,7 @@ export default function Settings() {
                     🎛️ Visual Mode
                   </CardTitle>
                   <CardDescription>
-                    Keep everything in one look. "Drop a Bar Light" matches the Drop a Bar page aesthetic.
+                    Choose how the app looks. Light Mode uses the frosted glass style from the composer page.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -599,7 +599,7 @@ export default function Settings() {
                       <SelectValue placeholder="Choose a visual mode" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light">Drop a Bar Light</SelectItem>
+                      <SelectItem value="light">Light Mode</SelectItem>
                       <SelectItem value="dark">Dark</SelectItem>
                       <SelectItem value="system">System</SelectItem>
                     </SelectContent>
