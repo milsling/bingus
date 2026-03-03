@@ -125,7 +125,7 @@
   --popover-foreground: 220 25% 2%;
 
   /* Primary color - configurable accent */
-  --primary: var(--accent-color, 265 70% 60%);
+  --primary: var(--accent-color, 265 65% 58%);
   --primary-foreground: 0 0% 100%;
 
   /* Secondary surfaces - warm light gray */
@@ -134,7 +134,7 @@
 
   /* Muted elements - softer gray */
   --muted: 45 25% 90%;  /* Light gray: #E0E0E5 */
-  --muted-foreground: 220 20% 15%;  /* Very dark muted text: #333333 */
+  --muted-foreground: 220 8% 46%; /* Medium gray: #6B7280 */
 
   --accent: var(--accent-color, 265 70% 60%);  /* Match primary */
   --accent-foreground: 0 0% 100%;
@@ -231,7 +231,7 @@
 .light {
   /* Light Mode: frosted-glass surfaces like the composer page */
   --background: 45 15% 97%;
-  --foreground: 220 15% 8%;  /* Super dark gray: #18181B */
+  --foreground: 220 15% 15%;  /* Darker gray: #1F2937 */
 
   --card: 45 25% 94%;  /* Light gray: #EFEFF1 */
   --card-foreground: 220 25% 2%;  /* Extremely dark text */
