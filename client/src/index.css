@@ -115,26 +115,26 @@
      ======================================== */
   /* Softer main background - warm off-white like Facebook/Google */
   --background: 45 15% 97%;  /* #FAFAFC with warm tint */
-  --foreground: 220 15% 15%;  /* Darker gray text: #1F2937 */
+  --foreground: 220 25% 10%;  /* Much darker text: #1a1a1a */
 
   /* Card backgrounds - light gray variations for dynamic look */
-  --card: 45 25% 96%;  /* Light gray: #F5F5F7 */
-  --card-foreground: 220 15% 15%;  /* Darker text */
+  --card: 45 25% 94%;  /* Light gray: #EFEFF1 */
+  --card-foreground: 220 25% 10%;  /* Much darker text */
 
-  --popover: 45 20% 97%;  /* Slightly warmer white */
-  --popover-foreground: 220 15% 15%;
+  --popover: 45 25% 94%;  /* Light gray: #EFEFF1 */
+  --popover-foreground: 220 25% 10%;
 
   /* Primary color - configurable accent */
   --primary: var(--accent-color, 265 70% 60%);
   --primary-foreground: 0 0% 100%;
 
   /* Secondary surfaces - warm light gray */
-  --secondary: 45 25% 94%;  /* Medium light gray: #EFEFF1 */
-  --secondary-foreground: 220 12% 20%;  /* Darker text */
+  --secondary: 45 25% 92%;  /* Medium light gray: #E8E8EB */
+  --secondary-foreground: 220 25% 12%;  /* Much darker text */
 
   /* Muted elements - softer gray */
-  --muted: 45 20% 92%;  /* Light gray: #E8E8EB */
-  --muted-foreground: 220 8% 46%;  /* Medium gray: #6B7280 */
+  --muted: 45 25% 90%;  /* Light gray: #E0E0E5 */
+  --muted-foreground: 220 15% 25%;  /* Darker muted text: #404040 */
 
   --accent: var(--accent-color, 265 70% 60%);  /* Match primary */
   --accent-foreground: 0 0% 100%;
@@ -150,10 +150,10 @@
   --radius: 0.5rem;
   
   /* Glass panel variables - warmer, more comfortable */
-  --glass-bg: rgba(248, 247, 245, 0.8);  /* Warm off-white */
-  --glass-bg-hover: rgba(250, 249, 247, 0.9);
-  --glass-border: rgba(220, 220, 225, 0.6);  /* Light gray borders */
-  --glass-border-hover: rgba(200, 200, 210, 0.8);
+  --glass-bg: rgba(240, 240, 242, 0.8);  /* Light gray */
+  --glass-bg-hover: rgba(245, 245, 247, 0.9);
+  --glass-border: rgba(200, 200, 210, 0.6);  /* Light gray borders */
+  --glass-border-hover: rgba(180, 180, 190, 0.8);
   
   /* Enhanced shadows - layered for depth, reduced harshness */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -184,29 +184,29 @@
   --app-bg-base-end: #f5f5f7;   /* Soft warm gray */
 
   /* Floating bars - warmer glass with more opacity */
-  --floating-bar-bg: rgba(248, 247, 245, 0.96);  /* More opaque, frosted */
-  --floating-bar-border: rgba(220, 220, 225, 0.8);  /* More visible border */
+  --floating-bar-bg: rgba(240, 240, 242, 0.96);  /* Light gray, frosted */
+  --floating-bar-border: rgba(200, 200, 210, 0.8);  /* More visible border */
   --floating-bar-shadow:
     0 12px 28px rgba(31, 41, 55, 0.08),  /* Darker, more defined */
     0 2px 8px rgba(31, 41, 55, 0.04);
 
   /* Unified glass system - warmer, more comfortable with increased opacity */
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(248, 247, 245, 0.6));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(250, 249, 247, 0.7));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(220, 220, 225, 0.62));
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(200, 200, 210, 0.74));
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(240, 240, 242, 0.6));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(245, 245, 247, 0.7));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(200, 200, 210, 0.62));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(180, 180, 190, 0.74));
   --glass-surface-shadow:
     0 12px 28px rgba(31, 41, 55, 0.08),
     0 2px 8px rgba(31, 41, 55, 0.04);
 
-  --glass-field-bg: rgba(248, 247, 245, 0.5);
-  --glass-field-bg-focus: rgba(252, 251, 248, 0.7);
-  --glass-field-border: rgba(220, 220, 225, 0.5);
+  --glass-field-bg: rgba(240, 240, 242, 0.5);
+  --glass-field-bg-focus: rgba(245, 245, 247, 0.7);
+  --glass-field-border: rgba(200, 200, 210, 0.5);
   --glass-field-border-focus: var(--accent-color, 168 85 247) 0.4;  /* Soft accent focus */
   --glass-field-placeholder: rgba(107, 114, 128, 0.6);  /* Better contrast */
 
-  --sheet-bg: rgba(250, 249, 247, 0.96);  /* Warm off-white */
-  --sheet-border: rgba(220, 220, 225, 0.8);
+  --sheet-bg: rgba(245, 245, 247, 0.96);  /* Light gray */
+  --sheet-border: rgba(200, 200, 210, 0.8);
 
   /* Search input inside floating bar - better contrast */
   --glass-input-in-bar-bg: rgba(31, 41, 55, 0.04);  /* Subtle dark */
@@ -231,22 +231,22 @@
 .light {
   /* Light Mode: frosted-glass surfaces like the composer page */
   --background: 45 15% 97%;
-  --foreground: 220 18% 14%;
+  --foreground: 220 25% 8%;  /* Much darker text */
 
-  --card: 0 0% 100%;
-  --card-foreground: 220 15% 15%;
+  --card: 45 25% 94%;  /* Light gray: #EFEFF1 */
+  --card-foreground: 220 25% 8%;  /* Much darker text */
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 220 15% 15%;
+  --popover: 45 25% 94%;  /* Light gray: #EFEFF1 */
+  --popover-foreground: 220 25% 8%;
 
   --primary: var(--accent-color, 265 70% 60%);
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 45 20% 95%;
-  --secondary-foreground: 220 12% 20%;
+  --secondary: 45 25% 92%;  /* Light gray */
+  --secondary-foreground: 220 25% 10%;  /* Much darker text */
 
-  --muted: 45 15% 94%;
-  --muted-foreground: 220 10% 34%;
+  --muted: 45 25% 90%;  /* Light gray */
+  --muted-foreground: 220 15% 20%;  /* Darker muted text */
 
   --accent: var(--accent-color, 265 70% 60%);
   --accent-foreground: 0 0% 100%;
