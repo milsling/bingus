@@ -11,6 +11,11 @@ import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
 const PgStore = connectPgSimple(session);
+const DEFAULT_PRO_USERNAMES = new Set(["milsling", "notmilsling"]);
+
+function isDefaultProUsername(username?: string | null): boolean {
+  return Boolean(username && DEFAULT_PRO_USERNAMES.has(username.toLowerCase()));
+}
 
 // Sentinel value for OAuth-only users - impossible to match via comparePasswords
 const OAUTH_ONLY_PASSWORD_SENTINEL = "__OAUTH_ONLY_NO_PASSWORD__";
@@ -165,6 +170,13 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "Invalid username or password" });
         }
 
+        if (isDefaultProUsername(user.username) && user.membershipTier !== "donor_plus") {
+          const upgradedUser = await storage.updateUser(user.id, { membershipTier: "donor_plus" });
+          if (upgradedUser) {
+            user = upgradedUser;
+          }
+        }
+
         const isValid = await comparePasswords(password, user.password);
         if (!isValid) {
           return done(null, false, { message: "Invalid username or password" });
@@ -189,7 +201,14 @@ export function setupAuth(app: Express) {
       if (!user) {
         return done(null, false);
       }
-      const { password: _, ...userWithoutPassword } = user;
+      let normalizedUser = user;
+      if (isDefaultProUsername(user.username) && user.membershipTier !== "donor_plus") {
+        const upgradedUser = await storage.updateUser(user.id, { membershipTier: "donor_plus" });
+        if (upgradedUser) {
+          normalizedUser = upgradedUser;
+        }
+      }
+      const { password: _, ...userWithoutPassword } = normalizedUser;
       done(null, userWithoutPassword);
     } catch (error) {
       done(error);
@@ -212,7 +231,11 @@ export function isOwner(req: any, res: any, next: any) {
 }
 
 export function hasProAccess(user: any): boolean {
-  return Boolean(user?.isOwner || user?.membershipTier === "donor_plus");
+  return Boolean(
+    user?.isOwner ||
+      user?.membershipTier === "donor_plus" ||
+      isDefaultProUsername(user?.username)
+  );
 }
 
 export function isProMember(req: any, res: any, next: any) {

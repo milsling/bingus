@@ -10,6 +10,7 @@ import { BackgroundUploader } from "@/components/BackgroundUploader";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { useBackground } from "@/components/BackgroundSelector";
 import ThemeSettings from "@/components/ThemeSettings";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useFabShortcuts, SHORTCUT_OPTIONS } from "@/hooks/useFabShortcuts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +31,7 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { selectedBackground, setBackground } = useBackground();
+  const { theme, setTheme } = useTheme();
   const hasCustomBackground = selectedBackground.image !== null;
 
   const canDebugControls = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
@@ -582,6 +584,29 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="appearance" className="mt-0 space-y-4">
+              <Card className={"glass-surface-strong border-white/15"}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    🎛️ Visual Mode
+                  </CardTitle>
+                  <CardDescription>
+                    Keep everything in one look. "Drop a Bar Light" matches the Drop a Bar page aesthetic.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Select value={theme} onValueChange={(value) => setTheme(value as "light" | "dark" | "system")}>
+                    <SelectTrigger className="w-full md:max-w-sm" data-testid="select-theme-mode">
+                      <SelectValue placeholder="Choose a visual mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Drop a Bar Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+
               <Card className={"glass-surface-strong border-white/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">

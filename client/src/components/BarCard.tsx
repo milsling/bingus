@@ -295,6 +295,7 @@ export default function BarCard({ bar }: BarCardProps) {
   const [reportDetails, setReportDetails] = useState("");
   const [editTags, setEditTags] = useState(bar.tags?.join(", ") || "");
   const [isAraOpen, setIsAraOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showOriginalityReport, setShowOriginalityReport] = useState(false);
   const [isCheckingOriginality, setIsCheckingOriginality] = useState(false);
   const [originalityData, setOriginalityData] = useState<any[]>([]);
@@ -493,7 +494,7 @@ export default function BarCard({ bar }: BarCardProps) {
       }
     },
     threshold: 80,
-    enabled: !!currentUser,
+    enabled: !!currentUser && !isMenuOpen,
   });
 
   const handleBookmark = () => {
@@ -620,7 +621,9 @@ export default function BarCard({ bar }: BarCardProps) {
                     </span>
                   )}
                   {bar.user.membershipTier !== "free" && (
-                    <span className="text-[10px] text-primary">✓</span>
+                    <Badge className="ml-1 bg-primary/20 text-primary border border-primary/40 text-[9px] px-1.5 py-0 h-4">
+                      [PRO]
+                    </Badge>
                   )}
                   {bar.user.username.toLowerCase() === "milsling" && (
                     <Badge className="ml-1 badge-founder-electric text-foreground text-[9px] px-1.5 py-0 h-4">
@@ -644,24 +647,47 @@ export default function BarCard({ bar }: BarCardProps) {
                 </span>
               </div>
             </div>
-            <DropdownMenu>
+            <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" data-testid={`button-more-${bar.id}`}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" forceMount>
-                <DropdownMenuItem onSelect={handleCheckOriginality} disabled={isCheckingOriginality} data-testid={`button-originality-${bar.id}`}>
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    setIsMenuOpen(false);
+                    handleCheckOriginality();
+                  }}
+                  disabled={isCheckingOriginality}
+                  data-testid={`button-originality-${bar.id}`}
+                >
                   <Search className="h-4 w-4 mr-2" />
                   {isCheckingOriginality ? "Checking..." : "Originality Check"}
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setIsAraOpen(true)} data-testid={`button-ara-${bar.id}`}>
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    setIsMenuOpen(false);
+                    setIsAraOpen(true);
+                  }}
+                  data-testid={`button-ara-${bar.id}`}
+                >
                   <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
                   Break It Down
                 </DropdownMenuItem>
-                <BarOwnerActions bar={bar} isLocked={isLocked} />
+                <BarOwnerActions bar={bar} isLocked={isLocked} onMenuAction={() => setIsMenuOpen(false)} />
                 {currentUser && (
-                  <DropdownMenuItem onSelect={() => setIsReportOpen(true)} className="text-orange-500" data-testid={`button-report-${bar.id}`}>
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      setIsMenuOpen(false);
+                      setIsReportOpen(true);
+                    }}
+                    className="text-orange-500"
+                    data-testid={`button-report-${bar.id}`}
+                  >
                     <Flag className="h-4 w-4 mr-2" />
                     Report
                   </DropdownMenuItem>

@@ -185,8 +185,13 @@ export default function FeedBarCard({ bar }: { bar: BarWithUser }) {
         </Link>
         <div className="min-w-0">
           <Link href={`/u/${bar.user.username}`}>
-            <p className="truncate text-sm font-semibold hover:text-primary transition-colors">
-              @{bar.user.username}
+            <p className="truncate text-sm font-semibold hover:text-primary transition-colors flex items-center gap-1">
+              <span>@{bar.user.username}</span>
+              {bar.user.membershipTier !== "free" && (
+                <Badge className="bg-primary/20 text-primary border border-primary/40 text-[9px] px-1.5 py-0 h-4 leading-none">
+                  [PRO]
+                </Badge>
+              )}
             </p>
           </Link>
           <p className="text-xs text-muted-foreground">

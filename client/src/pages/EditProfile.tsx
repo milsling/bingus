@@ -173,6 +173,12 @@ export default function EditProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['user', currentUser.username] });
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-top'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-trending'] });
+      queryClient.invalidateQueries({ queryKey: ['bars-challenges'] });
+      queryClient.invalidateQueries({ queryKey: ['adoptable-bars'] });
+      queryClient.invalidateQueries({ queryKey: ['userBars', currentUser.id] });
       toast({
         title: "Profile updated!",
         description: "Your changes have been saved.",

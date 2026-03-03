@@ -15,10 +15,10 @@ type Spotlight = {
 };
 
 const THEME_STYLE: Record<string, string> = {
-  minimal: "bg-gradient-to-br from-primary/10 to-transparent",
-  paper: "bg-gradient-to-br from-stone-100/80 to-slate-50/70 dark:from-zinc-900/40 dark:to-zinc-950/20",
-  neon: "bg-gradient-to-br from-fuchsia-500/20 via-blue-500/10 to-transparent",
-  gritty: "bg-gradient-to-br from-zinc-800/30 via-zinc-700/20 to-transparent",
+  minimal: "bg-gradient-to-br from-primary/18 via-background/70 to-background/55",
+  paper: "bg-gradient-to-br from-stone-100/90 to-slate-100/80 dark:from-zinc-900/60 dark:to-zinc-950/45",
+  neon: "bg-gradient-to-br from-fuchsia-500/28 via-blue-500/18 to-background/50",
+  gritty: "bg-gradient-to-br from-zinc-800/45 via-zinc-700/35 to-zinc-900/30",
 };
 
 export default function CommunitySpotlight({ spotlight }: { spotlight: Spotlight | null }) {

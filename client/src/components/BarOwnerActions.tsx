@@ -41,9 +41,10 @@ import type { BarWithUser } from "@shared/schema";
 interface BarOwnerActionsProps {
   bar: BarWithUser;
   isLocked: boolean;
+  onMenuAction?: () => void;
 }
 
-export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
+export function BarOwnerActions({ bar, isLocked, onMenuAction }: BarOwnerActionsProps) {
   const { currentUser } = useBars();
   const { session } = useSupabaseAuth();
   const { toast } = useToast();
@@ -165,7 +166,9 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
       {/* Edit Dropdown Menu Item */}
       {!isLocked && (
         <DropdownMenuItem 
-          onSelect={() => { 
+          onSelect={(event) => {
+            event.preventDefault();
+            onMenuAction?.();
             setEditContent(bar.content.replace(/<[^>]*>/g, "")); 
             setIsEditOpen(true); 
           }} 
@@ -181,7 +184,11 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
         <>
           <DropdownMenuSeparator />
           <DropdownMenuItem 
-            onSelect={() => setIsLockDialogOpen(true)} 
+            onSelect={(event) => {
+              event.preventDefault();
+              onMenuAction?.();
+              setIsLockDialogOpen(true);
+            }} 
             className="text-primary" 
             data-testid={`button-lock-${bar.id}`}
           >
@@ -202,7 +209,11 @@ export function BarOwnerActions({ bar, isLocked }: BarOwnerActionsProps) {
       {/* Delete Dropdown Menu Item */}
       <DropdownMenuSeparator />
       <DropdownMenuItem 
-        onSelect={() => setIsDeleteOpen(true)} 
+        onSelect={(event) => {
+          event.preventDefault();
+          onMenuAction?.();
+          setIsDeleteOpen(true);
+        }} 
         className="text-destructive" 
         data-testid={`button-delete-${bar.id}`}
       >

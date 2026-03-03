@@ -341,8 +341,8 @@ export default function Home() {
             <section className={cn(
               "rounded-2xl border p-5",
               hasCustomBackground 
-                ? "border-primary/35 bg-primary/10 glass-surface-strong" 
-                : "border-primary/25 bg-primary/6"
+                ? "border-primary/40 bg-primary/16 glass-surface-strong" 
+                : "border-primary/30 bg-primary/10"
             )}>
               <div className="flex items-center justify-between">
                 <div>
@@ -366,8 +366,8 @@ export default function Home() {
               <section className={cn(
                 "rounded-2xl border p-5",
                 hasCustomBackground 
-                  ? "border-primary/35 bg-primary/10 glass-surface-strong" 
-                  : "border-primary/25 bg-primary/6"
+                  ? "border-primary/40 bg-primary/16 glass-surface-strong" 
+                  : "border-primary/30 bg-primary/10"
               )}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
                   Current prompt

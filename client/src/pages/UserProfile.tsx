@@ -323,7 +323,9 @@ export default function UserProfile() {
                 </h1>
                 <UserProfileBadges userId={user.id} size="sm" maxBadges={5} />
                 {user.membershipTier !== "free" && (
-                  <Badge variant="secondary">{user.membershipTier}</Badge>
+                  <Badge className="bg-primary/20 text-primary border border-primary/40 text-[10px] px-1.5 py-0 h-5">
+                    [PRO]
+                  </Badge>
                 )}
                 {user.isAdmin && (
                   <Badge variant="default" className="bg-primary">{user.username === "Milsling" ? "Owner" : "Admin"}</Badge>

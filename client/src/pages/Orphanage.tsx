@@ -266,12 +266,12 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
   return (
     <article
       className={cn(
-        "glass-card overflow-hidden transition-all duration-300 hover:border-primary/30",
+        "glass-card overflow-hidden p-4 transition-all duration-300 hover:border-primary/30",
         adoptPulse && "border-emerald-400/70 shadow-[0_0_28px_rgba(16,185,129,0.35)] animate-pulse",
       )}
       data-testid={`orphan-bar-card-${bar.id}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className="mb-3 space-y-3">
         <div className="min-w-0">
           <p className="text-sm leading-relaxed text-foreground">{plainText}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -286,34 +286,34 @@ function OrphanBarCard({ bar }: OrphanBarCardProps) {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/40 px-2.5 py-1.5">
+          <div className="flex items-center gap-2 min-w-0">
           <Avatar className="h-8 w-8 border-2 border-border/50">
             <AvatarImage src={bar.user.avatarUrl || undefined} />
             <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
               {bar.user.username[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="text-right">
+          <div className="min-w-0">
             <p className="text-xs font-medium text-foreground">@{bar.user.username}</p>
             <Link href={`/u/${bar.user.username}`} className="text-xs text-primary hover:underline">
               View Profile
             </Link>
           </div>
+          </div>
+          <span className="shrink-0 text-[11px] text-muted-foreground text-right">
+            {formatDistanceToNow(new Date(bar.createdAt), { addSuffix: true })}
+          </span>
         </div>
       </div>
 
       <div className="mb-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5">
+        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5 text-center font-medium">
           {wordCount} words
         </div>
-        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5">
+        <div className="rounded-lg border border-border/60 bg-background/50 px-2.5 py-1.5 text-center font-medium">
           ~{syllableCount} syllables
         </div>
-      </div>
-
-      <div className="mb-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span>@{bar.user.username}</span>
-        <span>{formatDistanceToNow(new Date(bar.createdAt), { addSuffix: true })}</span>
       </div>
 
       <div className="space-y-2">

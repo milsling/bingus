@@ -22,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Navigation() {
   const [location, setLocation] = useLocation();
@@ -165,9 +166,12 @@ export default function Navigation() {
                     className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl hover:bg-white/[0.06] transition-colors"
                     data-testid="button-desktop-user"
                   >
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center ring-1 ring-primary/20 text-primary font-bold text-xs">
-                      {currentUser.username[0]?.toUpperCase()}
-                    </div>
+                    <Avatar className="h-7 w-7 rounded-lg ring-1 ring-primary/20">
+                      <AvatarImage src={currentUser.avatarUrl || undefined} alt={currentUser.username} />
+                      <AvatarFallback className="rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 text-primary font-bold text-xs">
+                        {currentUser.username[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <span className="hidden xl:block text-sm font-medium text-foreground/80 max-w-[100px] truncate">
                       {currentUser.displayName || currentUser.username}
                     </span>

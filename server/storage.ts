@@ -3,6 +3,12 @@ import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne, inArray } from "drizzle-orm";
 import { createHash } from "crypto";
 
+const DEFAULT_PRO_USERNAMES = new Set(["milsling", "notmilsling"]);
+
+function isDefaultProUsername(username?: string | null): boolean {
+  return Boolean(username && DEFAULT_PRO_USERNAMES.has(username.toLowerCase()));
+}
+
 // User metrics cache for evaluating compound achievements
 export interface UserMetrics {
   bars_posted: number;
@@ -332,9 +338,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const userPayload: InsertUser = {
+      ...insertUser,
+      ...(isDefaultProUsername(insertUser.username) ? { membershipTier: "donor_plus" } : {}),
+    };
+
     const [user] = await db
       .insert(users)
-      .values(insertUser)
+      .values(userPayload)
       .returning();
     return user;
   }
