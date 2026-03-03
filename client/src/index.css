@@ -24,10 +24,6 @@
 @import "tw-animate-css";
 @import "./styles/theme.css";
 
-@plugin "tailwindcss-animate";
-
-@custom-variant dark (&:is(.dark *));
-
 @font-face {
   font-family: 'Creato Display';
   src: url('/fonts/CreatoDisplay-Regular.otf') format('opentype');
@@ -68,7 +64,8 @@
   font-display: swap;
 }
 
-@theme inline {
+/* Theme configuration */
+:root {
   --font-display: "Creato Display", "Inter", sans-serif;
   --font-mono: "Creato Display", "JetBrains Mono", monospace;
   --font-sans: "Inter", sans-serif;
@@ -203,7 +200,7 @@
   --glass-field-bg-focus: rgba(245, 245, 247, 0.7);
   --glass-field-border: rgba(200, 200, 210, 0.5);
   --glass-field-border-focus: var(--accent-color, 168 85 247) 0.4;  /* Soft accent focus */
-  --glass-field-placeholder: rgba(107, 114, 128, 0.6);  /* Better contrast */
+  --glass-field-placeholder: rgba(75, 85, 99, 0.8);  /* Better contrast for light mode */
 
   --sheet-bg: rgba(245, 245, 247, 0.96);  /* Light gray */
   --sheet-border: rgba(200, 200, 210, 0.8);
@@ -284,7 +281,7 @@
   --glass-field-bg-focus: rgba(255, 255, 255, 0.95);
   --glass-field-border: rgba(229, 231, 235, 0.6);
   --glass-field-border-focus: rgba(168, 85, 247, 0.4);
-  --glass-field-placeholder: rgba(107, 114, 128, 0.6);
+  --glass-field-placeholder: rgba(75, 85, 99, 0.8);  /* Much darker placeholder for better contrast */
 
   --sheet-bg: rgba(254, 253, 250, 0.82);
   --sheet-border: rgba(229, 231, 235, 0.62);
@@ -462,7 +459,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   /* Ensure app content stacks above background layers, fills viewport */
   html, body {
@@ -479,7 +476,10 @@
     z-index: -999 !important;
   }
   body {
-    @apply font-sans antialiased text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: hsl(var(--foreground));
     background: 
       radial-gradient(ellipse at 50% 50%, var(--app-bg-1) 0%, transparent 40%),
       radial-gradient(ellipse at 30% 30%, var(--app-bg-2) 0%, transparent 45%),
@@ -510,7 +510,8 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight;
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
   }
   
   /* Light mode heading improvements */
@@ -530,7 +531,8 @@
   
   /* Polished focus states */
   :focus-visible {
-    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring)), 0 0 0 4px hsl(var(--background));
   }
   
   /* Smooth scrolling with GPU acceleration */
@@ -1118,6 +1120,12 @@ html.dark {
   backdrop-filter: blur(20px) saturate(120%);
   -webkit-backdrop-filter: blur(20px) saturate(120%);
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Enhanced text color for light mode inputs */
+:root:not(.dark) .glass-field,
+:root:not(.dark) .glass-input {
+  color: hsl(220 25% 8%) !important; /* Very dark text for maximum contrast */
 }
 
 .glass-field::placeholder {
