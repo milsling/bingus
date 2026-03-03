@@ -339,7 +339,7 @@ export default function Home() {
 
             {/* Orphanage Integration */}
             <section className={cn(
-              "rounded-2xl border p-5",
+              "rounded-2xl border p-5 glass-surface",
               hasCustomBackground 
                 ? "border-primary/40 bg-primary/16 glass-surface-strong" 
                 : "border-primary/30 bg-primary/10"
@@ -364,7 +364,7 @@ export default function Home() {
 
             {currentPrompt && (
               <section className={cn(
-                "rounded-2xl border p-5",
+                "rounded-2xl border p-5 glass-surface",
                 hasCustomBackground 
                   ? "border-primary/40 bg-primary/16 glass-surface-strong" 
                   : "border-primary/30 bg-primary/10"
@@ -391,10 +391,10 @@ export default function Home() {
             )}
 
             <section className={cn(
-              "rounded-2xl border p-4 md:p-5",
+              "rounded-2xl border p-4 md:p-5 glass-surface",
               hasCustomBackground 
                 ? "border-white/20 bg-white/5 glass-surface-strong" 
-                : "border-border/60 bg-card/60"
+                : "border-border/60 bg-background/45"
             )}>
               <p className="mb-3 text-sm font-semibold">How it works</p>
               <div className="grid gap-3 md:grid-cols-3">

@@ -199,9 +199,9 @@
     0 12px 28px rgba(31, 41, 55, 0.08),
     0 2px 8px rgba(31, 41, 55, 0.04);
 
-  --glass-field-bg: rgba(252, 251, 248, 0.8);
-  --glass-field-bg-focus: rgba(255, 255, 255, 0.95);
-  --glass-field-border: rgba(229, 231, 235, 0.6);
+  --glass-field-bg: rgba(252, 251, 248, 0.5);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.7);
+  --glass-field-border: rgba(229, 231, 235, 0.5);
   --glass-field-border-focus: rgba(168, 85, 247, 0.4);  /* Soft purple focus */
   --glass-field-placeholder: rgba(107, 114, 128, 0.6);  /* Better contrast */
 
@@ -231,7 +231,7 @@
 .light {
   /* Light Mode: frosted-glass surfaces like the composer page */
   --background: 45 15% 97%;
-  --foreground: 220 15% 15%;
+  --foreground: 220 18% 14%;
 
   --card: 0 0% 100%;
   --card-foreground: 220 15% 15%;
@@ -246,7 +246,7 @@
   --secondary-foreground: 220 12% 20%;
 
   --muted: 45 15% 94%;
-  --muted-foreground: 220 8% 46%;
+  --muted-foreground: 220 10% 34%;
 
   --accent: 265 70% 60%;
   --accent-foreground: 0 0% 100%;
@@ -266,16 +266,16 @@
   --app-bg-base-start: #fafafa;
   --app-bg-base-end: #f5f5f7;
 
-  --floating-bar-bg: rgba(252, 251, 248, 0.96);
-  --floating-bar-border: rgba(229, 231, 235, 0.8);
+  --floating-bar-bg: rgba(252, 251, 248, 0.78);
+  --floating-bar-border: rgba(229, 231, 235, 0.62);
   --floating-bar-shadow:
     0 12px 28px rgba(31, 41, 55, 0.08),
     0 2px 8px rgba(31, 41, 55, 0.04);
 
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(252, 251, 248, 0.98));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(254, 253, 250, 0.99));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(229, 231, 235, 0.9));
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(209, 213, 219, 0.95));
+  --glass-surface-bg: rgba(252, 251, 248, 0.58);
+  --glass-surface-bg-strong: rgba(254, 253, 250, 0.68);
+  --glass-surface-border: rgba(229, 231, 235, 0.62);
+  --glass-surface-border-strong: rgba(209, 213, 219, 0.74);
   --glass-surface-shadow:
     0 12px 28px rgba(31, 41, 55, 0.08),
     0 2px 8px rgba(31, 41, 55, 0.04);
@@ -286,8 +286,8 @@
   --glass-field-border-focus: rgba(168, 85, 247, 0.4);
   --glass-field-placeholder: rgba(107, 114, 128, 0.6);
 
-  --sheet-bg: rgba(254, 253, 250, 0.96);
-  --sheet-border: rgba(229, 231, 235, 0.8);
+  --sheet-bg: rgba(254, 253, 250, 0.82);
+  --sheet-border: rgba(229, 231, 235, 0.62);
 
   --glass-input-in-bar-bg: rgba(31, 41, 55, 0.04);
   --glass-input-in-bar-border: rgba(229, 231, 235, 0.8);
