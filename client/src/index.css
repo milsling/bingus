@@ -130,11 +130,11 @@
 
   /* Secondary surfaces - warm light gray */
   --secondary: 45 25% 92%;  /* Medium light gray: #E8E8EB */
-  --secondary-foreground: 220 25% 12%;  /* Much darker text */
+  --secondary-foreground: 220 30% 8%;  /* Very dark text */
 
   /* Muted elements - softer gray */
   --muted: 45 25% 90%;  /* Light gray: #E0E0E5 */
-  --muted-foreground: 220 15% 25%;  /* Darker muted text: #404040 */
+  --muted-foreground: 220 20% 15%;  /* Very dark muted text: #333333 */
 
   --accent: var(--accent-color, 265 70% 60%);  /* Match primary */
   --accent-foreground: 0 0% 100%;
@@ -243,10 +243,10 @@
   --primary-foreground: 0 0% 100%;
 
   --secondary: 45 25% 92%;  /* Light gray */
-  --secondary-foreground: 220 25% 10%;  /* Much darker text */
+  --secondary-foreground: 220 30% 8%;  /* Very dark text */
 
   --muted: 45 25% 90%;  /* Light gray */
-  --muted-foreground: 220 15% 20%;  /* Darker muted text */
+  --muted-foreground: 220 20% 15%;  /* Very dark muted text */
 
   --accent: var(--accent-color, 265 70% 60%);
   --accent-foreground: 0 0% 100%;

@@ -152,7 +152,7 @@ function NavContent() {
               <img src={headerLogo} alt="" className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="font-logo text-lg leading-none text-foreground tracking-wide">
+              <h2 className="font-logo text-lg leading-none text-foreground tracking-wide dark:text-white">
                 ORPHANBARS
               </h2>
               <p className="text-[10px] text-muted-foreground mt-0.5">Navigate your world</p>
