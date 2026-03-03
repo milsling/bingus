@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useTheme } from "@/contexts/ThemeContext";
-import { defaultThemeSettings } from "@/contexts/ThemeContext";
+import { defaultThemeSettings, extractAccentColorFromBackground } from "@/contexts/ThemeContext";
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Palette, Image, Trash2, Download } from 'lucide-react';
 import ThemePresetSelector from './ThemePresetSelector';
@@ -19,6 +19,50 @@ export default function ThemeSettings() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Auto-extract accent color when background changes and mode is auto
+  useEffect(() => {
+    if (settings.accentColorMode === 'auto' && settings.backgroundValue) {
+      // Extract from any background (custom, gradient, or default)
+      if (settings.backgroundType === 'custom' && settings.backgroundValue) {
+        extractAccentColorFromBackground(settings.backgroundValue).then((extractedColor) => {
+          updateSettings({ accentColor: extractedColor });
+        }).catch(() => {
+          // Keep current color if extraction fails
+        });
+      } else if (settings.backgroundType === 'gradient' && settings.backgroundValue) {
+        // Extract color from gradient - sample the first color stop
+        const gradientMatch = settings.backgroundValue.match(/#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}/);
+        if (gradientMatch) {
+          const hex = gradientMatch[0];
+          const r = parseInt(hex.slice(1, 3), 16) / 255;
+          const g = parseInt(hex.slice(3, 5), 16) / 255;
+          const b = parseInt(hex.slice(5, 7), 16) / 255;
+          
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          let h = 0, s = 0, l = (max + min) / 2;
+          
+          if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            
+            switch (max) {
+              case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+              case g: h = ((b - r) / d + 2) / 6; break;
+              case b: h = ((r - g) / d + 4) / 6; break;
+            }
+          }
+          
+          const hslString = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+          updateSettings({ accentColor: hslString });
+        }
+      } else if (settings.backgroundType === 'default') {
+        // For default background, use a complementary color based on the background
+        updateSettings({ accentColor: '265 70% 60%' }); // Default purple
+      }
+    }
+  }, [settings.backgroundValue, settings.backgroundType, settings.accentColorMode, updateSettings]);
 
   if (!canCustomize) {
     return (
@@ -131,9 +175,10 @@ export default function ThemeSettings() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="tints" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="presets">Presets</TabsTrigger>
               <TabsTrigger value="tints">Color Tints</TabsTrigger>
+              <TabsTrigger value="accent">Accent</TabsTrigger>
               <TabsTrigger value="backgrounds">Backgrounds</TabsTrigger>
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
             </TabsList>
@@ -228,6 +273,130 @@ export default function ThemeSettings() {
                   <p className="text-xs text-muted-foreground mt-1">
                     Applied to navigation bars and headers
                   </p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="accent" className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label>Accent Color Mode</Label>
+                  <Select
+                    value={settings.accentColorMode}
+                    onValueChange={(value: 'manual' | 'auto') => updateSettings({ accentColorMode: value })}
+                  >
+                    <SelectTrigger className="mt-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="manual">Manual Color</SelectItem>
+                      <SelectItem value="auto">Auto from Background</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {settings.accentColorMode === 'auto' 
+                      ? 'Automatically extract accent color from your background image'
+                      : 'Choose a custom accent color for the theme'
+                    }
+                  </p>
+                </div>
+
+                {settings.accentColorMode === 'manual' && (
+                  <div>
+                    <Label htmlFor="accent-color">Accent Color</Label>
+                    <div className="flex gap-2 mt-2">
+                      <Input
+                        id="accent-color"
+                        type="color"
+                        value={`hsl(${settings.accentColor})`}
+                        onChange={(e) => {
+                          // Convert hex to HSL
+                          const hex = e.target.value;
+                          const r = parseInt(hex.slice(1, 3), 16) / 255;
+                          const g = parseInt(hex.slice(3, 5), 16) / 255;
+                          const b = parseInt(hex.slice(5, 7), 16) / 255;
+                          
+                          const max = Math.max(r, g, b);
+                          const min = Math.min(r, g, b);
+                          let h = 0, s = 0, l = (max + min) / 2;
+                          
+                          if (max !== min) {
+                            const d = max - min;
+                            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                            
+                            switch (max) {
+                              case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                              case g: h = ((b - r) / d + 2) / 6; break;
+                              case b: h = ((r - g) / d + 4) / 6; break;
+                            }
+                          }
+                          
+                          const hslString = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+                          updateSettings({ accentColor: hslString });
+                        }}
+                        className="w-20 h-10"
+                      />
+                      <Input
+                        value={settings.accentColor}
+                        onChange={(e) => updateSettings({ accentColor: e.target.value })}
+                        placeholder="265 70% 60%"
+                        className="flex-1"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Choose the accent color used for buttons, links, and highlights throughout the site
+                    </p>
+                  </div>
+                )}
+
+                {settings.accentColorMode === 'auto' && (
+                  <div>
+                    <Label>Current Extracted Color</Label>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div 
+                        className="w-10 h-10 rounded border-2 border-border"
+                        style={{ backgroundColor: `hsl(${settings.accentColor})` }}
+                      />
+                      <span className="text-sm font-mono">{settings.accentColor}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This color is automatically extracted from your background
+                    </p>
+                  </div>
+                )}
+
+                {/* Preset accent colors */}
+                <div>
+                  <Label>Preset Colors</Label>
+                  <div className="grid grid-cols-8 gap-2 mt-2">
+                    {[
+                      { name: 'Purple', value: '265 70% 60%' },
+                      { name: 'Blue', value: '210 70% 60%' },
+                      { name: 'Green', value: '142 70% 60%' },
+                      { name: 'Red', value: '0 70% 60%' },
+                      { name: 'Orange', value: '25 70% 60%' },
+                      { name: 'Pink', value: '330 70% 60%' },
+                      { name: 'Teal', value: '174 70% 60%' },
+                      { name: 'Indigo', value: '240 70% 60%' },
+                    ].map((color) => (
+                      <button
+                        key={color.value}
+                        onClick={() => {
+                          updateSettings({ 
+                            accentColor: color.value,
+                            accentColorMode: 'manual'
+                          });
+                        }}
+                        className={`w-8 h-8 rounded border-2 transition-all ${
+                          settings.accentColor === color.value && settings.accentColorMode === 'manual'
+                            ? 'border-primary scale-110'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        style={{ backgroundColor: `hsl(${color.value})` }}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </TabsContent>

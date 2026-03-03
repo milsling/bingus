@@ -38,6 +38,10 @@ export interface ThemeSettings {
   glassOpacity: number;
   borderOpacity: number;
   borderRadius: number;
+  
+  // Accent color settings
+  accentColor: string; // HSL string like "265 70% 60%"
+  accentColorMode: 'manual' | 'auto'; // auto extracts from background
 }
 
 export const defaultThemeSettings: ThemeSettings = {
@@ -53,6 +57,8 @@ export const defaultThemeSettings: ThemeSettings = {
   glassOpacity: 0.95,
   borderOpacity: 0.1,
   borderRadius: 12,
+  accentColor: '265 70% 60%', // Default purple
+  accentColorMode: 'manual',
 };
 
 interface ThemeContextType {
@@ -380,5 +386,85 @@ export function getThemeStyles(settings: ThemeSettings) {
     '--border-radius': `${settings.borderRadius}px`,
     '--background-type': settings.backgroundType,
     '--background-value': settings.backgroundValue,
+    '--accent-color': settings.accentColor,
+    '--accent-color-mode': settings.accentColorMode,
   } as React.CSSProperties;
+}
+
+// Function to extract accent color from background image
+export async function extractAccentColorFromBackground(imageUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve('265 70% 60%'); // fallback to purple
+        return;
+      }
+      
+      // Sample the image at multiple points to get dominant color
+      canvas.width = 50;
+      canvas.height = 50;
+      ctx.drawImage(img, 0, 0, 50, 50);
+      
+      const imageData = ctx.getImageData(0, 0, 50, 50);
+      const data = imageData.data;
+      
+      let r = 0, g = 0, b = 0;
+      let count = 0;
+      
+      // Sample every 4th pixel for performance
+      for (let i = 0; i < data.length; i += 16) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+      }
+      
+      r = Math.floor(r / count);
+      g = Math.floor(g / count);
+      b = Math.floor(b / count);
+      
+      // Convert RGB to HSL
+      const hsl = rgbToHsl(r, g, b);
+      resolve(`${hsl.h} ${hsl.s}% ${hsl.l}%`);
+    };
+    
+    img.onerror = () => {
+      resolve('265 70% 60%'); // fallback to purple
+    };
+    
+    img.src = imageUrl;
+  });
+}
+
+// RGB to HSL conversion
+function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100)
+  };
 }

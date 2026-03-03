@@ -117,26 +117,26 @@
   --background: 45 15% 97%;  /* #FAFAFC with warm tint */
   --foreground: 220 15% 15%;  /* Darker gray text: #1F2937 */
 
-  /* Card backgrounds - pure white with subtle borders */
-  --card: 0 0% 100%;  /* Pure white */
+  /* Card backgrounds - light gray variations for dynamic look */
+  --card: 45 25% 96%;  /* Light gray: #F5F5F7 */
   --card-foreground: 220 15% 15%;  /* Darker text */
 
-  --popover: 0 0% 100%;  /* Pure white */
+  --popover: 45 20% 97%;  /* Slightly warmer white */
   --popover-foreground: 220 15% 15%;
 
-  /* Primary purple - consistent brand color */
-  --primary: 265 70% 60%;  /* Consistent purple: #8B5CF6 */
+  /* Primary color - configurable accent */
+  --primary: var(--accent-color, 265 70% 60%);
   --primary-foreground: 0 0% 100%;
 
   /* Secondary surfaces - warm light gray */
-  --secondary: 45 20% 95%;  /* Warm light gray: #F5F5F7 */
+  --secondary: 45 25% 94%;  /* Medium light gray: #EFEFF1 */
   --secondary-foreground: 220 12% 20%;  /* Darker text */
 
   /* Muted elements - softer gray */
-  --muted: 45 15% 94%;  /* Very light warm gray */
+  --muted: 45 20% 92%;  /* Light gray: #E8E8EB */
   --muted-foreground: 220 8% 46%;  /* Medium gray: #6B7280 */
 
-  --accent: 265 70% 60%;  /* Match primary */
+  --accent: var(--accent-color, 265 70% 60%);  /* Match primary */
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 62.8% 30.6%;
@@ -145,15 +145,15 @@
   /* Subtle borders - light gray for depth */
   --border: 220 10% 88%;  /* Light gray: #E5E7EB */
   --input: 220 10% 88%;
-  --ring: 265 70% 60%;  /* Match primary */
+  --ring: var(--accent-color, 265 70% 60%);  /* Match primary */
 
   --radius: 0.5rem;
   
   /* Glass panel variables - warmer, more comfortable */
-  --glass-bg: rgba(252, 251, 248, 0.8);  /* Warm off-white */
-  --glass-bg-hover: rgba(254, 253, 250, 0.9);
-  --glass-border: rgba(229, 231, 235, 0.6);  /* Light gray borders */
-  --glass-border-hover: rgba(209, 213, 219, 0.8);
+  --glass-bg: rgba(248, 247, 245, 0.8);  /* Warm off-white */
+  --glass-bg-hover: rgba(250, 249, 247, 0.9);
+  --glass-border: rgba(220, 220, 225, 0.6);  /* Light gray borders */
+  --glass-border-hover: rgba(200, 200, 210, 0.8);
   
   /* Enhanced shadows - layered for depth, reduced harshness */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -184,35 +184,35 @@
   --app-bg-base-end: #f5f5f7;   /* Soft warm gray */
 
   /* Floating bars - warmer glass with more opacity */
-  --floating-bar-bg: rgba(252, 251, 248, 0.96);  /* More opaque, frosted */
-  --floating-bar-border: rgba(229, 231, 235, 0.8);  /* More visible border */
+  --floating-bar-bg: rgba(248, 247, 245, 0.96);  /* More opaque, frosted */
+  --floating-bar-border: rgba(220, 220, 225, 0.8);  /* More visible border */
   --floating-bar-shadow:
     0 12px 28px rgba(31, 41, 55, 0.08),  /* Darker, more defined */
     0 2px 8px rgba(31, 41, 55, 0.04);
 
   /* Unified glass system - warmer, more comfortable with increased opacity */
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(252, 251, 248, 0.6));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(254, 253, 250, 0.7));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(229, 231, 235, 0.62));
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(209, 213, 219, 0.74));
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(248, 247, 245, 0.6));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(250, 249, 247, 0.7));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(220, 220, 225, 0.62));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(200, 200, 210, 0.74));
   --glass-surface-shadow:
     0 12px 28px rgba(31, 41, 55, 0.08),
     0 2px 8px rgba(31, 41, 55, 0.04);
 
-  --glass-field-bg: rgba(252, 251, 248, 0.5);
-  --glass-field-bg-focus: rgba(255, 255, 255, 0.7);
-  --glass-field-border: rgba(229, 231, 235, 0.5);
-  --glass-field-border-focus: rgba(168, 85, 247, 0.4);  /* Soft purple focus */
+  --glass-field-bg: rgba(248, 247, 245, 0.5);
+  --glass-field-bg-focus: rgba(252, 251, 248, 0.7);
+  --glass-field-border: rgba(220, 220, 225, 0.5);
+  --glass-field-border-focus: var(--accent-color, 168 85 247) 0.4;  /* Soft accent focus */
   --glass-field-placeholder: rgba(107, 114, 128, 0.6);  /* Better contrast */
 
-  --sheet-bg: rgba(254, 253, 250, 0.96);  /* Warm off-white */
-  --sheet-border: rgba(229, 231, 235, 0.8);
+  --sheet-bg: rgba(250, 249, 247, 0.96);  /* Warm off-white */
+  --sheet-border: rgba(220, 220, 225, 0.8);
 
   /* Search input inside floating bar - better contrast */
   --glass-input-in-bar-bg: rgba(31, 41, 55, 0.04);  /* Subtle dark */
   --glass-input-in-bar-border: rgba(229, 231, 235, 0.8);
   --glass-input-in-bar-bg-focus: rgba(31, 41, 55, 0.08);
-  --glass-input-in-bar-border-focus: rgba(168, 85, 247, 0.3);
+  --glass-input-in-bar-border-focus: hsl(var(--accent-color, 265 70% 60%) / 0.3);
 
   /* Animation timings - unchanged */
   --duration-interaction: 200ms;
@@ -239,7 +239,7 @@
   --popover: 0 0% 100%;
   --popover-foreground: 220 15% 15%;
 
-  --primary: 265 70% 60%;
+  --primary: var(--accent-color, 265 70% 60%);
   --primary-foreground: 0 0% 100%;
 
   --secondary: 45 20% 95%;
@@ -248,7 +248,7 @@
   --muted: 45 15% 94%;
   --muted-foreground: 220 10% 34%;
 
-  --accent: 265 70% 60%;
+  --accent: var(--accent-color, 265 70% 60%);
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 62.8% 30.6%;
@@ -256,7 +256,7 @@
 
   --border: 220 10% 88%;
   --input: 220 10% 88%;
-  --ring: 265 70% 60%;
+  --ring: var(--accent-color, 265 70% 60%);
 
   --app-bg-1: rgba(168, 85, 247, 0.08);
   --app-bg-2: rgba(139, 69, 180, 0.06);
@@ -311,7 +311,7 @@
   --popover: 250 12% 7%;
   --popover-foreground: 0 0% 96%;
 
-  --primary: 265 70% 60%;
+  --primary: var(--accent-color, 265 70% 60%);
   --primary-foreground: 0 0% 100%;
 
   --secondary: 250 10% 12%;
@@ -320,7 +320,7 @@
   --muted: 250 8% 14%;
   --muted-foreground: 220 8% 65%;
 
-  --accent: 265 70% 60%;
+  --accent: var(--accent-color, 265 70% 60%);
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 62.8% 30.6%;
@@ -328,7 +328,7 @@
 
   --border: 250 8% 18%;
   --input: 250 8% 14%;
-  --ring: 265 70% 60%;
+  --ring: var(--accent-color, 265 70% 60%);
 
   --radius: 0.75rem;
 
@@ -338,8 +338,8 @@
   --color-text-primary: #FAFAFA;
   --color-text-secondary: #A1A1A6;
   --color-border-subtle: rgba(255, 255, 255, 0.08);
-  --color-accent: hsl(265 70% 60%);
-  --color-accent-soft: rgba(168, 85, 247, 0.15);
+  --color-accent: hsl(var(--accent-color, 265 70% 60%));
+  --color-accent-soft: hsl(var(--accent-color, 265 70% 60%) / 0.15);
 
   /* Glass panel variables - frosted, opaque */
   --glass-bg: rgba(18, 18, 24, 0.88);
@@ -392,7 +392,7 @@
   --glass-field-bg: rgba(18, 18, 24, 0.85);
   --glass-field-bg-focus: rgba(22, 22, 30, 0.95);
   --glass-field-border: rgba(255, 255, 255, 0.1);
-  --glass-field-border-focus: rgba(167, 139, 250, 0.5);
+  --glass-field-border-focus: hsl(var(--accent-color, 265 70% 60%) / 0.5);
   --glass-field-placeholder: rgba(142, 142, 147, 0.7);
 
   /* Sheet/menu - frosted glass: more opaque, stronger blur */
@@ -403,7 +403,7 @@
   --glass-input-in-bar-bg: rgba(255, 255, 255, 0.06);
   --glass-input-in-bar-border: rgba(255, 255, 255, 0.1);
   --glass-input-in-bar-bg-focus: rgba(255, 255, 255, 0.1);
-  --glass-input-in-bar-border-focus: rgba(167, 139, 250, 0.45);
+  --glass-input-in-bar-border-focus: hsl(var(--accent-color, 265 70% 60%) / 0.45);
 }
 
 /* ========================================
@@ -445,19 +445,19 @@
   --color-background: rgba(250, 250, 252, 0.15);
   --color-card: rgba(255, 255, 255, 0.5);
 
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(252, 251, 248, 0.58));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(254, 253, 250, 0.68));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(229, 231, 235, 0.62));
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(248, 247, 245, 0.58));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(250, 249, 247, 0.68));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(220, 220, 225, 0.62));
 
-  --glass-bg: rgba(252, 251, 248, 0.45);
-  --glass-bg-hover: rgba(254, 253, 250, 0.55);
+  --glass-bg: rgba(248, 247, 245, 0.45);
+  --glass-bg-hover: rgba(250, 249, 247, 0.55);
 
-  --floating-bar-bg: rgba(252, 251, 248, 0.78);
+  --floating-bar-bg: rgba(248, 247, 245, 0.78);
 
-  --sheet-bg: rgba(254, 253, 250, 0.7);
+  --sheet-bg: rgba(250, 249, 247, 0.7);
 
-  --glass-field-bg: rgba(252, 251, 248, 0.5);
-  --glass-field-bg-focus: rgba(255, 255, 255, 0.65);
+  --glass-field-bg: rgba(248, 247, 245, 0.5);
+  --glass-field-bg-focus: rgba(252, 251, 248, 0.65);
 }
 
 @layer base {
