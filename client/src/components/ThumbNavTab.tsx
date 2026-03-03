@@ -200,7 +200,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
     <>
       {/* Thumb Tab */}
       <motion.div
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none"
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none p-2 touch-none"
         variants={tabVariants}
         animate={{
           x: isOpen ? -10 : -(dragProgress * 52 + (isPressed ? 8 : 0)),
