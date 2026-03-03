@@ -112,14 +112,14 @@
      ======================================== */
   /* Softer main background - warm off-white like Facebook/Google */
   --background: 45 15% 97%;  /* #FAFAFC with warm tint */
-  --foreground: 220 25% 5%;  /* Very dark text: almost black */
+  --foreground: 220 25% 2%;  /* Extremely dark text: almost black */
 
   /* Card backgrounds - light gray variations for dynamic look */
   --card: 45 25% 94%;  /* Light gray: #EFEFF1 */
-  --card-foreground: 220 25% 5%;  /* Very dark text */
+  --card-foreground: 220 25% 2%;  /* Extremely dark text */
 
   --popover: 45 25% 94%;  /* Light gray: #EFEFF1 */
-  --popover-foreground: 220 25% 5%;
+  --popover-foreground: 220 25% 2%;
 
   /* Primary color - configurable accent */
   --primary: var(--accent-color, 265 70% 60%);
@@ -127,7 +127,7 @@
 
   /* Secondary surfaces - warm light gray */
   --secondary: 45 25% 92%;  /* Medium light gray: #E8E8EB */
-  --secondary-foreground: 220 25% 5%;  /* Very dark text */
+  --secondary-foreground: 220 25% 2%;  /* Extremely dark text */
 
   /* Muted elements - softer gray */
   --muted: 45 25% 90%;  /* Light gray: #E0E0E5 */
@@ -228,19 +228,19 @@
 .light {
   /* Light Mode: frosted-glass surfaces like the composer page */
   --background: 45 15% 97%;
-  --foreground: 220 25% 5%;  /* Very dark text: almost black */
+  --foreground: 220 25% 2%;  /* Extremely dark text: almost black */
 
   --card: 45 25% 94%;  /* Light gray: #EFEFF1 */
-  --card-foreground: 220 25% 5%;  /* Very dark text */
+  --card-foreground: 220 25% 2%;  /* Extremely dark text */
 
   --popover: 45 25% 94%;  /* Light gray: #EFEFF1 */
-  --popover-foreground: 220 25% 5%;
+  --popover-foreground: 220 25% 2%;
 
   --primary: var(--accent-color, 265 70% 60%);
   --primary-foreground: 0 0% 100%;
 
   --secondary: 45 25% 92%;  /* Light gray */
-  --secondary-foreground: 220 25% 5%;  /* Very dark text */
+  --secondary-foreground: 220 25% 2%;  /* Extremely dark text */
 
   --muted: 45 25% 90%;  /* Light gray */
   --muted-foreground: 220 20% 15%;  /* Very dark muted text */
