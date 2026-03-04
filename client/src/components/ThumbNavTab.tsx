@@ -196,21 +196,21 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
       >
         {/* Expanded touch target for easier grab */}
         <div className="absolute inset-y-0 -left-8 right-2" />
-        <div className="relative h-40 w-4 bg-gradient-to-l from-white/20 to-white/10 backdrop-blur-md rounded-l-2xl border-l border-t border-b border-white/20 shadow-2xl">
+        <div className="relative h-40 w-4 bg-gradient-to-l from-foreground/20 to-foreground/10 dark:from-white/20 dark:to-white/10 backdrop-blur-md rounded-l-2xl border-l border-t border-b border-border/40 shadow-2xl">
           {/* Visual grip indicator */}
           <div className="absolute inset-y-0 left-1 w-2 flex flex-col items-center justify-center gap-1.5">
-            <div className="w-1.5 h-1.5 bg-white/80 rounded-full shadow-lg" />
-            <div className="w-1.5 h-1.5 bg-white/80 rounded-full shadow-lg" />
-            <div className="w-1.5 h-1.5 bg-white/80 rounded-full shadow-lg" />
+            <div className="w-1.5 h-1.5 bg-foreground/80 dark:bg-white/80 rounded-full shadow-lg" />
+            <div className="w-1.5 h-1.5 bg-foreground/80 dark:bg-white/80 rounded-full shadow-lg" />
+            <div className="w-1.5 h-1.5 bg-foreground/80 dark:bg-white/80 rounded-full shadow-lg" />
           </div>
           {/* Subtle animated pulse when idle */}
           <motion.div
-            className="absolute inset-0 bg-white/5 rounded-l-2xl"
+            className="absolute inset-0 bg-foreground/5 dark:bg-white/5 rounded-l-2xl"
             animate={{ opacity: [0.3, 0.6, 0.3] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
           {/* Hover/active state highlight */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10 rounded-l-2xl opacity-0 hover:opacity-100 transition-opacity duration-200" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-foreground/10 dark:to-white/10 rounded-l-2xl opacity-0 hover:opacity-100 transition-opacity duration-200" />
         </div>
       </motion.div>
 
