@@ -32,6 +32,7 @@ interface ThumbNavTabProps {
 export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
   const dragX = useMotionValue(0);
   const touchStartXRef = useRef<number | null>(null);
   const panelWidth = 360;
@@ -104,10 +105,18 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const handleClose = () => {
     setIsOpen(false);
     dragX.set(0);
-    
+
     if ('vibrate' in navigator) {
       navigator.vibrate(30);
     }
+  };
+
+  const handlePressStart = () => {
+    setIsPressed(true);
+  };
+
+  const handlePressEnd = () => {
+    setIsPressed(false);
   };
 
   // Close on escape key
@@ -130,6 +139,13 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const panelX = useTransform(dragX, [0, panelWidth], [panelWidth, 0]);
   const backdropOpacity = useTransform(dragX, [0, panelWidth], [0, 0.5]);
   const tabX = useTransform(dragX, [0, panelWidth], [0, -panelWidth]);
+  const dragProgress = useTransform(dragX, [0, panelWidth], [0, 1]);
+
+  // Compute tab X position based on drag progress and press state
+  const tabPositionX = useTransform(
+    dragProgress,
+    (progress) => isOpen ? -10 : -(progress * 52 + (isPressed ? 8 : 0))
+  );
 
   // Touch handlers for slide-to-close on the open panel
   const panelTouchStartXRef = useRef<number | null>(null);
@@ -164,8 +180,8 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
       <motion.div
         className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none p-2 touch-none"
         variants={tabVariants}
+        style={{ x: tabPositionX }}
         animate={{
-          x: isOpen ? -10 : -(dragProgress * 52 + (isPressed ? 8 : 0)),
           scale: isPressed ? 0.96 : 1,
         }}
         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
