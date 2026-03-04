@@ -1591,7 +1591,7 @@ export default function Admin() {
     <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
       
       <main className="mx-auto w-full max-w-5xl p-4 md:p-8">
-        <div className="mb-6 glass-surface-strong rounded-3xl border border-white/[0.1] p-4 md:p-6">
+        <div className="mb-6 glass-surface-strong rounded-3xl border border-foreground/[0.1] p-4 md:p-6">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15">
@@ -1722,12 +1722,12 @@ export default function Admin() {
                   className={`min-w-[128px] rounded-2xl border px-3 py-2.5 text-left transition-all active:scale-[0.98] ${
                     activeTab === section.value
                       ? "border-primary/45 bg-primary/15 shadow-[0_0_16px_rgba(168,85,247,0.2)]"
-                      : "border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08]"
+                      : "border-foreground/[0.1] bg-foreground/[0.04] hover:bg-foreground/[0.08]"
                   }`}
                   data-testid={`admin-mobile-tab-${section.value}`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${activeTab === section.value ? "bg-primary/20" : "bg-white/[0.08]"}`}>
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${activeTab === section.value ? "bg-primary/20" : "bg-foreground/[0.08]"}`}>
                       <section.icon className={`h-4 w-4 ${activeTab === section.value ? "text-primary" : "text-muted-foreground"}`} />
                     </div>
                     <div className="min-w-0">
@@ -1744,7 +1744,7 @@ export default function Admin() {
             </div>
           </div>
 
-          <TabsList className={`hidden md:grid w-full mb-6 rounded-2xl border border-white/[0.1] bg-white/[0.03] p-1 ${currentUser?.isOwner ? 'grid-cols-12' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
+          <TabsList className={`hidden md:grid w-full mb-6 rounded-2xl border border-foreground/[0.1] bg-foreground/[0.03] p-1 ${currentUser?.isOwner ? 'grid-cols-12' : (currentUser?.isAdminPlus ? 'grid-cols-8' : 'grid-cols-7')}`}>
             <TabsTrigger value="moderation" className="gap-1 text-xs px-2 rounded-xl data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Review</span>
@@ -4203,7 +4203,7 @@ export default function Admin() {
 
           {currentUser?.isOwner && (
             <TabsContent value="console">
-              <Card className="glass-surface-strong border-white/[0.1]">
+              <Card className="glass-surface-strong border-foreground/[0.1]">
                 <CardHeader className="space-y-2">
                   <CardTitle className="flex items-center gap-2">
                     <Power className="h-5 w-5 text-purple-500" />
@@ -4215,14 +4215,14 @@ export default function Admin() {
                 </CardHeader>
                 <CardContent className="space-y-6 md:space-y-7">
                   {/* Owner-only quick access buttons */}
-                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-3 md:p-4">
+                  <div className="rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] p-3 md:p-4">
                     <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Quick Jump
                     </p>
                     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
                       <Button
                         variant="outline"
-                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        className="h-auto justify-start gap-2 rounded-2xl border-foreground/[0.14] bg-foreground/[0.04] px-3 py-3 text-left hover:bg-foreground/[0.1]"
                         onClick={() => setActiveTab("protected")}
                         data-testid="button-goto-protected"
                       >
@@ -4234,7 +4234,7 @@ export default function Admin() {
                       </Button>
                       <Button
                         variant="outline"
-                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        className="h-auto justify-start gap-2 rounded-2xl border-foreground/[0.14] bg-foreground/[0.04] px-3 py-3 text-left hover:bg-foreground/[0.1]"
                         onClick={() => setActiveTab("debug")}
                         data-testid="button-goto-debug"
                       >
@@ -4243,7 +4243,7 @@ export default function Admin() {
                       </Button>
                       <Button
                         variant="outline"
-                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        className="h-auto justify-start gap-2 rounded-2xl border-foreground/[0.14] bg-foreground/[0.04] px-3 py-3 text-left hover:bg-foreground/[0.1]"
                         onClick={() => setActiveTab("maintenance")}
                         data-testid="button-goto-maintenance"
                       >
@@ -4255,7 +4255,7 @@ export default function Admin() {
                       </Button>
                       <Button
                         variant="outline"
-                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        className="h-auto justify-start gap-2 rounded-2xl border-foreground/[0.14] bg-foreground/[0.04] px-3 py-3 text-left hover:bg-foreground/[0.1]"
                         onClick={() => setActiveTab("achievements")}
                         data-testid="button-goto-achievements"
                       >
@@ -4264,7 +4264,7 @@ export default function Admin() {
                       </Button>
                       <Button
                         variant="outline"
-                        className="h-auto justify-start gap-2 rounded-2xl border-white/[0.14] bg-white/[0.04] px-3 py-3 text-left hover:bg-white/[0.1]"
+                        className="h-auto justify-start gap-2 rounded-2xl border-foreground/[0.14] bg-foreground/[0.04] px-3 py-3 text-left hover:bg-foreground/[0.1]"
                         onClick={() => setActiveTab("profile-badges")}
                         data-testid="button-goto-profile-badges"
                       >
@@ -4274,7 +4274,7 @@ export default function Admin() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 md:p-5 space-y-3">
+                  <div className="rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] p-4 md:p-5 space-y-3">
                     <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       SQL Query (SELECT only)
                     </Label>
@@ -4313,7 +4313,7 @@ export default function Admin() {
                     </Button>
                     
                     {consoleOutput && (
-                      <div className="mt-4 overflow-hidden rounded-xl border border-white/[0.1]">
+                      <div className="mt-4 overflow-hidden rounded-xl border border-foreground/[0.1]">
                         <div className="bg-muted/40 px-3 py-2 text-sm font-medium">
                           Results ({consoleOutput.rowCount} rows)
                         </div>
@@ -4326,12 +4326,12 @@ export default function Admin() {
                     )}
                   </div>
 
-                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 md:p-5">
+                  <div className="rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] p-4 md:p-5">
                     <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Quick Actions
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3">
+                      <div className="space-y-2 rounded-xl border border-foreground/[0.08] bg-foreground/[0.02] p-3">
                         <Label>Look up user by username</Label>
                         <div className="flex gap-2">
                           <Input
@@ -4366,7 +4366,7 @@ export default function Admin() {
                         </div>
                       </div>
 
-                      <div className="space-y-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3">
+                      <div className="space-y-2 rounded-xl border border-foreground/[0.08] bg-foreground/[0.02] p-3">
                         <Label>Calculate Retroactive XP</Label>
                         <Button
                           variant="outline"
@@ -4392,7 +4392,7 @@ export default function Admin() {
                         </Button>
                       </div>
 
-                      <div className="space-y-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3">
+                      <div className="space-y-2 rounded-xl border border-foreground/[0.08] bg-foreground/[0.02] p-3">
                         <Label>Clear Debug Logs</Label>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -4438,13 +4438,13 @@ export default function Admin() {
                   </div>
 
                   {consoleHistory.length > 0 && (
-                    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 md:p-5">
+                    <div className="rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] p-4 md:p-5">
                       <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent Queries</h3>
                       <div className="space-y-2">
                         {consoleHistory.map((query, idx) => (
                           <button
                             key={idx}
-                            className="w-full truncate rounded-xl border border-white/[0.08] bg-muted/40 p-2 text-left font-mono text-sm hover:bg-muted/70"
+                            className="w-full truncate rounded-xl border border-foreground/[0.08] bg-muted/40 p-2 text-left font-mono text-sm hover:bg-muted/70"
                             onClick={() => setConsoleQuery(query)}
                           >
                             {query}
@@ -4455,12 +4455,12 @@ export default function Admin() {
                   )}
 
                   {/* Features & Version History */}
-                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 md:p-5 space-y-4">
+                  <div className="rounded-2xl border border-foreground/[0.08] bg-foreground/[0.03] p-4 md:p-5 space-y-4">
                     <div className="flex items-center gap-2">
                       <History className="h-5 w-5 text-purple-400" />
                       <h3 className="text-lg font-semibold">Features & Version History</h3>
                     </div>
-                    <div className="max-h-[400px] overflow-y-auto rounded-xl border border-white/[0.08] bg-muted/30 p-4">
+                    <div className="max-h-[400px] overflow-y-auto rounded-xl border border-foreground/[0.08] bg-muted/30 p-4">
                       <div className="space-y-3">
                         {/* Version 2.7.0 */}
                         <div className="border-l-2 border-green-500 pl-3">

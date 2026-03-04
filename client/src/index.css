@@ -512,38 +512,9 @@
     font-family: var(--font-logo);
   }
 
-  /* Enhanced text color for light mode */
-  :root:not(.dark):not(.light) {
-    font-size: 16px;  /* Base 16px for better readability */
-    line-height: 1.7;  /* Increased line-height for comfort */
-    color: hsl(220 25% 5%) !important; /* Very dark default text - force override */
-  }
-  
-  :root:not(.dark):not(.light) body {
-    font-family: var(--font-sans);
-    letter-spacing: 0.01em;  /* Slightly increased letter spacing */
-    color: hsl(220 25% 5%) !important; /* Very dark body text - force override */
-  }
-  
-  :root:not(.dark):not(.light) p, 
-  :root:not(.dark):not(.light) .text-sm,
-  :root:not(.dark):not(.light) .text-xs {
-    color: hsl(220 25% 5%) !important; /* Very dark gray for body text - force override */
-    line-height: 1.75;  /* Even more line-height for body text */
-  }
-  
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     letter-spacing: -0.025em;
-  }
-  
-  /* Light mode heading improvements */
-  :root:not(.dark) h1, 
-  :root:not(.dark) h2, 
-  :root:not(.dark) h3 {
-    color: hsl(220 15% 12%);  /* Slightly darker than body text */
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);  /* Stronger shadow for contrast */
   }
 
   [contenteditable]:empty:before {
@@ -885,173 +856,47 @@ html.dark {
    ======================================== */
 
 /* Apply subtle shadows to cards in light mode only */
-:root:not(.dark):not(.light) [data-slot="card"],
-:root:not(.dark):not(.light) .card {
+.light [data-slot="card"],
+.light .card {
   box-shadow: var(--shadow-card);
   transition: box-shadow 0.2s ease-out, transform 0.2s ease-out;
 }
 
-:root:not(.dark):not(.light) [data-slot="card"]:hover,
-:root:not(.dark):not(.light) .card:hover {
+.light [data-slot="card"]:hover,
+.light .card:hover {
   box-shadow: var(--shadow-card-hover);
 }
 
-/* Keep main background stable in light mode (prevents scroll tint drift) */
-:root:not(.dark):not(.light) main {
+/* Keep main background stable in light mode */
+.light main {
   background: transparent;
 }
 
 /* Light mode input fields - subtle inset shadow */
-:root:not(.dark):not(.light) input:not([type="checkbox"]):not([type="radio"]),
-:root:not(.dark):not(.light) textarea,
-:root:not(.dark):not(.light) select {
+.light input:not([type="checkbox"]):not([type="radio"]),
+.light textarea,
+.light select {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-:root:not(.dark):not(.light) input:focus,
-:root:not(.dark):not(.light) textarea:focus,
-:root:not(.dark):not(.light) select:focus {
+.light input:focus,
+.light textarea:focus,
+.light select:focus {
   box-shadow: 
     inset 0 1px 2px rgba(0, 0, 0, 0.04),
     0 0 0 2px hsl(var(--ring) / 0.2);
 }
 
-/* Light mode buttons - enhanced depth and comfort */
-:root:not(.dark):not(.light) button:not([class*="ghost"]):not([class*="link"]) {
-  box-shadow: var(--shadow-xs);
-  transition: all 0.2s ease-out;
-}
-
-:root:not(.dark):not(.light) button:not([class*="ghost"]):not([class*="link"]):hover {
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);  /* Subtle lift effect */
-}
-
-:root:not(.dark):not(.light) button:not([class*="ghost"]):not([class*="link"]):active {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
-  transform: translateY(0);
-}
-
-/* Enhanced primary button styling for light mode */
-:root:not(.dark):not(.light) button.bg-primary,
-:root:not(.dark):not(.light) .bg-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(265 70% 54%) 100%);  /* Subtle gradient */
-  border: 1px solid hsl(265 65% 50%);  /* Soft border for depth */
-  box-shadow: 
-    0 2px 4px rgba(168, 85, 247, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-:root:not(.dark):not(.light) button.bg-primary:hover,
-:root:not(.dark):not(.light) .bg-primary:hover {
-  background: linear-gradient(135deg, hsl(265 65% 62%) 0%, hsl(265 70% 56%) 100%);  /* Slightly darker */
-  box-shadow: 
-    0 4px 8px rgba(168, 85, 247, 0.2),
-    0 2px 4px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
-}
-
-:root:not(.dark):not(.light) button.bg-primary:active,
-:root:not(.dark):not(.light) .bg-primary:active {
-  background: linear-gradient(135deg, hsl(265 65% 58%) 0%, hsl(265 70% 52%) 100%);  /* Darker for active */
-  box-shadow: inset 0 1px 2px rgba(124, 58, 237, 0.2);
-  transform: translateY(0);
-}
-
 /* Light mode dropdown/popover shadows */
-:root:not(.dark):not(.light) [data-radix-popper-content-wrapper] > div,
-:root:not(.dark):not(.light) [role="dialog"],
-:root:not(.dark):not(.light) [role="menu"] {
+.light [data-radix-popper-content-wrapper] > div,
+.light [role="dialog"],
+.light [role="menu"] {
   box-shadow: var(--shadow-lg);
 }
 
 /* Light mode avatar ring - softer */
-:root:not(.dark):not(.light) [data-slot="avatar"] {
+.light [data-slot="avatar"] {
   box-shadow: 0 0 0 2px hsl(var(--background)), var(--shadow-xs);
-}
-
-/* ========================================
-   LIGHT MODE ENHANCED SPACING & PADDING
-   Improved comfort and reduced crowding
-   ======================================== */
-
-/* Enhanced card spacing in light mode */
-:root:not(.dark):not(.light) .card,
-:root:not(.dark):not(.light) [data-slot="card"] {
-  padding: 1.5rem;  /* More generous padding */
-  margin-bottom: 1.25rem;  /* More space between cards */
-}
-
-:root:not(.dark):not(.light) .card p,
-:root:not(.dark):not(.light) [data-slot="card"] p {
-  margin-bottom: 1rem;  /* More space after paragraphs */
-}
-
-/* Enhanced section spacing */
-:root:not(.dark):not(.light) section {
-  padding: 2rem 0;
-  margin-bottom: 1.5rem;
-}
-
-/* Better list spacing */
-:root:not(.dark):not(.light) ul,
-:root:not(.dark):not(.light) ol {
-  line-height: 1.8;
-  padding-left: 1.5rem;
-}
-
-:root:not(.dark):not(.light) li {
-  margin-bottom: 0.75rem;
-}
-
-/* Enhanced form spacing */
-:root:not(.dark):not(.light) .space-y-2 > * + * {
-  margin-top: 1rem;  /* More space between form elements */
-}
-
-:root:not(.dark):not(.light) .space-y-4 > * + * {
-  margin-top: 1.5rem;  /* More space for larger gaps */
-}
-
-/* Better button spacing */
-:root:not(.dark):not(.light) .button-group {
-  display: flex;
-  gap: 1rem;  /* More space between buttons */
-}
-
-:root:not(.dark):not(.light) .stack {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Enhanced modal/dialog padding */
-:root:not(.dark):not(.light) [role="dialog"] {
-  padding: 2rem;
-}
-
-:root:not(.dark):not(.light) [role="dialog"] > div:first-child {
-  margin-bottom: 1.5rem;
-}
-
-/* Better table spacing */
-:root:not(.dark):not(.light) table {
-  border-spacing: 0 0.5rem;
-}
-
-:root:not(.dark):not(.light) th,
-:root:not(.dark):not(.light) td {
-  padding: 1rem;
-}
-
-/* Enhanced navigation spacing */
-:root:not(.dark):not(.light) nav {
-  padding: 1rem 0;
-}
-
-:root:not(.dark):not(.light) nav a {
-  padding: 0.75rem 1rem;
-  margin: 0 0.25rem;
 }
 
 /* ========================================
@@ -1548,3 +1393,131 @@ html.dark {
   height: var(--mobile-search-reserved-space);
 }
 
+/* ========================================
+   LIGHT MODE COMPREHENSIVE OVERRIDES
+   Ensures all dark-mode-assumed utilities adapt properly.
+   Glass morphism, nav overlays, text, borders.
+   ======================================== */
+
+/* --- Light mode: Nav overlay / mobile slide-out --- */
+.light .nav-overlay-modern {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(245, 245, 247, 0.92) 100%);
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .nav-overlay-modern-item {
+  border-color: rgba(0, 0, 0, 0.06);
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.02) 100%);
+  color: hsl(var(--foreground));
+}
+
+.light .nav-overlay {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .nav-overlay-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .nav-overlay-close {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.light .nav-overlay-item {
+  border-color: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.03);
+  color: hsl(var(--foreground));
+}
+
+.light .nav-overlay-item:hover {
+  background: hsl(var(--primary) / 0.08);
+  border-color: hsl(var(--primary) / 0.25);
+}
+
+.light .nav-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* --- Light mode: Glass menu item --- */
+.light .glass-menu-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-menu-item.active {
+  background: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary) / 0.2);
+}
+
+/* --- Light mode: Glass button --- */
+.light .glass-button {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .glass-button:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* --- Light mode: Glass sheet --- */
+.light .glass-sheet {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04) inset;
+}
+
+/* --- Light mode: FAB (floating action button) --- */
+.light .fab-button {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.light .fab-ring-core {
+  border-color: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.light .fab-ring-core-open {
+  border-color: hsl(var(--primary));
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08), 0 0 0 1px hsl(var(--primary) / 0.2), 0 0 24px hsl(var(--primary) / 0.15);
+}
+
+/* --- Light mode: Glass card hover accent --- */
+.light .glass-card:hover {
+  border-color: hsl(var(--primary) / 0.2);
+  box-shadow: var(--glass-surface-shadow), 0 0 0 1px hsl(var(--primary) / 0.08);
+}
+
+/* --- Light mode: Override inline text color inheritance for rich text --- */
+.light [data-testid^="text-content-"] * {
+  color: inherit !important;
+}
+.light [data-testid^="text-content-"] span[style*="color"] {
+  color: inherit !important;
+}
+.light [data-testid^="text-content-"] *[style*="background"] {
+  background-color: transparent !important;
+  background: none !important;
+}
+
+/* --- Light mode: Ensure body text inherits correct foreground --- */
+.light body,
+.light #root {
+  color: hsl(var(--foreground));
+}
+
+/* --- Light mode: Force dark text on headings and paragraphs --- */
+.light h1, .light h2, .light h3, .light h4, .light h5, .light h6 {
+  color: hsl(var(--foreground));
+}
+
+/* --- Light mode: Ensure card text is dark --- */
+.light [data-slot="card"],
+.light .card {
+  color: hsl(var(--card-foreground));
+}

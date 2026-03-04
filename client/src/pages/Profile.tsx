@@ -166,7 +166,7 @@ export default function Profile() {
         {/* Profile Header - Glass card on neutral dark */}
         <div className={cn(
           "relative overflow-hidden rounded-2xl",
-          hasCustomBackground ? "glass-surface-strong border border-white/15" : "glass-card border border-border/10"
+          hasCustomBackground ? "glass-surface-strong border border-foreground/15" : "glass-card border border-border/10"
         )}>
           {currentUser.bannerUrl ? (
             <div className="h-32 sm:h-48 w-full overflow-hidden">
@@ -220,17 +220,17 @@ export default function Profile() {
 
             <div className="flex gap-2 w-full sm:w-auto mb-2 flex-wrap">
               <Link href="/profile/edit">
-                <Button variant="outline" className="gap-2 glass-button border-white/10 hover:bg-white/10" data-testid="button-edit-profile">
+                <Button variant="outline" className="gap-2 glass-button border-foreground/10 hover:bg-white/10" data-testid="button-edit-profile">
                   <Edit className="h-4 w-4" />
                   Edit
                 </Button>
               </Link>
               <Link href="/badges">
-                <Button variant="outline" className="gap-2 glass-button border-white/10 hover:bg-white/10" data-testid="button-badges">
+                <Button variant="outline" className="gap-2 glass-button border-foreground/10 hover:bg-white/10" data-testid="button-badges">
                   Badges
                 </Button>
               </Link>
-              <Button variant="outline" className="gap-2 glass-button border-white/10 hover:bg-white/10" onClick={handleLogout} data-testid="button-logout">
+              <Button variant="outline" className="gap-2 glass-button border-foreground/10 hover:bg-white/10" onClick={handleLogout} data-testid="button-logout">
                 <Settings className="h-4 w-4" />
                 Logout
               </Button>
@@ -246,8 +246,8 @@ export default function Profile() {
         <div className="px-4 sm:px-8 py-6 space-y-4">
           <div className="flex gap-6 text-sm">
             <div className="flex items-center gap-1 glass-button px-3 py-1.5 rounded-lg" data-testid="stat-bars">
-              <span className="font-bold text-white">{stats?.barsCount ?? 0}</span>
-              <span className="text-white/60">Bars</span>
+              <span className="font-bold text-foreground">{stats?.barsCount ?? 0}</span>
+              <span className="text-muted-foreground">Bars</span>
             </div>
             <div className="flex items-center gap-1" data-testid="stat-followers">
               <span className="font-bold text-foreground">{stats?.followersCount ?? 0}</span>

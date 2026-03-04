@@ -67,14 +67,14 @@ export function BadgeShowcase({ userId, username, isOwnProfile, maxDisplay = 8 }
   if (totalBadges === 0 && !isOwnProfile) return null;
 
   return (
-    <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+    <div className="bg-white/5 rounded-xl p-4 border border-foreground/10">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
             <Trophy className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white">Badges</h3>
+            <h3 className="text-sm font-semibold text-foreground">Badges</h3>
             <p className="text-xs text-muted-foreground">{totalBadges} collected</p>
           </div>
         </div>

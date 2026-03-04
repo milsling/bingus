@@ -195,13 +195,13 @@ export default function AuthCallback() {
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-500/8 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-primary/8 rounded-full blur-[120px]" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-6">
         <div className="flex items-center gap-2">
           <img src={iconUrl} alt="Orphan Bars" className="h-12 w-12" />
-          <span className="font-logo text-3xl text-white">ORPHAN BARS</span>
+          <span className="font-logo text-3xl text-foreground">ORPHAN BARS</span>
         </div>
 
         {needsUsername ? (
@@ -211,13 +211,13 @@ export default function AuthCallback() {
                 <div className="mx-auto w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                   <User className="h-6 w-6 text-primary" />
                 </div>
-                <h2 className="text-xl font-semibold text-white">Choose Your Username</h2>
-                <p className="text-sm text-white/60">Pick a name to represent you on Orphan Bars</p>
+                <h2 className="text-xl font-semibold text-foreground">Choose Your Username</h2>
+                <p className="text-sm text-muted-foreground">Pick a name to represent you on Orphan Bars</p>
               </div>
 
               <form onSubmit={handleSubmitUsername} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-white/80">Username</Label>
+                  <Label htmlFor="username" className="text-foreground/80">Username</Label>
                   <Input
                     id="username"
                     type="text"
@@ -231,7 +231,7 @@ export default function AuthCallback() {
                     required
                     data-testid="input-oauth-username"
                   />
-                  <p className="text-xs text-white/50">Letters, numbers, and underscores only</p>
+                  <p className="text-xs text-foreground/50">Letters, numbers, and underscores only</p>
                 </div>
 
                 {error && (
@@ -269,7 +269,7 @@ export default function AuthCallback() {
         ) : (
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-white/60">Completing sign in...</p>
+            <p className="text-muted-foreground">Completing sign in...</p>
           </div>
         )}
       </div>

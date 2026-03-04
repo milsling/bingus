@@ -49,7 +49,7 @@ function OwnerConsoleContent() {
   const queryClient = useQueryClient();
   const { selectedBackground } = useBackground();
   const hasCustomBackground = selectedBackground.image !== null;
-  const cardCn = cn("glass-surface-strong border-white/15");
+  const cardCn = cn("glass-surface-strong border-foreground/15");
   const { settings, updateSettings, setCanCustomize } = useTheme();
 
   // Mark owner as able to customize
@@ -267,7 +267,7 @@ function OwnerConsoleContent() {
       <main className="mx-auto w-full max-w-3xl p-4 md:p-8">
 
         {/* Header */}
-        <div className="mb-6 glass-surface-strong rounded-3xl border border-white/[0.1] p-4 md:p-6">
+        <div className="mb-6 glass-surface-strong rounded-3xl border border-foreground/[0.1] p-4 md:p-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/20">
@@ -296,11 +296,11 @@ function OwnerConsoleContent() {
                   "min-w-[110px] rounded-2xl border px-3 py-2.5 text-left transition-all active:scale-[0.98]",
                   activeTab === tab.value
                     ? "border-primary/45 bg-primary/15 shadow-[0_0_16px_rgba(168,85,247,0.2)]"
-                    : "border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08]"
+                    : "border-foreground/[0.1] bg-foreground/[0.04] hover:bg-foreground/[0.08]"
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-xl", activeTab === tab.value ? "bg-primary/20" : "bg-white/[0.08]")}>
+                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-xl", activeTab === tab.value ? "bg-primary/20" : "bg-foreground/[0.08]")}>
                     <tab.icon className={cn("h-3.5 w-3.5", activeTab === tab.value ? "text-primary" : "text-muted-foreground")} />
                   </div>
                   <span className="text-xs font-semibold truncate">{tab.label}</span>
@@ -310,7 +310,7 @@ function OwnerConsoleContent() {
           </div>
 
           {/* Desktop tabs */}
-          <TabsList className="hidden md:grid w-full grid-cols-5 mb-6 rounded-2xl border border-white/[0.1] bg-white/[0.03] p-1">
+          <TabsList className="hidden md:grid w-full grid-cols-5 mb-6 rounded-2xl border border-foreground/[0.1] bg-foreground/[0.03] p-1">
             {tabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 text-xs rounded-xl data-[state=active]:bg-primary/15">
                 <tab.icon className="h-3.5 w-3.5" />
