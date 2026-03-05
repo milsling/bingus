@@ -226,7 +226,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
                     <SidebarLink href="/profile" icon={User} label="Profile" active={location === "/profile"} />
                     <SidebarLink href="/achievements" icon={Sparkles} label="Achievements" active={location === "/achievements"} />
                     
-                    {currentUser.isAdmin && (
+                    {(currentUser.isAdmin || currentUser.isOwner) && (
                       <>
                         <div className="h-px bg-foreground/5 my-3" />
                         <SidebarLink href="/admin" icon={Shield} label="Admin" active={location === "/admin"} />

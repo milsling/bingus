@@ -611,6 +611,22 @@ export default function Settings() {
               <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
+                    🎨 Accent Color
+                  </CardTitle>
+                  <CardDescription>
+                    {isProMember
+                      ? "Choose an accent color or let it match your background automatically."
+                      : "Upgrade to PRO to customize your accent color."}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <AccentColorPicker isProMember={isProMember} />
+                </CardContent>
+              </Card>
+
+              <Card className={"glass-surface-strong border-foreground/15"}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     🎨 Background Selection
                   </CardTitle>
                   <CardDescription>
@@ -633,22 +649,6 @@ export default function Settings() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <BackgroundUploader />
-                </CardContent>
-              </Card>
-
-              <Card className={"glass-surface-strong border-foreground/15"}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    🎨 Accent Color
-                  </CardTitle>
-                  <CardDescription>
-                    {isProMember
-                      ? "Choose an accent color or let it match your background automatically."
-                      : "Upgrade to PRO to customize your accent color."}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <AccentColorPicker isProMember={isProMember} />
                 </CardContent>
               </Card>
 
