@@ -1588,18 +1588,16 @@ html.dark {
 }
 
 /* --- Frosted glass: Ensure near-black text throughout --- */
-html.light,
-html.light body,
-html.light #root {
-  color: hsl(220 25% 6%) !important;
+.light body,
+.light #root {
+  color: hsl(var(--foreground));
 }
 
-html.light h1, html.light h2, html.light h3, html.light h4, html.light h5, html.light h6,
-html.light p, html.light span, html.light a, html.light li, html.light label, html.light button {
-  color: inherit;
+.light h1, .light h2, .light h3, .light h4, .light h5, .light h6 {
+  color: hsl(var(--foreground));
 }
 
-html.light [data-slot="card"],
-html.light .card {
-  color: hsl(220 25% 6%);
+.light [data-slot="card"],
+.light .card {
+  color: hsl(var(--card-foreground));
 }
