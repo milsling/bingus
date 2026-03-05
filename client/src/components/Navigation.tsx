@@ -93,7 +93,7 @@ export default function Navigation() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer group px-2 py-1.5 rounded-xl hover:bg-foreground/[0.05] transition-colors">
               <div className="relative">
-                <img src={headerLogo} alt="" className="h-7 w-7 transition-transform duration-200 group-hover:scale-110" />
+                <img src={headerLogo} alt="" className="h-7 w-7 logo-accent transition-transform duration-200 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <span className="font-logo text-sm leading-none text-foreground flex items-center gap-0.5 group-hover:text-primary transition-colors">
@@ -267,7 +267,7 @@ export default function Navigation() {
         <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-3 overflow-visible top-bar mobile-nav">
           <Link href="/">
             <div className="flex items-center gap-1.5 cursor-pointer min-w-0">
-              <img src={headerLogo} alt="" className="h-6 w-6" />
+              <img src={headerLogo} alt="" className="h-6 w-6 logo-accent" />
               <span className="font-logo text-sm leading-none text-foreground flex items-center gap-0.5 truncate">
                 <span>ORPHAN</span>
                 <span>BARS</span>

@@ -153,11 +153,11 @@
 
   --radius: 0.5rem;
 
-  /* Glass panel base variables */
-  --glass-bg: rgba(255, 255, 255, 0.15);
-  --glass-bg-hover: rgba(255, 255, 255, 0.25);
-  --glass-border: rgba(255, 255, 255, 0.30);
-  --glass-border-hover: rgba(255, 255, 255, 0.45);
+  /* Glass panel base variables (+15% opacity) */
+  --glass-bg: rgba(255, 255, 255, 0.30);
+  --glass-bg-hover: rgba(255, 255, 255, 0.40);
+  --glass-border: rgba(255, 255, 255, 0.45);
+  --glass-border-hover: rgba(255, 255, 255, 0.60);
 
   /* Subtle shadows — depth from frost tiers */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -187,34 +187,34 @@
   --app-bg-base-start: #e4ddf0;  /* Soft lavender */
   --app-bg-base-end: #d8e0f0;   /* Soft blue-gray */
 
-  /* Floating bars: strong frost tier */
-  --floating-bar-bg: rgba(255, 255, 255, 0.45);
-  --floating-bar-border: rgba(255, 255, 255, 0.50);
+  /* Floating bars: strong frost tier (+15% opacity) */
+  --floating-bar-bg: rgba(255, 255, 255, 0.60);
+  --floating-bar-border: rgba(255, 255, 255, 0.65);
   --floating-bar-shadow:
     0 8px 32px rgba(0, 0, 0, 0.08),
     0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.60);
+    inset 0 1px 0 rgba(255, 255, 255, 0.70);
 
-  /* Glass surface hierarchy — multiple tiers of frost */
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.22));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.38));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.35));
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(255, 255, 255, 0.50));
+  /* Glass surface hierarchy — multiple tiers of frost (+15% opacity) */
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.37));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.53));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.50));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(255, 255, 255, 0.65));
   --glass-surface-shadow:
     0 8px 32px rgba(0, 0, 0, 0.06),
     0 2px 8px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.50);
 
-  /* Glass fields: medium frost for inputs */
-  --glass-field-bg: rgba(255, 255, 255, 0.28);
-  --glass-field-bg-focus: rgba(255, 255, 255, 0.45);
-  --glass-field-border: rgba(255, 255, 255, 0.30);
+  /* Glass fields: medium frost for inputs (+15% opacity) */
+  --glass-field-bg: rgba(255, 255, 255, 0.43);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.60);
+  --glass-field-border: rgba(255, 255, 255, 0.45);
   --glass-field-border-focus: var(--accent-color, 168 85 247) 0.4;
-  --glass-field-placeholder: rgba(30, 30, 50, 0.40);
+  --glass-field-placeholder: rgba(30, 30, 50, 0.50);
 
-  /* Sheets: dense frost tier */
-  --sheet-bg: rgba(255, 255, 255, 0.55);
-  --sheet-border: rgba(255, 255, 255, 0.45);
+  /* Sheets: dense frost tier (+15% opacity) */
+  --sheet-bg: rgba(255, 255, 255, 0.70);
+  --sheet-border: rgba(255, 255, 255, 0.60);
 
   /* Search input in floating bar */
   --glass-input-in-bar-bg: rgba(0, 0, 0, 0.05);
@@ -279,46 +279,46 @@
   --app-bg-base-start: #e4ddf0;
   --app-bg-base-end: #d8e0f0;
 
-  /* Floating bars: strong frost tier */
-  --floating-bar-bg: rgba(255, 255, 255, 0.45);
-  --floating-bar-border: rgba(255, 255, 255, 0.50);
+  /* Floating bars: strong frost tier (+15% opacity) */
+  --floating-bar-bg: rgba(255, 255, 255, 0.60);
+  --floating-bar-border: rgba(255, 255, 255, 0.65);
   --floating-bar-shadow:
     0 8px 32px rgba(0, 0, 0, 0.08),
     0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.60);
+    inset 0 1px 0 rgba(255, 255, 255, 0.70);
 
-  /* Glass surface hierarchy — multiple frost tiers */
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.22));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.38));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.35));
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(255, 255, 255, 0.50));
+  /* Glass surface hierarchy — multiple frost tiers (+15% opacity) */
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.37));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.53));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.50));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(255, 255, 255, 0.65));
   --glass-surface-shadow:
     0 8px 32px rgba(0, 0, 0, 0.06),
     0 2px 8px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.50);
 
-  /* Glass fields: medium frost for inputs */
-  --glass-field-bg: rgba(255, 255, 255, 0.28);
-  --glass-field-bg-focus: rgba(255, 255, 255, 0.45);
-  --glass-field-border: rgba(255, 255, 255, 0.30);
+  /* Glass fields: medium frost for inputs (+15% opacity) */
+  --glass-field-bg: rgba(255, 255, 255, 0.43);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.60);
+  --glass-field-border: rgba(255, 255, 255, 0.45);
   --glass-field-border-focus: rgba(168, 85, 247, 0.4);
-  --glass-field-placeholder: rgba(30, 30, 50, 0.40);
+  --glass-field-placeholder: rgba(30, 30, 50, 0.50);
 
-  /* Sheets: dense frost tier */
-  --sheet-bg: rgba(255, 255, 255, 0.55);
-  --sheet-border: rgba(255, 255, 255, 0.45);
+  /* Sheets: dense frost tier (+15% opacity) */
+  --sheet-bg: rgba(255, 255, 255, 0.70);
+  --sheet-border: rgba(255, 255, 255, 0.60);
 
   /* Search input in floating bar */
-  --glass-input-in-bar-bg: rgba(0, 0, 0, 0.05);
-  --glass-input-in-bar-border: rgba(255, 255, 255, 0.25);
-  --glass-input-in-bar-bg-focus: rgba(0, 0, 0, 0.08);
+  --glass-input-in-bar-bg: rgba(0, 0, 0, 0.07);
+  --glass-input-in-bar-border: rgba(255, 255, 255, 0.40);
+  --glass-input-in-bar-bg-focus: rgba(0, 0, 0, 0.10);
   --glass-input-in-bar-border-focus: rgba(168, 85, 247, 0.35);
 
-  /* Glass panel base */
-  --glass-bg: rgba(255, 255, 255, 0.15);
-  --glass-bg-hover: rgba(255, 255, 255, 0.25);
-  --glass-border: rgba(255, 255, 255, 0.30);
-  --glass-border-hover: rgba(255, 255, 255, 0.45);
+  /* Glass panel base (+15% opacity) */
+  --glass-bg: rgba(255, 255, 255, 0.30);
+  --glass-bg-hover: rgba(255, 255, 255, 0.40);
+  --glass-border: rgba(255, 255, 255, 0.45);
+  --glass-border-hover: rgba(255, 255, 255, 0.60);
 
   /* Subtle shadows — glass depth from transparency tiers */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -384,11 +384,11 @@
   --color-accent: hsl(var(--accent-color, 265 70% 60%));
   --color-accent-soft: hsl(var(--accent-color, 265 70% 60%) / 0.15);
 
-  /* Glass panel variables - frosted, opaque */
-  --glass-bg: rgba(18, 18, 24, 0.88);
-  --glass-bg-hover: rgba(20, 20, 28, 0.95);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.14);
+  /* Glass panel variables - frosted, opaque (+15%) */
+  --glass-bg: rgba(18, 18, 24, 0.95);
+  --glass-bg-hover: rgba(20, 20, 28, 0.98);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-hover: rgba(255, 255, 255, 0.20);
 
   /* Shadows - subtle glow effect */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -416,36 +416,36 @@
   --app-bg-base-start: #050509;
   --app-bg-base-end: #0a0a12;
 
-  /* Floating bars - frosted glass with more opacity */
-  --floating-bar-bg: rgba(18, 18, 24, 0.94);  /* More opaque, frosted gray */
-  --floating-bar-border: rgba(255, 255, 255, 0.15);  /* More visible border */
+  /* Floating bars - frosted glass with more opacity (+15%) */
+  --floating-bar-bg: rgba(18, 18, 24, 0.97);  /* Near-solid frosted dark */
+  --floating-bar-border: rgba(255, 255, 255, 0.20);  /* More visible border */
   --floating-bar-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.28);
 
-  /* Unified glass system - frosted glass, more opaque with increased opacity */
-  --glass-surface-bg: var(--owner-glass-surface-bg-dark, rgba(18, 18, 24, 0.85));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong-dark, rgba(20, 20, 28, 0.88));
-  --glass-surface-border: var(--owner-glass-surface-border-dark, rgba(255, 255, 255, 0.12));  /* More visible borders */
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong-dark, rgba(255, 255, 255, 0.18));
+  /* Unified glass system - frosted glass (+15% opacity) */
+  --glass-surface-bg: var(--owner-glass-surface-bg-dark, rgba(18, 18, 24, 0.92));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong-dark, rgba(20, 20, 28, 0.95));
+  --glass-surface-border: var(--owner-glass-surface-border-dark, rgba(255, 255, 255, 0.16));  /* More visible borders */
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong-dark, rgba(255, 255, 255, 0.24));
   --glass-surface-shadow:
     0 14px 34px rgba(0, 0, 0, 0.42),
     0 3px 10px rgba(0, 0, 0, 0.3);
 
-  --glass-field-bg: rgba(18, 18, 24, 0.85);
-  --glass-field-bg-focus: rgba(22, 22, 30, 0.95);
-  --glass-field-border: rgba(255, 255, 255, 0.1);
+  --glass-field-bg: rgba(18, 18, 24, 0.92);
+  --glass-field-bg-focus: rgba(22, 22, 30, 0.98);
+  --glass-field-border: rgba(255, 255, 255, 0.14);
   --glass-field-border-focus: hsl(var(--accent-color, 265 70% 60%) / 0.5);
   --glass-field-placeholder: rgba(142, 142, 147, 0.7);
 
-  /* Sheet/menu - frosted glass: more opaque, stronger blur */
-  --sheet-bg: rgba(24, 24, 32, 0.96);
-  --sheet-border: rgba(255, 255, 255, 0.12);
+  /* Sheet/menu - frosted glass (+15% opacity) */
+  --sheet-bg: rgba(24, 24, 32, 0.98);
+  --sheet-border: rgba(255, 255, 255, 0.16);
 
   /* Search input inside floating bar */
-  --glass-input-in-bar-bg: rgba(255, 255, 255, 0.06);
-  --glass-input-in-bar-border: rgba(255, 255, 255, 0.1);
-  --glass-input-in-bar-bg-focus: rgba(255, 255, 255, 0.1);
+  --glass-input-in-bar-bg: rgba(255, 255, 255, 0.08);
+  --glass-input-in-bar-border: rgba(255, 255, 255, 0.14);
+  --glass-input-in-bar-bg-focus: rgba(255, 255, 255, 0.12);
   --glass-input-in-bar-border-focus: hsl(var(--accent-color, 265 70% 60%) / 0.45);
 }
 
@@ -467,42 +467,42 @@
   --color-background: rgba(5, 5, 9, 0.15);
   --color-card: rgba(18, 18, 24, 0.5);
 
-  --glass-surface-bg: var(--owner-glass-surface-bg-custom, rgba(18, 18, 24, 0.75));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong-custom, rgba(20, 20, 28, 0.82));
-  --glass-surface-border: var(--owner-glass-surface-border-dark, rgba(255, 255, 255, 0.12));
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong-dark, rgba(255, 255, 255, 0.18));
+  --glass-surface-bg: var(--owner-glass-surface-bg-custom, rgba(18, 18, 24, 0.85));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong-custom, rgba(20, 20, 28, 0.90));
+  --glass-surface-border: var(--owner-glass-surface-border-dark, rgba(255, 255, 255, 0.16));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong-dark, rgba(255, 255, 255, 0.22));
 
-  --glass-bg: rgba(18, 18, 24, 0.4);
-  --glass-bg-hover: rgba(20, 20, 28, 0.55);
+  --glass-bg: rgba(18, 18, 24, 0.55);
+  --glass-bg-hover: rgba(20, 20, 28, 0.70);
 
-  --floating-bar-bg: rgba(18, 18, 24, 0.94);  /* Same as desktop */
-  --floating-bar-border: rgba(255, 255, 255, 0.15);
+  --floating-bar-bg: rgba(18, 18, 24, 0.97);
+  --floating-bar-border: rgba(255, 255, 255, 0.18);
 
-  --sheet-bg: rgba(24, 24, 32, 0.7);
+  --sheet-bg: rgba(24, 24, 32, 0.82);
 
-  --glass-field-bg: rgba(18, 18, 24, 0.5);
-  --glass-field-bg-focus: rgba(22, 22, 30, 0.65);
+  --glass-field-bg: rgba(18, 18, 24, 0.62);
+  --glass-field-bg-focus: rgba(22, 22, 30, 0.78);
 }
 
 .has-custom-bg:not(.dark) {
-  /* Custom wallpaper: thinner frost so image shows through */
+  /* Custom wallpaper: slightly thicker frost for readability (+15%) */
   --color-background: rgba(255, 255, 255, 0.02);
-  --color-card: rgba(255, 255, 255, 0.15);
+  --color-card: rgba(255, 255, 255, 0.28);
 
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.16));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.28));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.28));
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.31));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.43));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.43));
 
-  --glass-bg: rgba(255, 255, 255, 0.10);
-  --glass-bg-hover: rgba(255, 255, 255, 0.18);
+  --glass-bg: rgba(255, 255, 255, 0.25);
+  --glass-bg-hover: rgba(255, 255, 255, 0.33);
 
-  --floating-bar-bg: rgba(255, 255, 255, 0.32);
-  --floating-bar-border: rgba(255, 255, 255, 0.38);
+  --floating-bar-bg: rgba(255, 255, 255, 0.47);
+  --floating-bar-border: rgba(255, 255, 255, 0.53);
 
-  --sheet-bg: rgba(255, 255, 255, 0.40);
+  --sheet-bg: rgba(255, 255, 255, 0.55);
 
-  --glass-field-bg: rgba(255, 255, 255, 0.18);
-  --glass-field-bg-focus: rgba(255, 255, 255, 0.30);
+  --glass-field-bg: rgba(255, 255, 255, 0.33);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.45);
 }
 
 @layer base {
@@ -990,6 +990,88 @@ html.dark {
 .glass-card:hover {
   border-color: rgba(168, 85, 247, 0.25);
   box-shadow: var(--glass-surface-shadow), 0 0 0 1px rgba(168, 85, 247, 0.1);
+}
+
+/* ========================================
+   TEXT READABILITY ON GLASS SURFACES
+   Subtle text shadows + weight boost for legibility
+   over translucent / frosted backgrounds.
+   ======================================== */
+
+/* Light mode: dark text gets a faint white halo for glass contrast */
+:root:not(.dark) .glass-card,
+:root:not(.dark) .glass-panel,
+:root:not(.dark) .glass-surface,
+:root:not(.dark) .floating-bar {
+  color: hsl(220 25% 8%);
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.5), 0 1px 2px rgba(255, 255, 255, 0.3);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dark mode: light text gets a subtle dark halo for glass contrast */
+.dark .glass-card,
+.dark .glass-panel,
+.dark .glass-surface,
+.dark .floating-bar {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.25);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Bump base font weight slightly on glass for crispness */
+.glass-card p,
+.glass-card span:not([class*="font-bold"]):not([class*="font-black"]),
+.glass-panel p,
+.glass-panel span:not([class*="font-bold"]):not([class*="font-black"]),
+.glass-surface p,
+.glass-surface span:not([class*="font-bold"]):not([class*="font-black"]) {
+  font-weight: 450;
+}
+
+/* Headings on glass: ensure they stay punchy */
+.glass-card h1, .glass-card h2, .glass-card h3, .glass-card h4,
+.glass-panel h1, .glass-panel h2, .glass-panel h3, .glass-panel h4,
+.glass-surface h1, .glass-surface h2, .glass-surface h3, .glass-surface h4 {
+  font-weight: 700;
+}
+
+/* Muted text on glass gets a slight boost */
+.glass-card .text-muted-foreground,
+.glass-panel .text-muted-foreground,
+.glass-surface .text-muted-foreground {
+  font-weight: 450;
+}
+
+/* ========================================
+   ACCENT-TINTED LOGO
+   Applies the user's chosen accent color as a
+   hue overlay so the logo feels cohesive.
+   ======================================== */
+.logo-accent {
+  filter: brightness(0) saturate(100%) sepia(1) saturate(4) hue-rotate(var(--logo-hue-rotate, 240deg));
+  opacity: 0.92;
+  transition: filter 0.3s ease, opacity 0.2s ease;
+}
+.logo-accent:hover {
+  opacity: 1;
+  filter: brightness(0) saturate(100%) sepia(1) saturate(5) hue-rotate(var(--logo-hue-rotate, 240deg)) brightness(1.15);
+}
+
+/* Bar card lyrics frosted inner panel */
+.lyrics-glass {
+  background: hsl(var(--accent-color, 265 70% 60%) / 0.06);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid hsl(var(--accent-color, 265 70% 60%) / 0.12);
+  border-radius: 0.75rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.dark .lyrics-glass {
+  background: hsl(var(--accent-color, 265 70% 60%) / 0.08);
+  border-color: hsl(var(--accent-color, 265 70% 60%) / 0.15);
+}
+.lyrics-glass:hover {
+  background: hsl(var(--accent-color, 265 70% 60%) / 0.10);
+  border-color: hsl(var(--accent-color, 265 70% 60%) / 0.20);
 }
 
 /* Glass nav - navigation specific styling - theme-aware */

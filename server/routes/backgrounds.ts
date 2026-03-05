@@ -34,10 +34,11 @@ async function uploadToObjectStorage(buffer: Buffer, filename: string, contentTy
   const privateDir = (process.env.PRIVATE_OBJECT_DIR || '').replace(/\/$/, '');
 
   if (!privateDir) {
-    // Local fallback: write to client/public/uploads/backgrounds/
+    // Local fallback: write to {cwd}/uploads/backgrounds/ which is served
+    // by express.static in server/static.ts via app.use("/uploads", ...)
     const ext = path.extname(filename) || '.jpg';
     const localName = `${randomUUID()}${ext}`;
-    const uploadDir = path.join(process.cwd(), 'client', 'public', 'uploads', 'backgrounds');
+    const uploadDir = path.join(process.cwd(), 'uploads', 'backgrounds');
     fs.mkdirSync(uploadDir, { recursive: true });
     fs.writeFileSync(path.join(uploadDir, localName), buffer);
     return `/uploads/backgrounds/${localName}`;

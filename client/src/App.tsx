@@ -33,7 +33,6 @@ import { BarProvider } from "@/context/BarContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
 import { VersionCheck } from "@/components/VersionCheck";
-import { SwipeBackNavigation } from "@/components/SwipeBackNavigation";
 import { useBackground } from "@/components/BackgroundSelector";
 import Navigation from "@/components/Navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -132,9 +131,7 @@ function App() {
                 <MaintenanceBanner />
                 <Navigation />
                 <Toaster />
-                <SwipeBackNavigation>
-                  <Router />
-                </SwipeBackNavigation>
+                <Router />
               </TooltipProvider>
             </BarProvider>
           </SupabaseAuthProvider>
