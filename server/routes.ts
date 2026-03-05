@@ -4966,7 +4966,7 @@ export async function registerRoutes(
     try {
       const { type, filename } = req.params;
       
-      if (!['avatars', 'banners'].includes(type)) {
+      if (!['avatars', 'banners', 'backgrounds'].includes(type)) {
         return res.status(404).json({ message: "Invalid file type" });
       }
 

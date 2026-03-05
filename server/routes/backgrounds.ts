@@ -333,7 +333,7 @@ router.post("/admin/backgrounds/reorder", isAuthenticated, isOwner, async (req, 
 });
 
 // Get site-wide settings (public - needed on load for all users)
-router.get("/site-settings", async (req, res) => {
+router.get("/backgrounds/site-settings", async (req, res) => {
   try {
     const rows = await db.select().from(siteSettings);
     const settings: Record<string, string> = {};
@@ -348,7 +348,7 @@ router.get("/site-settings", async (req, res) => {
 });
 
 // Save site-wide appearance settings (owner only)
-router.post("/site-settings", isAuthenticated, isOwner, async (req, res) => {
+router.post("/backgrounds/site-settings", isAuthenticated, isOwner, async (req, res) => {
   try {
     const { defaultBackground, themeSettings } = req.body;
 
