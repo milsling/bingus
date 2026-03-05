@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, DoorOpen, Radio, Sparkles, X, UserCog, ChevronRight, ExternalLink } from "lucide-react";
-import headerLogo from "@/assets/logo.png";
 import orphanageMenuLogo from "@/assets/orphanage-menu-logo.png";
+import AccentLogo from "@/components/AccentLogo";
 import { useBars } from "@/context/BarContext";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchBar } from "@/components/SearchBar";
@@ -94,7 +94,7 @@ export default function Navigation() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer group px-2 py-1.5 rounded-xl hover:bg-foreground/[0.05] transition-colors">
               <div className="relative">
-                <img src={headerLogo} alt="" className="h-7 w-7 logo-accent transition-transform duration-200 group-hover:scale-110" />
+                <AccentLogo className="h-7 w-7 transition-transform duration-200 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <span className="font-logo text-sm leading-none text-foreground flex items-center gap-0.5 group-hover:text-primary transition-colors">
@@ -230,7 +230,7 @@ export default function Navigation() {
               <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary/[0.07] to-transparent pointer-events-none rounded-tl-none" />
               <div className="relative flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 flex items-center justify-center ring-1 ring-primary/20">
-                  <img src={headerLogo} alt="" className="h-6 w-6 logo-accent" />
+                  <AccentLogo className="h-6 w-6" />
                 </div>
                 <div>
                   <h2 className="font-logo text-lg leading-none tracking-wide">ORPHANBARS</h2>
@@ -448,7 +448,7 @@ export default function Navigation() {
         <div className="floating-bar rounded-2xl h-12 flex items-center justify-between px-3 overflow-visible top-bar mobile-nav">
           <Link href="/">
             <div className="flex items-center gap-1.5 cursor-pointer min-w-0">
-              <img src={headerLogo} alt="" className="h-6 w-6 logo-accent" />
+              <AccentLogo className="h-6 w-6" />
               <span className="font-logo text-sm leading-none text-foreground flex items-center gap-0.5 truncate">
                 <span>ORPHAN</span>
                 <span>BARS</span>

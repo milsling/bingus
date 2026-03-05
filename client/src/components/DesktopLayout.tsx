@@ -9,8 +9,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { SearchBar } from "@/components/SearchBar";
 import { OnlineStatusIndicator } from "@/components/OnlineStatus";
 import { useUnreadMessagesCount, usePendingFriendRequestsCount } from "@/components/UnreadMessagesBadge";
-import headerLogo from "@/assets/logo.png";
-import orphanageLogo from "@/assets/orphanage-logo.png";
+import AccentLogo from "@/components/AccentLogo";
 
 interface DesktopLayoutProps {
   children: ReactNode;
@@ -84,7 +83,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
             <Link href="/">
               <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity group pl-1">
                 <div className="relative">
-                  <img src={headerLogo} alt="" className="h-7 w-7 logo-accent" />
+                  <AccentLogo className="h-7 w-7" />
                   <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <span className="font-logo leading-none text-xl text-foreground flex items-center gap-0.5">
@@ -194,7 +193,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
                 <SidebarLink 
                   href="/orphanage" 
                   icon={() => (
-                    <img src={orphanageLogo} alt="" className="h-5 w-5 dark:brightness-0 dark:invert opacity-70" />
+                    <AccentLogo className="h-5 w-5" />
                   )} 
                   label="Orphanage" 
                   active={location === "/orphanage"} 
