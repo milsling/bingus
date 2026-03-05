@@ -33,7 +33,7 @@ export function NativeGlassCard({ children, className, animate = false }: Native
     return (
       <section
         className={cn(
-          "rounded-3xl border border-white/10 bg-[linear-gradient(170deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur-xl md:p-5",
+          "rounded-3xl border border-foreground/10 bg-[linear-gradient(170deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur-xl md:p-5",
           className,
         )}
       >
@@ -48,7 +48,7 @@ export function NativeGlassCard({ children, className, animate = false }: Native
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: "easeOut" }}
       className={cn(
-        "rounded-3xl border border-white/10 bg-[linear-gradient(170deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur-xl md:p-5",
+        "rounded-3xl border border-foreground/10 bg-[linear-gradient(170deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur-xl md:p-5",
         className,
       )}
     >
@@ -97,7 +97,7 @@ export function NativeSegmentedControl<T extends string>({
   return (
     <div
       className={cn(
-        "inline-flex w-full items-center gap-1 rounded-2xl border border-white/10 bg-black/15 p-1 md:w-auto",
+        "inline-flex w-full items-center gap-1 rounded-2xl border border-foreground/10 bg-black/15 p-1 md:w-auto",
         className,
       )}
     >

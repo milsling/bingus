@@ -368,7 +368,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
           <Button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="glass-surface-strong rounded-2xl border border-white/[0.1] bg-white/[0.05] p-3 shadow-lg hover:bg-white/[0.1] transition-all hover:scale-105"
+            className="glass-surface-strong rounded-2xl border border-foreground/[0.1] bg-foreground/[0.05] p-3 shadow-lg hover:bg-foreground/[0.1] transition-all hover:scale-105"
             data-testid="button-ai-assistant"
             aria-label="Open AI Assistant"
           >
@@ -379,12 +379,12 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className={cn(
-          "glass-surface-strong border border-white/[0.1] bg-background/95 overflow-hidden p-0 transition-all dialog-window",
+          "glass-surface-strong border border-foreground/[0.1] bg-background/95 overflow-hidden p-0 transition-all dialog-window",
           isFullscreen
             ? "w-screen h-screen max-w-none rounded-none"
             : "w-[95vw] h-[95vh] md:max-w-4xl md:h-[85vh] lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl lg:h-[90vh]"
         )}>
-          <DialogHeader className="border-b border-white/[0.08] bg-background/50 p-4">
+          <DialogHeader className="border-b border-foreground/[0.08] bg-background/50 p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15">
@@ -403,7 +403,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                       variant="ghost"
                       size="icon"
                       className={cn(
-                        "h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
+                        "h-9 w-9 rounded-full border border-foreground/[0.1] bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.1]",
                         personalityOpen && "border-primary/50 bg-primary/10 text-primary"
                       )}
                       title="Personality mode"
@@ -428,7 +428,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                             "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
                             personalityMode === opt.value
                               ? "bg-primary/15 text-primary"
-                              : "hover:bg-white/[0.06] text-foreground"
+                              : "hover:bg-foreground/[0.06] text-foreground"
                           )}
                           data-testid={`personality-${opt.value}`}
                         >
@@ -446,7 +446,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                           value={customPrompt}
                           onChange={(e) => updateCustomPrompt(e.target.value)}
                           placeholder="Describe how Ara should behave..."
-                          className="min-h-[100px] resize-none text-sm bg-white/[0.04] border-white/[0.1]"
+                          className="min-h-[100px] resize-none text-sm bg-foreground/[0.04] border-foreground/[0.1]"
                           maxLength={10000}
                           data-testid="input-custom-personality"
                         />
@@ -460,7 +460,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsFullscreen(!isFullscreen)}
-                  className="h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]"
+                  className="h-9 w-9 rounded-full border border-foreground/[0.1] bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.1]"
                   title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                   data-testid="button-fullscreen-toggle"
                 >
@@ -472,7 +472,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   size="icon"
                   onClick={toggleRealVoiceMode}
                   className={cn(
-                    "h-9 w-9 rounded-full border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
+                    "h-9 w-9 rounded-full border border-foreground/[0.1] bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.1]",
                     realVoiceMode && "border-green-500/50 bg-green-500/10 text-green-400"
                   )}
                   title="Toggle real voice mode"
@@ -606,7 +606,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
           </ScrollArea>
 
           {!realVoiceMode && (
-            <div className="border-t border-white/[0.08] bg-background/50 p-3 md:p-4 md:p-6">
+            <div className="border-t border-foreground/[0.08] bg-background/50 p-3 md:p-4 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
               {isVoiceSupported && (
                 <Button
@@ -616,7 +616,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                   onClick={toggleDictation}
                   disabled={isLoading}
                   className={cn(
-                    "h-10 w-10 md:h-12 md:w-12 rounded-xl border border-white/[0.1] bg-white/[0.05] text-muted-foreground hover:bg-white/[0.1]",
+                    "h-10 w-10 md:h-12 md:w-12 rounded-xl border border-foreground/[0.1] bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.1]",
                     isRecording && "bg-red-500/10 border-red-500/30 text-red-500"
                   )}
                   title={isRecording ? "Stop dictation" : "Start voice dictation"}
@@ -631,7 +631,7 @@ export default function AIAssistant({ open: externalOpen, onOpenChange, hideFloa
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Ask for help with bars, rhymes, and more..."
-                className="flex-1 min-w-0 bg-white/[0.04] border-white/[0.1] placeholder:text-muted-foreground/60"
+                className="flex-1 min-w-0 bg-foreground/[0.04] border-foreground/[0.1] placeholder:text-muted-foreground/60"
                 disabled={isLoading}
               />
 

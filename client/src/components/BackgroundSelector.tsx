@@ -206,8 +206,8 @@ export function BackgroundSelector() {
                 "relative aspect-[3/4] rounded-xl overflow-hidden transition-all duration-200",
                 "border-2",
                 isSelected 
-                  ? "border-purple-500 ring-2 ring-purple-500/40 scale-[1.03]" 
-                  : "border-white/15 hover:border-white/30 hover:scale-[1.02]",
+                  ? "border-primary ring-2 ring-primary/40 scale-[1.03]" 
+                  : "border-foreground/15 hover:border-foreground/30 hover:scale-[1.02]",
               )}
               data-testid={`background-${bg.id}`}
             >
@@ -226,13 +226,13 @@ export function BackgroundSelector() {
               )}
               
               {isSelected && (
-                <div className="absolute top-1 right-1 w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                <div className="absolute top-1 right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
                   <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                 </div>
               )}
               
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1.5 pt-4">
-                <span className="text-[9px] text-white/90 font-medium truncate block text-center">
+                <span className="text-[9px] text-foreground/90 font-medium truncate block text-center">
                   {bg.name}
                 </span>
               </div>

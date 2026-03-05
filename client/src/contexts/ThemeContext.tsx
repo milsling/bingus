@@ -388,6 +388,8 @@ export function getThemeStyles(settings: ThemeSettings) {
     '--background-value': settings.backgroundValue,
     '--accent-color': settings.accentColor,
     '--accent-color-mode': settings.accentColorMode,
+    // Logo hue-rotate: sepia produces ~50° hue, so rotate to match accent
+    '--logo-hue-rotate': `${(parseInt(settings.accentColor?.split(' ')[0] || '265', 10) - 50)}deg`,
   } as React.CSSProperties;
 }
 

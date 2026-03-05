@@ -697,13 +697,15 @@ export default function BarCard({ bar }: BarCardProps) {
           </div>
           
           <div className="space-y-4">
-            <div className="relative pl-4 border-l-2 border-primary/40 py-1">
-              <p 
-                className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground/90 [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
-                style={{ color: 'inherit' }}
-                data-testid={`text-content-${bar.id}`}
-                dangerouslySetInnerHTML={createMarkup(bar.content)}
-              />
+            <div className="relative lyrics-glass px-4 py-3">
+              <div className="pl-4 border-l-2 border-primary/40 py-1">
+                <p 
+                  className="font-display text-lg md:text-xl leading-relaxed whitespace-pre-wrap text-foreground/90 [&>b]:text-primary [&>b]:font-black [&>i]:text-primary/80 [&>u]:decoration-primary [&>u]:decoration-2 [&>u]:underline-offset-4 [&_*]:!text-inherit"
+                  style={{ color: 'inherit' }}
+                  data-testid={`text-content-${bar.id}`}
+                  dangerouslySetInnerHTML={createMarkup(bar.content)}
+                />
+              </div>
             </div>
             
             {bar.explanation && (

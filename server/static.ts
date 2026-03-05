@@ -10,11 +10,10 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // Serve uploads directory
+  // Serve uploads directory (always register — directory may be created at runtime by first upload)
   const uploadsPath = path.resolve(process.cwd(), "uploads");
-  if (fs.existsSync(uploadsPath)) {
-    app.use("/uploads", express.static(uploadsPath));
-  }
+  fs.mkdirSync(uploadsPath, { recursive: true });
+  app.use("/uploads", express.static(uploadsPath));
 
   app.use(express.static(distPath));
 

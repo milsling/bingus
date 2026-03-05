@@ -186,7 +186,7 @@ export default function Messages() {
   const ConversationList = () => (
     <div className="flex flex-col h-full">
       <Tabs defaultValue="chats" className="flex-1 flex flex-col">
-        <TabsList className="m-2 h-auto rounded-2xl border border-white/10 bg-black/20 p-1">
+        <TabsList className="m-2 h-auto rounded-2xl border border-foreground/10 bg-black/20 p-1">
           <TabsTrigger
             value="chats"
             className="flex-1 gap-1.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -344,10 +344,10 @@ export default function Messages() {
       className="h-dvh min-h-0 pt-14 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-4 md:pt-24"
       contentClassName="max-w-none h-full px-0 md:px-4"
     >
-        <div className="h-full w-full overflow-hidden bg-black/20 backdrop-blur-xl flex md:rounded-[1.9rem] md:border md:border-white/10">
+        <div className="h-full w-full overflow-hidden bg-black/20 backdrop-blur-xl flex md:rounded-[1.9rem] md:border md:border-foreground/10">
           
-          <div className="hidden md:flex w-80 shrink-0 border-r border-white/10 flex-col">
-            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+          <div className="hidden md:flex w-80 shrink-0 border-r border-foreground/10 flex-col">
+            <div className="p-4 border-b border-foreground/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
                 <h1 className="font-display font-bold text-lg text-foreground">Messages</h1>
@@ -370,7 +370,7 @@ export default function Messages() {
               </div>
             ) : selectedUserId && selectedUser ? (
               <>
-                <div className="hidden md:flex p-3 border-b border-white/10 items-center gap-3 bg-black/10 backdrop-blur-xl">
+                <div className="hidden md:flex p-3 border-b border-foreground/10 items-center gap-3 bg-black/10 backdrop-blur-xl">
                   <Link href={`/u/${selectedUser.username}`} className="flex items-center gap-3">
                     <div className="relative">
                       <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
@@ -451,7 +451,7 @@ export default function Messages() {
                 </div>
               </ScrollArea>
 
-              <div className="p-2 border-t border-white/10 bg-black/10 backdrop-blur-md">
+              <div className="p-2 border-t border-foreground/10 bg-black/10 backdrop-blur-md">
                 <div className="flex gap-2 items-end">
                   <Input
                     placeholder="Type a message..."

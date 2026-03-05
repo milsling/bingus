@@ -149,7 +149,7 @@ function NavContent() {
 
           <div className="relative flex items-center gap-3" onClick={handleLogoTap}>
             <div className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 flex items-center justify-center ring-1 ring-primary/20">
-              <img src={headerLogo} alt="" className="h-6 w-6" />
+              <img src={headerLogo} alt="" className="h-6 w-6 logo-accent" />
             </div>
             <div>
               <h2 className="font-logo text-lg leading-none text-foreground tracking-wide dark:text-white">

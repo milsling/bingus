@@ -268,8 +268,8 @@ export default function Home() {
             />
 
             <NativeGlassCard animate className={cn(
-              "relative overflow-hidden border-white/[0.08] p-6 md:p-8",
-              hasCustomBackground && "glass-surface-strong border-white/[0.15]"
+              "relative overflow-hidden border-foreground/[0.08] p-6 md:p-8",
+              hasCustomBackground && "glass-surface-strong border-foreground/[0.15]"
             )}>
               <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
               <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl pointer-events-none" />
@@ -393,13 +393,13 @@ export default function Home() {
             <section className={cn(
               "rounded-2xl border p-4 md:p-5 glass-surface",
               hasCustomBackground 
-                ? "border-white/20 bg-white/5 glass-surface-strong" 
+                ? "border-foreground/20 bg-white/5 glass-surface-strong" 
                 : "border-border/60 bg-background/45"
             )}>
               <p className="mb-3 text-sm font-semibold">How it works</p>
               <div className="grid gap-3 md:grid-cols-3">
                 <div className={cn(
-                  "rounded-xl border border-white/10 bg-white/5 p-3"
+                  "rounded-xl border border-foreground/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Search className="h-4 w-4" />
@@ -410,7 +410,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className={cn(
-                  "rounded-xl border border-white/10 bg-white/5 p-3"
+                  "rounded-xl border border-foreground/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <PenLine className="h-4 w-4" />
@@ -421,7 +421,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className={cn(
-                  "rounded-xl border border-white/10 bg-white/5 p-3"
+                  "rounded-xl border border-foreground/10 bg-white/5 p-3"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Flame className="h-4 w-4" />
@@ -438,7 +438,7 @@ export default function Home() {
               <div className={cn(
                 "rounded-xl p-3 flex items-center gap-2",
                 hasCustomBackground 
-                  ? "border-white/20 bg-white/5 glass-surface-strong" 
+                  ? "border-foreground/20 bg-white/5 glass-surface-strong" 
                   : "border-border/60 bg-card/60"
               )}>
                 <Hash className="h-4 w-4 text-primary" />
@@ -479,7 +479,7 @@ export default function Home() {
                   <div className={cn(
                     "rounded-2xl border border-dashed p-10 text-center",
                     hasCustomBackground 
-                      ? "border-white/20 bg-white/5" 
+                      ? "border-foreground/20 bg-white/5" 
                       : "border-border/70 bg-card/40"
                   )}>
                     <p className="text-base font-medium">
