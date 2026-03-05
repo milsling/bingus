@@ -5,7 +5,7 @@ import { Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import iconUrl from "@/assets/icon.png";
+import AccentLogo from "@/components/AccentLogo";
 
 export default function AuthCallback() {
   const [, setLocation] = useLocation();
@@ -200,7 +200,7 @@ export default function AuthCallback() {
 
       <div className="relative z-10 flex flex-col items-center gap-6">
         <div className="flex items-center gap-2">
-          <img src={iconUrl} alt="Orphan Bars" className="h-12 w-12" />
+          <AccentLogo className="h-12 w-12" />
           <span className="font-logo text-3xl text-foreground">ORPHAN BARS</span>
         </div>
 

@@ -36,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-const iconUrl = "/icon.png";
+import AccentLogo from "@/components/AccentLogo";
 import { getSupabase } from "@/lib/supabase";
 
 type SignupStep = "email" | "verify" | "details";
@@ -696,7 +696,7 @@ export default function Auth() {
           <div className="glass-panel rounded-3xl p-8 lg:p-10 max-w-md">
             <Link href="/">
               <div className="flex items-center gap-3 mb-6 cursor-pointer hover:opacity-80 transition-opacity">
-                <img src={iconUrl} alt="Orphan Bars" className="h-12 w-12" />
+                <AccentLogo className="h-12 w-12" />
                 <span className="font-logo text-3xl">ORPHAN BARS</span>
               </div>
             </Link>
@@ -715,7 +715,7 @@ export default function Auth() {
           <div className="md:hidden">
             <Link href="/">
               <div className="flex items-center justify-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
-                <img src={iconUrl} alt="Orphan Bars" className="h-10 w-10" />
+                <AccentLogo className="h-10 w-10" />
                 <span className="font-logo text-3xl">ORPHAN BARS</span>
               </div>
             </Link>

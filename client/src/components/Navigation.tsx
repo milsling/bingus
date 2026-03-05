@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, DoorOpen, Radio, Sparkles, X, UserCog, ChevronRight, ExternalLink } from "lucide-react";
-import orphanageMenuLogo from "@/assets/orphanage-menu-logo.png";
 import AccentLogo from "@/components/AccentLogo";
 import { useBars } from "@/context/BarContext";
 import { NotificationBell } from "@/components/NotificationBell";

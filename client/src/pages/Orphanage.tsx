@@ -27,7 +27,7 @@ import { BarSkeletonList } from "@/components/BarSkeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useBars } from "@/context/BarContext";
 import { cn } from "@/lib/utils";
-import orphanageLogo from "@/assets/orphanage-new-logo.png";
+import AccentLogo from "@/components/AccentLogo";
 
 interface BarUsage {
   id: string;
@@ -548,11 +548,8 @@ export default function OrphanagePage() {
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="space-y-6">
           <div className="flex flex-col items-center">
-            <img 
-              src={orphanageLogo} 
-              alt="The Orphanage" 
-              className="mb-4 h-32 w-auto sm:h-40 md:h-48"
-              data-testid="img-orphanage-logo"
+            <AccentLogo 
+              className="mb-4 h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48"
             />
             <h1 className="text-center text-2xl font-semibold sm:text-3xl">The Orphanage</h1>
             <p className="mt-2 max-w-2xl text-center text-sm text-muted-foreground sm:text-base">
