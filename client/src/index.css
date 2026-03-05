@@ -624,6 +624,18 @@
   background: none !important;
 }
 
+/* Desktop menu panel slide-in animation */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* Maintenance banner marquee animation */
 @keyframes marquee {
   0% {
@@ -1008,13 +1020,32 @@ html.dark {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Dark mode: light text gets a subtle dark halo for glass contrast */
+/* Dark mode: light text + subtle dark halo for glass contrast */
 .dark .glass-card,
 .dark .glass-panel,
 .dark .glass-surface,
 .dark .floating-bar {
+  color: hsl(0 0% 98%);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.25);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Dark mode: ensure headings and body text inside glass are always light */
+.dark .glass-surface h1,
+.dark .glass-surface h2,
+.dark .glass-surface h3,
+.dark .glass-surface h4,
+.dark .glass-surface p,
+.dark .glass-surface span,
+.dark .glass-surface label,
+.dark .glass-card h1,
+.dark .glass-card h2,
+.dark .glass-card h3,
+.dark .glass-card h4,
+.dark .glass-card p,
+.dark .glass-card span,
+.dark .glass-card label {
+  color: inherit;
 }
 
 /* Bump base font weight slightly on glass for crispness */
@@ -1669,19 +1700,38 @@ html.dark {
   background: none !important;
 }
 
-/* --- Frosted glass: Ensure near-black text throughout --- */
-html.light,
-html.light body,
-html.light #root {
+/* --- Frosted glass: Ensure near-black text throughout (LIGHT ONLY) --- */
+html.light:not(.dark),
+html.light:not(.dark) body,
+html.light:not(.dark) #root {
   color: hsl(220 25% 6%) !important;
 }
 
-html.light h1, html.light h2, html.light h3, html.light h4, html.light h5, html.light h6,
-html.light p, html.light span, html.light a, html.light li, html.light label, html.light button {
+html.light:not(.dark) h1, html.light:not(.dark) h2, html.light:not(.dark) h3,
+html.light:not(.dark) h4, html.light:not(.dark) h5, html.light:not(.dark) h6,
+html.light:not(.dark) p, html.light:not(.dark) span, html.light:not(.dark) a,
+html.light:not(.dark) li, html.light:not(.dark) label, html.light:not(.dark) button {
   color: inherit;
 }
 
-html.light [data-slot="card"],
-html.light .card {
+html.light:not(.dark) [data-slot="card"],
+html.light:not(.dark) .card {
   color: hsl(220 25% 6%);
+}
+
+/* --- Dark mode: Ensure near-white text throughout --- */
+html.dark,
+html.dark body,
+html.dark #root {
+  color: hsl(0 0% 98%) !important;
+}
+
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6,
+html.dark p, html.dark span, html.dark a, html.dark li, html.dark label, html.dark button {
+  color: inherit;
+}
+
+html.dark [data-slot="card"],
+html.dark .card {
+  color: hsl(0 0% 98%);
 }
