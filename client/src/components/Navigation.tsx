@@ -91,7 +91,7 @@ export default function Navigation() {
         {/* Left: Logo + inline nav links */}
         <div className="flex items-center gap-1 shrink-0">
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer group px-2 py-1.5 rounded-xl hover:bg-white/[0.05] transition-colors">
+            <div className="flex items-center gap-2 cursor-pointer group px-2 py-1.5 rounded-xl hover:bg-foreground/[0.05] transition-colors">
               <div className="relative">
                 <img src={headerLogo} alt="" className="h-7 w-7 transition-transform duration-200 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -118,7 +118,7 @@ export default function Navigation() {
                       "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-150",
                       isActive
                         ? "bg-primary/15 text-primary"
-                        : "text-foreground/60 hover:text-foreground hover:bg-white/[0.05]"
+                        : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -163,7 +163,7 @@ export default function Navigation() {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl hover:bg-white/[0.06] transition-colors"
+                    className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl hover:bg-foreground/[0.06] transition-colors"
                     data-testid="button-desktop-user"
                   >
                     <Avatar className="h-7 w-7 rounded-lg ring-1 ring-primary/20">
@@ -235,7 +235,7 @@ export default function Navigation() {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-foreground/80"
+                    className="p-2 rounded-xl hover:bg-foreground/[0.06] transition-colors text-foreground/80"
                     aria-label="Open settings"
                     data-testid="button-desktop-settings"
                   >

@@ -28,93 +28,79 @@ body[data-background-type="default"] {
 
 /* Glass surface styles with theme tints */
 .glass-surface {
-  background: rgba(var(--background), var(--glass-opacity));
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(var(--border), var(--border-opacity));
+  background: var(--glass-surface-bg);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  border: 1px solid var(--glass-surface-border);
 }
 
 .glass-surface-strong {
-  background: rgba(var(--background), calc(var(--glass-opacity) + 0.05));
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--border), calc(var(--border-opacity) + 0.05));
+  background: var(--glass-surface-bg-strong);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  border: 1px solid var(--glass-surface-border-strong);
 }
 
-/* Window/Dialog tinting */
+/* Window/Dialog tinting - frosted glass */
 .dialog-window {
-  background: linear-gradient(135deg, 
-    rgba(var(--background), var(--glass-opacity)) 0%, 
-    var(--window-tint) 100%
-  );
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--border), var(--border-opacity));
+  background: var(--sheet-bg);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  border: 1px solid var(--glass-surface-border);
 }
 
-/* Panel tinting */
+/* Panel tinting - frosted glass */
 .side-panel,
 .content-panel {
-  background: linear-gradient(135deg,
-    rgba(var(--background), var(--glass-opacity)) 0%,
-    var(--panel-tint) 100%
-  );
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(var(--border), var(--border-opacity));
+  background: var(--glass-surface-bg);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  border: 1px solid var(--glass-surface-border);
 }
 
-/* Bar card tinting */
+/* Bar card tinting - frosted glass */
 .bar-card,
 .list-item,
 .card {
-  background: linear-gradient(135deg,
-    rgba(var(--background), var(--bar-card-opacity)) 0%,
-    var(--bar-card-tint) 100%
-  );
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(var(--border), var(--border-opacity));
+  background: var(--glass-surface-bg);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid var(--glass-surface-border);
   border-radius: var(--border-radius);
 }
 
-/* Mobile navigation tinting */
+/* Mobile navigation tinting - frosted glass */
 .mobile-nav,
 .mobile-menu,
 .mobile-panel {
-  background: linear-gradient(135deg,
-    rgba(var(--background), var(--mobile-nav-opacity)) 0%,
-    var(--panel-tint) 100%
-  );
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--border), var(--border-opacity));
+  background: var(--glass-surface-bg-strong);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  border: 1px solid var(--glass-surface-border);
 }
 
-/* Mobile navigation buttons */
+/* Mobile navigation buttons - frosted glass */
 .mobile-nav-button,
 .mobile-menu-button {
-  background: linear-gradient(135deg,
-    rgba(var(--background), var(--mobile-nav-opacity)) 0%,
-    var(--panel-tint) 100%
-  );
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(var(--border), var(--border-opacity));
+  background: var(--glass-surface-bg);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid var(--glass-surface-border);
   transition: all 0.3s ease;
 }
 
 .mobile-nav-button:hover,
 .mobile-menu-button:hover {
-  background: linear-gradient(135deg,
-    rgba(var(--background), calc(var(--mobile-nav-opacity) + 0.1)) 0%,
-    var(--panel-tint) 100%
-  );
-  border-color: rgba(var(--border), calc(var(--border-opacity) + 0.1));
+  background: var(--glass-surface-bg-strong);
+  border-color: var(--glass-surface-border-strong);
 }
 
 /* Mobile navigation opacity control */
 .mobile-nav-opacity-slider {
-  --mobile-nav-opacity: 0.95;
-  background: linear-gradient(135deg,
-    rgba(var(--background), var(--mobile-nav-opacity)) 0%,
-    var(--panel-tint) 100%
-  );
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(var(--border), var(--border-opacity));
+  background: var(--glass-surface-bg);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid var(--glass-surface-border);
 }
 
 /* Apply border radius to rounded elements */

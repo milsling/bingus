@@ -476,7 +476,7 @@ export default function Post() {
           {/* Main Content */}
           <div className="space-y-6">
             <motion.div {...panelAnimation}>
-              <NativeGlassCard animate className="border-white/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
+              <NativeGlassCard animate className="border-foreground/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-lg">The Bars</Label>
@@ -602,7 +602,7 @@ export default function Post() {
 
           {/* Sidebar */}
           <motion.div {...panelAnimation} className="space-y-6 lg:sticky lg:top-24 h-fit">
-            <NativeGlassCard className="border-white/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
+            <NativeGlassCard className="border-foreground/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
                 <div className="space-y-3">
                   <Label htmlFor="category">Category</Label>
                   <Select value={category} onValueChange={(val: Category) => setCategory(val)}>
@@ -651,7 +651,7 @@ export default function Post() {
                 </div>
             </NativeGlassCard>
 
-            <NativeGlassCard className="border-white/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
+            <NativeGlassCard className="border-foreground/10 p-6 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
                 <div className="space-y-3">
                   <Label>Permissions</Label>
                   <div className="space-y-2">

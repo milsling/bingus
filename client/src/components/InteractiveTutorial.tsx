@@ -164,13 +164,13 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="relative z-10 w-full max-w-md mx-4"
           >
-            <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 shadow-2xl">
+            <div className="bg-[#0a0a0a] border border-foreground/10 rounded-3xl p-6 shadow-2xl">
               <button
                 onClick={handleSkip}
                 className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors"
                 data-testid="tutorial-skip-btn"
               >
-                <X className="h-5 w-5 text-white/50" />
+                <X className="h-5 w-5 text-foreground/50" />
               </button>
 
               <div className="flex flex-col items-center text-center">
@@ -178,7 +178,7 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.1, type: "spring", damping: 15 }}
-                  className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 border border-primary/30 flex items-center justify-center mb-4"
+                  className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center mb-4"
                 >
                   <Icon className="h-8 w-8 text-primary" />
                 </motion.div>
@@ -187,7 +187,7 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="text-xl font-bold text-white mb-2"
+                  className="text-xl font-bold text-foreground mb-2"
                 >
                   {step.title}
                 </motion.h2>
@@ -196,7 +196,7 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="text-white/60 text-sm leading-relaxed mb-2"
+                  className="text-muted-foreground text-sm leading-relaxed mb-2"
                 >
                   {step.description}
                 </motion.p>
@@ -233,7 +233,7 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
                     <Button
                       variant="ghost"
                       onClick={handlePrev}
-                      className="flex-1 text-white/60 hover:text-white hover:bg-white/10"
+                      className="flex-1 text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                       data-testid="tutorial-prev-btn"
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
@@ -244,7 +244,7 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
                   <Button
                     onClick={handleNext}
                     className={cn(
-                      "flex-1 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white font-semibold",
+                      "flex-1 bg-primary hover:bg-primary/90 text-white font-semibold",
                       isFirstStep && "flex-none px-8"
                     )}
                     data-testid="tutorial-next-btn"
@@ -256,7 +256,7 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
 
                 <button
                   onClick={handleSkip}
-                  className="mt-4 text-xs text-white/40 hover:text-white/60 transition-colors"
+                  className="mt-4 text-xs text-muted-foreground hover:text-muted-foreground transition-colors"
                   data-testid="tutorial-skip-text"
                 >
                   Skip tutorial

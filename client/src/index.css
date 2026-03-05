@@ -110,143 +110,33 @@
 
 :root {
   /* ========================================
-     ORPHANBARS - Light Mode (Enhanced for Eye Comfort)
-     Reduced glare, warmer undertones, improved contrast
+     ORPHANBARS - Frosted Glass Mode (Default / Light)
+     Translucent panels with backdrop blur over vibrant gradient.
+     Multiple tiers of frost for visual depth and dynamics.
      ======================================== */
-  /* Softer main background - warm off-white like Facebook/Google */
-  --background: 45 15% 97%;  /* #FAFAFC with warm tint */
-  --foreground: 220 15% 15%;  /* Darker gray text: #1F2937 */
 
-  /* Card backgrounds - pure white with subtle borders */
-  --card: 0 0% 100%;  /* Pure white */
-  --card-foreground: 220 15% 15%;  /* Darker text */
+  /* Background: near-transparent so body gradient shows through */
+  --background: 220 20% 98% / 0.05;
+  --foreground: 220 25% 6%;  /* Near-black: #0D1117 */
 
-  --popover: 45 25% 94%;  /* Light gray: #EFEFF1 */
-  --popover-foreground: 220 25% 2%;
+  /* Cards: light frost tier */
+  --card: 0 0% 100% / 0.20;
+  --card-foreground: 220 25% 6%;
 
-  /* Primary color - configurable accent */
+  --popover: 0 0% 100% / 0.60;  /* Dense frost for popovers */
+  --popover-foreground: 220 25% 6%;
+
+  /* Primary: configurable accent */
   --primary: var(--accent-color, 265 65% 58%);
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary surfaces - warm light gray */
-  --secondary: 45 25% 92%;  /* Medium light gray: #E8E8EB */
-  --secondary-foreground: 220 25% 2%;  /* Extremely dark text */
+  /* Secondary: whisper frost */
+  --secondary: 0 0% 100% / 0.12;
+  --secondary-foreground: 220 25% 6%;
 
-  /* Muted elements - softer gray */
-  --muted: 45 25% 90%;  /* Light gray: #E0E0E5 */
-  --muted-foreground: 220 8% 46%; /* Medium gray: #6B7280 */
-
-  --accent: var(--accent-color, 265 70% 60%);  /* Match primary */
-  --accent-foreground: 0 0% 100%;
-
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 100%;
-
-  /* Subtle borders - light gray for depth */
-  --border: 220 10% 88%;  /* Light gray: #E5E7EB */
-  --input: 220 10% 88%;
-  --ring: var(--accent-color, 265 70% 60%);  /* Match primary */
-
-  --radius: 0.5rem;
-  
-  /* Glass panel variables - warmer, more comfortable */
-  --glass-bg: rgba(252, 251, 248, 0.8);  /* Warm off-white */
-  --glass-bg-hover: rgba(254, 253, 250, 0.9);
-  --glass-border: rgba(229, 231, 235, 0.6);  /* Light gray borders */
-  --glass-border-hover: rgba(209, 213, 219, 0.8);
-  
-  /* Enhanced shadows - layered for depth, reduced harshness */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08), 0 10px 10px rgba(0, 0, 0, 0.04);
-  
-  --shadow-card: 
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.03),
-    0 0 0 1px rgba(229, 231, 235, 0.5);  /* Light border */
-  
-  --shadow-card-hover: 
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    0 12px 32px rgba(0, 0, 0, 0.04),
-    0 0 0 1px rgba(168, 85, 247, 0.15);
-
-  /* App backdrop (light) - reduced saturation for comfort */
-  --app-bg-1: rgba(168, 85, 247, 0.08);  /* Reduced intensity */
-  --app-bg-2: rgba(139, 69, 180, 0.06);
-  --app-bg-3: rgba(59, 130, 246, 0.05);
-  --app-bg-4: rgba(236, 72, 153, 0.04);
-  --app-bg-5: rgba(99, 102, 241, 0.04);
-  
-  /* Warmer gradient base */
-  --app-bg-base-start: #fafafa;  /* Warmer off-white */
-  --app-bg-base-end: #f5f5f7;   /* Soft warm gray */
-
-  /* Floating bars - warmer glass with more opacity */
-  --floating-bar-bg: rgba(252, 251, 248, 0.96);  /* More opaque, frosted */
-  --floating-bar-border: rgba(229, 231, 235, 0.8);  /* More visible border */
-  --floating-bar-shadow:
-    0 12px 28px rgba(31, 41, 55, 0.08),  /* Darker, more defined */
-    0 2px 8px rgba(31, 41, 55, 0.04);
-
-  /* Unified glass system - warmer, more comfortable with increased opacity */
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(252, 251, 248, 0.98));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(254, 253, 250, 0.99));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(229, 231, 235, 0.9));  /* More visible borders */
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(209, 213, 219, 0.95));
-  --glass-surface-shadow:
-    0 12px 28px rgba(31, 41, 55, 0.08),
-    0 2px 8px rgba(31, 41, 55, 0.04);
-
-  --glass-field-bg: rgba(240, 240, 242, 0.5);
-  --glass-field-bg-focus: rgba(245, 245, 247, 0.7);
-  --glass-field-border: rgba(200, 200, 210, 0.5);
-  --glass-field-border-focus: var(--accent-color, 168 85 247) 0.4;  /* Soft accent focus */
-  --glass-field-placeholder: rgba(75, 85, 99, 0.8);  /* Better contrast for light mode */
-
-  --sheet-bg: rgba(245, 245, 247, 0.96);  /* Light gray */
-  --sheet-border: rgba(200, 200, 210, 0.8);
-
-  /* Search input inside floating bar - better contrast */
-  --glass-input-in-bar-bg: rgba(31, 41, 55, 0.04);  /* Subtle dark */
-  --glass-input-in-bar-border: rgba(229, 231, 235, 0.8);
-  --glass-input-in-bar-bg-focus: rgba(31, 41, 55, 0.08);
-  --glass-input-in-bar-border-focus: hsl(var(--accent-color, 265 70% 60%) / 0.3);
-
-  /* Animation timings - unchanged */
-  --duration-interaction: 200ms;
-  --duration-transition: 280ms;
-  --duration-modal: 350ms;
-  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
-  --ease-ios: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-
-  /* Mobile spacing tokens - unchanged */
-  --mobile-header-top-offset: 0.5rem;
-  --mobile-header-height: 3rem;
-  --mobile-search-gap: 0.75rem;
-  --mobile-search-reserved-space: 5.25rem;
-}
-
-.light {
-  /* Light Mode: frosted-glass surfaces like the composer page */
-  --background: 45 15% 97%;
-  --foreground: 220 15% 15%;  /* Darker gray: #1F2937 */
-
-  --card: 45 25% 94%;  /* Light gray: #EFEFF1 */
-  --card-foreground: 220 25% 2%;  /* Extremely dark text */
-
-  --popover: 45 25% 94%;  /* Light gray: #EFEFF1 */
-  --popover-foreground: 220 25% 2%;
-
-  --primary: var(--accent-color, 265 70% 60%);
-  --primary-foreground: 0 0% 100%;
-
-  --secondary: 45 25% 92%;  /* Light gray */
-  --secondary-foreground: 220 25% 2%;  /* Extremely dark text */
-
-  --muted: 45 25% 90%;  /* Light gray */
-  --muted-foreground: 220 20% 15%;  /* Very dark muted text */
+  /* Muted: subtle frost */
+  --muted: 0 0% 100% / 0.10;
+  --muted-foreground: 220 15% 35%;
 
   --accent: var(--accent-color, 265 70% 60%);
   --accent-foreground: 0 0% 100%;
@@ -254,45 +144,196 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 220 10% 88%;
-  --input: 220 10% 88%;
+  /* Frosted glass edges */
+  --border: 220 15% 50% / 0.15;
+  --input: 220 15% 50% / 0.15;
   --ring: var(--accent-color, 265 70% 60%);
 
-  --app-bg-1: rgba(168, 85, 247, 0.08);
-  --app-bg-2: rgba(139, 69, 180, 0.06);
-  --app-bg-3: rgba(59, 130, 246, 0.05);
-  --app-bg-4: rgba(236, 72, 153, 0.04);
-  --app-bg-5: rgba(99, 102, 241, 0.04);
-  --app-bg-base-start: #fafafa;
-  --app-bg-base-end: #f5f5f7;
+  --radius: 0.5rem;
 
-  --floating-bar-bg: rgba(252, 251, 248, 0.78);
-  --floating-bar-border: rgba(229, 231, 235, 0.62);
+  /* Glass panel base variables */
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-bg-hover: rgba(255, 255, 255, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.30);
+  --glass-border-hover: rgba(255, 255, 255, 0.45);
+
+  /* Subtle shadows — depth from frost tiers */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 30px rgba(0, 0, 0, 0.07), 0 10px 12px rgba(0, 0, 0, 0.04);
+
+  --shadow-card:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.40);
+
+  --shadow-card-hover:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+
+  /* Vibrant pastel app backdrop — shows through frosted panels */
+  --app-bg-1: rgba(168, 85, 247, 0.18);
+  --app-bg-2: rgba(139, 69, 180, 0.14);
+  --app-bg-3: rgba(59, 130, 246, 0.12);
+  --app-bg-4: rgba(236, 72, 153, 0.09);
+  --app-bg-5: rgba(99, 102, 241, 0.09);
+
+  /* Soft pastel gradient base */
+  --app-bg-base-start: #e4ddf0;  /* Soft lavender */
+  --app-bg-base-end: #d8e0f0;   /* Soft blue-gray */
+
+  /* Floating bars: strong frost tier */
+  --floating-bar-bg: rgba(255, 255, 255, 0.45);
+  --floating-bar-border: rgba(255, 255, 255, 0.50);
   --floating-bar-shadow:
-    0 12px 28px rgba(31, 41, 55, 0.08),
-    0 2px 8px rgba(31, 41, 55, 0.04);
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.60);
 
-  --glass-surface-bg: rgba(252, 251, 248, 0.58);
-  --glass-surface-bg-strong: rgba(254, 253, 250, 0.68);
-  --glass-surface-border: rgba(229, 231, 235, 0.62);
-  --glass-surface-border-strong: rgba(209, 213, 219, 0.74);
+  /* Glass surface hierarchy — multiple tiers of frost */
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.22));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.38));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.35));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(255, 255, 255, 0.50));
   --glass-surface-shadow:
-    0 12px 28px rgba(31, 41, 55, 0.08),
-    0 2px 8px rgba(31, 41, 55, 0.04);
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 
-  --glass-field-bg: rgba(252, 251, 248, 0.8);
-  --glass-field-bg-focus: rgba(255, 255, 255, 0.95);
-  --glass-field-border: rgba(229, 231, 235, 0.6);
+  /* Glass fields: medium frost for inputs */
+  --glass-field-bg: rgba(255, 255, 255, 0.28);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.45);
+  --glass-field-border: rgba(255, 255, 255, 0.30);
+  --glass-field-border-focus: var(--accent-color, 168 85 247) 0.4;
+  --glass-field-placeholder: rgba(30, 30, 50, 0.40);
+
+  /* Sheets: dense frost tier */
+  --sheet-bg: rgba(255, 255, 255, 0.55);
+  --sheet-border: rgba(255, 255, 255, 0.45);
+
+  /* Search input in floating bar */
+  --glass-input-in-bar-bg: rgba(0, 0, 0, 0.05);
+  --glass-input-in-bar-border: rgba(255, 255, 255, 0.25);
+  --glass-input-in-bar-bg-focus: rgba(0, 0, 0, 0.08);
+  --glass-input-in-bar-border-focus: hsl(var(--accent-color, 265 70% 60%) / 0.3);
+
+  /* Animation timings */
+  --duration-interaction: 200ms;
+  --duration-transition: 280ms;
+  --duration-modal: 350ms;
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-ios: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Mobile spacing tokens */
+  --mobile-header-top-offset: 0.5rem;
+  --mobile-header-height: 3rem;
+  --mobile-search-gap: 0.75rem;
+  --mobile-search-reserved-space: 5.25rem;
+}
+
+.light {
+  /* ========================================
+     FROSTED GLASS / CLEAR MODE
+     Translucent panels with multiple tiers of frost
+     over vibrant pastel gradient backdrop.
+     ======================================== */
+  --background: 220 20% 98% / 0.05;
+  --foreground: 220 25% 6%;
+
+  --card: 0 0% 100% / 0.20;
+  --card-foreground: 220 25% 6%;
+
+  --popover: 0 0% 100% / 0.60;
+  --popover-foreground: 220 25% 6%;
+
+  --primary: var(--accent-color, 265 70% 60%);
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 0 0% 100% / 0.12;
+  --secondary-foreground: 220 25% 6%;
+
+  --muted: 0 0% 100% / 0.10;
+  --muted-foreground: 220 15% 35%;
+
+  --accent: var(--accent-color, 265 70% 60%);
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 220 15% 50% / 0.15;
+  --input: 220 15% 50% / 0.15;
+  --ring: var(--accent-color, 265 70% 60%);
+
+  /* Vibrant backdrop that shows through frosted panels */
+  --app-bg-1: rgba(168, 85, 247, 0.18);
+  --app-bg-2: rgba(139, 69, 180, 0.14);
+  --app-bg-3: rgba(59, 130, 246, 0.12);
+  --app-bg-4: rgba(236, 72, 153, 0.09);
+  --app-bg-5: rgba(99, 102, 241, 0.09);
+  --app-bg-base-start: #e4ddf0;
+  --app-bg-base-end: #d8e0f0;
+
+  /* Floating bars: strong frost tier */
+  --floating-bar-bg: rgba(255, 255, 255, 0.45);
+  --floating-bar-border: rgba(255, 255, 255, 0.50);
+  --floating-bar-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.60);
+
+  /* Glass surface hierarchy — multiple frost tiers */
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.22));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.38));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.35));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(255, 255, 255, 0.50));
+  --glass-surface-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  /* Glass fields: medium frost for inputs */
+  --glass-field-bg: rgba(255, 255, 255, 0.28);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.45);
+  --glass-field-border: rgba(255, 255, 255, 0.30);
   --glass-field-border-focus: rgba(168, 85, 247, 0.4);
-  --glass-field-placeholder: rgba(75, 85, 99, 0.8);  /* Much darker placeholder for better contrast */
+  --glass-field-placeholder: rgba(30, 30, 50, 0.40);
 
-  --sheet-bg: rgba(254, 253, 250, 0.82);
-  --sheet-border: rgba(229, 231, 235, 0.62);
+  /* Sheets: dense frost tier */
+  --sheet-bg: rgba(255, 255, 255, 0.55);
+  --sheet-border: rgba(255, 255, 255, 0.45);
 
-  --glass-input-in-bar-bg: rgba(31, 41, 55, 0.04);
-  --glass-input-in-bar-border: rgba(229, 231, 235, 0.8);
-  --glass-input-in-bar-bg-focus: rgba(31, 41, 55, 0.08);
-  --glass-input-in-bar-border-focus: rgba(168, 85, 247, 0.3);
+  /* Search input in floating bar */
+  --glass-input-in-bar-bg: rgba(0, 0, 0, 0.05);
+  --glass-input-in-bar-border: rgba(255, 255, 255, 0.25);
+  --glass-input-in-bar-bg-focus: rgba(0, 0, 0, 0.08);
+  --glass-input-in-bar-border-focus: rgba(168, 85, 247, 0.35);
+
+  /* Glass panel base */
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-bg-hover: rgba(255, 255, 255, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.30);
+  --glass-border-hover: rgba(255, 255, 255, 0.45);
+
+  /* Subtle shadows — glass depth from transparency tiers */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 30px rgba(0, 0, 0, 0.07), 0 10px 12px rgba(0, 0, 0, 0.04);
+
+  --shadow-card:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.40);
+
+  --shadow-card-hover:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .dark {
@@ -442,22 +483,24 @@
 }
 
 .has-custom-bg:not(.dark) {
-  --color-background: rgba(250, 250, 252, 0.15);
-  --color-card: rgba(255, 255, 255, 0.5);
+  /* Custom wallpaper: thinner frost so image shows through */
+  --color-background: rgba(255, 255, 255, 0.02);
+  --color-card: rgba(255, 255, 255, 0.15);
 
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(248, 247, 245, 0.58));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(250, 249, 247, 0.68));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(220, 220, 225, 0.62));
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.16));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.28));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.28));
 
-  --glass-bg: rgba(248, 247, 245, 0.45);
-  --glass-bg-hover: rgba(250, 249, 247, 0.55);
+  --glass-bg: rgba(255, 255, 255, 0.10);
+  --glass-bg-hover: rgba(255, 255, 255, 0.18);
 
-  --floating-bar-bg: rgba(248, 247, 245, 0.78);
+  --floating-bar-bg: rgba(255, 255, 255, 0.32);
+  --floating-bar-border: rgba(255, 255, 255, 0.38);
 
-  --sheet-bg: rgba(250, 249, 247, 0.7);
+  --sheet-bg: rgba(255, 255, 255, 0.40);
 
-  --glass-field-bg: rgba(248, 247, 245, 0.5);
-  --glass-field-bg-focus: rgba(252, 251, 248, 0.65);
+  --glass-field-bg: rgba(255, 255, 255, 0.18);
+  --glass-field-bg-focus: rgba(255, 255, 255, 0.30);
 }
 
 @layer base {
@@ -512,38 +555,9 @@
     font-family: var(--font-logo);
   }
 
-  /* Enhanced text color for light mode */
-  :root:not(.dark):not(.light) {
-    font-size: 16px;  /* Base 16px for better readability */
-    line-height: 1.7;  /* Increased line-height for comfort */
-    color: hsl(220 25% 5%) !important; /* Very dark default text - force override */
-  }
-  
-  :root:not(.dark):not(.light) body {
-    font-family: var(--font-sans);
-    letter-spacing: 0.01em;  /* Slightly increased letter spacing */
-    color: hsl(220 25% 5%) !important; /* Very dark body text - force override */
-  }
-  
-  :root:not(.dark):not(.light) p, 
-  :root:not(.dark):not(.light) .text-sm,
-  :root:not(.dark):not(.light) .text-xs {
-    color: hsl(220 25% 5%) !important; /* Very dark gray for body text - force override */
-    line-height: 1.75;  /* Even more line-height for body text */
-  }
-  
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     letter-spacing: -0.025em;
-  }
-  
-  /* Light mode heading improvements */
-  :root:not(.dark) h1, 
-  :root:not(.dark) h2, 
-  :root:not(.dark) h3 {
-    color: hsl(220 15% 12%);  /* Slightly darker than body text */
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);  /* Stronger shadow for contrast */
   }
 
   [contenteditable]:empty:before {
@@ -880,178 +894,57 @@ html.dark {
 }
 
 /* ========================================
-   LIGHT MODE CARD & CONTAINER ENHANCEMENTS
-   Eye-comfort shadows and subtle depth
+   FROSTED GLASS - CARD & CONTAINER ENHANCEMENTS
+   Backdrop blur on all containers for true frosted glass
    ======================================== */
 
-/* Apply subtle shadows to cards in light mode only */
-:root:not(.dark):not(.light) [data-slot="card"],
-:root:not(.dark):not(.light) .card {
+/* Global backdrop-filter for cards in light/frosted mode */
+.light [data-slot="card"],
+.light .card {
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
   box-shadow: var(--shadow-card);
   transition: box-shadow 0.2s ease-out, transform 0.2s ease-out;
 }
 
-:root:not(.dark):not(.light) [data-slot="card"]:hover,
-:root:not(.dark):not(.light) .card:hover {
+.light [data-slot="card"]:hover,
+.light .card:hover {
   box-shadow: var(--shadow-card-hover);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
 }
 
-/* Keep main background stable in light mode (prevents scroll tint drift) */
-:root:not(.dark):not(.light) main {
+/* Keep main background transparent for gradient bleed-through */
+.light main {
   background: transparent;
 }
 
-/* Light mode input fields - subtle inset shadow */
-:root:not(.dark):not(.light) input:not([type="checkbox"]):not([type="radio"]),
-:root:not(.dark):not(.light) textarea,
-:root:not(.dark):not(.light) select {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+/* Frosted glass inputs */
+.light input:not([type="checkbox"]):not([type="radio"]),
+.light textarea,
+.light select {
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
 }
 
-:root:not(.dark):not(.light) input:focus,
-:root:not(.dark):not(.light) textarea:focus,
-:root:not(.dark):not(.light) select:focus {
-  box-shadow: 
-    inset 0 1px 2px rgba(0, 0, 0, 0.04),
-    0 0 0 2px hsl(var(--ring) / 0.2);
+.light input:focus,
+.light textarea:focus,
+.light select:focus {
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.25);
 }
 
-/* Light mode buttons - enhanced depth and comfort */
-:root:not(.dark):not(.light) button:not([class*="ghost"]):not([class*="link"]) {
-  box-shadow: var(--shadow-xs);
-  transition: all 0.2s ease-out;
-}
-
-:root:not(.dark):not(.light) button:not([class*="ghost"]):not([class*="link"]):hover {
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);  /* Subtle lift effect */
-}
-
-:root:not(.dark):not(.light) button:not([class*="ghost"]):not([class*="link"]):active {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
-  transform: translateY(0);
-}
-
-/* Enhanced primary button styling for light mode */
-:root:not(.dark):not(.light) button.bg-primary,
-:root:not(.dark):not(.light) .bg-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(265 70% 54%) 100%);  /* Subtle gradient */
-  border: 1px solid hsl(265 65% 50%);  /* Soft border for depth */
-  box-shadow: 
-    0 2px 4px rgba(168, 85, 247, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-:root:not(.dark):not(.light) button.bg-primary:hover,
-:root:not(.dark):not(.light) .bg-primary:hover {
-  background: linear-gradient(135deg, hsl(265 65% 62%) 0%, hsl(265 70% 56%) 100%);  /* Slightly darker */
-  box-shadow: 
-    0 4px 8px rgba(168, 85, 247, 0.2),
-    0 2px 4px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
-}
-
-:root:not(.dark):not(.light) button.bg-primary:active,
-:root:not(.dark):not(.light) .bg-primary:active {
-  background: linear-gradient(135deg, hsl(265 65% 58%) 0%, hsl(265 70% 52%) 100%);  /* Darker for active */
-  box-shadow: inset 0 1px 2px rgba(124, 58, 237, 0.2);
-  transform: translateY(0);
-}
-
-/* Light mode dropdown/popover shadows */
-:root:not(.dark):not(.light) [data-radix-popper-content-wrapper] > div,
-:root:not(.dark):not(.light) [role="dialog"],
-:root:not(.dark):not(.light) [role="menu"] {
+/* Popovers and dialogs: dense frost tier */
+.light [data-radix-popper-content-wrapper] > div,
+.light [role="dialog"],
+.light [role="menu"] {
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
   box-shadow: var(--shadow-lg);
 }
 
-/* Light mode avatar ring - softer */
-:root:not(.dark):not(.light) [data-slot="avatar"] {
-  box-shadow: 0 0 0 2px hsl(var(--background)), var(--shadow-xs);
-}
-
-/* ========================================
-   LIGHT MODE ENHANCED SPACING & PADDING
-   Improved comfort and reduced crowding
-   ======================================== */
-
-/* Enhanced card spacing in light mode */
-:root:not(.dark):not(.light) .card,
-:root:not(.dark):not(.light) [data-slot="card"] {
-  padding: 1.5rem;  /* More generous padding */
-  margin-bottom: 1.25rem;  /* More space between cards */
-}
-
-:root:not(.dark):not(.light) .card p,
-:root:not(.dark):not(.light) [data-slot="card"] p {
-  margin-bottom: 1rem;  /* More space after paragraphs */
-}
-
-/* Enhanced section spacing */
-:root:not(.dark):not(.light) section {
-  padding: 2rem 0;
-  margin-bottom: 1.5rem;
-}
-
-/* Better list spacing */
-:root:not(.dark):not(.light) ul,
-:root:not(.dark):not(.light) ol {
-  line-height: 1.8;
-  padding-left: 1.5rem;
-}
-
-:root:not(.dark):not(.light) li {
-  margin-bottom: 0.75rem;
-}
-
-/* Enhanced form spacing */
-:root:not(.dark):not(.light) .space-y-2 > * + * {
-  margin-top: 1rem;  /* More space between form elements */
-}
-
-:root:not(.dark):not(.light) .space-y-4 > * + * {
-  margin-top: 1.5rem;  /* More space for larger gaps */
-}
-
-/* Better button spacing */
-:root:not(.dark):not(.light) .button-group {
-  display: flex;
-  gap: 1rem;  /* More space between buttons */
-}
-
-:root:not(.dark):not(.light) .stack {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Enhanced modal/dialog padding */
-:root:not(.dark):not(.light) [role="dialog"] {
-  padding: 2rem;
-}
-
-:root:not(.dark):not(.light) [role="dialog"] > div:first-child {
-  margin-bottom: 1.5rem;
-}
-
-/* Better table spacing */
-:root:not(.dark):not(.light) table {
-  border-spacing: 0 0.5rem;
-}
-
-:root:not(.dark):not(.light) th,
-:root:not(.dark):not(.light) td {
-  padding: 1rem;
-}
-
-/* Enhanced navigation spacing */
-:root:not(.dark):not(.light) nav {
-  padding: 1rem 0;
-}
-
-:root:not(.dark):not(.light) nav a {
-  padding: 0.75rem 1rem;
-  margin: 0 0.25rem;
+/* Light mode avatar ring - frosted */
+.light [data-slot="avatar"] {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35), var(--shadow-xs);
 }
 
 /* ========================================
@@ -1548,3 +1441,161 @@ html.dark {
   height: var(--mobile-search-reserved-space);
 }
 
+/* ========================================
+   FROSTED GLASS MODE - COMPREHENSIVE OVERRIDES
+   All panels, overlays, and components use translucent frost.
+   Multiple tiers of frost create visual depth and dynamics.
+   ======================================== */
+
+/* --- Frosted glass: Nav overlay / mobile slide-out --- */
+.light .nav-overlay-modern {
+  border-color: rgba(255, 255, 255, 0.40);
+  background: rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.50);
+}
+
+.light .nav-overlay-modern-item {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
+  color: hsl(var(--foreground));
+}
+
+.light .nav-overlay-modern-item:hover {
+  background: rgba(255, 255, 255, 0.30);
+  border-color: rgba(255, 255, 255, 0.40);
+}
+
+.light .nav-overlay {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08), inset 1px 0 0 rgba(255, 255, 255, 0.40);
+}
+
+.light .nav-overlay-header {
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+}
+
+.light .nav-overlay-close {
+  border-color: rgba(255, 255, 255, 0.30);
+}
+
+.light .nav-overlay-item {
+  border-color: rgba(255, 255, 255, 0.20);
+  background: rgba(255, 255, 255, 0.12);
+  color: hsl(var(--foreground));
+}
+
+.light .nav-overlay-item:hover {
+  background: hsl(var(--primary) / 0.10);
+  border-color: hsl(var(--primary) / 0.25);
+}
+
+.light .nav-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* --- Frosted glass: Glass menu item --- */
+.light .glass-menu-item:hover {
+  background: rgba(255, 255, 255, 0.20);
+}
+
+.light .glass-menu-item.active {
+  background: hsl(var(--primary) / 0.12);
+  border-color: hsl(var(--primary) / 0.25);
+}
+
+/* --- Frosted glass: Glass button --- */
+.light .glass-button {
+  background: rgba(255, 255, 255, 0.20);
+  border-color: rgba(255, 255, 255, 0.30);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+.light .glass-button:hover {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* --- Frosted glass: Glass sheet --- */
+.light .glass-sheet {
+  background: rgba(255, 255, 255, 0.48);
+  border-color: rgba(255, 255, 255, 0.40);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.20) inset;
+}
+
+/* --- Frosted glass: FAB (floating action button) --- */
+.light .fab-button {
+  background: rgba(255, 255, 255, 0.38);
+  border-color: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.50);
+}
+
+.light .fab-ring-core {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.20), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.light .fab-ring-core-open {
+  border-color: hsl(var(--primary));
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.20), 0 0 0 1px hsl(var(--primary) / 0.2), 0 0 24px hsl(var(--primary) / 0.15);
+}
+
+/* --- Frosted glass: Glass card hover accent --- */
+.light .glass-card:hover {
+  border-color: hsl(var(--primary) / 0.20);
+  box-shadow: var(--glass-surface-shadow), 0 0 0 1px hsl(var(--primary) / 0.10);
+}
+
+/* --- Frosted glass: Sidebar panels get blur --- */
+.light .side-panel,
+.light .content-panel,
+.light aside {
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+}
+
+/* --- Frosted glass: Glass overlay --- */
+.light .glass-overlay {
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* --- Frosted glass: Override inline text color inheritance for rich text --- */
+.light [data-testid^="text-content-"] * {
+  color: inherit !important;
+}
+.light [data-testid^="text-content-"] span[style*="color"] {
+  color: inherit !important;
+}
+.light [data-testid^="text-content-"] *[style*="background"] {
+  background-color: transparent !important;
+  background: none !important;
+}
+
+/* --- Frosted glass: Ensure near-black text throughout --- */
+.light body,
+.light #root {
+  color: hsl(var(--foreground));
+}
+
+.light h1, .light h2, .light h3, .light h4, .light h5, .light h6 {
+  color: hsl(var(--foreground));
+}
+
+.light [data-slot="card"],
+.light .card {
+  color: hsl(var(--card-foreground));
+}

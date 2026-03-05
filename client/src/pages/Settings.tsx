@@ -10,6 +10,7 @@ import { BackgroundUploader } from "@/components/BackgroundUploader";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { useBackground } from "@/components/BackgroundSelector";
 import ThemeSettings from "@/components/ThemeSettings";
+import AccentColorPicker from "@/components/AccentColorPicker";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFabShortcuts, SHORTCUT_OPTIONS } from "@/hooks/useFabShortcuts";
 import { Button } from "@/components/ui/button";
@@ -224,9 +225,9 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="glass-surface-strong rounded-3xl border border-white/[0.08] p-4 md:p-6">
+        <div className="glass-surface-strong rounded-3xl border border-foreground/[0.08] p-4 md:p-6">
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="mb-5 flex h-auto w-full items-stretch justify-start gap-1.5 overflow-x-auto rounded-2xl bg-white/[0.03] p-1.5 scrollbar-hide">
+            <TabsList className="mb-5 flex h-auto w-full items-stretch justify-start gap-1.5 overflow-x-auto rounded-2xl bg-foreground/[0.03] p-1.5 scrollbar-hide">
               <TabsTrigger
                 value="general"
                 className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
@@ -267,7 +268,7 @@ export default function Settings() {
             </TabsList>
 
             <TabsContent value="general" className="mt-0 space-y-4">
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Crown className="h-4 w-4 text-primary" />
@@ -315,7 +316,7 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <UserCog className="h-4 w-4 text-primary" />
@@ -334,7 +335,7 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Lock className="h-4 w-4 text-primary" />
@@ -383,7 +384,7 @@ export default function Settings() {
                   </Button>
                 </CardContent>
               </Card>
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Command className="h-4 w-4 text-primary" />
@@ -445,7 +446,7 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="privacy" className="mt-0 space-y-4">
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Shield className="h-4 w-4 text-primary" />
@@ -497,7 +498,7 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="sounds" className="mt-0 space-y-4">
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Bell className="h-4 w-4 text-primary" />
@@ -538,7 +539,7 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Volume2 className="h-4 w-4 text-primary" />
@@ -584,7 +585,7 @@ export default function Settings() {
             </TabsContent>
 
             <TabsContent value="appearance" className="mt-0 space-y-4">
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     🎛️ Visual Mode
@@ -607,7 +608,23 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    🎨 Accent Color
+                  </CardTitle>
+                  <CardDescription>
+                    {isProMember
+                      ? "Choose an accent color or let it match your background automatically."
+                      : "Upgrade to PRO to customize your accent color."}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <AccentColorPicker isProMember={isProMember} />
+                </CardContent>
+              </Card>
+
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     🎨 Background Selection
@@ -621,7 +638,7 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <Card className={"glass-surface-strong border-white/15"}>
+              <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     🖼️ Upload Custom Background
@@ -641,7 +658,7 @@ export default function Settings() {
 
             {canDebugControls && (
               <TabsContent value="developer" className="mt-0 space-y-4">
-                <Card className={"glass-surface-strong border-white/15"}>
+                <Card className={"glass-surface-strong border-foreground/15"}>
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <Shield className="h-4 w-4 text-primary" />

@@ -148,7 +148,7 @@ export function SearchBar({ className }: { className?: string }) {
             animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.16, ease: "easeOut" }}
-            className="absolute top-full left-0 right-0 z-[1300] mt-1 overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(160deg,rgba(16,16,24,0.96),rgba(16,16,24,0.9))] shadow-[0_18px_30px_rgba(2,6,23,0.5)] backdrop-blur-xl"
+            className="absolute top-full left-0 right-0 z-[1300] mt-1 overflow-hidden rounded-2xl border border-foreground/10 bg-[linear-gradient(160deg,rgba(16,16,24,0.96),rgba(16,16,24,0.9))] shadow-[0_18px_30px_rgba(2,6,23,0.5)] backdrop-blur-xl"
           >
             {query.length < 2 ? (
               <div className="p-3">
@@ -161,7 +161,7 @@ export function SearchBar({ className }: { className?: string }) {
                     <Badge
                       key={tag}
                       variant="secondary"
-                      className="cursor-pointer border border-white/10 bg-black/20 text-xs hover:bg-primary/20 hover:text-primary transition-colors"
+                      className="cursor-pointer border border-foreground/10 bg-black/20 text-xs hover:bg-primary/20 hover:text-primary transition-colors"
                       onClick={() => handleTagClick(tag)}
                       data-testid={`trending-tag-${tag}`}
                     >
@@ -179,7 +179,7 @@ export function SearchBar({ className }: { className?: string }) {
                 {results.map((result, index) => (
                   <button
                     key={`${result.type}-${result.id}`}
-                    className="w-full text-left flex items-center gap-3 p-3 transition-colors hover:bg-white/[0.05]"
+                    className="w-full text-left flex items-center gap-3 p-3 transition-colors hover:bg-foreground/[0.05]"
                     onClick={() => handleSelect(result)}
                     data-testid={`search-result-${index}`}
                   >

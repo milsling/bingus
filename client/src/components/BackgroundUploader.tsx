@@ -387,7 +387,7 @@ export function BackgroundUploader() {
         <div
           className={cn(
             "relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200",
-            dragActive ? "border-primary bg-primary/5" : "border-border/50 hover:border-border/80 hover:bg-white/[0.02]",
+            dragActive ? "border-primary bg-primary/5" : "border-border/50 hover:border-border/80 hover:bg-foreground/[0.02]",
           )}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
