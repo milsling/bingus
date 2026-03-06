@@ -15,7 +15,21 @@ import { Upload, X, Palette, Image, Trash2, Download } from 'lucide-react';
 import ThemePresetSelector from './ThemePresetSelector';
 
 export default function ThemeSettings() {
-  const { settings, updateSettings, addCustomBackground, removeCustomBackground, canCustomize } = useTheme();
+  const { canCustomize } = useTheme();
+
+  // Check permission BEFORE calling any other hooks
+  if (!canCustomize) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground">You don't have permission to customize themes.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // All hooks must be called after early returns
+  const { settings, updateSettings, addCustomBackground, removeCustomBackground } = useTheme();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -63,16 +77,6 @@ export default function ThemeSettings() {
       }
     }
   }, [settings.backgroundValue, settings.backgroundType, settings.accentColorMode, updateSettings]);
-
-  if (!canCustomize) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-muted-foreground">You don't have permission to customize themes.</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

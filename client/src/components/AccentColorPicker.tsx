@@ -85,6 +85,35 @@ interface AccentColorPickerProps {
 }
 
 export default function AccentColorPicker({ isProMember }: AccentColorPickerProps) {
+  // Locked state for free tier - check BEFORE any hooks
+  if (!isProMember) {
+    return (
+      <div className="relative">
+        <div className="pointer-events-none opacity-50 select-none">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Accent Color</Label>
+            <div className="flex flex-wrap gap-2">
+              {ACCENT_PRESETS.slice(0, 8).map((color) => (
+                <div
+                  key={color.value}
+                  className="w-8 h-8 rounded-full border-2 border-foreground/10"
+                  style={{ backgroundColor: color.hex }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-foreground/15 shadow-lg">
+            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">PRO Feature</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // All hooks must be called after early returns
   const { settings, updateSettings } = useTheme();
   const { selectedBackground } = useBackground();
   const [isExtracting, setIsExtracting] = useState(false);
@@ -127,34 +156,6 @@ export default function AccentColorPicker({ isProMember }: AccentColorPickerProp
 
     extractColor();
   }, [settings.accentColorMode, selectedBackground?.id]);
-
-  // Locked state for free tier
-  if (!isProMember) {
-    return (
-      <div className="relative">
-        <div className="pointer-events-none opacity-50 select-none">
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Accent Color</Label>
-            <div className="flex flex-wrap gap-2">
-              {ACCENT_PRESETS.slice(0, 8).map((color) => (
-                <div
-                  key={color.value}
-                  className="w-8 h-8 rounded-full border-2 border-foreground/10"
-                  style={{ backgroundColor: color.hex }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-foreground/15 shadow-lg">
-            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground">PRO Feature</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const isAuto = settings.accentColorMode === "auto";
 
