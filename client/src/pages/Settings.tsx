@@ -50,20 +50,6 @@ export default function Settings() {
     return window.localStorage.getItem(FAB_DEBUG_LAUNCHER_HIDDEN_KEY) === "1";
   });
 
-
-  useEffect(() => {
-    if (!currentUser) return;
-    setMessagePrivacy(currentUser.messagePrivacy || "friends_only");
-    setNotificationSound(currentUser.notificationSound || "chime");
-    setMessageSound(currentUser.messageSound || "ding");
-  }, [currentUser]);
-
-
-  if (!currentUser) {
-    setLocation("/auth");
-    return null;
-  }
-
   const changePasswordMutation = useMutation({
     mutationFn: () => api.changePassword(currentPassword, newPassword),
     onSuccess: () => {
@@ -127,24 +113,6 @@ export default function Settings() {
     },
   });
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const billingResult = params.get("billing");
-    if (!billingResult) return;
-
-    if (billingResult === "success") {
-      syncBillingMutation.mutate();
-      toast({ title: "Payment successful", description: "Welcome to Orphan Bars Pro." });
-    } else if (billingResult === "cancelled") {
-      toast({ title: "Checkout cancelled" });
-    }
-
-    params.delete("billing");
-    const nextSearch = params.toString();
-    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}`;
-    window.history.replaceState({}, "", nextUrl);
-  }, [syncBillingMutation, toast]);
-
   const updatePrivacyMutation = useMutation({
     mutationFn: (privacy: string) => api.updateProfile({ messagePrivacy: privacy }),
     onSuccess: () => {
@@ -175,6 +143,44 @@ export default function Settings() {
     },
   });
 
+  // Sync local state when currentUser loads/changes
+  useEffect(() => {
+    if (!currentUser) return;
+    setMessagePrivacy(currentUser.messagePrivacy || "friends_only");
+    setNotificationSound(currentUser.notificationSound || "chime");
+    setMessageSound(currentUser.messageSound || "ding");
+  }, [currentUser]);
+
+  // Handle billing redirect params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const billingResult = params.get("billing");
+    if (!billingResult) return;
+
+    if (billingResult === "success") {
+      syncBillingMutation.mutate();
+      toast({ title: "Payment successful", description: "Welcome to Orphan Bars Pro." });
+    } else if (billingResult === "cancelled") {
+      toast({ title: "Checkout cancelled" });
+    }
+
+    params.delete("billing");
+    const nextSearch = params.toString();
+    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}`;
+    window.history.replaceState({}, "", nextUrl);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Redirect to auth if not logged in (inside useEffect to avoid render-time state updates)
+  useEffect(() => {
+    if (!currentUser) {
+      setLocation("/auth");
+    }
+  }, [currentUser, setLocation]);
+
+  if (!currentUser) {
+    return null;
+  }
 
   const handleChangePassword = () => {
     if (newPassword !== confirmPassword) {
@@ -211,8 +217,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen pt-14 pb-20 md:pt-24 md:pb-6">
-      <main className="mx-auto w-full max-w-3xl px-4 md:px-8">
+    <div className="min-h-[100dvh] pt-14 pb-20 md:pt-24 md:pb-6 overflow-x-hidden">
+      <main className="mx-auto w-full max-w-3xl px-3 sm:px-4 md:px-8">
         <div className="mb-5 flex items-center gap-3">
           <Link href="/profile">
             <Button variant="ghost" size="icon" className="rounded-full" data-testid="button-settings-back">
@@ -225,33 +231,33 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="glass-surface-strong rounded-3xl border border-foreground/[0.08] p-4 md:p-6">
+        <div className="glass-surface-strong rounded-2xl sm:rounded-3xl border border-foreground/[0.08] p-3 sm:p-4 md:p-6">
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="mb-5 flex h-auto w-full items-stretch justify-start gap-1.5 overflow-x-auto rounded-2xl bg-foreground/[0.03] p-1.5 scrollbar-hide">
+            <TabsList className="mb-5 flex h-auto w-full items-stretch justify-start gap-1 sm:gap-1.5 overflow-x-auto rounded-2xl bg-foreground/[0.03] p-1 sm:p-1.5 scrollbar-hide touch-pan-x">
               <TabsTrigger
                 value="general"
-                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
+                className="rounded-xl px-2.5 sm:px-3 py-2.5 text-[11px] sm:text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                 data-testid="tab-settings-general"
               >
                 General
               </TabsTrigger>
               <TabsTrigger
                 value="privacy"
-                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
+                className="rounded-xl px-2.5 sm:px-3 py-2.5 text-[11px] sm:text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                 data-testid="tab-settings-privacy"
               >
                 Privacy
               </TabsTrigger>
               <TabsTrigger
                 value="sounds"
-                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
+                className="rounded-xl px-2.5 sm:px-3 py-2.5 text-[11px] sm:text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                 data-testid="tab-settings-sounds"
               >
                 Sounds
               </TabsTrigger>
               <TabsTrigger
                 value="appearance"
-                className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
+                className="rounded-xl px-2.5 sm:px-3 py-2.5 text-[11px] sm:text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                 data-testid="tab-settings-appearance"
               >
                 Appearance
@@ -259,7 +265,7 @@ export default function Settings() {
               {canDebugControls && (
                 <TabsTrigger
                   value="developer"
-                  className="rounded-xl px-3 py-2.5 text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
+                  className="rounded-xl px-2.5 sm:px-3 py-2.5 text-[11px] sm:text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
                   data-testid="tab-settings-developer"
                 >
                   Developer

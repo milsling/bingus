@@ -1,14 +1,6 @@
 import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
-// Framer Motion variants for the tab
-const tabVariants = {
-  initial: { opacity: 0, x: 40, scale: 0.9 },
-  animate: { opacity: 1, x: 0, scale: 1 },
-  hover: { scale: 1.04, boxShadow: "0 2px 12px rgba(0,0,0,0.10)" },
-  pressed: { scale: 0.97 },
-};
-
 /**
  * ThumbNavTab - A modern, native-feeling navigation drawer for mobile
  * 
@@ -176,13 +168,12 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
 
   return (
     <ThumbNavCloseContext.Provider value={handleClose}>
-      {/* Modern Edge Tab — larger, more visible, with clear affordances */}
+      {/* Modern Edge Tab — compact pill handle, Samsung/Arc style */}
       <motion.div
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none p-2 touch-none"
-        variants={tabVariants}
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none touch-none"
         style={{ x: tabPositionX }}
         animate={{
-          scale: isPressed ? 0.96 : 1,
+          scale: isPressed ? 0.92 : 1,
         }}
         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
         whileHover="hover"
@@ -194,23 +185,30 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Expanded touch target for easier grab */}
-        <div className="absolute inset-y-0 -left-8 right-2" />
-        <div className="relative h-40 w-4 bg-gradient-to-l from-primary/25 to-primary/10 backdrop-blur-md rounded-l-2xl border-l border-t border-b border-primary/30 shadow-2xl">
-          {/* Visual grip indicator */}
-          <div className="absolute inset-y-0 left-1 w-2 flex flex-col items-center justify-center gap-1.5">
-            <div className="w-1.5 h-1.5 bg-primary rounded-full shadow-lg shadow-primary/30" />
-            <div className="w-1.5 h-1.5 bg-primary rounded-full shadow-lg shadow-primary/30" />
-            <div className="w-1.5 h-1.5 bg-primary rounded-full shadow-lg shadow-primary/30" />
+        {/* Invisible expanded touch target — 44×80px minimum for comfortable thumb grab */}
+        <div className="absolute -inset-y-5 -left-6 right-0 min-w-[44px] min-h-[80px]" />
+
+        {/* Visible pill — compact, high contrast, always discoverable */}
+        <div className="relative h-12 w-[7px] rounded-l-full overflow-hidden"
+          style={{
+            background: 'hsl(var(--primary) / 0.55)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            boxShadow: '-2px 0 12px hsl(var(--primary) / 0.2), inset 0 0 0 0.5px hsl(var(--primary) / 0.3)',
+          }}
+        >
+          {/* Single center notch — clear drag affordance */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-[3px] h-5 rounded-full bg-white/60" />
           </div>
-          {/* Subtle animated pulse when idle */}
+
+          {/* Gentle breathing pulse so it doesn't look static/dead */}
           <motion.div
-            className="absolute inset-0 bg-primary/5 rounded-l-2xl"
-            animate={{ opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 rounded-l-full"
+            style={{ background: 'hsl(var(--primary) / 0.15)' }}
+            animate={{ opacity: [0, 0.6, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           />
-          {/* Hover/active state highlight */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-primary/15 rounded-l-2xl opacity-0 hover:opacity-100 transition-opacity duration-200" />
         </div>
       </motion.div>
 
