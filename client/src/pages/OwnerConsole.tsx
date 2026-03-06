@@ -23,19 +23,18 @@ import { cn } from "@/lib/utils";
 
 export default function OwnerConsole() {
   const { currentUser } = useBars();
-  const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const { selectedBackground } = useBackground();
-  const hasCustomBackground = selectedBackground.image !== null;
 
-  // Redirect non-owners silently to 404
-  if (!currentUser) {
-    setLocation("/auth");
-    return null;
-  }
-  if (!currentUser.isOwner) {
-    setLocation("/404");
+  // Redirect non-owners inside useEffect to avoid render-time state updates
+  useEffect(() => {
+    if (!currentUser) {
+      setLocation("/auth");
+    } else if (!currentUser.isOwner) {
+      setLocation("/404");
+    }
+  }, [currentUser, setLocation]);
+
+  if (!currentUser || !currentUser.isOwner) {
     return null;
   }
 
@@ -263,19 +262,19 @@ function OwnerConsoleContent() {
   ];
 
   return (
-    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
-      <main className="mx-auto w-full max-w-3xl p-4 md:p-8">
+    <div className="min-h-[100dvh] pt-14 pb-20 md:pb-4 md:pt-24 overflow-x-hidden">
+      <main className="mx-auto w-full max-w-3xl px-3 sm:px-4 md:px-8">
 
         {/* Header */}
-        <div className="mb-6 glass-surface-strong rounded-3xl border border-foreground/[0.1] p-4 md:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/20">
-                <Power className="h-6 w-6 text-purple-400" />
+        <div className="mb-4 sm:mb-6 glass-surface-strong rounded-2xl sm:rounded-3xl border border-foreground/[0.1] p-3 sm:p-4 md:p-6">
+          <div className="flex items-center justify-between gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/20">
+                <Power className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
               </div>
-              <div>
-                <h1 className="text-2xl font-display font-bold">Owner Console</h1>
-                <p className="text-xs text-muted-foreground mt-0.5">Site control — visible to you only</p>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-display font-bold truncate">Owner Console</h1>
+                <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Site control — visible to you only</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" className="rounded-full shrink-0" onClick={() => setLocation("/admin")}>
@@ -286,24 +285,24 @@ function OwnerConsoleContent() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           {/* Mobile tabs */}
-          <div className="mb-4 md:hidden -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          <div className="mb-4 md:hidden -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 scrollbar-hide touch-pan-x">
             {tabs.map((tab) => (
               <button
                 key={tab.value}
                 type="button"
                 onClick={() => setActiveTab(tab.value)}
                 className={cn(
-                  "min-w-[110px] rounded-2xl border px-3 py-2.5 text-left transition-all active:scale-[0.98]",
+                  "min-w-[90px] flex-shrink-0 rounded-xl sm:rounded-2xl border px-2.5 sm:px-3 py-2 sm:py-2.5 text-left transition-all active:scale-[0.98]",
                   activeTab === tab.value
                     ? "border-primary/45 bg-primary/15 shadow-[0_0_16px_rgba(168,85,247,0.2)]"
                     : "border-foreground/[0.1] bg-foreground/[0.04] hover:bg-foreground/[0.08]"
                 )}
               >
-                <div className="flex items-center gap-2">
-                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-xl", activeTab === tab.value ? "bg-primary/20" : "bg-foreground/[0.08]")}>
-                    <tab.icon className={cn("h-3.5 w-3.5", activeTab === tab.value ? "text-primary" : "text-muted-foreground")} />
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className={cn("flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg sm:rounded-xl", activeTab === tab.value ? "bg-primary/20" : "bg-foreground/[0.08]")}>
+                    <tab.icon className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", activeTab === tab.value ? "text-primary" : "text-muted-foreground")} />
                   </div>
-                  <span className="text-xs font-semibold truncate">{tab.label}</span>
+                  <span className="text-[11px] sm:text-xs font-semibold truncate">{tab.label}</span>
                 </div>
               </button>
             ))}
