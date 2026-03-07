@@ -996,6 +996,16 @@ export const ACHIEVEMENTS = {
     threshold: { accountAgeDays: 730 },
     rarity: "epic" as AchievementRarity,
   },
+
+  // Challenge achievements
+  challenge_contender: {
+    name: "Challenge Contender",
+    emoji: "⚔️",
+    imageUrl: null as string | null,
+    description: "Competed in your first challenge",
+    threshold: { challengesEntered: 1 },
+    rarity: "common" as AchievementRarity,
+  },
 } as const;
 
 // Achievement badge images stored in database for built-in achievements

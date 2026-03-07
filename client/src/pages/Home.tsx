@@ -22,6 +22,16 @@ import {
   NativeSegmentedControl,
 } from "@/components/ui/native-shell";
 import { useBackground } from "@/components/BackgroundSelector";
+import {
+  BarOfTheDay,
+  TrendingTags,
+  RecentActivityFeed,
+  SidebarPrompt,
+  XpProgressCard,
+  CommunityPulse,
+  RecentChallenges,
+  SuggestedWriters,
+} from "@/components/SidebarWidgets";
 
 type FeedTab = "latest" | "top" | "trending" | "challenges";
 const FEED_TAB_OPTIONS: Array<{ value: FeedTab; label: string }> = [
@@ -510,7 +520,11 @@ export default function Home() {
           </section>
 
           <aside className="hidden lg:block">
-            <div className="sticky top-20 space-y-4">
+            <div className="sticky top-20 space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide pb-4">
+              {/* XP Progress (logged-in users) */}
+              <XpProgressCard hasCustomBackground={hasCustomBackground} />
+
+              {/* Top lyricists leaderboard */}
               <div className={cn(
                 "rounded-2xl p-4",
                 hasCustomBackground 
@@ -554,6 +568,28 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Bar of the Day */}
+              <BarOfTheDay hasCustomBackground={hasCustomBackground} />
+
+              {/* This week's prompt */}
+              <SidebarPrompt hasCustomBackground={hasCustomBackground} />
+
+              {/* Trending tags */}
+              <TrendingTags hasCustomBackground={hasCustomBackground} />
+
+              {/* Community Pulse */}
+              <CommunityPulse hasCustomBackground={hasCustomBackground} />
+
+              {/* Live Activity */}
+              <RecentActivityFeed hasCustomBackground={hasCustomBackground} />
+
+              {/* Active Challenges */}
+              <RecentChallenges hasCustomBackground={hasCustomBackground} />
+
+              {/* Writers to Follow */}
+              <SuggestedWriters hasCustomBackground={hasCustomBackground} />
+
+              {/* Explore links */}
               <div className={cn(
                 "rounded-2xl p-4",
                 hasCustomBackground 

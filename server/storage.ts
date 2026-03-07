@@ -35,6 +35,7 @@ export interface UserMetrics {
   top_bar_engagement: number; // likes + bookmarks on single bar
   tagged_bars_with_likes: number; // bars with specific tags that got likes
   account_age_days: number;
+  challenges_entered: number;
 }
 
 // Context for evaluating conditions that need additional data (like keywords)
@@ -306,7 +307,7 @@ export interface IStorage {
   deleteAchievementBadgeImage(achievementId: string): Promise<void>;
   
   // XP and Level methods
-  awardXp(userId: string, amount: number, source: 'bar_posted' | 'like_received' | 'adoption_credited' | 'comment_made' | 'bookmark_added'): Promise<{ xp: number; level: number; leveledUp: boolean; previousLevel: number }>;
+  awardXp(userId: string, amount: number, source: 'bar_posted' | 'like_received' | 'adoption_credited' | 'comment_made' | 'bookmark_added' | 'challenge_winner' | 'challenge_participant'): Promise<{ xp: number; level: number; leveledUp: boolean; previousLevel: number }>;
   getUserXpStats(userId: string): Promise<{ xp: number; level: number; xpForNextLevel: number; xpProgress: number }>;
   calculateRetroactiveXp(userId: string): Promise<{ xp: number; level: number }>;
   resetDailyXpLimits(): Promise<void>;
@@ -1605,6 +1606,10 @@ export class DatabaseStorage implements IStorage {
             unlocked = true;
           }
         }
+        // Challenge achievements
+        else if ('challengesEntered' in threshold && metrics.challenges_entered >= threshold.challengesEntered) {
+          unlocked = true;
+        }
       }
       
       if (unlocked) {
@@ -2107,6 +2112,7 @@ export class DatabaseStorage implements IStorage {
       top_bar_engagement: topBarEngagement,
       tagged_bars_with_likes: 0, // Handled dynamically
       account_age_days: accountAgeDays,
+      challenges_entered: adoptionsGivenResult?.count || 0, // challenge responses use adoptions
     };
   }
   
@@ -2432,7 +2438,7 @@ export class DatabaseStorage implements IStorage {
   async awardXp(
     userId: string, 
     amount: number, 
-    source: 'bar_posted' | 'like_received' | 'adoption_credited' | 'comment_made' | 'bookmark_added'
+    source: 'bar_posted' | 'like_received' | 'adoption_credited' | 'comment_made' | 'bookmark_added' | 'challenge_winner' | 'challenge_participant'
   ): Promise<{ xp: number; level: number; leveledUp: boolean; previousLevel: number }> {
     const user = await this.getUser(userId);
     if (!user) {

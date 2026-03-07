@@ -26,67 +26,84 @@ body[data-background-type="default"] {
   background: hsl(var(--background));
 }
 
-/* Glass surface styles with theme tints */
+/* ========================================
+   APPLE LIQUID GLASS MATERIAL SYSTEM
+   Higher blur + brightness for luminous refraction,
+   specular top highlights, thin luminous borders.
+   iOS / macOS / visionOS-inspired vibrancy.
+   ======================================== */
+
+/* Glass surface — Apple regular material */
 .glass-surface {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(24px) saturate(130%);
-  -webkit-backdrop-filter: blur(24px) saturate(130%);
-  border: 1px solid var(--glass-surface-border);
+  backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
+  border: 0.5px solid var(--glass-surface-border);
+  box-shadow: var(--glass-surface-shadow);
 }
 
+/* Glass surface strong — Apple thick material */
 .glass-surface-strong {
   background: var(--glass-surface-bg-strong);
-  backdrop-filter: blur(28px) saturate(140%);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
-  border: 1px solid var(--glass-surface-border-strong);
+  backdrop-filter: blur(48px) saturate(190%) brightness(1.08);
+  -webkit-backdrop-filter: blur(48px) saturate(190%) brightness(1.08);
+  border: 0.5px solid var(--glass-surface-border-strong);
+  box-shadow: var(--glass-surface-shadow);
 }
 
-/* Window/Dialog tinting - frosted glass */
+/* Window/Dialog — Apple sheet material */
 .dialog-window {
   background: var(--sheet-bg);
-  backdrop-filter: blur(32px) saturate(140%);
-  -webkit-backdrop-filter: blur(32px) saturate(140%);
-  border: 1px solid var(--glass-surface-border);
+  backdrop-filter: blur(56px) saturate(190%) brightness(1.06);
+  -webkit-backdrop-filter: blur(56px) saturate(190%) brightness(1.06);
+  border: 0.5px solid var(--glass-surface-border);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 24px 64px rgba(0, 0, 0, 0.10),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.50);
 }
 
-/* Panel tinting - frosted glass */
+/* Panel — Apple sidebar material */
 .side-panel,
 .content-panel {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(24px) saturate(130%);
-  -webkit-backdrop-filter: blur(24px) saturate(130%);
-  border: 1px solid var(--glass-surface-border);
+  backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
+  border: 0.5px solid var(--glass-surface-border);
 }
 
-/* Bar card tinting - frosted glass */
+/* Card — Apple grouped content material */
 .bar-card,
 .list-item,
 .card {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
-  border: 1px solid var(--glass-surface-border);
+  backdrop-filter: blur(36px) saturate(170%) brightness(1.04);
+  -webkit-backdrop-filter: blur(36px) saturate(170%) brightness(1.04);
+  border: 0.5px solid var(--glass-surface-border);
   border-radius: var(--border-radius);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--duration-transition) var(--ease-ios),
+              transform var(--duration-interaction) var(--ease-ios);
 }
 
-/* Mobile navigation tinting - frosted glass */
+/* Mobile navigation — Apple ultra-thin material */
 .mobile-nav,
 .mobile-menu,
 .mobile-panel {
   background: var(--glass-surface-bg-strong);
-  backdrop-filter: blur(28px) saturate(140%);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
-  border: 1px solid var(--glass-surface-border);
+  backdrop-filter: blur(48px) saturate(190%) brightness(1.06);
+  -webkit-backdrop-filter: blur(48px) saturate(190%) brightness(1.06);
+  border: 0.5px solid var(--glass-surface-border);
 }
 
-/* Mobile navigation buttons - frosted glass */
+/* Mobile buttons — Apple vibrancy */
 .mobile-nav-button,
 .mobile-menu-button {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid var(--glass-surface-border);
-  transition: all 0.3s ease;
+  backdrop-filter: blur(24px) saturate(160%) brightness(1.03);
+  -webkit-backdrop-filter: blur(24px) saturate(160%) brightness(1.03);
+  border: 0.5px solid var(--glass-surface-border);
+  transition: all var(--duration-interaction) var(--ease-ios);
 }
 
 .mobile-nav-button:hover,
@@ -95,15 +112,15 @@ body[data-background-type="default"] {
   border-color: var(--glass-surface-border-strong);
 }
 
-/* Mobile navigation opacity control */
+/* Mobile navigation opacity slider */
 .mobile-nav-opacity-slider {
   background: var(--glass-surface-bg);
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
-  border: 1px solid var(--glass-surface-border);
+  backdrop-filter: blur(32px) saturate(170%) brightness(1.04);
+  -webkit-backdrop-filter: blur(32px) saturate(170%) brightness(1.04);
+  border: 0.5px solid var(--glass-surface-border);
 }
 
-/* Apply border radius to rounded elements */
+/* Apple HIG rounded corners — continuous corner system */
 .rounded-element,
 .btn,
 .input,
@@ -111,25 +128,27 @@ body[data-background-type="default"] {
   border-radius: var(--border-radius);
 }
 
-/* Theme transitions */
+/* Theme transitions — Apple-style smooth timing */
 * {
-  transition: background-color 0.3s ease, border-color 0.3s ease, border-radius 0.3s ease;
+  transition: background-color var(--duration-transition, 0.26s) var(--ease-ios, cubic-bezier(0.2, 0.8, 0.2, 1)),
+              border-color var(--duration-transition, 0.26s) var(--ease-ios, cubic-bezier(0.2, 0.8, 0.2, 1)),
+              box-shadow var(--duration-transition, 0.26s) var(--ease-ios, cubic-bezier(0.2, 0.8, 0.2, 1));
 }
 
-/* Custom scrollbar for themed backgrounds */
+/* Minimal scrollbar — macOS-style thin track */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(var(--background), 0.1);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(var(--muted-foreground), 0.3);
-  border-radius: var(--border-radius);
+  background: rgba(var(--muted-foreground), 0.2);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--muted-foreground), 0.5);
+  background: rgba(var(--muted-foreground), 0.35);
 }

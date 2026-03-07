@@ -547,4 +547,95 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  // ── Sidebar APIs ─────────────────────────────────────────────────────
+  getBarOfTheDay: async (): Promise<{
+    id: string; snippet: string; author: string; authorId: string;
+    avatarUrl: string | null; likeCount: number; createdAt: string; href: string;
+  } | null> => {
+    const response = await apiFetch('/api/sidebar/bar-of-the-day');
+    return handleResponse(response);
+  },
+
+  getTrendingTags: async (): Promise<Array<{ tag: string; usage_count: number }>> => {
+    const response = await apiFetch('/api/sidebar/trending-tags');
+    return handleResponse(response);
+  },
+
+  getCommunityPulse: async (): Promise<{
+    barsToday: number; writersActiveHour: number; reactionsToday: number; onlineNow: number;
+  }> => {
+    const response = await apiFetch('/api/sidebar/community-pulse');
+    return handleResponse(response);
+  },
+
+  getRecentChallenges: async (limit = 3): Promise<Array<{
+    id: string; snippet: string; author: string; avatarUrl: string | null;
+    responseCount: number; createdAt: string; href: string;
+  }>> => {
+    const response = await apiFetch(`/api/sidebar/recent-challenges?limit=${limit}`);
+    return handleResponse(response);
+  },
+
+  getSuggestedWriters: async (limit = 4): Promise<Array<{
+    id: string; username: string; avatarUrl: string | null;
+    bio: string | null; barCount: number; followerCount: number;
+  }>> => {
+    const response = await apiFetch(`/api/sidebar/suggested-writers?limit=${limit}`);
+    return handleResponse(response);
+  },
+
+  getMyXpProgress: async (): Promise<{
+    xp: number; level: number; xpForNextLevel: number; xpProgress: number;
+    barsMinted: number; likesReceived: number; followers: number;
+  } | null> => {
+    const response = await apiFetch('/api/sidebar/my-xp');
+    return handleResponse(response);
+  },
+
+  // ── Admin: Prompt & Challenge Management ─────────────────────────────
+  getAdminPrompts: async (): Promise<{
+    builtIn: Array<{ slug: string; text: string; index: number; isCurrent: boolean }>;
+    custom: Array<{ slug: string; text: string; createdAt: string }>;
+    currentWeekIndex: number;
+  }> => {
+    const response = await apiFetch('/api/admin/prompts');
+    return handleResponse(response);
+  },
+
+  createAdminPrompt: async (slug: string, text: string): Promise<{ success: boolean }> => {
+    const response = await apiFetch('/api/admin/prompts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug, text }),
+    });
+    return handleResponse(response);
+  },
+
+  deleteAdminPrompt: async (slug: string): Promise<{ success: boolean }> => {
+    const response = await apiFetch(`/api/admin/prompts/${slug}`, { method: 'DELETE' });
+    return handleResponse(response);
+  },
+
+  getAdminChallenges: async (): Promise<Array<{
+    id: string; content: string; tags: string[]; author: string;
+    avatarUrl: string | null; responseCount: number; likeCount: number; createdAt: string;
+  }>> => {
+    const response = await apiFetch('/api/admin/challenges');
+    return handleResponse(response);
+  },
+
+  toggleAdminChallenge: async (barId: string): Promise<{ isChallenge: boolean }> => {
+    const response = await apiFetch(`/api/admin/challenges/${barId}/toggle`, { method: 'POST' });
+    return handleResponse(response);
+  },
+
+  pickChallengeWinner: async (challengeBarId: string, winnerBarId: string): Promise<{ success: boolean }> => {
+    const response = await apiFetch(`/api/admin/challenges/${challengeBarId}/pick-winner`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ winnerBarId }),
+    });
+    return handleResponse(response);
+  },
 };

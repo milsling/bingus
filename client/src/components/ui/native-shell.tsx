@@ -33,7 +33,7 @@ export function NativeGlassCard({ children, className, animate = false }: Native
     return (
       <section
         className={cn(
-          "rounded-3xl border border-foreground/10 bg-[linear-gradient(170deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur-xl md:p-5",
+          "rounded-[28px] border border-white/30 dark:border-white/10 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.16),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(255,255,255,0.10),transparent_35%),linear-gradient(170deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] p-4 md:p-5 shadow-[0_12px_34px_rgba(0,0,0,0.12),0_1px_0_rgba(255,255,255,0.45)_inset] backdrop-blur-3xl backdrop-saturate-150 backdrop-brightness-110",
           className,
         )}
       >
@@ -48,7 +48,7 @@ export function NativeGlassCard({ children, className, animate = false }: Native
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: "easeOut" }}
       className={cn(
-        "rounded-3xl border border-foreground/10 bg-[linear-gradient(170deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur-xl md:p-5",
+        "rounded-[28px] border border-white/30 dark:border-white/10 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.16),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(255,255,255,0.10),transparent_35%),linear-gradient(170deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] p-4 md:p-5 shadow-[0_12px_34px_rgba(0,0,0,0.12),0_1px_0_rgba(255,255,255,0.45)_inset] backdrop-blur-3xl backdrop-saturate-150 backdrop-brightness-110",
         className,
       )}
     >

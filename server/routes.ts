@@ -4741,6 +4741,13 @@ export async function registerRoutes(
           req.user!.id,
         );
 
+        // Award XP for challenge participation
+        if (isChallenge) {
+          await storage.awardXp(req.user!.id, 15, 'challenge_participant');
+          // Check for challenge_contender achievement
+          await storage.checkAndUnlockAchievements(req.user!.id);
+        }
+
         if (originalBar.userId !== req.user!.id) {
           await storage.createNotification({
             userId: originalBar.userId,
@@ -4980,6 +4987,358 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Serve file error:", error);
       res.status(500).json({ message: "Error serving file" });
+    }
+  });
+
+  // ── Sidebar: Bar of the Day ──────────────────────────────────────────
+  app.get("/api/sidebar/bar-of-the-day", async (_req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT
+          b.id,
+          b.content,
+          b.tags,
+          b.created_at AS "createdAt",
+          u.id AS "userId",
+          u.username,
+          u.avatar_url AS "avatarUrl",
+          COALESCE(lc.cnt, 0)::int AS "likeCount"
+        FROM bars b
+        JOIN users u ON b.user_id = u.id
+        LEFT JOIN (
+          SELECT bar_id, COUNT(*)::int AS cnt FROM likes GROUP BY bar_id
+        ) lc ON lc.bar_id = b.id
+        WHERE b.deleted_at IS NULL
+          AND b.moderation_status = 'approved'
+          AND b.permission_status != 'private'
+          AND b.created_at >= NOW() - INTERVAL '3 days'
+        ORDER BY lc.cnt DESC, b.created_at DESC
+        LIMIT 1
+      `);
+      const row = (result.rows?.[0] as any) || null;
+      if (!row) return res.json(null);
+      const snippet = stripHtmlToSnippet(String(row.content || ""), 200);
+      res.json({
+        id: row.id,
+        snippet,
+        author: row.username,
+        authorId: row.userId,
+        avatarUrl: row.avatarUrl,
+        likeCount: Number(row.likeCount) || 0,
+        createdAt: row.createdAt,
+        href: `/bars/${row.id}`,
+      });
+    } catch (error: any) {
+      console.error("Bar of the day error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ── Sidebar: Trending Tags ───────────────────────────────────────────
+  app.get("/api/sidebar/trending-tags", async (_req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT tag, COUNT(*)::int AS usage_count
+        FROM (
+          SELECT unnest(tags) AS tag FROM bars
+          WHERE deleted_at IS NULL
+            AND moderation_status = 'approved'
+            AND created_at >= NOW() - INTERVAL '7 days'
+        ) t
+        WHERE tag NOT LIKE 'prompt:%'
+          AND tag != 'challenge'
+        GROUP BY tag
+        ORDER BY usage_count DESC
+        LIMIT 8
+      `);
+      res.json(result.rows || []);
+    } catch (error: any) {
+      console.error("Trending tags error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ── Sidebar: Community Pulse (live stats) ────────────────────────────
+  app.get("/api/sidebar/community-pulse", async (_req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT
+          (SELECT COUNT(*)::int FROM bars WHERE deleted_at IS NULL AND moderation_status = 'approved' AND created_at >= NOW() - INTERVAL '24 hours') AS "barsToday",
+          (SELECT COUNT(DISTINCT user_id)::int FROM bars WHERE deleted_at IS NULL AND created_at >= NOW() - INTERVAL '1 hour') AS "writersActiveHour",
+          (SELECT COUNT(*)::int FROM likes WHERE created_at >= NOW() - INTERVAL '24 hours') AS "reactionsToday",
+          (SELECT COUNT(*)::int FROM users WHERE online_status = 'online') AS "onlineNow"
+      `);
+      const row = (result.rows?.[0] as any) || {};
+      res.json({
+        barsToday: Number(row.barsToday) || 0,
+        writersActiveHour: Number(row.writersActiveHour) || 0,
+        reactionsToday: Number(row.reactionsToday) || 0,
+        onlineNow: Number(row.onlineNow) || 0,
+      });
+    } catch (error: any) {
+      console.error("Community pulse error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ── Sidebar: Recent Challenges ───────────────────────────────────────
+  app.get("/api/sidebar/recent-challenges", async (req, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit as string) || 3, 10);
+      const result = await db.execute(sql`
+        SELECT
+          b.id,
+          SUBSTRING(b.content, 1, 80) AS content,
+          u.username AS author,
+          u.avatar_url AS "avatarUrl",
+          b.created_at AS "createdAt",
+          (SELECT COUNT(*)::int FROM adoptions a WHERE a.original_bar_id = b.id) AS "responseCount"
+        FROM bars b
+        JOIN users u ON b.user_id = u.id
+        WHERE b.deleted_at IS NULL
+          AND b.moderation_status = 'approved'
+          AND 'challenge' = ANY(b.tags)
+        ORDER BY b.created_at DESC
+        LIMIT ${limit}
+      `);
+      res.json((result.rows || []).map((row: any) => ({
+        ...row,
+        snippet: stripHtmlToSnippet(String(row.content || ""), 60),
+        responseCount: Number(row.responseCount) || 0,
+        href: `/bars/${row.id}`,
+      })));
+    } catch (error: any) {
+      console.error("Recent challenges error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ── Sidebar: Suggested Writers ───────────────────────────────────────
+  app.get("/api/sidebar/suggested-writers", async (req, res) => {
+    try {
+      const userId = req.isAuthenticated() ? req.user!.id : undefined;
+      const limit = Math.min(parseInt(req.query.limit as string) || 4, 10);
+      
+      // Get active writers the user doesn't already follow
+      const result = await db.execute(sql`
+        SELECT
+          u.id,
+          u.username,
+          u.avatar_url AS "avatarUrl",
+          u.bio,
+          COUNT(b.id)::int AS "barCount",
+          (SELECT COUNT(*)::int FROM follows f WHERE f.following_id = u.id) AS "followerCount"
+        FROM users u
+        JOIN bars b ON b.user_id = u.id AND b.deleted_at IS NULL AND b.moderation_status = 'approved'
+        WHERE u.id != ${userId || '00000000-0000-0000-0000-000000000000'}
+          ${userId ? sql`AND u.id NOT IN (SELECT following_id FROM follows WHERE follower_id = ${userId})` : sql``}
+        GROUP BY u.id
+        HAVING COUNT(b.id) >= 3
+        ORDER BY COUNT(b.id) DESC, RANDOM()
+        LIMIT ${limit}
+      `);
+      res.json((result.rows || []).map((row: any) => ({
+        id: row.id,
+        username: row.username,
+        avatarUrl: row.avatarUrl,
+        bio: row.bio ? String(row.bio).slice(0, 60) : null,
+        barCount: Number(row.barCount) || 0,
+        followerCount: Number(row.followerCount) || 0,
+      })));
+    } catch (error: any) {
+      console.error("Suggested writers error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ── Sidebar: User XP Progress (for logged-in user) ──────────────────
+  app.get("/api/sidebar/my-xp", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) return res.json(null);
+      const xpStats = await storage.getUserXpStats(req.user!.id);
+      const userStats = await storage.getUserStats(req.user!.id);
+      res.json({
+        ...xpStats,
+        barsMinted: userStats.barsMinted,
+        likesReceived: userStats.likesReceived,
+        followers: userStats.followers,
+      });
+    } catch (error: any) {
+      console.error("My XP error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ── Admin: Prompt Management ─────────────────────────────────────────
+  // Custom prompts stored in site_settings as JSON
+  app.get("/api/admin/prompts", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user!.isOwner && !req.user!.isAdmin) return res.status(403).json({ message: "Forbidden" });
+      const current = getCurrentPrompt();
+      const prompts = PROMPT_LIBRARY.map((p, i) => ({
+        ...p,
+        index: i,
+        isCurrent: current.slug === p.slug,
+      }));
+      // Also fetch any custom prompts from site_settings
+      const customResult = await db.execute(sql`
+        SELECT value FROM site_settings WHERE key = 'custom_prompts'
+      `);
+      const customPrompts = customResult.rows?.[0]
+        ? JSON.parse(String((customResult.rows[0] as any).value))
+        : [];
+      res.json({ builtIn: prompts, custom: customPrompts, currentWeekIndex: current.index });
+    } catch (error: any) {
+      console.error("Admin prompts error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/prompts", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user!.isOwner && !req.user!.isAdmin) return res.status(403).json({ message: "Forbidden" });
+      const { slug, text } = req.body;
+      if (!slug || !text) return res.status(400).json({ message: "slug and text are required" });
+      const normalizedSlug = String(slug).toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      
+      // Fetch existing custom prompts
+      const customResult = await db.execute(sql`
+        SELECT value FROM site_settings WHERE key = 'custom_prompts'
+      `);
+      const customPrompts: any[] = customResult.rows?.[0]
+        ? JSON.parse(String((customResult.rows[0] as any).value))
+        : [];
+      
+      // Add new prompt
+      customPrompts.push({ slug: normalizedSlug, text: String(text), createdAt: new Date().toISOString() });
+      
+      await db.execute(sql`
+        INSERT INTO site_settings (key, value) VALUES ('custom_prompts', ${JSON.stringify(customPrompts)})
+        ON CONFLICT (key) DO UPDATE SET value = ${JSON.stringify(customPrompts)}
+      `);
+      
+      res.json({ success: true, prompt: { slug: normalizedSlug, text } });
+    } catch (error: any) {
+      console.error("Create prompt error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/prompts/:slug", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user!.isOwner && !req.user!.isAdmin) return res.status(403).json({ message: "Forbidden" });
+      const slug = req.params.slug;
+      const customResult = await db.execute(sql`
+        SELECT value FROM site_settings WHERE key = 'custom_prompts'
+      `);
+      let customPrompts: any[] = customResult.rows?.[0]
+        ? JSON.parse(String((customResult.rows[0] as any).value))
+        : [];
+      customPrompts = customPrompts.filter((p: any) => p.slug !== slug);
+      await db.execute(sql`
+        INSERT INTO site_settings (key, value) VALUES ('custom_prompts', ${JSON.stringify(customPrompts)})
+        ON CONFLICT (key) DO UPDATE SET value = ${JSON.stringify(customPrompts)}
+      `);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete prompt error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ── Admin: Challenge Management ──────────────────────────────────────
+  app.get("/api/admin/challenges", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user!.isOwner && !req.user!.isAdmin) return res.status(403).json({ message: "Forbidden" });
+      const result = await db.execute(sql`
+        SELECT
+          b.id,
+          b.content,
+          b.tags,
+          b.created_at AS "createdAt",
+          u.username AS author,
+          u.avatar_url AS "avatarUrl",
+          (SELECT COUNT(*)::int FROM adoptions a WHERE a.original_bar_id = b.id) AS "responseCount",
+          (SELECT COUNT(*)::int FROM likes l WHERE l.bar_id = b.id) AS "likeCount"
+        FROM bars b
+        JOIN users u ON b.user_id = u.id
+        WHERE b.deleted_at IS NULL
+          AND b.moderation_status = 'approved'
+          AND 'challenge' = ANY(b.tags)
+        ORDER BY b.created_at DESC
+      `);
+      res.json(result.rows || []);
+    } catch (error: any) {
+      console.error("Admin challenges error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin: toggle challenge on any bar
+  app.post("/api/admin/challenges/:barId/toggle", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user!.isOwner && !req.user!.isAdmin) return res.status(403).json({ message: "Forbidden" });
+      const bar = await storage.getBarById(req.params.barId);
+      if (!bar) return res.status(404).json({ message: "Bar not found" });
+      
+      const currentTags = Array.isArray(bar.tags) ? [...bar.tags] : [];
+      const isChallenge = currentTags.some(t => t.toLowerCase() === 'challenge');
+      const nextTags = isChallenge
+        ? currentTags.filter(t => t.toLowerCase() !== 'challenge')
+        : [...currentTags, 'challenge'];
+      
+      const [updated] = await db.update(bars).set({ tags: nextTags }).where(eq(bars.id, req.params.barId)).returning();
+      res.json({ ...updated, isChallenge: !isChallenge });
+    } catch (error: any) {
+      console.error("Admin challenge toggle error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin: pick challenge winner — awards XP
+  app.post("/api/admin/challenges/:barId/pick-winner", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user!.isOwner && !req.user!.isAdmin) return res.status(403).json({ message: "Forbidden" });
+      const { winnerBarId } = req.body;
+      if (!winnerBarId) return res.status(400).json({ message: "winnerBarId is required" });
+      
+      const winnerBar = await storage.getBarById(winnerBarId);
+      if (!winnerBar) return res.status(404).json({ message: "Winner bar not found" });
+      
+      // Award winner XP
+      const winnerXp = await storage.awardXp(winnerBar.userId, 50, 'challenge_winner');
+      await storage.createNotification({
+        userId: winnerBar.userId,
+        type: 'achievement',
+        message: '🏆 You won a challenge! +50 XP',
+        barId: winnerBar.id,
+      });
+      
+      // Award consolation XP to all other participants
+      const adoptions = await storage.getAdoptionsByOriginal(req.params.barId);
+      const consolationResults = [];
+      for (const adoption of adoptions) {
+        const responseBar = await storage.getBarById(adoption.adoptedByBarId);
+        if (responseBar && responseBar.id !== winnerBarId) {
+          await storage.awardXp(responseBar.userId, 10, 'challenge_participant');
+          await storage.createNotification({
+            userId: responseBar.userId,
+            type: 'achievement',
+            message: '👏 Thanks for competing! +10 XP consolation prize',
+            barId: responseBar.id,
+          });
+          consolationResults.push(responseBar.userId);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        winnerXp,
+        consolationCount: consolationResults.length,
+      });
+    } catch (error: any) {
+      console.error("Pick winner error:", error);
+      res.status(500).json({ message: error.message });
     }
   });
 

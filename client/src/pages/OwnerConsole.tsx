@@ -16,8 +16,9 @@ import { BackgroundSelector, useBackground } from "@/components/BackgroundSelect
 import {
   ArrowLeft, Bot, Crown, Image, Lock, MessageSquare,
   Palette, Power, RefreshCw, Settings2, Shield, Trash2,
-  Trophy, Wrench, Key, Radio
+  Trophy, Wrench, Key, Radio, Swords, PenLine, Plus, Award, Check
 } from "lucide-react";
+import { api } from "@/lib/api";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
@@ -253,9 +254,64 @@ function OwnerConsoleContent() {
     onError: (e: any) => toast({ title: "Failed", description: e.message, variant: "destructive" }),
   });
 
+  // ── Prompt management state ──
+  const [newPromptSlug, setNewPromptSlug] = useState("");
+  const [newPromptText, setNewPromptText] = useState("");
+
+  const { data: adminPrompts } = useQuery({
+    queryKey: ["admin", "prompts"],
+    queryFn: () => api.getAdminPrompts(),
+  });
+
+  const createPromptMutation = useMutation({
+    mutationFn: () => api.createAdminPrompt(newPromptSlug, newPromptText),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "prompts"] });
+      toast({ title: "Prompt created" });
+      setNewPromptSlug("");
+      setNewPromptText("");
+    },
+    onError: (e: any) => toast({ title: "Failed", description: e.message, variant: "destructive" }),
+  });
+
+  const deletePromptMutation = useMutation({
+    mutationFn: (slug: string) => api.deleteAdminPrompt(slug),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "prompts"] });
+      toast({ title: "Prompt deleted" });
+    },
+  });
+
+  // ── Challenge management state ──
+  const { data: adminChallenges = [] } = useQuery({
+    queryKey: ["admin", "challenges"],
+    queryFn: () => api.getAdminChallenges(),
+  });
+
+  const toggleChallengeMutation = useMutation({
+    mutationFn: (barId: string) => api.toggleAdminChallenge(barId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "challenges"] });
+      toast({ title: "Challenge toggled" });
+    },
+  });
+
+  const [winnerBarId, setWinnerBarId] = useState("");
+  const pickWinnerMutation = useMutation({
+    mutationFn: ({ challengeId, winnerBarId }: { challengeId: string; winnerBarId: string }) =>
+      api.pickChallengeWinner(challengeId, winnerBarId),
+    onSuccess: () => {
+      toast({ title: "Winner selected! XP awarded" });
+      setWinnerBarId("");
+    },
+    onError: (e: any) => toast({ title: "Failed", description: e.message, variant: "destructive" }),
+  });
+
   const tabs = [
     { value: "appearance", label: "Appearance", icon: Palette },
     { value: "motd", label: "MOTD", icon: MessageSquare },
+    { value: "prompts", label: "Prompts", icon: PenLine },
+    { value: "challenges", label: "Challenges", icon: Swords },
     { value: "ai", label: "AI Settings", icon: Bot },
     { value: "oauth", label: "OAuth", icon: Key },
     { value: "tools", label: "Tools", icon: Wrench },
@@ -309,7 +365,7 @@ function OwnerConsoleContent() {
           </div>
 
           {/* Desktop tabs */}
-          <TabsList className="hidden md:grid w-full grid-cols-5 mb-6 rounded-2xl border border-foreground/[0.1] bg-foreground/[0.03] p-1">
+          <TabsList className="hidden md:grid w-full grid-cols-7 mb-6 rounded-2xl border border-foreground/[0.1] bg-foreground/[0.03] p-1">
             {tabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 text-xs rounded-xl data-[state=active]:bg-primary/15">
                 <tab.icon className="h-3.5 w-3.5" />
@@ -465,6 +521,179 @@ function OwnerConsoleContent() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Prompts tab */}
+          <TabsContent value="prompts" className="space-y-4">
+            <Card className={cardCn}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2"><PenLine className="h-4 w-4" /> Create New Prompt</CardTitle>
+                <CardDescription>Add a new writing prompt to the rotation</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-4">
+                <div className="space-y-2">
+                  <Label>Prompt Text</Label>
+                  <Input
+                    value={newPromptText}
+                    onChange={(e) => {
+                      setNewPromptText(e.target.value);
+                      if (!newPromptSlug || newPromptSlug === newPromptText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) {
+                        setNewPromptSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+                      }
+                    }}
+                    placeholder="e.g. Neon nightmares"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Slug</Label>
+                  <Input
+                    value={newPromptSlug}
+                    onChange={(e) => setNewPromptSlug(e.target.value)}
+                    placeholder="e.g. neon-nightmares"
+                  />
+                </div>
+                <Button
+                  onClick={() => createPromptMutation.mutate()}
+                  disabled={!newPromptSlug.trim() || !newPromptText.trim() || createPromptMutation.isPending}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {createPromptMutation.isPending ? "Creating..." : "Create Prompt"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {adminPrompts && (
+              <>
+                <Card className={cardCn}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Built-in Prompts (rotating weekly)</CardTitle>
+                    <CardDescription>These rotate automatically. Week {(adminPrompts.currentWeekIndex || 0) + 1} is active.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0 space-y-2">
+                    {adminPrompts.builtIn.map((p) => (
+                      <div key={p.slug} className={cn(
+                        "flex items-center gap-3 p-3 rounded-xl border",
+                        p.isCurrent ? "border-primary/40 bg-primary/10" : "border-border/30 bg-secondary/20"
+                      )}>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{p.text}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">/{p.slug}</p>
+                        </div>
+                        {p.isCurrent && (
+                          <Badge className="text-[10px] bg-primary/20 text-primary">Active</Badge>
+                        )}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {adminPrompts.custom.length > 0 && (
+                  <Card className={cardCn}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Custom Prompts</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 space-y-2">
+                      {adminPrompts.custom.map((p: any) => (
+                        <div key={p.slug} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-secondary/20 border border-border/30">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">{p.text}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">/{p.slug}</p>
+                          </div>
+                          <Button size="icon" variant="ghost" className="shrink-0 h-7 w-7 text-destructive hover:text-destructive"
+                            onClick={() => deletePromptMutation.mutate(p.slug)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
+          </TabsContent>
+
+          {/* Challenges tab */}
+          <TabsContent value="challenges" className="space-y-4">
+            <Card className={cardCn}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2"><Swords className="h-4 w-4" /> Active Challenges</CardTitle>
+                <CardDescription>
+                  Manage challenge bars, toggle status, and pick winners. Winners get +50 XP, participants get +10 XP consolation.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-3">
+                {adminChallenges.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No active challenges yet. Any bar can be made into a challenge.</p>
+                ) : (
+                  adminChallenges.map((c: any) => (
+                    <div key={c.id} className="rounded-xl border border-border/30 bg-secondary/20 p-3 space-y-2">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm leading-snug line-clamp-2">{c.content?.replace(/<[^>]+>/g, '').slice(0, 120)}</p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-[10px] text-muted-foreground">@{c.author}</span>
+                            <Badge variant="secondary" className="text-[10px]">{c.responseCount} responses</Badge>
+                            <Badge variant="secondary" className="text-[10px]">{c.likeCount} likes</Badge>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="shrink-0 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                          onClick={() => toggleChallengeMutation.mutate(c.id)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      {c.responseCount > 0 && (
+                        <div className="flex items-center gap-2 pt-1 border-t border-border/20">
+                          <Award className="h-3.5 w-3.5 text-yellow-500" />
+                          <Input
+                            placeholder="Winner bar ID"
+                            className="h-7 text-xs flex-1"
+                            value={winnerBarId}
+                            onChange={(e) => setWinnerBarId(e.target.value)}
+                          />
+                          <Button
+                            size="sm"
+                            className="h-7 text-xs bg-yellow-600 hover:bg-yellow-700"
+                            disabled={!winnerBarId.trim() || pickWinnerMutation.isPending}
+                            onClick={() => pickWinnerMutation.mutate({ challengeId: c.id, winnerBarId })}
+                          >
+                            <Trophy className="h-3 w-3 mr-1" />
+                            {pickWinnerMutation.isPending ? "..." : "Pick Winner"}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className={cardCn}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2"><Trophy className="h-4 w-4" /> Reward System</CardTitle>
+                <CardDescription>How challenge rewards work</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <span className="text-yellow-500">🏆</span>
+                    <span><strong className="text-foreground">Winner:</strong> +50 XP + notification</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-400">👏</span>
+                    <span><strong className="text-foreground">Participants:</strong> +10 XP consolation + notification</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-400">⚔️</span>
+                    <span><strong className="text-foreground">First Challenge:</strong> +15 XP + "Challenge Contender" achievement & badge</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* AI Settings tab */}

@@ -86,7 +86,7 @@ export default function Navigation() {
       </div>
       
       {/* Desktop Floating Top Bar */}
-      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-3 rounded-2xl floating-bar top-bar overflow-visible gap-3">
+      <header className="hidden md:flex fixed top-4 left-4 right-4 h-14 z-50 items-center justify-between px-3 rounded-[28px] border border-white/25 dark:border-white/10 floating-bar top-bar overflow-visible gap-3 shadow-[0_18px_48px_rgba(0,0,0,0.16)] backdrop-brightness-110 backdrop-saturate-150">
         
         {/* Left: Logo + inline nav links */}
         <div className="flex items-center gap-1 shrink-0">

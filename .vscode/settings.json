@@ -58,5 +58,14 @@
 
     },
     "merge-conflict.autoNavigateNextConflict.enabled": true,
-    "workbench.reduceMotion": "on"
+    "workbench.reduceMotion": "on",
+    "github.copilot.chat.agent.autoFix": true,
+    "github.copilot.chat.alternateGptPrompt.enabled": true,
+    "github.copilot.chat.alternateGeminiModelFPrompt.enabled": true,
+    "github.copilot.chat.anthropic.contextEditing.enabled": true,
+    "github.copilot.chat.codesearch.enabled": true,
+    "github.copilot.chat.copilotMemory.enabled": true,
+    "github.copilot.chat.responsesApiReasoningEffort": "high",
+    "github.copilot.chat.switchAgent.enabled": true,
+    "github.copilot.chat.updated53CodexPrompt.enabled": true
 }
