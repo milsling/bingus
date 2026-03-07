@@ -25,6 +25,10 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
+  const [showHint, setShowHint] = useState(() => {
+    // Show hint if user hasn't seen it before
+    return localStorage.getItem('orphan_bars_nav_hint_dismissed') !== 'true';
+  });
   const dragX = useMotionValue(0);
   const touchStartXRef = useRef<number | null>(null);
   const panelWidth = 360;
@@ -88,7 +92,13 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const handleOpen = () => {
     setIsOpen(true);
     dragX.set(panelWidth);
-    
+
+    // Dismiss hint when user opens the menu
+    if (showHint) {
+      setShowHint(false);
+      localStorage.setItem('orphan_bars_nav_hint_dismissed', 'true');
+    }
+
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
     }
@@ -101,6 +111,11 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
     if ('vibrate' in navigator) {
       navigator.vibrate(30);
     }
+  };
+
+  const dismissHint = () => {
+    setShowHint(false);
+    localStorage.setItem('orphan_bars_nav_hint_dismissed', 'true');
   };
 
   const handlePressStart = () => {
@@ -168,6 +183,64 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
 
   return (
     <ThumbNavCloseContext.Provider value={handleClose}>
+      {/* Navigation Hint - Shows new users where to find the menu */}
+      <AnimatePresence>
+        {showHint && !isOpen && !isDragging && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ delay: 1, duration: 0.5 }}
+            className="fixed right-16 top-1/2 -translate-y-1/2 z-[1200] pointer-events-none select-none"
+          >
+            <div className="relative">
+              {/* Hint card */}
+              <div
+                className="bg-primary/95 backdrop-blur-md text-white px-4 py-3 rounded-xl shadow-2xl"
+                style={{
+                  boxShadow: '0 8px 32px rgba(168,85,247,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset'
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold leading-tight">Swipe to open menu</span>
+                    <span className="text-xs text-white/70 leading-tight mt-0.5">← Drag from edge</span>
+                  </div>
+                  {/* Dismiss button */}
+                  <button
+                    onClick={dismissHint}
+                    className="pointer-events-auto p-1 rounded-full hover:bg-white/20 transition-colors"
+                    aria-label="Dismiss hint"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Animated arrow pointing to the tab */}
+              <motion.div
+                className="absolute left-full top-1/2 -translate-y-1/2 ml-1"
+                animate={{ x: [0, 8, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <svg className="h-6 w-6 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                </svg>
+              </motion.div>
+
+              {/* Subtle pulse animation */}
+              <motion.div
+                className="absolute inset-0 rounded-xl bg-primary/30 blur-xl"
+                animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Modern Edge Tab — compact pill handle, Samsung/Arc style */}
       <motion.div
         className="fixed right-0 top-1/2 -translate-y-1/2 z-[1200] cursor-pointer select-none touch-none"
