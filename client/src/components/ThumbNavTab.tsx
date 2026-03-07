@@ -29,8 +29,11 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
     // Show hint if user hasn't seen it before
     return localStorage.getItem('orphan_bars_nav_hint_dismissed') !== 'true';
   });
+  const [hideOnScroll, setHideOnScroll] = useState(false);
   const dragX = useMotionValue(0);
   const touchStartXRef = useRef<number | null>(null);
+  const lastScrollYRef = useRef(0);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const panelWidth = 360;
 
   // Handle touch start
@@ -131,7 +134,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') handleClose();
     };
-    
+
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
@@ -141,6 +144,40 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
       };
     }
   }, [isOpen]);
+
+  // Hide tab on scroll, show when scrolling stops
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const deltaY = currentScrollY - lastScrollYRef.current;
+
+      // Clear existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // Hide tab when scrolling (any direction)
+      if (Math.abs(deltaY) > 5) {
+        setHideOnScroll(true);
+      }
+
+      // Update last scroll position
+      lastScrollYRef.current = currentScrollY;
+
+      // Set timeout to show tab again after scrolling stops
+      scrollTimeoutRef.current = setTimeout(() => {
+        setHideOnScroll(false);
+      }, 800);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Transform drag value to panel position
   const panelX = useTransform(dragX, [0, panelWidth], [panelWidth, 0]);
@@ -247,8 +284,14 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
         style={{ x: tabPositionX }}
         animate={{
           scale: isPressed ? 0.92 : 1,
+          x: hideOnScroll && !isOpen && !isDragging ? 20 : 0,
         }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+        transition={{
+          type: 'spring',
+          damping: 20,
+          stiffness: 300,
+          duration: 0.3
+        }}
         whileHover="hover"
         whileTap="pressed"
         onMouseDown={handlePressStart}
