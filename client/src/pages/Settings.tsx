@@ -11,14 +11,12 @@ import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { useBackground } from "@/components/BackgroundSelector";
 import ThemeSettings from "@/components/ThemeSettings";
 import AccentColorPicker from "@/components/AccentColorPicker";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useFabShortcuts, SHORTCUT_OPTIONS } from "@/hooks/useFabShortcuts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -32,7 +30,6 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { selectedBackground, setBackground } = useBackground();
-  const { theme, setTheme } = useTheme();
   const hasCustomBackground = selectedBackground.image !== null;
 
   const canDebugControls = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
@@ -597,20 +594,11 @@ export default function Settings() {
                     🎛️ Visual Mode
                   </CardTitle>
                   <CardDescription>
-                    Choose how the app looks. Light Mode uses the frosted glass style from the composer page.
+                    Balanced dark is now the default everywhere. Accent and background customizations stay available.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <Select value={theme} onValueChange={(value) => setTheme(value as "light" | "dark" | "system")}>
-                    <SelectTrigger className="w-full md:max-w-sm" data-testid="select-theme-mode">
-                      <SelectValue placeholder="Choose a visual mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Light Mode</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <CardContent className="pt-0 text-sm text-muted-foreground">
+                  Theme switching has been removed. Enjoy the unified balanced dark experience.
                 </CardContent>
               </Card>
 

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'dark';
 
 export interface ThemePreset {
   id: string;
@@ -64,7 +64,7 @@ export const defaultThemeSettings: ThemeSettings = {
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resolvedTheme: 'light' | 'dark';
+  resolvedTheme: 'dark';
   // Advanced theme settings
   settings: ThemeSettings;
   updateSettings: (updates: Partial<ThemeSettings>) => void;
@@ -88,15 +88,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "light";
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
-      return savedTheme;
-    }
-    return "light";
-  });
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
+  const [resolvedTheme, setResolvedTheme] = useState<'dark'>('dark');
   const [settings, setSettings] = useState<ThemeSettings>(defaultThemeSettings);
   const [canCustomize, setCanCustomize] = useState(false);
   const [presets, setPresets] = useState<ThemePreset[]>([]);
@@ -182,25 +175,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const applyTheme = () => {
-      const resolved: 'light' | 'dark' =
-        theme === 'system'
-          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-          : theme;
-      setResolvedTheme(resolved);
       const root = document.documentElement;
-      root.classList.remove('light', 'dark');
-      root.classList.add(resolved);
-      
-      // Apply custom theme variables
+      setResolvedTheme('dark');
+      root.classList.remove('light');
+      if (!root.classList.contains('dark')) root.classList.add('dark');
+
       const themeStyles = getThemeStyles(settings);
       Object.entries(themeStyles).forEach(([key, value]) => {
         root.style.setProperty(key, value);
       });
+
+      // Force dark color scheme for system UI (scrollbars, form controls)
+      root.style.setProperty('color-scheme', 'dark');
+      localStorage.setItem('theme', 'dark');
     };
 
     applyTheme();
-    localStorage.setItem('theme', theme);
-  }, [theme, settings]);
+  }, [settings]);
 
   const updateSettings = (updates: Partial<ThemeSettings>) => {
     setSettings(prev => ({ ...prev, ...updates }));

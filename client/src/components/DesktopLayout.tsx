@@ -106,7 +106,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
             {currentUser ? (
               <>
                 <Link href="/post">
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-white font-semibold text-sm transition-all hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] hover:bg-primary/90 group">
+                  <div className="dropbar-cta flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm hover:scale-[1.02] active:scale-[0.98] group">
                     <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
                     <span>Drop Bar</span>
                   </div>

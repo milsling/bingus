@@ -134,7 +134,6 @@ export function useBackground() {
 
       const bgElement = document.createElement('div');
       bgElement.id = 'app-background-image';
-      const isLight = resolvedTheme === "light";
       bgElement.style.cssText = `
         position: fixed;
         top: 0;
@@ -146,9 +145,9 @@ export function useBackground() {
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-        filter: blur(8px) ${isLight ? 'brightness(0.92) saturate(1.05)' : 'brightness(0.62) saturate(1.05)'};
+        filter: blur(8px) brightness(0.68) saturate(1.05);
         transform: scale(1.08);
-        opacity: ${isLight ? '0.82' : '0.95'};
+        opacity: 0.9;
         pointer-events: none;
       `;
       // Add CSS to ensure root element allows background positioning

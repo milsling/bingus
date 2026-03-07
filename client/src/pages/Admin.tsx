@@ -4709,6 +4709,32 @@ export default function Admin() {
                   >
                     Reset Bar Sequence
                   </Button>
+                  <Button
+                    onClick={async () => {
+                      if (!confirm("Are you sure? This will unlock all bars, clear proof IDs, and restart numbering from 0.")) {
+                        return;
+                      }
+                      try {
+                        const res = await fetch('/api/admin/wipe-locked-bars', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.message || 'Failed to wipe locked bars');
+                        toast({ 
+                          title: "Wiped", 
+                          description: data.message 
+                        });
+                      } catch (e: any) {
+                        toast({ title: "Error", description: e.message, variant: "destructive" });
+                      }
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Wipe Locked Bars & Restart Order
+                  </Button>
                 </CardContent>
               </Card>
             </TabsContent>

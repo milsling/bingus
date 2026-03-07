@@ -715,7 +715,7 @@ export default function Post() {
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="hidden lg:flex w-full py-3 text-lg font-semibold rounded-xl"
+              className="dropbar-cta hidden lg:flex w-full py-3 text-lg font-semibold rounded-xl"
               data-testid="button-submit"
             >
               {isSubmitting ? "Dropping..." : "Drop Bar"}
@@ -728,7 +728,7 @@ export default function Post() {
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full py-3 text-base font-semibold rounded-xl"
+            className="dropbar-cta w-full py-3 text-base font-semibold rounded-xl"
             data-testid="button-submit-mobile"
           >
             {isSubmitting ? "Dropping..." : "Drop Bar"}

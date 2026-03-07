@@ -2957,6 +2957,37 @@ export async function registerRoutes(
     }
   });
 
+  // Owner-only: Wipe all locked bars and reset sequence to 0
+  app.post("/api/admin/wipe-locked-bars", isOwner, async (_req, res) => {
+    try {
+      console.log("🧹 Wiping locked bars and resetting sequence...");
+
+      await db.transaction(async (tx) => {
+        // Clear lock state and proof fields on all bars
+        await tx
+          .update(bars)
+          .set({
+            isLocked: false,
+            lockedAt: null,
+            proofBarId: null,
+            proofHash: null,
+          })
+          .where(eq(bars.isLocked, true));
+
+        // Reset sequence counter to 0
+        await tx
+          .update(barSequence)
+          .set({ currentValue: 0 })
+          .where(eq(barSequence.id, "singleton"));
+      });
+
+      res.json({ message: "Cleared all locked bars and reset sequence to 0" });
+    } catch (error: any) {
+      console.error("❌ Failed to wipe locked bars:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Owner-only: Link a Supabase OAuth identity to an existing app user
   app.post("/api/admin/link-supabase", isOwner, async (req, res) => {
     try {

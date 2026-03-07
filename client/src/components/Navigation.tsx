@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 import { NewMessageDialog } from "@/components/NewMessageDialog";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import AIAssistant from "@/components/AIAssistant";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
 import ThumbNavigation from "@/components/ThumbNavigation";
 import {
@@ -26,7 +25,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function Navigation() {
   const [location, setLocation] = useLocation();
   const { currentUser, logout } = useBars();
-  const { theme, setTheme } = useTheme();
   const unreadCount = useUnreadMessagesCount();
   const pendingFriendRequests = usePendingFriendRequestsCount();
   const [newMessageOpen, setNewMessageOpen] = useState(false);
@@ -150,7 +148,7 @@ export default function Navigation() {
                 </button>
               ) : (
                 <Link href="/post">
-                  <button className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary text-white font-medium text-sm transition-all hover:bg-primary/90 active:scale-95">
+                  <button className="dropbar-cta flex items-center gap-2 px-3.5 py-2 rounded-xl font-semibold text-sm active:scale-95">
                     <Plus className="h-4 w-4" />
                     <span>Drop Bar</span>
                   </button>

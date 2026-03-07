@@ -24,7 +24,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useBars } from '@/context/BarContext';
-import { useTheme } from '@/contexts/ThemeContext';
+// import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import AccentLogo from '@/components/AccentLogo';
 import { SearchBar } from '@/components/SearchBar';
@@ -49,7 +49,7 @@ interface MenuSection {
 
 function NavContent() {
   const { currentUser, logout } = useBars();
-  const { theme, setTheme } = useTheme();
+    // const { theme, setTheme } = useTheme();
   const [location, setLocation] = useLocation();
   const close = useThumbNavClose();
   const isOnMessagesPage = location.startsWith('/messages');
@@ -179,7 +179,7 @@ function NavContent() {
                 <button
                   type="button"
                   onClick={() => { close(); setLocation(isOnMessagesPage ? '/messages' : '/post'); }}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors"
+                  className="dropbar-cta flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold"
                 >
                   {isOnMessagesPage ? <PenLine className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                   <span>{isOnMessagesPage ? 'Messages' : 'Drop Bar'}</span>

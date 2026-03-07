@@ -78,19 +78,10 @@ function OwnerConsoleContent() {
 
   // Glass opacity controls
   const [glassOpacity, setGlassOpacity] = useState(() => {
-    const s = window.localStorage.getItem("owner-glass-opacity"); return s ? parseFloat(s) : 0.98;
-  });
-  const [glassOpacityDark, setGlassOpacityDark] = useState(() => {
-    const s = window.localStorage.getItem("owner-glass-opacity-dark"); return s ? parseFloat(s) : 0.85;
-  });
-  const [glassOpacityCustom, setGlassOpacityCustom] = useState(() => {
-    const s = window.localStorage.getItem("owner-glass-opacity-custom"); return s ? parseFloat(s) : 0.75;
+    const s = window.localStorage.getItem("owner-glass-opacity"); return s ? parseFloat(s) : 0.88;
   });
   const [borderOpacity, setBorderOpacity] = useState(() => {
-    const s = window.localStorage.getItem("owner-border-opacity"); return s ? parseFloat(s) : 0.9;
-  });
-  const [borderOpacityDark, setBorderOpacityDark] = useState(() => {
-    const s = window.localStorage.getItem("owner-border-opacity-dark"); return s ? parseFloat(s) : 0.12;
+    const s = window.localStorage.getItem("owner-border-opacity"); return s ? parseFloat(s) : 0.16;
   });
 
   // Apply opacity to CSS variables in real time + sync to ThemeContext
@@ -98,33 +89,19 @@ function OwnerConsoleContent() {
     const root = document.documentElement;
     const setters: Record<string, () => void> = {
       glassOpacity: () => {
-        root.style.setProperty("--owner-glass-surface-bg", `rgba(252,251,248,${val})`);
-        root.style.setProperty("--owner-glass-surface-bg-strong", `rgba(254,253,250,${Math.min(val + 0.01, 1)})`);
+        root.style.setProperty("--owner-glass-surface-bg", `rgba(28,28,38,${val})`);
+        root.style.setProperty("--owner-glass-surface-bg-strong", `rgba(30,30,44,${Math.min(val + 0.02, 1)})`);
+        root.style.setProperty("--owner-glass-surface-bg-dark", `rgba(28,28,38,${val})`);
+        root.style.setProperty("--owner-glass-surface-bg-strong-dark", `rgba(30,30,44,${Math.min(val + 0.02, 1)})`);
         window.localStorage.setItem("owner-glass-opacity", val.toString());
         setGlassOpacity(val);
         updateSettings({ glassOpacity: val });
-      },
-      glassOpacityDark: () => {
-        root.style.setProperty("--owner-glass-surface-bg-dark", `rgba(18,18,24,${val})`);
-        root.style.setProperty("--owner-glass-surface-bg-strong-dark", `rgba(20,20,28,${Math.min(val + 0.03, 1)})`);
-        window.localStorage.setItem("owner-glass-opacity-dark", val.toString());
-        setGlassOpacityDark(val);
-      },
-      glassOpacityCustom: () => {
-        root.style.setProperty("--owner-glass-surface-bg-custom", `rgba(18,18,24,${val})`);
-        window.localStorage.setItem("owner-glass-opacity-custom", val.toString());
-        setGlassOpacityCustom(val);
       },
       borderOpacity: () => {
         root.style.setProperty("--owner-glass-surface-border", `rgba(229,231,235,${val})`);
         window.localStorage.setItem("owner-border-opacity", val.toString());
         setBorderOpacity(val);
         updateSettings({ borderOpacity: val });
-      },
-      borderOpacityDark: () => {
-        root.style.setProperty("--owner-glass-surface-border-dark", `rgba(255,255,255,${val})`);
-        window.localStorage.setItem("owner-border-opacity-dark", val.toString());
-        setBorderOpacityDark(val);
       },
     };
     setters[key]?.();
@@ -408,11 +385,11 @@ function OwnerConsoleContent() {
             <Card className={cardCn}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2"><Palette className="h-4 w-4" /> Opacity Controls</CardTitle>
-                <CardDescription>Fine-tune glass panel opacity — changes apply in real-time</CardDescription>
+                <CardDescription>Fine-tune the balanced theme glass in real time</CardDescription>
               </CardHeader>
               <CardContent className="pt-0 space-y-6">
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground/80">Light Mode</h4>
+                  <h4 className="text-sm font-semibold text-foreground/80">Balanced Theme</h4>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Glass Opacity: {(glassOpacity * 100).toFixed(0)}%</Label>
                     <input type="range" min="0.5" max="1.0" step="0.01" value={glassOpacity}
@@ -421,32 +398,8 @@ function OwnerConsoleContent() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Border Opacity: {(borderOpacity * 100).toFixed(0)}%</Label>
-                    <input type="range" min="0.3" max="1.0" step="0.01" value={borderOpacity}
+                    <input type="range" min="0.08" max="0.35" step="0.01" value={borderOpacity}
                       onChange={(e) => applyOpacity("borderOpacity", parseFloat(e.target.value))}
-                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer" />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground/80">Dark Mode</h4>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Glass Opacity: {(glassOpacityDark * 100).toFixed(0)}%</Label>
-                    <input type="range" min="0.3" max="1.0" step="0.01" value={glassOpacityDark}
-                      onChange={(e) => applyOpacity("glassOpacityDark", parseFloat(e.target.value))}
-                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Border Opacity: {(borderOpacityDark * 100).toFixed(0)}%</Label>
-                    <input type="range" min="0.02" max="0.4" step="0.01" value={borderOpacityDark}
-                      onChange={(e) => applyOpacity("borderOpacityDark", parseFloat(e.target.value))}
-                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer" />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground/80">Custom Background</h4>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Panel Opacity: {(glassOpacityCustom * 100).toFixed(0)}%</Label>
-                    <input type="range" min="0.3" max="1.0" step="0.01" value={glassOpacityCustom}
-                      onChange={(e) => applyOpacity("glassOpacityCustom", parseFloat(e.target.value))}
                       className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer" />
                   </div>
                 </div>
@@ -454,7 +407,8 @@ function OwnerConsoleContent() {
                   onClick={() => saveSiteSettingsMutation.mutate({
                     themeSettings: {
                       ...settings,
-                      glassOpacity, glassOpacityDark, glassOpacityCustom, borderOpacity, borderOpacityDark
+                      glassOpacity,
+                      borderOpacity,
                     }
                   })}
                   disabled={saveSiteSettingsMutation.isPending}
