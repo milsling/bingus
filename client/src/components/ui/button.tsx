@@ -5,24 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "glass-button inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover-elevate active-elevate-2",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover-elevate active-elevate-2",
   {
     variants: {
       variant: {
         default:
-          "text-foreground border border-white/25",
+          "glass-button text-foreground border border-white/25",
         destructive:
-          "text-destructive-foreground border border-[rgba(239,68,68,0.35)] bg-[hsla(0,72%,55%,0.12)]",
+          "glass-button text-destructive-foreground border border-[rgba(239,68,68,0.35)] bg-[hsla(0,72%,55%,0.12)]",
         outline:
           // @replit Shows the background color of whatever card / sidebar / accent background it is inside of.
           // Inherits the current text color. Uses shadow-xs. no shadow on active
           // No hover state
-          " text-foreground/90 border [border-color:var(--button-outline)] shadow-xs active:shadow-none ",
+          "glass-button text-foreground/90 border [border-color:var(--button-outline)] shadow-xs active:shadow-none",
         secondary:
           // @replit border, no hover, no shadow, secondary border.
-          "text-primary border border-white/22",
+          "glass-button text-primary border border-white/22",
         // @replit no hover, transparent border
-        ghost: "text-primary/90 border border-white/12",
+        ghost: "bg-transparent text-foreground/80 border-none shadow-none hover:bg-white/6 active:bg-white/8 focus-visible:ring-1 focus-visible:ring-primary/40",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

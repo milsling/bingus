@@ -487,7 +487,7 @@ export default function Messages() {
                             "max-w-[70%] sm:max-w-[65%] px-3.5 py-2 text-[14px] leading-[1.4] break-words",
                             isMyMessage
                               ? "bg-primary text-primary-foreground"
-                              : "bg-foreground/[0.08] text-foreground",
+                              : "bg-white/10 text-foreground",
                             /* Messenger-style connected bubble shapes */
                             isMyMessage
                               ? cn(
@@ -518,7 +518,7 @@ export default function Messages() {
         </div>
 
         {/* Input bar */}
-        <div className="shrink-0 px-2 sm:px-3 py-2 sm:py-2.5 border-t border-foreground/[0.06] bg-background/60 backdrop-blur-xl">
+        <div className="shrink-0 px-2 sm:px-3 py-2 sm:py-2.5 glass-surface border-t border-white/12">
           <div className="flex items-end gap-1.5 sm:gap-2">
             <div className="relative flex-1">
               <Input
@@ -532,7 +532,7 @@ export default function Messages() {
                     handleSend();
                   }
                 }}
-                className="h-10 sm:h-11 rounded-full pl-4 pr-10 bg-foreground/[0.06] border-0 text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-primary/40"
+                className="glass-field h-10 sm:h-11 rounded-full pl-4 pr-10 border-0 text-sm placeholder:text-muted-foreground/55 focus-visible:ring-1 focus-visible:ring-primary/40"
                 data-testid="input-message"
               />
               <button
@@ -585,14 +585,14 @@ export default function Messages() {
   const showChatOnMobile = !!selectedUserId && !!selectedUser;
 
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden bg-background">
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-background/30">
       {/* Top spacer for global nav */}
       <div className="h-14 md:h-0 shrink-0" />
 
-      <div className="flex-1 flex min-h-0 md:pt-[72px] md:pb-4 md:px-4">
-        <div className="flex-1 flex min-h-0 overflow-hidden md:mx-auto md:max-w-6xl md:rounded-2xl md:border md:border-foreground/[0.08] md:shadow-xl md:bg-background/80 md:backdrop-blur-xl">
+      <div className="flex-1 flex min-h-0 md:pt-[72px] md:pb-5 md:px-6">
+        <div className="flex-1 flex min-h-0 overflow-hidden md:mx-auto md:max-w-[1500px] xl:max-w-[1700px] md:rounded-3xl md:shadow-xl md:glass-panel md:border-0">
           {/* ── Desktop sidebar ── */}
-          <div className="hidden md:flex w-[340px] lg:w-[380px] shrink-0 flex-col border-r border-foreground/[0.06] bg-background/40">
+          <div className="hidden md:flex w-[360px] lg:w-[400px] shrink-0 flex-col border-r border-white/12 glass-surface">
             <ConversationSidebar />
           </div>
 
@@ -626,7 +626,7 @@ export default function Messages() {
           </div>
 
           {/* ── Desktop chat area ── */}
-          <div className="hidden md:flex flex-1 min-w-0 flex-col bg-background/20">
+          <div className="hidden md:flex flex-1 min-w-0 flex-col glass-surface">
             {selectedUserId && (loadingUser || loadingConversations) ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="flex gap-1.5">
