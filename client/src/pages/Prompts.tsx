@@ -70,7 +70,7 @@ export default function Prompts() {
   return (
     <div className="min-h-screen pt-16 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] md:pt-24 md:pb-8">
       <main className="mx-auto max-w-7xl px-4 md:px-6 space-y-5">
-        <section className="rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/12 via-card/80 to-background p-6 md:p-8">
+        <section className="glass-card p-6 md:p-8">
           <Badge className="mb-3 bg-primary/15 text-primary hover:bg-primary/20">
             Prompt drops
           </Badge>
@@ -83,7 +83,7 @@ export default function Prompts() {
           </p>
 
           {activePrompt && (
-            <div className="mt-4 rounded-2xl border border-primary/30 bg-primary/10 p-4 md:p-5">
+            <div className="mt-4 glass-panel p-4 md:p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
                 Active prompt
               </p>
@@ -103,7 +103,7 @@ export default function Prompts() {
         </section>
 
         <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
-          <aside className="lg:sticky lg:top-24 h-fit rounded-2xl border border-border/60 bg-card/65 p-3 md:p-4 backdrop-blur-xl">
+          <aside className="lg:sticky lg:top-24 h-fit glass-panel p-3 md:p-4">
             <p className="mb-3 text-sm font-semibold flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               Prompt library
@@ -116,8 +116,8 @@ export default function Prompts() {
                   onClick={() => setLocation(`/prompts/${prompt.slug}`)}
                   className={`w-full rounded-xl border px-3 py-2.5 text-left transition-all ${
                     prompt.slug === selectedSlug
-                      ? "border-primary/40 bg-primary/12"
-                      : "border-border/50 bg-background/45 hover:border-primary/30 hover:bg-primary/8"
+                      ? "border-white/25 bg-white/10"
+                      : "border-white/12 bg-white/6 hover:border-primary/30 hover:bg-primary/8"
                   }`}
                   data-testid={`prompt-pill-${prompt.slug}`}
                 >
@@ -141,7 +141,7 @@ export default function Prompts() {
             {isLoadingBars ? (
               <BarSkeletonList count={4} />
             ) : !promptBars?.bars || promptBars.bars.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border/70 bg-card/40 p-12 text-center">
+              <div className="glass-panel border-dashed border-white/18 p-12 text-center">
                 <p className="text-base font-medium">No bars for this prompt yet.</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Be the first to answer it.

@@ -121,11 +121,11 @@
   --background: 240 16% 8%;
   --foreground: 0 0% 96%;
 
-  /* Cards: medium-light frost tier */
-  --card: 0 0% 100% / 0.18;
+  /* Cards: lighter clear frost tier */
+  --card: 0 0% 100% / 0.16;
   --card-foreground: 0 0% 96%;
 
-  --popover: 0 0% 100% / 0.32;  /* Dense frost for popovers */
+  --popover: 0 0% 100% / 0.30;  /* Dense frost for popovers */
   --popover-foreground: 0 0% 96%;
 
   /* Primary: configurable accent */
@@ -133,12 +133,12 @@
   --primary-foreground: 0 0% 100%;
 
   /* Secondary: balanced frost */
-  --secondary: 0 0% 100% / 0.14;
+  --secondary: 0 0% 100% / 0.12;
   --secondary-foreground: 0 0% 94%;
 
   /* Muted: subtle neutral frost */
-  --muted: 240 8% 70% / 0.14;
-  --muted-foreground: 240 8% 82%;
+  --muted: 240 8% 72% / 0.12;
+  --muted-foreground: 240 8% 84%;
 
   --accent: var(--accent-color, 265 70% 60%);
   --accent-foreground: 0 0% 100%;
@@ -154,10 +154,10 @@
   --radius: 1rem;
 
   /* Glass panel base variables (balanced, near-opaque) */
-  --glass-bg: rgba(255, 255, 255, 0.36);
-  --glass-bg-hover: rgba(255, 255, 255, 0.44);
-  --glass-border: rgba(255, 255, 255, 0.50);
-  --glass-border-hover: rgba(255, 255, 255, 0.60);
+  --glass-bg: rgba(255, 255, 255, 0.34);
+  --glass-bg-hover: rgba(255, 255, 255, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.46);
+  --glass-border-hover: rgba(255, 255, 255, 0.58);
 
   /* Apple-style layered shadows with specular highlight */
   --shadow-xs: 0 0.5px 1px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -192,8 +192,8 @@
   --app-bg-base-end: #070910;
 
   /* Floating bars: luminous frosted material */
-  --floating-bar-bg: rgba(255, 255, 255, 0.28);
-  --floating-bar-border: rgba(255, 255, 255, 0.32);
+  --floating-bar-bg: rgba(255, 255, 255, 0.24);
+  --floating-bar-border: rgba(255, 255, 255, 0.28);
   --floating-bar-shadow:
     0 8px 24px rgba(0, 0, 0, 0.18),
     0 18px 52px rgba(0, 0, 0, 0.20),
@@ -201,15 +201,15 @@
     inset 0 0 0 0.5px rgba(255, 255, 255, 0.18);
 
   /* Glass surface hierarchy — balanced light frost */
-  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.18));
-  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.26));
-  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.28));
-  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(255, 255, 255, 0.38));
+  --glass-surface-bg: var(--owner-glass-surface-bg, rgba(255, 255, 255, 0.14));
+  --glass-surface-bg-strong: var(--owner-glass-surface-bg-strong, rgba(255, 255, 255, 0.22));
+  --glass-surface-border: var(--owner-glass-surface-border, rgba(255, 255, 255, 0.24));
+  --glass-surface-border-strong: var(--owner-glass-surface-border-strong, rgba(255, 255, 255, 0.32));
   --glass-surface-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.16),
-    0 18px 46px rgba(0, 0, 0, 0.18),
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.60),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+    0 4px 14px rgba(0, 0, 0, 0.14),
+    0 14px 36px rgba(0, 0, 0, 0.16),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.10);
 
   /* Glass fields: near-black recessed wells for contrast */
   --glass-field-bg: rgba(5, 5, 8, 0.65);
@@ -984,7 +984,7 @@
   background: var(--glass-surface-bg);
   backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
   -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
-  border: 0.5px solid var(--glass-surface-border);
+  border: 0.5px solid color-mix(in srgb, var(--glass-surface-border), transparent 45%);
   border-radius: 1.25rem;
   box-shadow: var(--glass-surface-shadow);
   will-change: transform;

@@ -227,9 +227,9 @@ export default function Messages() {
 
   /* ━━━━━━━━━━ CONVERSATION SIDEBAR ━━━━━━━━━━━━━━━━━━━━━ */
   const ConversationSidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className={cn("flex flex-col h-full", isMobile && "bg-background/60 backdrop-blur-xl")}>
+    <div className={cn("flex flex-col h-full glass-panel", isMobile && "!rounded-none !border-0")}> 
       {/* Header */}
-      <div className={cn("flex items-center justify-between px-4 pt-3 pb-2", isMobile && "pt-2")}>
+      <div className={cn("flex items-center justify-between px-4 pt-3 pb-2", isMobile && "pt-2")}> 
         <h1 className="text-xl sm:text-2xl font-display font-bold tracking-tight">Chats</h1>
         <div className="flex items-center gap-1">
           {!isConnected && (
@@ -256,7 +256,7 @@ export default function Messages() {
             placeholder="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 rounded-full bg-foreground/[0.06] border-0 text-sm placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/40"
+            className="glass-input pl-10 h-10 rounded-full border-0 text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary/45"
           />
         </div>
       </div>
@@ -266,10 +266,10 @@ export default function Messages() {
         <button
           onClick={() => setActiveListTab("chats")}
           className={cn(
-            "px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
+            "px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all glass-button",
             activeListTab === "chats"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-foreground/[0.06] text-muted-foreground hover:bg-foreground/[0.1]",
+              ? "border border-white/25 text-foreground"
+              : "border border-white/12 text-muted-foreground hover:border-white/20",
           )}
         >
           Inbox
@@ -277,10 +277,10 @@ export default function Messages() {
         <button
           onClick={() => setActiveListTab("friends")}
           className={cn(
-            "px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
+            "px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all glass-button",
             activeListTab === "friends"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-foreground/[0.06] text-muted-foreground hover:bg-foreground/[0.1]",
+              ? "border border-white/25 text-foreground"
+              : "border border-white/12 text-muted-foreground hover:border-white/20",
           )}
         >
           Friends
@@ -356,9 +356,9 @@ export default function Messages() {
     if (!selectedUser) return null;
 
     return (
-      <div className="flex-1 min-w-0 flex flex-col h-full">
+      <div className="flex-1 min-w-0 flex flex-col h-full glass-panel">
         {/* Chat header */}
-        <div className="flex items-center gap-2 px-2 sm:px-4 h-14 sm:h-16 border-b border-foreground/[0.08] bg-background/40 backdrop-blur-xl shrink-0">
+        <div className="flex items-center gap-2 px-2 sm:px-4 h-14 sm:h-16 border-b border-white/12 glass-surface shrink-0">
           {/* Back — mobile only */}
           <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full shrink-0 md:hidden" onClick={() => setLocation("/messages")}>
             <ChevronLeft className="h-5 w-5" />
