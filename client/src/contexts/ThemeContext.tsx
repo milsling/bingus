@@ -45,18 +45,18 @@ export interface ThemeSettings {
 }
 
 export const defaultThemeSettings: ThemeSettings = {
-  windowTint: 'rgba(0, 0, 0, 0.1)',
-  panelTint: 'rgba(0, 0, 0, 0.05)',
-  barCardTint: 'rgba(255, 255, 255, 0.05)',
-  topBarTint: 'rgba(0, 0, 0, 0.2)',
-  barCardOpacity: 0.95,
-  mobileNavOpacity: 0.95,
+  windowTint: 'rgba(255, 255, 255, 0.18)',
+  panelTint: 'rgba(255, 255, 255, 0.18)',
+  barCardTint: 'rgba(255, 255, 255, 0.22)',
+  topBarTint: 'rgba(255, 255, 255, 0.26)',
+  barCardOpacity: 0.96,
+  mobileNavOpacity: 0.96,
   backgroundType: 'default',
   backgroundValue: '',
   customBackgrounds: [],
-  glassOpacity: 0.95,
-  borderOpacity: 0.1,
-  borderRadius: 12,
+  glassOpacity: 0.96,
+  borderOpacity: 0.24,
+  borderRadius: 16,
   accentColor: '265 70% 60%', // Default purple
   accentColorMode: 'manual',
 };

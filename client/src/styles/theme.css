@@ -1,15 +1,15 @@
 /* Theme variables and styles */
 :root {
   /* Default theme values - these will be overridden by ThemeContext */
-  --window-tint: rgba(0, 0, 0, 0.1);
-  --panel-tint: rgba(0, 0, 0, 0.05);
-  --bar-card-tint: rgba(255, 255, 255, 0.05);
-  --top-bar-tint: rgba(0, 0, 0, 0.2);
-  --bar-card-opacity: 0.95;
-  --mobile-nav-opacity: 0.95;
-  --glass-opacity: 0.95;
-  --border-opacity: 0.1;
-  --border-radius: 12px;
+  --window-tint: rgba(255, 255, 255, 0.18);
+  --panel-tint: rgba(255, 255, 255, 0.18);
+  --bar-card-tint: rgba(255, 255, 255, 0.22);
+  --top-bar-tint: rgba(255, 255, 255, 0.26);
+  --bar-card-opacity: 0.96;
+  --mobile-nav-opacity: 0.96;
+  --glass-opacity: 0.96;
+  --border-opacity: 0.24;
+  --border-radius: 16px;
   --background-type: default;
   --background-value: '';
 }
