@@ -840,7 +840,7 @@ export default function Auth() {
                   <Button 
                     type="submit" 
                     data-testid="button-login"
-                    className="w-full font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="w-full dropbar-cta font-bold justify-center"
                     disabled={isLoading}
                   >
                     {isLoading ? "Logging in..." : "Login"}
@@ -855,8 +855,8 @@ export default function Auth() {
                   <div className="w-full grid grid-cols-2 gap-3">
                     <Button
                       type="button"
-                      variant="outline"
-                      className="w-full glass-input border-foreground/[0.1] hover:bg-foreground/[0.05]"
+                      variant="ghost"
+                      className="w-full glass-button border-none bg-white/10 hover:bg-white/16 text-foreground"
                       onClick={() => handleOAuthLogin('apple')}
                       data-testid="button-login-apple"
                     >
@@ -867,8 +867,8 @@ export default function Auth() {
                     </Button>
                     <Button
                       type="button"
-                      variant="outline"
-                      className="w-full glass-input border-foreground/[0.1] hover:bg-foreground/[0.05]"
+                      variant="ghost"
+                      className="w-full glass-button border-none bg-white/10 hover:bg-white/16 text-foreground"
                       onClick={() => handleOAuthLogin('google')}
                       data-testid="button-login-google"
                     >
