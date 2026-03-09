@@ -9,7 +9,6 @@ import { playNotificationSound, notificationSoundLabels, messageSoundLabels } fr
 import { BackgroundUploader } from "@/components/BackgroundUploader";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { useBackground } from "@/components/BackgroundSelector";
-import ThemeSettings from "@/components/ThemeSettings";
 import AccentColorPicker from "@/components/AccentColorPicker";
 import { useFabShortcuts, SHORTCUT_OPTIONS } from "@/hooks/useFabShortcuts";
 import { Button } from "@/components/ui/button";
@@ -602,8 +601,6 @@ export default function Settings() {
                   <BackgroundUploader />
                 </CardContent>
               </Card>
-
-              {currentUser?.isOwner && <ThemeSettings />}
 
             </TabsContent>
           </Tabs>

@@ -168,9 +168,10 @@ export function BarOwnerActions({ bar, isLocked, onMenuAction }: BarOwnerActions
         <DropdownMenuItem 
           onSelect={(event) => {
             event.preventDefault();
-            onMenuAction?.();
             setEditContent(bar.content.replace(/<[^>]*>/g, "")); 
-            setIsEditOpen(true); 
+            setIsEditOpen(true);
+            // Close menu after state is set with slight delay to avoid race condition
+            setTimeout(() => onMenuAction?.(), 0);
           }} 
           data-testid={`button-edit-${bar.id}`}
         >
@@ -186,8 +187,9 @@ export function BarOwnerActions({ bar, isLocked, onMenuAction }: BarOwnerActions
           <DropdownMenuItem 
             onSelect={(event) => {
               event.preventDefault();
-              onMenuAction?.();
               setIsLockDialogOpen(true);
+              // Close menu after state is set with slight delay to avoid race condition
+              setTimeout(() => onMenuAction?.(), 0);
             }} 
             className="text-primary" 
             data-testid={`button-lock-${bar.id}`}
@@ -211,8 +213,9 @@ export function BarOwnerActions({ bar, isLocked, onMenuAction }: BarOwnerActions
       <DropdownMenuItem 
         onSelect={(event) => {
           event.preventDefault();
-          onMenuAction?.();
           setIsDeleteOpen(true);
+          // Close menu after state is set with slight delay to avoid race condition
+          setTimeout(() => onMenuAction?.(), 0);
         }} 
         className="text-destructive" 
         data-testid={`button-delete-${bar.id}`}

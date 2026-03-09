@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { BackgroundUploader } from "@/components/BackgroundUploader";
 import { BackgroundSelector, useBackground } from "@/components/BackgroundSelector";
+import ThemeSettings from "@/components/ThemeSettings";
 import {
   ArrowLeft, Bot, Crown, Image, Lock, MessageSquare,
   Palette, Power, RefreshCw, Settings2, Shield, Trash2,
@@ -353,6 +354,9 @@ function OwnerConsoleContent() {
 
           {/* Appearance tab */}
           <TabsContent value="appearance" className="space-y-4">
+            {/* Advanced Theme Settings - Owner Only */}
+            <ThemeSettings isOwner={true} />
+
             <Card className={cardCn}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2"><Image className="h-4 w-4" /> Upload Background</CardTitle>
@@ -370,11 +374,11 @@ function OwnerConsoleContent() {
               </CardHeader>
               <CardContent className="pt-0 space-y-4">
                 <BackgroundSelector />
-                <div className="flex justify-end">
+                <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
                   <Button
                     onClick={() => saveSiteSettingsMutation.mutate({ defaultBackground: String(selectedBackground?.id || "default") })}
                     disabled={saveSiteSettingsMutation.isPending}
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
                   >
                     {saveSiteSettingsMutation.isPending ? "Saving..." : "💾 Set as Site Default"}
                   </Button>
@@ -384,12 +388,11 @@ function OwnerConsoleContent() {
 
             <Card className={cardCn}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2"><Palette className="h-4 w-4" /> Opacity Controls</CardTitle>
-                <CardDescription>Fine-tune the balanced theme glass in real time</CardDescription>
+                <CardTitle className="text-base flex items-center gap-2"><Palette className="h-4 w-4" /> Quick Opacity Controls</CardTitle>
+                <CardDescription>Fine-tune glass opacity in real time</CardDescription>
               </CardHeader>
               <CardContent className="pt-0 space-y-6">
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground/80">Balanced Theme</h4>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Glass Opacity: {(glassOpacity * 100).toFixed(0)}%</Label>
                     <input type="range" min="0.5" max="1.0" step="0.01" value={glassOpacity}

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,14 +12,47 @@ import { Badge } from '@/components/ui/badge';
 import { useTheme } from "@/contexts/ThemeContext";
 import { defaultThemeSettings, extractAccentColorFromBackground } from "@/contexts/ThemeContext";
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Palette, Image, Trash2, Download } from 'lucide-react';
+import { Upload, X, Palette, Image, Trash2, Download, Globe } from 'lucide-react';
 import ThemePresetSelector from './ThemePresetSelector';
 
-export default function ThemeSettings() {
+// Helper functions to convert between hex and rgba
+function hexFromRgba(rgba: string): string {
+  if (!rgba || rgba.startsWith('#')) return rgba || '#ffffff';
+  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (!match) return '#ffffff';
+  const r = parseInt(match[1]).toString(16).padStart(2, '0');
+  const g = parseInt(match[2]).toString(16).padStart(2, '0');
+  const b = parseInt(match[3]).toString(16).padStart(2, '0');
+  return `#${r}${g}${b}`;
+}
+
+function rgbaFromHex(hex: string, opacity: number): string {
+  if (!hex || !hex.startsWith('#')) return `rgba(255, 255, 255, ${opacity})`;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity.toFixed(2)})`;
+}
+
+function opacityFromRgba(rgba: string): number {
+  if (!rgba) return 0.18;
+  const match = rgba.match(/rgba?\([^)]+,\s*([\d.]+)\s*\)/);
+  if (!match) return 0.18;
+  return parseFloat(match[1]) || 0.18;
+}
+
+interface ThemeSettingsProps {
+  isOwner?: boolean;
+}
+
+export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
   const { canCustomize } = useTheme();
 
+  // Allow access if owner prop is true OR if canCustomize is true
+  const hasAccess = isOwner || canCustomize;
+
   // Check permission BEFORE calling any other hooks
-  if (!canCustomize) {
+  if (!hasAccess) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -33,6 +67,26 @@ export default function ThemeSettings() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Mutation for pushing theme to all users (owner only)
+  const pushThemeMutation = useMutation({
+    mutationFn: async (themeSettings: any) => {
+      const res = await fetch("/api/backgrounds/site-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ themeSettings }),
+      });
+      if (!res.ok) throw new Error("Failed to save theme settings");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Theme pushed!", description: "All users will now see your theme settings." });
+    },
+    onError: (e: any) => {
+      toast({ title: "Failed to push theme", description: e.message, variant: "destructive" });
+    },
+  });
 
   // Auto-extract accent color when background changes and mode is auto
   useEffect(() => {
@@ -169,22 +223,22 @@ export default function ThemeSettings() {
   ];
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
-            Theme Customization
+    <div className="space-y-4 sm:space-y-6">
+      <Card className="glass-surface-strong border-foreground/15">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
+            Advanced Theme Editor
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <Tabs defaultValue="tints" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="presets">Presets</TabsTrigger>
-              <TabsTrigger value="tints">Color Tints</TabsTrigger>
-              <TabsTrigger value="accent">Accent</TabsTrigger>
-              <TabsTrigger value="backgrounds">Backgrounds</TabsTrigger>
-              <TabsTrigger value="appearance">Appearance</TabsTrigger>
+            <TabsList className="flex w-full overflow-x-auto gap-1 scrollbar-hide mb-4 h-auto flex-wrap sm:flex-nowrap">
+              <TabsTrigger value="presets" className="text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap">Presets</TabsTrigger>
+              <TabsTrigger value="tints" className="text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap">Tints</TabsTrigger>
+              <TabsTrigger value="accent" className="text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap">Accent</TabsTrigger>
+              <TabsTrigger value="backgrounds" className="text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap">Backgrounds</TabsTrigger>
+              <TabsTrigger value="appearance" className="text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap">Appearance</TabsTrigger>
             </TabsList>
 
             <TabsContent value="presets" className="mt-0">
@@ -193,87 +247,112 @@ export default function ThemeSettings() {
 
             <TabsContent value="tints" className="space-y-6">
               <div className="grid gap-4">
-                <div>
-                  <Label htmlFor="window-tint">Window Tint</Label>
-                  <Input
-                    id="window-tint"
-                    type="color"
-                    value={settings.windowTint}
-                    onChange={(e) => updateSettings({ windowTint: e.target.value })}
-                    className="w-full h-10"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Applied to modal windows and dialogs
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                  <p className="text-xs text-muted-foreground">
+                    These tints are applied to glass surfaces throughout the app. 
+                    The color picker affects the tint color, and the opacity sliders control transparency.
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="panel-tint">Panel Tint</Label>
-                  <Input
-                    id="panel-tint"
-                    type="color"
-                    value={settings.panelTint}
-                    onChange={(e) => updateSettings({ panelTint: e.target.value })}
-                    className="w-full h-10"
-                  />
+                  <Label htmlFor="panel-tint">Panel Tint (Glass Surfaces)</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="panel-tint"
+                      type="color"
+                      value={hexFromRgba(settings.panelTint)}
+                      onChange={(e) => updateSettings({ panelTint: rgbaFromHex(e.target.value, settings.glassOpacity * 0.18) })}
+                      className="w-20 h-10"
+                    />
+                    <div className="flex-1">
+                      <Slider
+                        value={[opacityFromRgba(settings.panelTint) * 100]}
+                        onValueChange={([value]) => updateSettings({ panelTint: rgbaFromHex(hexFromRgba(settings.panelTint), value / 100) })}
+                        max={50}
+                        min={5}
+                        step={1}
+                      />
+                      <span className="text-[10px] text-muted-foreground">Opacity: {Math.round(opacityFromRgba(settings.panelTint) * 100)}%</span>
+                    </div>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Applied to side panels and content areas
+                    Applied to side panels and glass surfaces
                   </p>
                 </div>
 
                 <div>
                   <Label htmlFor="bar-card-tint">Bar Card Tint</Label>
-                  <Input
-                    id="bar-card-tint"
-                    type="color"
-                    value={settings.barCardTint}
-                    onChange={(e) => updateSettings({ barCardTint: e.target.value })}
-                    className="w-full h-10"
-                  />
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="bar-card-tint"
+                      type="color"
+                      value={hexFromRgba(settings.barCardTint)}
+                      onChange={(e) => updateSettings({ barCardTint: rgbaFromHex(e.target.value, settings.glassOpacity * 0.22) })}
+                      className="w-20 h-10"
+                    />
+                    <div className="flex-1">
+                      <Slider
+                        value={[opacityFromRgba(settings.barCardTint) * 100]}
+                        onValueChange={([value]) => updateSettings({ barCardTint: rgbaFromHex(hexFromRgba(settings.barCardTint), value / 100) })}
+                        max={60}
+                        min={10}
+                        step={1}
+                      />
+                      <span className="text-[10px] text-muted-foreground">Opacity: {Math.round(opacityFromRgba(settings.barCardTint) * 100)}%</span>
+                    </div>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Applied to bar cards and list items
                   </p>
                 </div>
 
                 <div>
-                  <Label>Bar Card Opacity: {Math.round(settings.barCardOpacity * 100)}%</Label>
-                  <Slider
-                    value={[settings.barCardOpacity * 100]}
-                    onValueChange={([value]) => updateSettings({ barCardOpacity: value / 100 })}
-                    max={100}
-                    min={0}
-                    step={1}
-                    className="mt-2"
-                  />
+                  <Label htmlFor="window-tint">Window/Dialog Tint</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="window-tint"
+                      type="color"
+                      value={hexFromRgba(settings.windowTint)}
+                      onChange={(e) => updateSettings({ windowTint: rgbaFromHex(e.target.value, settings.glassOpacity * 0.3) })}
+                      className="w-20 h-10"
+                    />
+                    <div className="flex-1">
+                      <Slider
+                        value={[opacityFromRgba(settings.windowTint) * 100]}
+                        onValueChange={([value]) => updateSettings({ windowTint: rgbaFromHex(hexFromRgba(settings.windowTint), value / 100) })}
+                        max={70}
+                        min={15}
+                        step={1}
+                      />
+                      <span className="text-[10px] text-muted-foreground">Opacity: {Math.round(opacityFromRgba(settings.windowTint) * 100)}%</span>
+                    </div>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Transparency of bar cards and list items
-                  </p>
-                </div>
-
-                <div>
-                  <Label>Mobile Navigation Opacity: {Math.round(settings.mobileNavOpacity * 100)}%</Label>
-                  <Slider
-                    value={[settings.mobileNavOpacity * 100]}
-                    onValueChange={([value]) => updateSettings({ mobileNavOpacity: value / 100 })}
-                    max={100}
-                    min={0}
-                    step={1}
-                    className="mt-2"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Transparency of mobile navigation panel and buttons
+                    Applied to modal windows and dialogs
                   </p>
                 </div>
 
                 <div>
                   <Label htmlFor="top-bar-tint">Top Bar Tint</Label>
-                  <Input
-                    id="top-bar-tint"
-                    type="color"
-                    value={settings.topBarTint}
-                    onChange={(e) => updateSettings({ topBarTint: e.target.value })}
-                    className="w-full h-10"
-                  />
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="top-bar-tint"
+                      type="color"
+                      value={hexFromRgba(settings.topBarTint)}
+                      onChange={(e) => updateSettings({ topBarTint: rgbaFromHex(e.target.value, 0.26) })}
+                      className="w-20 h-10"
+                    />
+                    <div className="flex-1">
+                      <Slider
+                        value={[opacityFromRgba(settings.topBarTint) * 100]}
+                        onValueChange={([value]) => updateSettings({ topBarTint: rgbaFromHex(hexFromRgba(settings.topBarTint), value / 100) })}
+                        max={60}
+                        min={10}
+                        step={1}
+                      />
+                      <span className="text-[10px] text-muted-foreground">Opacity: {Math.round(opacityFromRgba(settings.topBarTint) * 100)}%</span>
+                    </div>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Applied to navigation bars and headers
                   </p>
@@ -551,14 +630,16 @@ export default function ThemeSettings() {
             </TabsContent>
           </Tabs>
 
-          <div className="flex gap-2 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t">
             <Button
               variant="outline"
               onClick={() => updateSettings(defaultThemeSettings)}
+              className="flex-1 sm:flex-none"
             >
               Reset to Default
             </Button>
             <Button
+              variant="outline"
               onClick={() => {
                 // Export settings
                 const dataStr = JSON.stringify(settings, null, 2);
@@ -569,10 +650,21 @@ export default function ThemeSettings() {
                 linkElement.setAttribute('download', exportFileDefaultName);
                 linkElement.click();
               }}
+              className="flex-1 sm:flex-none"
             >
               <Download className="h-4 w-4 mr-2" />
-              Export Settings
+              Export
             </Button>
+            {isOwner && (
+              <Button
+                onClick={() => pushThemeMutation.mutate(settings)}
+                disabled={pushThemeMutation.isPending}
+                className="flex-1 sm:flex-none bg-primary hover:bg-primary/90"
+              >
+                <Globe className="h-4 w-4 mr-2" />
+                {pushThemeMutation.isPending ? "Pushing..." : "Push to All Users"}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

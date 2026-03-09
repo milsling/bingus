@@ -365,22 +365,52 @@ export function useTheme() {
 
 // Helper function to apply theme styles
 export function getThemeStyles(settings: ThemeSettings) {
+  // Parse glass and border opacity to compute actual values
+  const glassOpacity = settings.glassOpacity;
+  const borderOpacity = settings.borderOpacity;
+  
+  // These values will be applied to CSS custom properties
+  // The owner variables override the defaults in the CSS
   return {
+    // Direct tint settings
     '--window-tint': settings.windowTint,
     '--panel-tint': settings.panelTint,
     '--bar-card-tint': settings.barCardTint,
     '--top-bar-tint': settings.topBarTint,
+    
+    // Opacity settings
     '--bar-card-opacity': settings.barCardOpacity.toString(),
     '--mobile-nav-opacity': settings.mobileNavOpacity.toString(),
-    '--glass-opacity': settings.glassOpacity.toString(),
-    '--border-opacity': settings.borderOpacity.toString(),
+    '--glass-opacity': glassOpacity.toString(),
+    '--border-opacity': borderOpacity.toString(),
     '--border-radius': `${settings.borderRadius}px`,
+    
+    // Background settings
     '--background-type': settings.backgroundType,
     '--background-value': settings.backgroundValue,
+    
+    // Accent color
     '--accent-color': settings.accentColor,
     '--accent-color-mode': settings.accentColorMode,
+    
     // Logo hue-rotate: sepia produces ~50° hue, so rotate to match accent
     '--logo-hue-rotate': `${(parseInt(settings.accentColor?.split(' ')[0] || '265', 10) - 50)}deg`,
+    
+    // Owner glass surface overrides - these control the actual glass panel appearance
+    // Panel tint is applied to glass surfaces for a unified look
+    '--owner-glass-surface-bg': settings.panelTint || `rgba(255, 255, 255, ${0.18 * glassOpacity})`,
+    '--owner-glass-surface-bg-strong': settings.barCardTint || `rgba(255, 255, 255, ${0.26 * glassOpacity})`,
+    '--owner-glass-surface-border': `rgba(255, 255, 255, ${borderOpacity})`,
+    '--owner-glass-surface-border-strong': `rgba(255, 255, 255, ${Math.min(borderOpacity + 0.1, 1)})`,
+    
+    // Custom background variants (darker for custom wallpapers)
+    '--owner-glass-surface-bg-custom': `rgba(8, 8, 12, ${0.72 * glassOpacity})`,
+    '--owner-glass-surface-bg-strong-custom': `rgba(10, 10, 14, ${0.80 * glassOpacity})`,
+    '--owner-glass-surface-border-dark': `rgba(255, 255, 255, ${borderOpacity})`,
+    '--owner-glass-surface-border-strong-dark': `rgba(255, 255, 255, ${Math.min(borderOpacity + 0.06, 1)})`,
+    
+    // Window/dialog tint
+    '--sheet-bg': settings.windowTint || `rgba(255, 255, 255, ${0.30 * glassOpacity})`,
   } as React.CSSProperties;
 }
 
