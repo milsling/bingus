@@ -240,8 +240,6 @@ export default function Settings() {
                 Appearance
               </TabsTrigger>
             </TabsList>
-              )}
-            </TabsList>
 
             <TabsContent value="general" className="mt-0 space-y-4">
               <Card className={"glass-surface-strong border-foreground/15"}>
