@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BarWithUser } from "@shared/schema";
 import { Link, useLocation, useSearch } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, PenLine, Flame, Sparkles, Trophy, Hash, X, Compass } from "lucide-react";
+import { Search, PenLine, Flame, Sparkles, Trophy, Hash, X, Compass, Heart, ChevronRight, TrendingUp } from "lucide-react";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
@@ -43,6 +43,46 @@ const FEED_TAB_OPTIONS: Array<{ value: FeedTab; label: string }> = [
 
 function formatCompact(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
+}
+
+// Mobile-only horizontal trending tags
+function MobileTrendingTags({ hasCustomBackground }: { hasCustomBackground: boolean }) {
+  const [, setLocation] = useLocation();
+  const { data: tags = [] } = useQuery({
+    queryKey: ["sidebar-trending-tags"],
+    queryFn: () => api.getTrendingTags(),
+    staleTime: 120_000,
+    refetchOnWindowFocus: false,
+  });
+
+  if (tags.length === 0) return null;
+
+  return (
+    <section className="md:hidden">
+      <div className="flex items-center gap-2 mb-2">
+        <TrendingUp className="h-4 w-4 text-emerald-400" />
+        <p className="text-sm font-semibold">Trending Tags</p>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-2 snap-x scrollbar-hide -mx-4 px-4">
+        {tags.map((t: { tag: string; usage_count: number }) => (
+          <button
+            key={t.tag}
+            onClick={() => setLocation(`/?tag=${encodeURIComponent(t.tag)}`)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium snap-start flex-shrink-0 transition-colors",
+              hasCustomBackground 
+                ? "glass-surface-strong border border-primary/20 text-primary hover:bg-primary/20"
+                : "bg-primary/10 text-primary hover:bg-primary/20"
+            )}
+          >
+            <Hash className="h-3 w-3" />
+            {t.tag}
+            <span className="text-[10px] opacity-60">{t.usage_count}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export default function Home() {
@@ -267,8 +307,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
-          <section className="space-y-5">
+        <div className="grid gap-6 w-full lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
+          <section className="space-y-5 w-full min-w-0">
             <div
               className={cn(
                 "md:hidden transition-[height] duration-200 ease-out",
@@ -400,6 +440,7 @@ export default function Home() {
               </section>
             )}
 
+            {/* How it works - horizontal scroll on mobile */}
             <section className={cn(
               "rounded-2xl border p-4 md:p-5 glass-surface",
               hasCustomBackground 
@@ -407,9 +448,9 @@ export default function Home() {
                 : "border-border/60 bg-background/45"
             )}>
               <p className="mb-3 text-sm font-semibold">How it works</p>
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="flex gap-3 overflow-x-auto pb-2 md:pb-0 md:grid md:grid-cols-3 snap-x snap-mandatory scrollbar-hide -mx-1 px-1">
                 <div className={cn(
-                  "rounded-xl border border-foreground/10 bg-white/5 p-3"
+                  "rounded-xl border border-foreground/10 bg-white/5 p-3 min-w-[200px] md:min-w-0 snap-start flex-shrink-0 md:flex-shrink"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Search className="h-4 w-4" />
@@ -420,7 +461,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className={cn(
-                  "rounded-xl border border-foreground/10 bg-white/5 p-3"
+                  "rounded-xl border border-foreground/10 bg-white/5 p-3 min-w-[200px] md:min-w-0 snap-start flex-shrink-0 md:flex-shrink"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <PenLine className="h-4 w-4" />
@@ -431,7 +472,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className={cn(
-                  "rounded-xl border border-foreground/10 bg-white/5 p-3"
+                  "rounded-xl border border-foreground/10 bg-white/5 p-3 min-w-[200px] md:min-w-0 snap-start flex-shrink-0 md:flex-shrink"
                 )}>
                   <div className="mb-2 inline-flex rounded-full bg-primary/12 p-2 text-primary">
                     <Flame className="h-4 w-4" />
@@ -443,6 +484,104 @@ export default function Home() {
                 </div>
               </div>
             </section>
+
+            {/* Hot Right Now - horizontal mini-carousel on mobile */}
+            {trendingBars.length > 0 && !tagFilter && (
+              <section className="md:hidden">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-semibold flex items-center gap-2">
+                    <Flame className="h-4 w-4 text-orange-400" />
+                    Hot Right Now
+                  </p>
+                  <button 
+                    onClick={() => setActiveTab("trending")}
+                    className="text-xs text-primary flex items-center gap-0.5 hover:underline"
+                  >
+                    See all <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+                  {trendingBars.slice(0, 6).map((bar) => (
+                    <Link key={bar.id} href={`/bar/${bar.id}`}>
+                      <div className={cn(
+                        "min-w-[260px] rounded-xl p-3 snap-start flex-shrink-0 border",
+                        hasCustomBackground 
+                          ? "glass-surface-strong border-foreground/15" 
+                          : "glass-surface border-border/60"
+                      )}>
+                        <p className="text-sm line-clamp-2 mb-2 leading-relaxed">
+                          "{bar.content?.slice(0, 80)}{bar.content?.length > 80 ? '...' : ''}"
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <div className="h-5 w-5 rounded-full bg-primary/15 flex items-center justify-center text-[10px] overflow-hidden">
+                            {bar.user?.avatarUrl ? (
+                              <img src={bar.user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              bar.user?.username?.[0]?.toUpperCase() || "?"
+                            )}
+                          </div>
+                          <span className="text-[11px] text-muted-foreground truncate">@{bar.user?.username}</span>
+                          <span className="ml-auto flex items-center gap-1 text-[11px] text-rose-400">
+                            <Heart className="h-3 w-3" /> {bar.likeCount || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Mobile trending tags strip */}
+            {!tagFilter && (
+              <MobileTrendingTags hasCustomBackground={hasCustomBackground} />
+            )}
+
+            {/* Mobile featured writers horizontal */}
+            {!tagFilter && leaderboard.length > 0 && (
+              <section className="md:hidden">
+                <div className="flex items-center gap-2 mb-2">
+                  <Trophy className="h-4 w-4 text-yellow-500" />
+                  <p className="text-sm font-semibold">Top Writers</p>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2 snap-x scrollbar-hide -mx-4 px-4">
+                  {leaderboard.slice(0, 8).map((user: any, index: number) => (
+                    <Link key={user.id} href={`/u/${user.username}`}>
+                      <div className={cn(
+                        "flex flex-col items-center gap-1.5 min-w-[80px] rounded-xl p-3 snap-start flex-shrink-0",
+                        hasCustomBackground 
+                          ? "glass-surface-strong border border-foreground/10" 
+                          : "glass-surface"
+                      )}>
+                        <div className="relative">
+                          <div className="h-12 w-12 rounded-full bg-primary/15 overflow-hidden ring-2 ring-primary/20">
+                            {user.avatarUrl ? (
+                              <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-sm font-medium">
+                                {user.username?.[0]?.toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          {index < 3 && (
+                            <div className={cn(
+                              "absolute -bottom-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                              index === 0 && "bg-yellow-500 text-black",
+                              index === 1 && "bg-gray-400 text-black",
+                              index === 2 && "bg-amber-600 text-white"
+                            )}>
+                              {index + 1}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-foreground/80 truncate max-w-[70px]">@{user.username}</span>
+                        <span className="text-[10px] text-primary font-medium">{formatCompact(user.xp || 0)} XP</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {tagFilter && (
               <div className={cn(
@@ -511,9 +650,23 @@ export default function Home() {
                     </Button>
                   </div>
                 ) : (
-                  visibleBars.map((bar) => (
-                    <BarCard key={bar.id} bar={bar} />
-                  ))
+                  <>
+                    {visibleBars.map((bar, index) => (
+                      <div key={bar.id}>
+                        {/* Visual section break every 5 items on mobile for visual rhythm */}
+                        {index > 0 && index % 5 === 0 && (
+                          <div className="md:hidden my-6 flex items-center gap-3">
+                            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                            <Sparkles className="h-4 w-4 text-primary/50" />
+                            <div className="h-px flex-1 bg-gradient-to-l from-transparent via-primary/30 to-transparent" />
+                          </div>
+                        )}
+                        <div className="mobile-bar-enter">
+                          <BarCard bar={bar} />
+                        </div>
+                      </div>
+                    ))}
+                  </>
                 )}
               </div>
             </PullToRefresh>

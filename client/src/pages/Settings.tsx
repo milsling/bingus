@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bell, Command, Crown, Lock, Settings2, Shield, UserCog, Volume2 } from "lucide-react";
+import { ArrowLeft, Bell, Command, Crown, Lock, Shield, UserCog, Volume2 } from "lucide-react";
 import { useBars } from "@/context/BarContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
@@ -18,12 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-
-const FAB_DEBUG_LAUNCHER_HIDDEN_KEY = "fab-debug-launcher-hidden";
-const FAB_DEBUG_VISIBILITY_EVENT = "fab-debug-launcher-visibility-change";
 
 export default function Settings() {
   const { currentUser } = useBars();
@@ -33,7 +29,6 @@ export default function Settings() {
   const { selectedBackground, setBackground } = useBackground();
   const hasCustomBackground = selectedBackground.image !== null;
 
-  const canDebugControls = Boolean(currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner);
   const isProMember = Boolean(currentUser?.isOwner || currentUser?.membershipTier === "donor_plus");
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -43,10 +38,6 @@ export default function Settings() {
   const [notificationSound, setNotificationSound] = useState(currentUser?.notificationSound || "chime");
   const [messageSound, setMessageSound] = useState(currentUser?.messageSound || "ding");
   const { leftTarget, rightTarget, setLeft, setRight } = useFabShortcuts();
-  const [hideFabDebugLauncher, setHideFabDebugLauncher] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(FAB_DEBUG_LAUNCHER_HIDDEN_KEY) === "1";
-  });
 
   const changePasswordMutation = useMutation({
     mutationFn: () => api.changePassword(currentPassword, newPassword),
@@ -202,18 +193,6 @@ export default function Settings() {
     changePasswordMutation.mutate();
   };
 
-  const setFabDebugLauncherHidden = (hidden: boolean) => {
-    setHideFabDebugLauncher(hidden);
-    window.localStorage.setItem(FAB_DEBUG_LAUNCHER_HIDDEN_KEY, hidden ? "1" : "0");
-    window.dispatchEvent(new CustomEvent(FAB_DEBUG_VISIBILITY_EVENT));
-    toast({
-      title: hidden ? "FAB debug hidden" : "FAB debug visible",
-      description: hidden
-        ? "Launcher moved off-screen until you re-enable it."
-        : "Launcher is visible again.",
-    });
-  };
-
   return (
     <div className="min-h-[100dvh] pt-14 pb-20 md:pt-24 md:pb-6 overflow-x-hidden">
       <main className="mx-auto w-full max-w-3xl px-3 sm:px-4 md:px-8">
@@ -260,14 +239,7 @@ export default function Settings() {
               >
                 Appearance
               </TabsTrigger>
-              {canDebugControls && (
-                <TabsTrigger
-                  value="developer"
-                  className="rounded-xl px-2.5 sm:px-3 py-2.5 text-[11px] sm:text-xs font-semibold whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground min-w-fit flex-shrink-0"
-                  data-testid="tab-settings-developer"
-                >
-                  Developer
-                </TabsTrigger>
+            </TabsList>
               )}
             </TabsList>
 
@@ -592,21 +564,7 @@ export default function Settings() {
               <Card className={"glass-surface-strong border-foreground/15"}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    🎛️ Visual Mode
-                  </CardTitle>
-                  <CardDescription>
-                    Balanced dark is now the default everywhere. Accent and background customizations stay available.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0 text-sm text-muted-foreground">
-                  Theme switching has been removed. Enjoy the unified balanced dark experience.
-                </CardContent>
-              </Card>
-
-              <Card className={"glass-surface-strong border-foreground/15"}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    🎨 Accent Color
+                     Accent Color
                   </CardTitle>
                   <CardDescription>
                     {isProMember
@@ -650,38 +608,6 @@ export default function Settings() {
               {currentUser?.isOwner && <ThemeSettings />}
 
             </TabsContent>
-
-            {canDebugControls && (
-              <TabsContent value="developer" className="mt-0 space-y-4">
-                <Card className={"glass-surface-strong border-foreground/15"}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Shield className="h-4 w-4 text-primary" />
-                      FAB Debug Launcher
-                    </CardTitle>
-                    <CardDescription>
-                      Control whether the FAB debug launcher is visible on mobile.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex items-center justify-between rounded-xl border border-border/70 p-3">
-                      <div>
-                        <p className="text-sm font-medium">Show FAB debug launcher</p>
-                        <p className="text-xs text-muted-foreground">
-                          Turn this off to keep the debug control completely off-screen.
-                        </p>
-                      </div>
-                      <Switch
-                        checked={!hideFabDebugLauncher}
-                        onCheckedChange={(checked) => setFabDebugLauncherHidden(!checked)}
-                        data-testid="switch-fab-debug-launcher"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-              </TabsContent>
-            )}
           </Tabs>
         </div>
       </main>

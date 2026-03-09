@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useBackground } from "@/components/BackgroundSelector";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,19 @@ export default function EditProfile() {
   const [crop, setCrop] = useState<Crop>();
   const [zoom, setZoom] = useState(1);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  // Sync state with currentUser when it loads/changes
+  const [hasInitialized, setHasInitialized] = useState(false);
+  useEffect(() => {
+    if (currentUser && !hasInitialized) {
+      setBio(currentUser.bio || "");
+      setLocationField(currentUser.location || "");
+      setAvatarUrl(currentUser.avatarUrl || "");
+      setBannerUrl(currentUser.bannerUrl || "");
+      setNewUsername(currentUser.username || "");
+      setHasInitialized(true);
+    }
+  }, [currentUser, hasInitialized]);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;

@@ -2232,13 +2232,13 @@ export async function registerRoutes(
         updates.messagePrivacy = messagePrivacy;
       }
       if (notificationSound !== undefined) {
-        if (!["none", "chime", "pop", "bell", "whoosh"].includes(notificationSound)) {
+        if (!["none", "chime", "pop", "bell", "whoosh", "notify", "808", "scratch", "hihat", "boombap"].includes(notificationSound)) {
           return res.status(400).json({ message: "Invalid notification sound setting" });
         }
         updates.notificationSound = notificationSound;
       }
       if (messageSound !== undefined) {
-        if (!["none", "ding", "bubble", "soft", "alert"].includes(messageSound)) {
+        if (!["none", "ding", "bubble", "soft", "alert", "hihat", "scratch", "boombap"].includes(messageSound)) {
           return res.status(400).json({ message: "Invalid message sound setting" });
         }
         updates.messageSound = messageSound;
