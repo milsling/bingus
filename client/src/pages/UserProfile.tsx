@@ -3,6 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { api } from "@/lib/api";
 import BarCard from "@/components/BarCard";
 import { UserProfileBadges } from "@/components/UserProfileBadges";
+import { ProCard } from "@/components/ProCard";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -499,6 +500,24 @@ export default function UserProfile() {
           </div>
           </div>
         </div>
+
+        {/* PRO Member Card - shown if user is PRO and has enabled it */}
+        {user.membershipTier !== "free" && (user as any).showProCard !== false && (
+          <div className="mb-6 glass-card border border-border/10 p-4 rounded-2xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm font-semibold text-muted-foreground">Pro Member Card</span>
+            </div>
+            <div className="flex justify-center">
+              <ProCard
+                username={user.username}
+                displayName={user.displayName}
+                avatarUrl={user.avatarUrl}
+                proStartDate={(user as any).proStartDate}
+                size="sm"
+              />
+            </div>
+          </div>
+        )}
 
         <h2 className="text-xl font-semibold mb-4">Bars by @{user.username}</h2>
         

@@ -95,6 +95,10 @@ async function syncMembershipFromSubscription(params: {
 
   const isActive = Boolean(subscription && isSubscriptionActive(subscription));
 
+  // Get current user to check if this is their first time becoming PRO
+  const currentUser = await storage.getUser(userId);
+  const isFirstTimePro = isActive && currentUser && !currentUser.proStartDate;
+
   await storage.updateUser(userId, {
     membershipTier: isActive ? PRO_TIER : "free",
     membershipExpiresAt:
@@ -103,6 +107,8 @@ async function syncMembershipFromSubscription(params: {
         : null,
     stripeCustomerId: customerId,
     stripeSubscriptionId: isActive && subscription ? subscription.id : null,
+    // Set proStartDate only if this is their first time becoming PRO
+    ...(isFirstTimePro ? { proStartDate: new Date() } : {}),
   });
 }
 

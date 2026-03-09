@@ -1514,14 +1514,14 @@ export default function Admin() {
 
   if (isLoadingUser) {
     return (
-      <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
+      <div className="min-h-[100dvh] pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center overflow-x-hidden">
         <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
   if (!currentUser || !currentUser.isAdmin) {
     return (
-      <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center">
+      <div className="min-h-[100dvh] pt-14 pb-20 md:pb-4 md:pt-24 flex items-center justify-center overflow-x-hidden">
         <div className="text-muted-foreground">Redirecting...</div>
       </div>
     );
@@ -1588,9 +1588,9 @@ export default function Admin() {
   ].filter((section) => section.show);
 
   return (
-    <div className="min-h-screen pt-14 pb-20 md:pb-4 md:pt-24">
+    <div className="min-h-[100dvh] pt-14 pb-20 md:pb-4 md:pt-24 overflow-x-hidden">
       
-      <main className="mx-auto w-full max-w-5xl p-4 md:p-8">
+      <main className="mx-auto w-full max-w-5xl px-3 sm:px-4 md:px-8">
         <div className="mb-6 glass-surface-strong rounded-3xl border border-foreground/[0.1] p-4 md:p-6">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">

@@ -45,6 +45,8 @@ export const users = pgTable("users", {
   bannerUrl: text("banner_url"),
   membershipTier: text("membership_tier").notNull().default("free"),
   membershipExpiresAt: timestamp("membership_expires_at"),
+  proStartDate: timestamp("pro_start_date"),
+  showProCard: boolean("show_pro_card").notNull().default(true),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   isAdmin: boolean("is_admin").notNull().default(false),

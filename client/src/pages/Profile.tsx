@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import BarCard from "@/components/BarCard";
 import { UserProfileBadges } from "@/components/UserProfileBadges";
+import { ProCard } from "@/components/ProCard";
 import { Settings, Share2, MapPin, Edit, Trophy, Star, Crown, Zap } from "lucide-react";
 import { ACHIEVEMENTS, type AchievementId, type AchievementRarity } from "@shared/schema";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -341,6 +342,28 @@ export default function Profile() {
               <span className="text-xs text-muted-foreground">{progressPercentage}%</span>
             </div>
           </Link>
+
+          {/* PRO Member Card */}
+          {currentUser.membershipTier !== "free" && currentUser.showProCard !== false && (
+            <div className="glass-panel p-4" data-testid="pro-card-section">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-semibold">Pro Member Card</span>
+                </div>
+                <span className="text-xs text-muted-foreground">Visible on profile</span>
+              </div>
+              <div className="flex justify-center">
+                <ProCard
+                  username={currentUser.username}
+                  displayName={currentUser.displayName}
+                  avatarUrl={currentUser.avatarUrl}
+                  proStartDate={(currentUser as any).proStartDate}
+                  size="sm"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Displayed Badges */}
           <div className="flex flex-wrap gap-2 items-center">
