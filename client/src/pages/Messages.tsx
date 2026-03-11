@@ -289,9 +289,9 @@ export default function Messages() {
 
       {/* List */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {activeListTab === "chats" ? (
-            <motion.div key="chats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+            <motion.div key="chats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               {loadingConversations ? (
                 <ConversationSkeletons />
               ) : filteredConversations.length === 0 ? (
@@ -317,7 +317,7 @@ export default function Messages() {
               )}
             </motion.div>
           ) : (
-            <motion.div key="friends" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+            <motion.div key="friends" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               {loadingFriends ? (
                 <ConversationSkeletons />
               ) : filteredFriends.length === 0 ? (
@@ -589,8 +589,8 @@ export default function Messages() {
       {/* Top spacer for global nav */}
       <div className="h-14 md:h-0 shrink-0" />
 
-      <div className="flex-1 flex min-h-0 md:pt-[72px] md:pb-5 md:px-6">
-        <div className="flex-1 flex min-h-0 overflow-hidden md:mx-auto md:max-w-[1500px] xl:max-w-[1700px] md:rounded-3xl md:shadow-xl md:glass-panel md:border-0">
+      <div className="flex-1 flex min-h-0 md:pt-4 md:pb-4 md:px-4">
+        <div className="flex-1 flex min-h-0 overflow-hidden md:mx-auto md:max-w-[1800px] xl:max-w-[2000px] md:rounded-3xl md:shadow-xl md:glass-panel md:border-0">
           {/* ── Desktop sidebar ── */}
           <div className="hidden md:flex w-[360px] lg:w-[400px] shrink-0 flex-col border-r border-white/12 glass-surface">
             <ConversationSidebar />

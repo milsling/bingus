@@ -302,10 +302,10 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
         onTouchEnd={handleTouchEnd}
       >
         {/* Invisible expanded touch target — 44×80px minimum for comfortable thumb grab */}
-        <div className="absolute -inset-y-5 -left-6 right-0 min-w-[44px] min-h-[80px]" />
+        <div className="absolute -inset-y-5 -left-12 right-0 min-w-[60px] min-h-[80px]" />
 
         {/* Visible pill — compact, high contrast, always discoverable */}
-        <div className="relative h-12 w-[7px] rounded-l-full overflow-hidden"
+        <div className="relative h-12 w-[12px] rounded-l-full overflow-hidden"
           style={{
             background: 'hsl(var(--primary) / 0.55)',
             backdropFilter: 'blur(12px)',
@@ -315,7 +315,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
         >
           {/* Single center notch — clear drag affordance */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-[3px] h-5 rounded-full bg-white/60" />
+            <div className="w-[4px] h-5 rounded-full bg-white/60" />
           </div>
 
           {/* Gentle breathing pulse so it doesn't look static/dead */}

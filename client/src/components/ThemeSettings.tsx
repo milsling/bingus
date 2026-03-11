@@ -249,8 +249,8 @@ export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
               <div className="grid gap-4">
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
                   <p className="text-xs text-muted-foreground">
-                    These tints are applied to glass surfaces throughout the app. 
-                    The color picker affects the tint color, and the opacity sliders control transparency.
+                    These tints are applied to glass surfaces throughout the app.
+                    Each tint has its own color and opacity control.
                   </p>
                 </div>
 
@@ -261,7 +261,10 @@ export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
                       id="panel-tint"
                       type="color"
                       value={hexFromRgba(settings.panelTint)}
-                      onChange={(e) => updateSettings({ panelTint: rgbaFromHex(e.target.value, settings.glassOpacity * 0.18) })}
+                      onChange={(e) => {
+                        const currentOpacity = opacityFromRgba(settings.panelTint);
+                        updateSettings({ panelTint: rgbaFromHex(e.target.value, currentOpacity) });
+                      }}
                       className="w-20 h-10"
                     />
                     <div className="flex-1">
@@ -287,7 +290,10 @@ export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
                       id="bar-card-tint"
                       type="color"
                       value={hexFromRgba(settings.barCardTint)}
-                      onChange={(e) => updateSettings({ barCardTint: rgbaFromHex(e.target.value, settings.glassOpacity * 0.22) })}
+                      onChange={(e) => {
+                        const currentOpacity = opacityFromRgba(settings.barCardTint);
+                        updateSettings({ barCardTint: rgbaFromHex(e.target.value, currentOpacity) });
+                      }}
                       className="w-20 h-10"
                     />
                     <div className="flex-1">
@@ -313,7 +319,10 @@ export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
                       id="window-tint"
                       type="color"
                       value={hexFromRgba(settings.windowTint)}
-                      onChange={(e) => updateSettings({ windowTint: rgbaFromHex(e.target.value, settings.glassOpacity * 0.3) })}
+                      onChange={(e) => {
+                        const currentOpacity = opacityFromRgba(settings.windowTint);
+                        updateSettings({ windowTint: rgbaFromHex(e.target.value, currentOpacity) });
+                      }}
                       className="w-20 h-10"
                     />
                     <div className="flex-1">
@@ -339,7 +348,10 @@ export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
                       id="top-bar-tint"
                       type="color"
                       value={hexFromRgba(settings.topBarTint)}
-                      onChange={(e) => updateSettings({ topBarTint: rgbaFromHex(e.target.value, 0.26) })}
+                      onChange={(e) => {
+                        const currentOpacity = opacityFromRgba(settings.topBarTint);
+                        updateSettings({ topBarTint: rgbaFromHex(e.target.value, currentOpacity) });
+                      }}
                       className="w-20 h-10"
                     />
                     <div className="flex-1">
