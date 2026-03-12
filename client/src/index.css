@@ -192,8 +192,8 @@
   --app-bg-base-end: #070910;
 
   /* Floating bars: luminous frosted material */
-  --floating-bar-bg: rgba(255, 255, 255, 0.24);
-  --floating-bar-border: rgba(255, 255, 255, 0.28);
+  --floating-bar-bg: var(--owner-floating-bar-bg, rgba(255, 255, 255, 0.24));
+  --floating-bar-border: var(--owner-floating-bar-border, rgba(255, 255, 255, 0.28));
   --floating-bar-shadow:
     0 8px 24px rgba(0, 0, 0, 0.18),
     0 18px 52px rgba(0, 0, 0, 0.20),
@@ -288,8 +288,8 @@
   --app-bg-base-end: #d8e0f0;
 
   /* Floating bars: strong frost tier (+15% opacity) */
-  --floating-bar-bg: rgba(255, 255, 255, 0.60);
-  --floating-bar-border: rgba(255, 255, 255, 0.65);
+  --floating-bar-bg: var(--owner-floating-bar-bg, rgba(255, 255, 255, 0.60));
+  --floating-bar-border: var(--owner-floating-bar-border, rgba(255, 255, 255, 0.65));
   --floating-bar-shadow:
     0 8px 32px rgba(0, 0, 0, 0.08),
     0 2px 8px rgba(0, 0, 0, 0.04),
@@ -429,8 +429,8 @@
   --app-bg-base-end: #070910;
 
   /* Floating bars - balanced frosted material */
-  --floating-bar-bg: rgba(255, 255, 255, 0.28);
-  --floating-bar-border: rgba(255, 255, 255, 0.32);
+  --floating-bar-bg: var(--owner-floating-bar-bg, rgba(255, 255, 255, 0.28));
+  --floating-bar-border: var(--owner-floating-bar-border, rgba(255, 255, 255, 0.32));
   --floating-bar-shadow:
     0 8px 24px rgba(0, 0, 0, 0.18),
     0 18px 52px rgba(0, 0, 0, 0.20),
@@ -491,8 +491,8 @@
   --glass-bg: rgba(10, 10, 14, 0.62);
   --glass-bg-hover: rgba(12, 12, 16, 0.72);
 
-  --floating-bar-bg: rgba(10, 10, 14, 0.90);
-  --floating-bar-border: rgba(255, 255, 255, 0.26);
+  --floating-bar-bg: var(--owner-floating-bar-bg, rgba(10, 10, 14, 0.90));
+  --floating-bar-border: var(--owner-floating-bar-border, rgba(255, 255, 255, 0.26));
 
   --sheet-bg: rgba(12, 12, 16, 0.74);
 
@@ -512,8 +512,8 @@
   --glass-bg: rgba(255, 255, 255, 0.25);
   --glass-bg-hover: rgba(255, 255, 255, 0.33);
 
-  --floating-bar-bg: rgba(255, 255, 255, 0.47);
-  --floating-bar-border: rgba(255, 255, 255, 0.53);
+  --floating-bar-bg: var(--owner-floating-bar-bg, rgba(255, 255, 255, 0.47));
+  --floating-bar-border: var(--owner-floating-bar-border, rgba(255, 255, 255, 0.53));
 
   --sheet-bg: rgba(255, 255, 255, 0.55);
 
