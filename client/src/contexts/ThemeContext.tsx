@@ -402,13 +402,17 @@ export function getThemeStyles(settings: ThemeSettings) {
     '--owner-glass-surface-bg-strong': settings.barCardTint || `rgba(255, 255, 255, ${0.26 * glassOpacity})`,
     '--owner-glass-surface-border': `rgba(255, 255, 255, ${borderOpacity})`,
     '--owner-glass-surface-border-strong': `rgba(255, 255, 255, ${Math.min(borderOpacity + 0.1, 1)})`,
-    
-    // Custom background variants (darker for custom wallpapers)
-    '--owner-glass-surface-bg-custom': `rgba(8, 8, 12, ${0.72 * glassOpacity})`,
-    '--owner-glass-surface-bg-strong-custom': `rgba(10, 10, 14, ${0.80 * glassOpacity})`,
+
+    // Custom background variants - use tint settings for custom wallpapers too
+    '--owner-glass-surface-bg-custom': settings.panelTint || `rgba(8, 8, 12, ${0.72 * glassOpacity})`,
+    '--owner-glass-surface-bg-strong-custom': settings.barCardTint || `rgba(10, 10, 14, ${0.80 * glassOpacity})`,
     '--owner-glass-surface-border-dark': `rgba(255, 255, 255, ${borderOpacity})`,
     '--owner-glass-surface-border-strong-dark': `rgba(255, 255, 255, ${Math.min(borderOpacity + 0.06, 1)})`,
-    
+
+    // Floating bar / top bar overrides
+    '--owner-floating-bar-bg': settings.topBarTint || `rgba(255, 255, 255, ${0.28 * glassOpacity})`,
+    '--owner-floating-bar-border': `rgba(255, 255, 255, ${Math.min(borderOpacity + 0.04, 1)})`,
+
     // Window/dialog tint
     '--sheet-bg': settings.windowTint || `rgba(255, 255, 255, ${0.30 * glassOpacity})`,
   } as React.CSSProperties;
