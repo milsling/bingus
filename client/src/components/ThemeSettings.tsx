@@ -46,27 +46,14 @@ interface ThemeSettingsProps {
 }
 
 export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
-  const { canCustomize } = useTheme();
-
-  // Allow access if owner prop is true OR if canCustomize is true
-  const hasAccess = isOwner || canCustomize;
-
-  // Check permission BEFORE calling any other hooks
-  if (!hasAccess) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-muted-foreground">You don't have permission to customize themes.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // All hooks must be called after early returns
-  const { settings, updateSettings, addCustomBackground, removeCustomBackground } = useTheme();
+  // All hooks must be called unconditionally at the top level
+  const { canCustomize, settings, updateSettings, addCustomBackground, removeCustomBackground } = useTheme();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Allow access if owner prop is true OR if canCustomize is true
+  const hasAccess = isOwner || canCustomize;
 
   // Mutation for pushing theme to all users (owner only)
   const pushThemeMutation = useMutation({
@@ -131,6 +118,17 @@ export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
       }
     }
   }, [settings.backgroundValue, settings.backgroundType, settings.accentColorMode, updateSettings]);
+
+  // Permission check after all hooks
+  if (!hasAccess) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground">You don't have permission to customize themes.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
