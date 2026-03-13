@@ -4999,27 +4999,8 @@ export async function registerRoutes(
     }
   });
 
-  // Serve uploaded files
-  app.get('/uploads/:type/:filename', (req: Request, res: Response) => {
-    try {
-      const { type, filename } = req.params;
-      
-      if (!['avatars', 'banners', 'backgrounds'].includes(type)) {
-        return res.status(404).json({ message: "Invalid file type" });
-      }
-
-      const filePath = path.join(uploadsDir, type, filename);
-      
-      if (!fs.existsSync(filePath)) {
-        return res.status(404).json({ message: "File not found" });
-      }
-
-      res.sendFile(filePath);
-    } catch (error: any) {
-      console.error("Serve file error:", error);
-      res.status(500).json({ message: "Error serving file" });
-    }
-  });
+  // Note: Uploaded files are served by express.static middleware in server/static.ts
+  // which handles /uploads directory automatically
 
   // ── Sidebar: Bar of the Day ──────────────────────────────────────────
   app.get("/api/sidebar/bar-of-the-day", async (_req, res) => {
