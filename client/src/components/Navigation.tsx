@@ -13,6 +13,7 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import AIAssistant from "@/components/AIAssistant";
 import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
 import ThumbNavigation from "@/components/ThumbNavigation";
+import ThumbNavV5 from "@/components/ThumbNavV5";
 import {
   DropdownMenu,
   DropdownMenuContent,
