@@ -40,7 +40,7 @@ export default function ThumbNavV5({ children }: { children: React.ReactNode }) 
           border: '1.5px solid var(--glass-surface-border, rgba(0,0,0,0.08))',
         }}
         initial={{ scale: 1 }}
-        animate={{ scale: open ? 1.08 : 1, boxShadow: open ? '0 0 0 16px var(--accent, #a855f7, 0.12)' : '0 4px 24px rgba(168,85,247,0.18)' }}
+        animate={{ scale: open ? 1.08 : 1, boxShadow: open ? '0 0 0 16px rgba(168,85,247,0.12)' : '0 4px 24px rgba(168,85,247,0.18)' }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         onClick={() => setOpen((v) => !v)}
         aria-label="Open menu"
