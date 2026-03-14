@@ -27,10 +27,16 @@
         }
         document.documentElement.classList.remove('light', 'dark');
         document.documentElement.classList.add(t);
-        // Update loading screen colors to match
-        if (t === 'dark') {
-          var r = document.getElementById('root');
-          if (r) { r.style.background = '#050509'; r.style.color = '#8E8E93'; }
+        // Set root background to match theme immediately
+        var r = document.getElementById('root');
+        if (r) {
+          if (t === 'dark') {
+            r.style.background = 'hsl(240 16% 8%)';
+            r.style.color = 'hsl(240 5% 84%)';
+          } else {
+            r.style.background = 'hsl(220 20% 98% / 0.05)';
+            r.style.color = 'hsl(240 10% 10%)';
+          }
         }
       })();
     </script>
@@ -47,7 +53,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Black+Ops+One&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Mr+Dafoe&family=Oswald:wght@200..700&family=Honk&family=Syne:wght@400..800&family=UnifrakturMaguntia&family=Inter:wght@100..900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="root" style="min-height:100dvh;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#e4ddf0,#d8e0f0);color:#1a1d25;font-family:system-ui,sans-serif;">
+    <div id="root" style="min-height:100dvh;display:flex;align-items:center;justify-content:center;background:hsl(220 20% 98% / 0.05);color:hsl(240 10% 10%);font-family:system-ui,sans-serif;">
       <div style="text-align:center;padding:2rem;">
         <p style="margin:0;font-size:1rem;">Loading Orphan Bars…</p>
       </div>

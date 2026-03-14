@@ -45,11 +45,12 @@ interface BarOwnerActionsProps {
 }
 
 export function BarOwnerActions({ bar, isLocked, onMenuAction }: BarOwnerActionsProps) {
+  // All hooks must be called unconditionally at the top level
   const { currentUser } = useBars();
   const { session } = useSupabaseAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLockDialogOpen, setIsLockDialogOpen] = useState(false);
@@ -159,6 +160,7 @@ export function BarOwnerActions({ bar, isLocked, onMenuAction }: BarOwnerActions
     }
   };
 
+  // Permission check after all hooks
   if (!isOwner) return null;
 
   return (
