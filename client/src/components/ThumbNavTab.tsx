@@ -192,17 +192,51 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   );
 
   // Touch handlers for slide-to-close on the open panel
+  // Only activates on horizontal swipes — vertical scrolling passes through to content
   const panelTouchStartXRef = useRef<number | null>(null);
+  const panelTouchStartYRef = useRef<number | null>(null);
+  const panelSwipeActiveRef = useRef(false);
+  const panelSwipeLockedRef = useRef(false);
 
   const handlePanelTouchStart = (event: React.TouchEvent) => {
-    panelTouchStartXRef.current = event.touches[0].clientX;
+    const touch = event.touches[0];
+    panelTouchStartXRef.current = touch.clientX;
+    panelTouchStartYRef.current = touch.clientY;
+    panelSwipeActiveRef.current = false;
+    panelSwipeLockedRef.current = false;
   };
 
   const handlePanelTouchMove = (event: React.TouchEvent) => {
-    if (panelTouchStartXRef.current === null) return;
-    const deltaX = event.touches[0].clientX - panelTouchStartXRef.current;
-    if (deltaX > 0) {
-      // Dragging right — move panel with finger
+    if (panelTouchStartXRef.current === null || panelTouchStartYRef.current === null) return;
+    // Once locked to scroll, don't intercept
+    if (panelSwipeLockedRef.current) return;
+
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - panelTouchStartXRef.current;
+    const deltaY = touch.clientY - panelTouchStartYRef.current;
+
+    // Determine intent on first significant movement
+    if (!panelSwipeActiveRef.current) {
+      const absDx = Math.abs(deltaX);
+      const absDy = Math.abs(deltaY);
+      // Need at least 10px movement to decide
+      if (absDx < 10 && absDy < 10) return;
+      if (absDy > absDx) {
+        // Vertical — lock to native scroll, don't intercept
+        panelSwipeLockedRef.current = true;
+        return;
+      }
+      // Horizontal swipe right detected — activate panel drag
+      if (deltaX > 0) {
+        panelSwipeActiveRef.current = true;
+      } else {
+        // Swiping left inside panel — ignore
+        panelSwipeLockedRef.current = true;
+        return;
+      }
+    }
+
+    if (panelSwipeActiveRef.current && deltaX > 0) {
       dragX.set(Math.max(0, panelWidth - deltaX));
     }
   };
@@ -210,7 +244,14 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const handlePanelTouchEnd = (event: React.TouchEvent) => {
     if (panelTouchStartXRef.current === null) return;
     const deltaX = event.changedTouches[0].clientX - panelTouchStartXRef.current;
+    const wasSwipe = panelSwipeActiveRef.current;
     panelTouchStartXRef.current = null;
+    panelTouchStartYRef.current = null;
+    panelSwipeActiveRef.current = false;
+    panelSwipeLockedRef.current = false;
+
+    if (!wasSwipe) return;
+
     if (deltaX > panelWidth * 0.3) {
       handleClose();
     } else {
@@ -337,21 +378,22 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
               style={{ opacity: backdropOpacity }}
               className="fixed inset-0 z-[1201] bg-black/60 backdrop-blur-sm"
               onClick={handleClose}
-              initial={{ opacity: 0 }}
+              initial={false}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             />
 
             {/* Navigation Panel */}
             <motion.div
-              style={{ x: panelX }}
+              style={{ x: isDragging ? panelX : undefined }}
               className="fixed right-0 top-0 bottom-0 z-[1202] w-[min(85vw,380px)] overflow-hidden"
               initial={{ x: panelWidth }}
+              animate={{ x: isOpen && !isDragging ? 0 : undefined }}
               exit={{ x: panelWidth }}
-              transition={{ 
-                type: 'spring', 
-                damping: isDragging ? 40 : 30, 
-                stiffness: isDragging ? 500 : 350,
+              transition={{
+                type: 'spring',
+                damping: 30,
+                stiffness: 350,
                 mass: 0.5
               }}
               onTouchStart={handlePanelTouchStart}
@@ -371,7 +413,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
               />
 
               {/* Content */}
-              <div className="relative h-full overflow-y-auto">
+              <div className="relative h-full overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {children}
               </div>
             </motion.div>

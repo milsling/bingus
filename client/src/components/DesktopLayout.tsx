@@ -305,20 +305,19 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
           </aside>
         )}
 
-        {/* Main Content Area - Scrollable with margins for fixed sidebars */}
-        <main className={cn(
-          "px-6 pb-8 transition-all duration-300 ease-in-out",
-          showSidebar && sidebarOpen ? "ml-72 xl:mr-80" : "ml-4 xl:mr-80"
+        {/* Main Content Area + Right Sidebar — flow together for unified scroll */}
+        <div className={cn(
+          "flex gap-6 px-6 pb-8 transition-all duration-300 ease-in-out",
+          showSidebar && sidebarOpen ? "ml-72" : "ml-4"
         )}>
-          <div className="max-w-3xl mx-auto">
+          <main className="flex-1 min-w-0 max-w-3xl mx-auto">
             {children}
-          </div>
-        </main>
+          </main>
 
-        {/* Right Sidebar - Fixed Trending/Featured */}
-        {showSidebar && (
-          <aside className="fixed right-4 top-24 bottom-4 w-72 z-40 hidden xl:block">
-            <div className="h-full bg-foreground/[0.06] backdrop-blur-xl border border-foreground/[0.1] rounded-2xl p-4 flex flex-col gap-4 overflow-y-auto">
+          {/* Right Sidebar - Scrolls with page content */}
+          {showSidebar && (
+            <aside className="w-72 shrink-0 hidden xl:block">
+              <div className="bg-foreground/[0.06] backdrop-blur-xl border border-foreground/[0.1] rounded-2xl p-4 flex flex-col gap-4 sticky top-24">
               {/* Daily Challenge */}
               {dailyChallenge && (
                 <div className="p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl border border-amber-500/20">
@@ -453,7 +452,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
               </div>
 
               {/* Footer Links */}
-              <div className="mt-auto pt-4 border-t border-foreground/5">
+              <div className="pt-4 border-t border-foreground/5">
                 <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                   <Link href="/guidelines"><span className="hover:text-foreground cursor-pointer">Guidelines</span></Link>
                   <span>·</span>
@@ -464,6 +463,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
             </div>
           </aside>
         )}
+        </div>
       </div>
     </div>
   );
