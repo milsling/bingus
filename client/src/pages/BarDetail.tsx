@@ -7,7 +7,7 @@ import BarCard from "@/components/BarCard";
 import FeedBarCard from "@/components/FeedBarCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Swords, MessageCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Swords, MessageCircle, MessageSquarePlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function BarDetail() {
@@ -32,6 +32,14 @@ export default function BarDetail() {
   const { data: responses = [], isLoading: responsesLoading } = useQuery({
     queryKey: ["bar-responses", id],
     queryFn: () => api.getChallengeResponses(id!),
+    enabled: !!id,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: replies = [], isLoading: repliesLoading } = useQuery({
+    queryKey: ["bar-replies", id],
+    queryFn: () => api.getBarReplies(id!),
     enabled: !!id,
     staleTime: 30_000,
     refetchOnWindowFocus: false,
@@ -185,6 +193,50 @@ export default function BarDetail() {
                 <div className="space-y-3">
                   {responses.map((responseBar) => (
                     <FeedBarCard key={responseBar.id} bar={responseBar} />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-3 rounded-2xl border border-border/60 bg-card/50 p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <MessageSquarePlus className="h-5 w-5 text-green-500" />
+                  Replies {replies.length > 0 ? `(${replies.length})` : ""}
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => setLocation(`/post?replyTo=${bar.id}`)}
+                >
+                  Reply with a bar
+                </Button>
+              </div>
+
+              {repliesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : replies.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border/70 bg-background/40 p-8 text-center">
+                  <p className="font-medium">No replies yet.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Be the first to reply to this bar.
+                  </p>
+                  {!isOwner && (
+                    <Button
+                      className="mt-4"
+                      onClick={() => setLocation(`/post?replyTo=${bar.id}`)}
+                    >
+                      Reply with a bar
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {replies.map((replyBar) => (
+                    <FeedBarCard key={replyBar.id} bar={replyBar} />
                   ))}
                 </div>
               )}

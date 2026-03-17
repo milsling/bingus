@@ -307,7 +307,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
 
         {/* Main Content Area + Right Sidebar — flow together for unified scroll */}
         <div className={cn(
-          "flex gap-6 px-6 pb-8 transition-all duration-300 ease-in-out",
+          "flex gap-6 px-6 pb-8 transition-all duration-300 ease-in-out overflow-x-hidden",
           showSidebar && sidebarOpen ? "ml-72" : "ml-4"
         )}>
           <main className="flex-1 min-w-0 max-w-3xl mx-auto">
@@ -317,7 +317,7 @@ export function DesktopLayout({ children, showSidebar = true }: DesktopLayoutPro
           {/* Right Sidebar - Scrolls with page content */}
           {showSidebar && (
             <aside className="w-72 shrink-0 hidden xl:block">
-              <div className="bg-foreground/[0.06] backdrop-blur-xl border border-foreground/[0.1] rounded-2xl p-4 flex flex-col gap-4 sticky top-24">
+              <div className="bg-foreground/[0.06] backdrop-blur-xl border border-foreground/[0.1] rounded-2xl p-4 flex flex-col gap-4 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
               {/* Daily Challenge */}
               {dailyChallenge && (
                 <div className="p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl border border-amber-500/20">

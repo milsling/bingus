@@ -125,6 +125,7 @@ export const bars = pgTable("bars", {
   lockedAt: timestamp("locked_at"),
   promptSlug: text("prompt_slug"),
   promptText: text("prompt_text"),
+  parentBarId: varchar("parent_bar_id").references(() => bars.id, { onDelete: "set null" }),
 });
 
 export const barsRelations = relations(bars, ({ one, many }) => ({
@@ -134,6 +135,12 @@ export const barsRelations = relations(bars, ({ one, many }) => ({
   }),
   likes: many(likes),
   comments: many(comments),
+  parentBar: one(bars, {
+    fields: [bars.parentBarId],
+    references: [bars.id],
+    relationName: "parentReply",
+  }),
+  replies: many(bars, { relationName: "parentReply" }),
 }));
 
 export const likes = pgTable("likes", {
@@ -1257,6 +1264,16 @@ export type BarWithUser = Bar & {
   };
   adoptionCount?: number;
   adoptedFromBarId?: string | null;
+  parentBar?: {
+    id: string;
+    content: string;
+    user: {
+      id: string;
+      username: string;
+      avatarUrl: string | null;
+    };
+  } | null;
+  replyCount?: number;
 };
 
 export const categoryOptions = [

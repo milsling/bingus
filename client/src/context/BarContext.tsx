@@ -187,6 +187,7 @@ export function BarProvider({ children }: { children: ReactNode }) {
       beatLink?: string;
       isRecorded?: boolean;
       isOriginal?: boolean;
+      parentBarId?: string;
     }) => api.createBar(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bars'] });
@@ -226,6 +227,7 @@ export function BarProvider({ children }: { children: ReactNode }) {
     beatLink?: string;
     isRecorded?: boolean;
     isOriginal?: boolean;
+    parentBarId?: string;
   }) => {
     const result = await createBarMutation.mutateAsync(newBarData);
     return result;

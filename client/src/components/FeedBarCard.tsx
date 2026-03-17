@@ -200,6 +200,13 @@ export default function FeedBarCard({ bar }: { bar: BarWithUser }) {
         </div>
       </div>
 
+      {(bar as any).parentBar && (
+        <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MessageSquare className="h-3 w-3" />
+          <span>Replying to <span className="font-semibold">@{(bar as any).parentBar.user.username}</span></span>
+        </div>
+      )}
+
       <Link href={`/bars/${bar.id}`}>
         <h3 className="cursor-pointer text-lg font-semibold leading-tight hover:text-primary transition-colors">
           {title}

@@ -10,7 +10,7 @@ import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { shareContent, getBarShareData } from "@/lib/share";
 import ProofScreenshot from "@/components/ProofScreenshot";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -277,6 +277,7 @@ export default function BarCard({ bar }: BarCardProps) {
   const { currentUser } = useBars();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   
   const { data: customTags = [] } = useQuery({
     queryKey: ['customTags'],
@@ -677,6 +678,18 @@ export default function BarCard({ bar }: BarCardProps) {
                   <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
                   Break It Down
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    setIsMenuOpen(false);
+                    setLocation(`/post?replyTo=${bar.id}`);
+                  }}
+                  data-testid={`button-reply-menu-${bar.id}`}
+                >
+                  <MessageSquarePlus className="h-4 w-4 mr-2 text-green-500" />
+                  Reply with a bar
+                </DropdownMenuItem>
                 <BarOwnerActions bar={bar} isLocked={isLocked} onMenuAction={() => setIsMenuOpen(false)} />
                 {currentUser && (
                   <DropdownMenuItem
@@ -697,6 +710,20 @@ export default function BarCard({ bar }: BarCardProps) {
           </div>
           
           <div className="space-y-4">
+            {(bar as any).parentBar && (
+              <Link href={`/bars/${(bar as any).parentBar.id}`}>
+                <div className="rounded-lg border border-border/30 bg-secondary/20 p-3 cursor-pointer hover:bg-secondary/30 transition-colors">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      Replying to <span className="font-semibold">@{(bar as any).parentBar.user.username}</span>
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground/80 line-clamp-2 pl-4 border-l-2 border-primary/30"
+                     dangerouslySetInnerHTML={{ __html: (bar as any).parentBar.content }} />
+                </div>
+              </Link>
+            )}
             <div className="relative lyrics-glass px-4 py-3">
               <div className="pl-4 border-l-2 border-primary/40 py-1">
                 <p 
@@ -884,6 +911,17 @@ export default function BarCard({ bar }: BarCardProps) {
               >
                 <Bookmark className={`h-4 w-4 ${bookmarkData?.bookmarked ? 'fill-current' : ''}`} />
                 <span className="text-xs hidden sm:inline">Save</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 sm:gap-2 px-2 sm:px-3 hover:text-green-500 hover:bg-green-500/10 transition-colors"
+                onClick={() => setLocation(`/post?replyTo=${bar.id}`)}
+                data-testid={`button-reply-${bar.id}`}
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+                <span className="text-xs hidden sm:inline">Reply</span>
               </Button>
             </div>
 

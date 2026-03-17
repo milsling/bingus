@@ -893,6 +893,14 @@ export async function registerRoutes(
         }
       }
 
+      // Validate parent bar for replies
+      if (result.data.parentBarId) {
+        const parentBar = await storage.getBarById(result.data.parentBarId);
+        if (!parentBar || parentBar.deletedAt) {
+          return res.status(404).json({ message: "Parent bar not found" });
+        }
+      }
+
       // Check for similar bars (duplicate detection)
       const similarBars = await storage.findSimilarBars(result.data.content, 0.8);
       const duplicateWarnings = similarBars.map(sb => ({
@@ -940,7 +948,7 @@ export async function registerRoutes(
       }
 
       // Update bar with metadata (proofBarId assigned later when user locks the bar)
-      await db.update(bars).set({ 
+      await db.update(bars).set({
         permissionStatus: req.body.permissionStatus || "share_only",
         barType: req.body.barType || "single_bar",
         fullRapLink: req.body.fullRapLink || null,
@@ -948,42 +956,61 @@ export async function registerRoutes(
         promptSlug,
         promptText,
       }).where(eq(bars.id, bar.id));
-      
-      // Notify followers about new bar (only if not private)
-      const finalPermission = req.body.permissionStatus || "share_only";
-      if (finalPermission !== "private") {
-        const followers = await storage.getFollowers(req.user!.id);
-        for (const followerId of followers) {
-          await storage.createNotification({
-            userId: followerId,
-            type: "new_bar",
-            actorId: req.user!.id,
-            barId: bar.id,
-            message: `@${req.user!.username} dropped a new bar`
-          });
-        }
-      }
-      
-      // Award XP for posting a bar (+10 XP)
-      await storage.awardXp(req.user!.id, 10, 'bar_posted');
-      
-      // Check for newly unlocked achievements after posting bar
-      const newAchievements = await storage.checkAndUnlockAchievements(req.user!.id);
-      for (const achievementId of newAchievements) {
-        const achievement = ACHIEVEMENTS[achievementId];
-        await storage.createNotification({
-          userId: req.user!.id,
-          type: "achievement",
-          message: `${achievement.emoji} Achievement unlocked: ${achievement.name}!`,
-        });
-      }
-      
-      res.json({ 
-        ...bar, 
+
+      // Send success response immediately — side effects below should not block the response
+      res.json({
+        ...bar,
         duplicateWarnings: duplicateWarnings.length > 0 ? duplicateWarnings : undefined,
-        newAchievements: newAchievements.length > 0 ? newAchievements : undefined,
         pendingReview: textModerationResult.flagged,
       });
+
+      // Post-creation side effects — failures here are logged but don't affect the user
+      try {
+        // Notify followers about new bar (only if not private)
+        const finalPermission = req.body.permissionStatus || "share_only";
+        if (finalPermission !== "private") {
+          const followers = await storage.getFollowers(req.user!.id);
+          for (const followerId of followers) {
+            await storage.createNotification({
+              userId: followerId,
+              type: "new_bar",
+              actorId: req.user!.id,
+              barId: bar.id,
+              message: `@${req.user!.username} dropped a new bar`
+            });
+          }
+        }
+
+        // Notify parent bar author about the reply
+        if (bar.parentBarId) {
+          const parentBar = await storage.getBarById(bar.parentBarId);
+          if (parentBar && parentBar.userId !== req.user!.id) {
+            await storage.createNotification({
+              userId: parentBar.userId,
+              type: "bar_reply",
+              actorId: req.user!.id,
+              barId: bar.id,
+              message: `@${req.user!.username} replied to your bar`,
+            });
+          }
+        }
+
+        // Award XP for posting a bar (+10 XP)
+        await storage.awardXp(req.user!.id, 10, 'bar_posted');
+
+        // Check for newly unlocked achievements after posting bar
+        const newAchievements = await storage.checkAndUnlockAchievements(req.user!.id);
+        for (const achievementId of newAchievements) {
+          const achievement = ACHIEVEMENTS[achievementId];
+          await storage.createNotification({
+            userId: req.user!.id,
+            type: "achievement",
+            message: `${achievement.emoji} Achievement unlocked: ${achievement.name}!`,
+          });
+        }
+      } catch (sideEffectError: any) {
+        console.error("Post-creation side effects failed:", sideEffectError.message);
+      }
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -1018,7 +1045,7 @@ export async function registerRoutes(
               }
             }
           }
-          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText, replyCount: await storage.getReplyCount(bar.id) };
         })
       );
       
@@ -1054,7 +1081,7 @@ export async function registerRoutes(
               }
             }
           }
-          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText, replyCount: await storage.getReplyCount(bar.id) };
         })
       );
       
@@ -1090,7 +1117,7 @@ export async function registerRoutes(
               }
             }
           }
-          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText, replyCount: await storage.getReplyCount(bar.id) };
         })
       );
       
@@ -1215,7 +1242,7 @@ export async function registerRoutes(
               }
             }
           }
-          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText, replyCount: await storage.getReplyCount(bar.id) };
         })
       );
       
@@ -1250,7 +1277,7 @@ export async function registerRoutes(
               }
             }
           }
-          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText };
+          return { ...bar, likeCount, liked, dislikeCount, disliked, promptSlug, promptText, replyCount: await storage.getReplyCount(bar.id) };
         })
       );
       
@@ -4848,6 +4875,28 @@ export async function registerRoutes(
       res.json(cleanResponses);
     } catch (error: any) {
       console.error("Fetch responses error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bars/:id/replies", async (req, res) => {
+    try {
+      const replies = await storage.getBarReplies(req.params.id);
+      const userId = req.isAuthenticated() ? req.user!.id : undefined;
+
+      const enrichedReplies = await Promise.all(
+        replies.map(async (reply) => {
+          const likeCount = await storage.getLikeCount(reply.id);
+          const liked = userId ? await storage.hasUserLiked(userId, reply.id) : false;
+          const dislikeCount = await storage.getDislikeCount(reply.id);
+          const disliked = userId ? await storage.hasUserDisliked(userId, reply.id) : false;
+          return { ...reply, likeCount, liked, dislikeCount, disliked };
+        })
+      );
+
+      res.json(enrichedReplies);
+    } catch (error: any) {
+      console.error("Fetch replies error:", error);
       res.status(500).json({ message: error.message });
     }
   });

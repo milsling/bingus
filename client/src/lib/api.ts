@@ -198,6 +198,7 @@ export const api = {
     fullRapLink?: string;
     isRecorded?: boolean;
     isOriginal?: boolean;
+    parentBarId?: string;
   }): Promise<BarWithUser> => {
     const response = await apiFetch('/api/bars', {
       method: 'POST',
@@ -205,6 +206,11 @@ export const api = {
       body: JSON.stringify(data),
     });
     return handleResponse<BarWithUser>(response);
+  },
+
+  getBarReplies: async (barId: string): Promise<BarWithUser[]> => {
+    const response = await apiFetch(`/api/bars/${barId}/replies`);
+    return handleResponse<BarWithUser[]>(response);
   },
 
   deleteBar: async (barId: string): Promise<{ message: string }> => {

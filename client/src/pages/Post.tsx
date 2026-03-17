@@ -13,6 +13,7 @@ import { useBars } from "@/context/BarContext";
 import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, useReducedMotion } from "framer-motion";
 import { NativeGlassCard, NativeScreen, NativeSectionHeader } from "@/components/ui/native-shell";
@@ -86,6 +87,7 @@ export default function Post() {
   const searchParams = new URLSearchParams(search);
   const promptSlug = (searchParams.get("prompt") || "").toLowerCase();
   const respondToBarId = searchParams.get("respondTo") || "";
+  const replyToBarId = searchParams.get("replyTo") || "";
   const editorRef = useRef<HTMLDivElement>(null);
   const [explanation, setExplanation] = useState("");
   const [category, setCategory] = useState<Category>("Freestyle");
@@ -116,6 +118,14 @@ export default function Post() {
   } | null>(null);
   const [userAppeal, setUserAppeal] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  // Fetch parent bar for reply preview
+  const { data: replyParentBar } = useQuery({
+    queryKey: ["bar", replyToBarId],
+    queryFn: () => api.getBar(replyToBarId),
+    enabled: !!replyToBarId,
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
     if (!currentUser) {
@@ -170,6 +180,7 @@ export default function Post() {
         beatLink: beatLink.trim() || undefined,
         isRecorded: fullRapLink.trim() ? isRecorded : false,
         isOriginal,
+        parentBarId: replyToBarId || undefined,
       });
 
       if (lockImmediately && isOriginal && newBar?.id) {
@@ -202,7 +213,9 @@ export default function Post() {
       } else {
         toast({
           title: "Bars Dropped!",
-          description: respondToBarId
+          description: replyToBarId
+            ? "Your reply bar is now live."
+            : respondToBarId
             ? "Your lyric is live. Linking it to the challenge..."
             : "Your lyric is now live on the feed.",
         });
@@ -226,7 +239,9 @@ export default function Post() {
         }
       }
 
-      if (respondToBarId) {
+      if (replyToBarId) {
+        setLocation(`/bars/${replyToBarId}`);
+      } else if (respondToBarId) {
         setLocation(`/bars/${respondToBarId}`);
       } else if (promptSlug) {
         setLocation(`/prompts/${promptSlug}`);
@@ -435,6 +450,20 @@ export default function Post() {
                 <p className="text-sm font-semibold mt-1">
                   This bar will be linked as a response in the challenge thread.
                 </p>
+              </div>
+            )}
+            {replyToBarId && replyParentBar && (
+              <div className="rounded-xl border border-border/40 bg-secondary/20 p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">
+                  Replying to
+                </p>
+                <div className="pl-3 border-l-2 border-primary/40">
+                  <p className="text-sm text-foreground/80 line-clamp-3"
+                     dangerouslySetInnerHTML={{ __html: replyParentBar.content }} />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    @{replyParentBar.user.username}
+                  </p>
+                </div>
               </div>
             )}
           </div>

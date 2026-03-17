@@ -130,6 +130,8 @@ export interface IStorage {
   getBars(limit?: number): Promise<Array<Bar & { user: User }>>;
   getBarById(id: string): Promise<(Bar & { user: User }) | undefined>;
   getBarsByUser(userId: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
+  getBarReplies(barId: string): Promise<Array<Bar & { user: User; commentCount: number }>>;
+  getReplyCount(barId: string): Promise<number>;
   updateBar(id: string, userId: string, updates: Partial<Pick<Bar, 'content' | 'explanation' | 'category' | 'tags' | 'barType' | 'fullRapLink' | 'beatLink'>>): Promise<Bar | undefined>;
   deleteBar(id: string, userId: string): Promise<boolean>;
 
@@ -386,17 +388,30 @@ export class DatabaseStorage implements IStorage {
           level: users.level,
         },
         commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+        parentBarContent: sql<string | null>`(SELECT content FROM bars AS pb WHERE pb.id = ${bars.parentBarId})`.as('parent_bar_content'),
+        parentBarUserId: sql<string | null>`(SELECT user_id FROM bars AS pb WHERE pb.id = ${bars.parentBarId})`.as('parent_bar_user_id'),
+        parentBarUsername: sql<string | null>`(SELECT u.username FROM bars AS pb JOIN users u ON u.id = pb.user_id WHERE pb.id = ${bars.parentBarId})`.as('parent_bar_username'),
+        parentBarAvatarUrl: sql<string | null>`(SELECT u.avatar_url FROM bars AS pb JOIN users u ON u.id = pb.user_id WHERE pb.id = ${bars.parentBarId})`.as('parent_bar_avatar_url'),
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
       .where(sql`${bars.deletedAt} IS NULL`)
       .orderBy(desc(bars.createdAt))
       .limit(limit);
-    
+
     return result.map(row => ({
       ...row.bar,
       user: row.user as any,
       commentCount: Number(row.commentCount) || 0,
+      parentBar: row.bar.parentBarId ? {
+        id: row.bar.parentBarId,
+        content: row.parentBarContent || '',
+        user: {
+          id: row.parentBarUserId || '',
+          username: row.parentBarUsername || '',
+          avatarUrl: row.parentBarAvatarUrl || null,
+        },
+      } : null,
     }));
   }
 
@@ -404,14 +419,69 @@ export class DatabaseStorage implements IStorage {
     const [result] = await db
       .select({
         bar: bars,
-        user: users
+        user: users,
+        parentBarContent: sql<string | null>`(SELECT content FROM bars AS pb WHERE pb.id = ${bars.parentBarId})`.as('parent_bar_content'),
+        parentBarUserId: sql<string | null>`(SELECT user_id FROM bars AS pb WHERE pb.id = ${bars.parentBarId})`.as('parent_bar_user_id'),
+        parentBarUsername: sql<string | null>`(SELECT u.username FROM bars AS pb JOIN users u ON u.id = pb.user_id WHERE pb.id = ${bars.parentBarId})`.as('parent_bar_username'),
+        parentBarAvatarUrl: sql<string | null>`(SELECT u.avatar_url FROM bars AS pb JOIN users u ON u.id = pb.user_id WHERE pb.id = ${bars.parentBarId})`.as('parent_bar_avatar_url'),
       })
       .from(bars)
       .leftJoin(users, eq(bars.userId, users.id))
       .where(and(eq(bars.id, id), sql`${bars.deletedAt} IS NULL`));
-    
+
     if (!result) return undefined;
-    return { ...result.bar, user: result.user as User };
+    return {
+      ...result.bar,
+      user: result.user as User,
+      parentBar: result.bar.parentBarId ? {
+        id: result.bar.parentBarId,
+        content: result.parentBarContent || '',
+        user: {
+          id: result.parentBarUserId || '',
+          username: result.parentBarUsername || '',
+          avatarUrl: result.parentBarAvatarUrl || null,
+        },
+      } : null,
+    };
+  }
+
+  async getBarReplies(barId: string): Promise<Array<Bar & { user: User; commentCount: number }>> {
+    const result = await db
+      .select({
+        bar: bars,
+        user: {
+          id: users.id,
+          username: users.username,
+          bio: users.bio,
+          location: users.location,
+          avatarUrl: users.avatarUrl,
+          membershipTier: users.membershipTier,
+          membershipExpiresAt: users.membershipExpiresAt,
+          isAdmin: users.isAdmin,
+          isAdminPlus: users.isAdminPlus,
+          isOwner: users.isOwner,
+          level: users.level,
+        },
+        commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE comments.bar_id = ${bars.id})`.as('comment_count'),
+      })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(and(eq(bars.parentBarId, barId), sql`${bars.deletedAt} IS NULL`))
+      .orderBy(desc(bars.createdAt));
+
+    return result.map(row => ({
+      ...row.bar,
+      user: row.user as any,
+      commentCount: Number(row.commentCount) || 0,
+    }));
+  }
+
+  async getReplyCount(barId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(bars)
+      .where(and(eq(bars.parentBarId, barId), sql`${bars.deletedAt} IS NULL`));
+    return result?.count || 0;
   }
 
   async getAdoptableBars(): Promise<Array<Bar & { user: User; commentCount: number }>> {
