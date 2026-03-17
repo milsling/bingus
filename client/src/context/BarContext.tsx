@@ -19,6 +19,7 @@ interface BarContextType {
     beatLink?: string;
     isRecorded?: boolean;
     isOriginal?: boolean;
+    parentBarId?: string;
   }) => Promise<BarWithUser>;
   currentUser: User | null;
   isLoadingUser: boolean;
