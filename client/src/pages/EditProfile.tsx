@@ -175,23 +175,20 @@ export default function EditProfile() {
     return Math.max(0, Math.ceil(15 - daysSinceChange));
   };
 
-  if (!currentUser) {
-    setLocation("/auth");
-    return null;
-  }
-
   const updateProfileMutation = useMutation({
     mutationFn: (data: { bio?: string; location?: string; avatarUrl?: string; bannerUrl?: string }) =>
       api.updateProfile(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      queryClient.invalidateQueries({ queryKey: ['user', currentUser.username] });
+      if (currentUser) {
+        queryClient.invalidateQueries({ queryKey: ['user', currentUser.username] });
+        queryClient.invalidateQueries({ queryKey: ['userBars', currentUser.id] });
+      }
       queryClient.invalidateQueries({ queryKey: ['bars'] });
       queryClient.invalidateQueries({ queryKey: ['bars-top'] });
       queryClient.invalidateQueries({ queryKey: ['bars-trending'] });
       queryClient.invalidateQueries({ queryKey: ['bars-challenges'] });
       queryClient.invalidateQueries({ queryKey: ['adoptable-bars'] });
-      queryClient.invalidateQueries({ queryKey: ['userBars', currentUser.id] });
       toast({
         title: "Profile updated!",
         description: "Your changes have been saved.",
@@ -224,6 +221,12 @@ export default function EditProfile() {
       });
     },
   });
+
+  // All hooks must be called before conditional returns (React rules of hooks)
+  if (!currentUser) {
+    setLocation("/auth");
+    return null;
+  }
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();

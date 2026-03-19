@@ -13,8 +13,6 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import AIAssistant from "@/components/AIAssistant";
 import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
 import ThumbNavigation from "@/components/ThumbNavigation";
-import BottomNavBar from "@/components/BottomNavBar";
-import BottomSheetMenu from "@/components/BottomSheetMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +30,6 @@ export default function Navigation() {
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [araOpen, setAraOpen] = useState(false);
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { leftTarget, rightTarget } = useFabShortcuts();
   
   const isOnMessagesPage = location.startsWith("/messages");
@@ -474,17 +471,11 @@ export default function Navigation() {
       
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
       <AIAssistant open={araOpen} onOpenChange={setAraOpen} hideFloatingButton />
-
-      {/* Mobile Navigation - Bottom nav bar + full-screen menu */}
+      
+      {/* Mobile Thumb Navigation v5 - floating radial menu */}
       <div className="md:hidden">
-        <BottomNavBar
-          onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
-          isMenuOpen={mobileMenuOpen}
-        />
-        <BottomSheetMenu
-          isOpen={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-        />
+        {/* v5: Liquid FAB + Radial Menu */}
+        <ThumbNavV5 />
       </div>
     </>
   );

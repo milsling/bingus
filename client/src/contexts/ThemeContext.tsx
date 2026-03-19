@@ -42,6 +42,12 @@ export interface ThemeSettings {
   // Accent color settings
   accentColor: string; // HSL string like "265 70% 60%"
   accentColorMode: 'manual' | 'auto'; // auto extracts from background
+  
+  // Gradient accent support
+  accentType: 'solid' | 'gradient';
+  accentGradientFrom: string; // HSL string for gradient start
+  accentGradientTo: string; // HSL string for gradient end
+  accentGradientAngle: number; // degrees
 }
 
 export const defaultThemeSettings: ThemeSettings = {
@@ -59,6 +65,10 @@ export const defaultThemeSettings: ThemeSettings = {
   borderRadius: 16,
   accentColor: '265 70% 60%', // Default purple
   accentColorMode: 'manual',
+  accentType: 'solid',
+  accentGradientFrom: '265 70% 60%',
+  accentGradientTo: '210 70% 60%',
+  accentGradientAngle: 135,
 };
 
 interface ThemeContextType {
@@ -392,6 +402,12 @@ export function getThemeStyles(settings: ThemeSettings) {
     // Accent color
     '--accent-color': settings.accentColor,
     '--accent-color-mode': settings.accentColorMode,
+    
+    // Gradient accent
+    '--accent-type': settings.accentType || 'solid',
+    '--accent-gradient': settings.accentType === 'gradient'
+      ? `linear-gradient(${settings.accentGradientAngle ?? 135}deg, hsl(${settings.accentGradientFrom || settings.accentColor}) 0%, hsl(${settings.accentGradientTo || '210 70% 60%'}) 100%)`
+      : `linear-gradient(135deg, hsl(${settings.accentColor}) 0%, hsl(${settings.accentColor}) 100%)`,
     
     // Logo hue-rotate: sepia produces ~50° hue, so rotate to match accent
     '--logo-hue-rotate': `${(parseInt(settings.accentColor?.split(' ')[0] || '265', 10) - 50)}deg`,

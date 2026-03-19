@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Lock, Palette, Sparkles, Wand2, Pipette } from "lucide-react";
+import { Lock, Palette, Sparkles, Wand2, Pipette, Blend } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,15 @@ const ACCENT_PRESETS = [
   { name: "Amber", value: "38 92% 50%", hex: "#f59e0b" },
   { name: "Cyan", value: "190 80% 55%", hex: "#06b6d4" },
   { name: "Lime", value: "82 80% 45%", hex: "#84cc16" },
+];
+
+const GRADIENT_PRESETS = [
+  { name: "Sunset", from: "0 70% 60%", to: "38 92% 50%", angle: 135 },
+  { name: "Ocean", from: "210 70% 60%", to: "174 70% 60%", angle: 135 },
+  { name: "Berry", from: "265 70% 60%", to: "330 70% 60%", angle: 135 },
+  { name: "Fire", from: "0 70% 60%", to: "25 90% 55%", angle: 135 },
+  { name: "Aurora", from: "174 70% 60%", to: "265 70% 60%", angle: 135 },
+  { name: "Peach", from: "350 80% 65%", to: "38 92% 50%", angle: 135 },
 ];
 
 // Convert hex color to HSL string
@@ -208,8 +217,151 @@ export default function AccentColorPicker({ isProMember }: AccentColorPickerProp
         </div>
       )}
 
-      {/* Manual color selection */}
+      {/* Solid / Gradient toggle */}
       {!isAuto && (
+        <div className="flex items-center gap-2 rounded-xl border border-foreground/10 p-1">
+          <button
+            onClick={() => updateSettings({ accentType: 'solid' })}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+              (settings.accentType || 'solid') === 'solid'
+                ? "bg-primary/15 text-primary shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+            )}
+          >
+            <Palette className="h-3.5 w-3.5" />
+            Solid
+          </button>
+          <button
+            onClick={() => updateSettings({ accentType: 'gradient' })}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+              settings.accentType === 'gradient'
+                ? "bg-primary/15 text-primary shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+            )}
+          >
+            <Blend className="h-3.5 w-3.5" />
+            Gradient
+          </button>
+        </div>
+      )}
+
+      {/* Gradient mode */}
+      {!isAuto && settings.accentType === 'gradient' && (
+        <div className="space-y-3">
+          <Label className="text-sm font-medium flex items-center gap-1.5">
+            <Blend className="h-3.5 w-3.5" />
+            Gradient Presets
+          </Label>
+          <div className="flex flex-wrap gap-2">
+            {GRADIENT_PRESETS.map((preset) => {
+              const isSelected = settings.accentGradientFrom === preset.from && settings.accentGradientTo === preset.to;
+              return (
+                <button
+                  key={preset.name}
+                  onClick={() => {
+                    updateSettings({
+                      accentGradientFrom: preset.from,
+                      accentGradientTo: preset.to,
+                      accentGradientAngle: preset.angle,
+                      accentColor: preset.from,
+                    });
+                  }}
+                  className={cn(
+                    "w-9 h-9 rounded-full border-2 transition-all duration-200 relative",
+                    isSelected
+                      ? "border-foreground scale-110 shadow-lg"
+                      : "border-foreground/10 hover:border-foreground/30 hover:scale-105",
+                  )}
+                  style={{
+                    background: `linear-gradient(${preset.angle}deg, hsl(${preset.from}), hsl(${preset.to}))`,
+                  }}
+                  title={preset.name}
+                >
+                  {isSelected && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Gradient preview */}
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-3">
+            <div
+              className="w-full h-10 rounded-lg border border-foreground/10"
+              style={{
+                background: `linear-gradient(${settings.accentGradientAngle ?? 135}deg, hsl(${settings.accentGradientFrom || settings.accentColor}), hsl(${settings.accentGradientTo || '210 70% 60%'}))`,
+              }}
+            />
+
+            {/* From color */}
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground">From — Hue</label>
+              <input
+                type="range"
+                min="0"
+                max="360"
+                value={parseInt((settings.accentGradientFrom || settings.accentColor).split(' ')[0] || '265')}
+                onChange={(e) => {
+                  const parts = (settings.accentGradientFrom || settings.accentColor).replace(/%/g, '').split(' ');
+                  const s = parts[1] || '70';
+                  const l = parts[2] || '60';
+                  const newFrom = `${e.target.value} ${s}% ${l}%`;
+                  updateSettings({ accentGradientFrom: newFrom, accentColor: newFrom });
+                }}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: "linear-gradient(to right, hsl(0 80% 60%), hsl(60 80% 60%), hsl(120 80% 60%), hsl(180 80% 60%), hsl(240 80% 60%), hsl(300 80% 60%), hsl(360 80% 60%))",
+                }}
+              />
+            </div>
+
+            {/* To color */}
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground">To — Hue</label>
+              <input
+                type="range"
+                min="0"
+                max="360"
+                value={parseInt((settings.accentGradientTo || '210 70% 60%').split(' ')[0] || '210')}
+                onChange={(e) => {
+                  const parts = (settings.accentGradientTo || '210 70% 60%').replace(/%/g, '').split(' ');
+                  const s = parts[1] || '70';
+                  const l = parts[2] || '60';
+                  updateSettings({ accentGradientTo: `${e.target.value} ${s}% ${l}%` });
+                }}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: "linear-gradient(to right, hsl(0 80% 60%), hsl(60 80% 60%), hsl(120 80% 60%), hsl(180 80% 60%), hsl(240 80% 60%), hsl(300 80% 60%), hsl(360 80% 60%))",
+                }}
+              />
+            </div>
+
+            {/* Angle */}
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground">Angle ({settings.accentGradientAngle ?? 135}°)</label>
+              <input
+                type="range"
+                min="0"
+                max="360"
+                value={settings.accentGradientAngle ?? 135}
+                onChange={(e) => updateSettings({ accentGradientAngle: parseInt(e.target.value) })}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, hsl(${settings.accentGradientFrom || settings.accentColor}), hsl(${settings.accentGradientTo || '210 70% 60%'}))`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual color selection */}
+      {!isAuto && (settings.accentType || 'solid') === 'solid' && (
         <div className="space-y-3">
           <Label className="text-sm font-medium flex items-center gap-1.5">
             <Palette className="h-3.5 w-3.5" />

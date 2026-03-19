@@ -6,7 +6,7 @@ import { useLocation, Link } from 'wouter';
 import { cn } from '@/lib/utils';
 
 // ThumbNav v5: Liquid FAB + Radial Menu
-export default function ThumbNavV5({ children }: { children?: React.ReactNode }) {
+export default function ThumbNavV5({ children }: { children: React.ReactNode }) {
   const { currentUser, logout } = useBars();
   const [location, setLocation] = useLocation();
   const [open, setOpen] = useState(false);
@@ -32,9 +32,15 @@ export default function ThumbNavV5({ children }: { children?: React.ReactNode })
     <>
       {/* Floating Action Button (FAB) */}
       <motion.button
-        className="fixed bottom-6 right-6 z-[1200] rounded-full shadow-xl glass-panel"
+        className="fixed bottom-6 right-6 z-[1200] rounded-full shadow-xl"
+        style={{
+          background: 'var(--glass-surface-bg, rgba(255,255,255,0.7))',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          border: '1.5px solid var(--glass-surface-border, rgba(0,0,0,0.08))',
+        }}
         initial={{ scale: 1 }}
-        animate={{ scale: open ? 1.08 : 1, boxShadow: open ? '0 0 0 16px rgba(168,85,247,0.12)' : '0 4px 24px rgba(168,85,247,0.18)' }}
+        animate={{ scale: open ? 1.08 : 1, boxShadow: open ? '0 0 0 16px var(--accent, #a855f7, 0.12)' : '0 4px 24px rgba(168,85,247,0.18)' }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         onClick={() => setOpen((v) => !v)}
         aria-label="Open menu"
@@ -64,13 +70,15 @@ export default function ThumbNavV5({ children }: { children?: React.ReactNode })
                 <motion.button
                   key={item.label}
                   className={cn(
-                    'absolute pointer-events-auto flex flex-col items-center justify-center rounded-full glass-panel text-foreground shadow-lg',
+                    'absolute pointer-events-auto flex flex-col items-center justify-center rounded-full bg-glass text-foreground shadow-lg',
                     'w-14 h-14',
                     'hover:bg-accent/90 transition-colors',
                   )}
                   style={{
                     left: x,
                     top: y,
+                    background: 'var(--glass-surface-bg, rgba(255,255,255,0.7))',
+                    border: '1.5px solid var(--glass-surface-border, rgba(0,0,0,0.08))',
                   }}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}

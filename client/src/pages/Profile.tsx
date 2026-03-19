@@ -195,9 +195,11 @@ export default function Profile() {
                   @{currentUser.username}
                   <UserProfileBadges userId={currentUser.id} size="sm" maxBadges={5} />
                   {currentUser.membershipTier !== "free" && (
-                    <Badge className="bg-primary/20 text-primary border border-primary/40 text-[10px] px-1.5 py-0 h-5">
-                      [PRO]
-                    </Badge>
+                    <img
+                      src="/pro-badge.png"
+                      alt="PRO"
+                      className="h-5 w-auto inline-block align-middle drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
+                    />
                   )}
                   {currentUser.username.toLowerCase() === "milsling" && (
                     <span className="ml-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-normal">
@@ -342,28 +344,6 @@ export default function Profile() {
               <span className="text-xs text-muted-foreground">{progressPercentage}%</span>
             </div>
           </Link>
-
-          {/* PRO Member Card */}
-          {currentUser.membershipTier !== "free" && currentUser.showProCard !== false && (
-            <div className="glass-panel p-4" data-testid="pro-card-section">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-semibold">Pro Member Card</span>
-                </div>
-                <span className="text-xs text-muted-foreground">Visible on profile</span>
-              </div>
-              <div className="flex justify-center">
-                <ProCard
-                  username={currentUser.username}
-                  displayName={currentUser.displayName}
-                  avatarUrl={currentUser.avatarUrl}
-                  proStartDate={(currentUser as any).proStartDate}
-                  size="sm"
-                />
-              </div>
-            </div>
-          )}
 
           {/* Displayed Badges */}
           <div className="flex flex-wrap gap-2 items-center">
