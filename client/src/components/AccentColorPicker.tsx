@@ -94,7 +94,14 @@ interface AccentColorPickerProps {
 }
 
 export default function AccentColorPicker({ isProMember }: AccentColorPickerProps) {
-  // Locked state for free tier - check BEFORE any hooks
+  // All hooks must be called BEFORE any conditional returns
+  const { settings, updateSettings } = useTheme();
+  const { selectedBackground } = useBackground();
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const colorInputRef = useRef<HTMLInputElement>(null);
+
+  // Locked state for free tier - check AFTER all hooks
   if (!isProMember) {
     return (
       <div className="relative">
@@ -121,13 +128,6 @@ export default function AccentColorPicker({ isProMember }: AccentColorPickerProp
       </div>
     );
   }
-
-  // All hooks must be called after early returns
-  const { settings, updateSettings } = useTheme();
-  const { selectedBackground } = useBackground();
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [showCustomPicker, setShowCustomPicker] = useState(false);
-  const colorInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-extract accent color from the selected background when in auto mode
   useEffect(() => {
