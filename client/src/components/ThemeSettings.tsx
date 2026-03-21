@@ -41,6 +41,75 @@ function opacityFromRgba(rgba: string): number {
   return parseFloat(match[1]) || 0.18;
 }
 
+function hslTokenFromHex(hex: string): string {
+  if (!hex || !hex.startsWith('#') || hex.length < 7) return '0 0% 96%';
+
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+
+  let h = 0;
+  let s = 0;
+
+  if (d !== 0) {
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+    switch (max) {
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        break;
+      case g:
+        h = ((b - r) / d + 2) / 6;
+        break;
+      case b:
+        h = ((r - g) / d + 4) / 6;
+        break;
+    }
+  }
+
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+function hexFromHslToken(hslToken: string): string {
+  const match = hslToken?.trim().match(/^(-?\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%$/);
+  if (!match) return '#f5f5f5';
+
+  const hRaw = parseFloat(match[1]);
+  const s = Math.max(0, Math.min(100, parseFloat(match[2]))) / 100;
+  const l = Math.max(0, Math.min(100, parseFloat(match[3]))) / 100;
+
+  const h = ((hRaw % 360) + 360) % 360;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = l - c / 2;
+
+  let r1 = 0;
+  let g1 = 0;
+  let b1 = 0;
+
+  if (h < 60) {
+    r1 = c; g1 = x;
+  } else if (h < 120) {
+    r1 = x; g1 = c;
+  } else if (h < 180) {
+    g1 = c; b1 = x;
+  } else if (h < 240) {
+    g1 = x; b1 = c;
+  } else if (h < 300) {
+    r1 = x; b1 = c;
+  } else {
+    r1 = c; b1 = x;
+  }
+
+  const toHex = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r1)}${toHex(g1)}${toHex(b1)}`;
+}
+
 interface ThemeSettingsProps {
   isOwner?: boolean;
 }
@@ -592,6 +661,28 @@ export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
 
             <TabsContent value="appearance" className="space-y-6">
               <div className="space-y-4">
+                <div>
+                  <Label htmlFor="site-text-color">Site Font Color</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="site-text-color"
+                      type="color"
+                      value={hexFromHslToken(settings.siteTextColor)}
+                      onChange={(e) => updateSettings({ siteTextColor: hslTokenFromHex(e.target.value) })}
+                      className="w-20 h-10"
+                    />
+                    <Input
+                      value={settings.siteTextColor}
+                      onChange={(e) => updateSettings({ siteTextColor: e.target.value })}
+                      placeholder="0 0% 96%"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Sets the global text color token for readability across the site.
+                  </p>
+                </div>
+
                 <div>
                   <Label>Glass Opacity: {Math.round(settings.glassOpacity * 100)}%</Label>
                   <Slider

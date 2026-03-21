@@ -42,6 +42,9 @@ export interface ThemeSettings {
   // Accent color settings
   accentColor: string; // HSL string like "265 70% 60%"
   accentColorMode: 'manual' | 'auto'; // auto extracts from background
+
+  // Global text/readability
+  siteTextColor: string; // HSL string like "0 0% 96%"
   
   // Gradient accent support
   accentType: 'solid' | 'gradient';
@@ -65,6 +68,7 @@ export const defaultThemeSettings: ThemeSettings = {
   borderRadius: 16,
   accentColor: '265 70% 60%', // Default purple
   accentColorMode: 'manual',
+  siteTextColor: '0 0% 96%',
   accentType: 'solid',
   accentGradientFrom: '265 70% 60%',
   accentGradientTo: '210 70% 60%',
@@ -402,6 +406,9 @@ export function getThemeStyles(settings: ThemeSettings) {
     // Accent color
     '--accent-color': settings.accentColor,
     '--accent-color-mode': settings.accentColorMode,
+
+    // Global text token override for readability
+    '--foreground': settings.siteTextColor || defaultThemeSettings.siteTextColor,
     
     // Gradient accent
     '--accent-type': settings.accentType || 'solid',

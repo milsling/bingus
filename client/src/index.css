@@ -1049,7 +1049,7 @@
 :root:not(.dark) .glass-panel,
 :root:not(.dark) .glass-surface,
 :root:not(.dark) .floating-bar {
-  color: hsl(220 25% 8%);
+  color: hsl(var(--foreground));
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.5), 0 1px 2px rgba(255, 255, 255, 0.3);
   -webkit-font-smoothing: antialiased;
 }
@@ -1059,7 +1059,7 @@
 .dark .glass-panel,
 .dark .glass-surface,
 .dark .floating-bar {
-  color: hsl(0 0% 98%);
+  color: hsl(var(--foreground));
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.25);
   -webkit-font-smoothing: antialiased;
 }
@@ -1226,7 +1226,7 @@
 /* Enhanced text color for light mode inputs */
 :root:not(.dark) .glass-field,
 :root:not(.dark) .glass-input {
-  color: hsl(220 25% 8%) !important; /* Very dark text for maximum contrast */
+  color: hsl(var(--foreground)) !important;
 }
 
 .glass-field::placeholder {
@@ -1814,7 +1814,7 @@
 html.light:not(.dark),
 html.light:not(.dark) body,
 html.light:not(.dark) #root {
-  color: hsl(220 25% 6%) !important;
+  color: hsl(var(--foreground)) !important;
 }
 
 html.light:not(.dark) h1, html.light:not(.dark) h2, html.light:not(.dark) h3,
@@ -1826,14 +1826,14 @@ html.light:not(.dark) li, html.light:not(.dark) label, html.light:not(.dark) but
 
 html.light:not(.dark) [data-slot="card"],
 html.light:not(.dark) .card {
-  color: hsl(220 25% 6%);
+  color: hsl(var(--card-foreground));
 }
 
 /* --- Dark mode: Ensure near-white text throughout --- */
 html.dark,
 html.dark body,
 html.dark #root {
-  color: hsl(0 0% 98%) !important;
+  color: hsl(var(--foreground)) !important;
 }
 
 html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6,
@@ -1843,7 +1843,7 @@ html.dark p, html.dark span, html.dark a, html.dark li, html.dark label, html.da
 
 html.dark [data-slot="card"],
 html.dark .card {
-  color: hsl(0 0% 98%);
+  color: hsl(var(--card-foreground));
 }
 
 /* ===================================
