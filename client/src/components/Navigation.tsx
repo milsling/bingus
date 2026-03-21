@@ -472,10 +472,9 @@ export default function Navigation() {
       <NewMessageDialog open={newMessageOpen} onOpenChange={setNewMessageOpen} />
       <AIAssistant open={araOpen} onOpenChange={setAraOpen} hideFloatingButton />
       
-      {/* Mobile Thumb Navigation v5 - floating radial menu */}
+      {/* Mobile navigation */}
       <div className="md:hidden">
-        {/* v5: Liquid FAB + Radial Menu */}
-        <ThumbNavV5 />
+        <ThumbNavigation />
       </div>
     </>
   );
