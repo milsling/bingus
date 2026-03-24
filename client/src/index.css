@@ -1878,3 +1878,63 @@ html.dark .card {
     overflow-wrap: break-word;
   }
 }
+
+/* ===================================
+   DYNAMIC BORDER RADIUS OVERRIDE
+   Apply CSS variable border-radius to override Tailwind classes
+   =================================== */
+.rounded-sm { border-radius: calc(var(--border-radius) * 0.125) !important; }
+.rounded { border-radius: calc(var(--border-radius) * 0.25) !important; }
+.rounded-md { border-radius: calc(var(--border-radius) * 0.375) !important; }
+.rounded-lg { border-radius: calc(var(--border-radius) * 0.5) !important; }
+.rounded-xl { border-radius: calc(var(--border-radius) * 0.75) !important; }
+.rounded-2xl { border-radius: var(--border-radius) !important; }
+.rounded-3xl { border-radius: calc(var(--border-radius) * 1.5) !important; }
+
+/* Override individual corners as well */
+.rounded-t-sm { border-top-left-radius: calc(var(--border-radius) * 0.125) !important; border-top-right-radius: calc(var(--border-radius) * 0.125) !important; }
+.rounded-t { border-top-left-radius: calc(var(--border-radius) * 0.25) !important; border-top-right-radius: calc(var(--border-radius) * 0.25) !important; }
+.rounded-t-md { border-top-left-radius: calc(var(--border-radius) * 0.375) !important; border-top-right-radius: calc(var(--border-radius) * 0.375) !important; }
+.rounded-t-lg { border-top-left-radius: calc(var(--border-radius) * 0.5) !important; border-top-right-radius: calc(var(--border-radius) * 0.5) !important; }
+.rounded-t-xl { border-top-left-radius: calc(var(--border-radius) * 0.75) !important; border-top-right-radius: calc(var(--border-radius) * 0.75) !important; }
+.rounded-t-2xl { border-top-left-radius: var(--border-radius) !important; border-top-right-radius: var(--border-radius) !important; }
+.rounded-t-3xl { border-top-left-radius: calc(var(--border-radius) * 1.5) !important; border-top-right-radius: calc(var(--border-radius) * 1.5) !important; }
+
+.rounded-b-sm { border-bottom-left-radius: calc(var(--border-radius) * 0.125) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.125) !important; }
+.rounded-b { border-bottom-left-radius: calc(var(--border-radius) * 0.25) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.25) !important; }
+.rounded-b-md { border-bottom-left-radius: calc(var(--border-radius) * 0.375) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.375) !important; }
+.rounded-b-lg { border-bottom-left-radius: calc(var(--border-radius) * 0.5) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.5) !important; }
+.rounded-b-xl { border-bottom-left-radius: calc(var(--border-radius) * 0.75) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.75) !important; }
+.rounded-b-2xl { border-bottom-left-radius: var(--border-radius) !important; border-bottom-right-radius: var(--border-radius) !important; }
+.rounded-b-3xl { border-bottom-left-radius: calc(var(--border-radius) * 1.5) !important; border-bottom-right-radius: calc(var(--border-radius) * 1.5) !important; }
+
+.rounded-l-sm { border-top-left-radius: calc(var(--border-radius) * 0.125) !important; border-bottom-left-radius: calc(var(--border-radius) * 0.125) !important; }
+.rounded-l { border-top-left-radius: calc(var(--border-radius) * 0.25) !important; border-bottom-left-radius: calc(var(--border-radius) * 0.25) !important; }
+.rounded-l-md { border-top-left-radius: calc(var(--border-radius) * 0.375) !important; border-bottom-left-radius: calc(var(--border-radius) * 0.375) !important; }
+.rounded-l-lg { border-top-left-radius: calc(var(--border-radius) * 0.5) !important; border-bottom-left-radius: calc(var(--border-radius) * 0.5) !important; }
+.rounded-l-xl { border-top-left-radius: calc(var(--border-radius) * 0.75) !important; border-bottom-left-radius: calc(var(--border-radius) * 0.75) !important; }
+.rounded-l-2xl { border-top-left-radius: var(--border-radius) !important; border-bottom-left-radius: var(--border-radius) !important; }
+.rounded-l-3xl { border-top-left-radius: calc(var(--border-radius) * 1.5) !important; border-bottom-left-radius: calc(var(--border-radius) * 1.5) !important; }
+.rounded-l-full { border-top-left-radius: 9999px !important; border-bottom-left-radius: 9999px !important; }
+
+.rounded-r-sm { border-top-right-radius: calc(var(--border-radius) * 0.125) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.125) !important; }
+.rounded-r { border-top-right-radius: calc(var(--border-radius) * 0.25) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.25) !important; }
+.rounded-r-md { border-top-right-radius: calc(var(--border-radius) * 0.375) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.375) !important; }
+.rounded-r-lg { border-top-right-radius: calc(var(--border-radius) * 0.5) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.5) !important; }
+.rounded-r-xl { border-top-right-radius: calc(var(--border-radius) * 0.75) !important; border-bottom-right-radius: calc(var(--border-radius) * 0.75) !important; }
+.rounded-r-2xl { border-top-right-radius: var(--border-radius) !important; border-bottom-right-radius: var(--border-radius) !important; }
+.rounded-r-3xl { border-top-right-radius: calc(var(--border-radius) * 1.5) !important; border-bottom-right-radius: calc(var(--border-radius) * 1.5) !important; }
+.rounded-r-full { border-top-right-radius: 9999px !important; border-bottom-right-radius: 9999px !important; }
+
+/* Keep rounded-full as circular */
+.rounded-full { border-radius: 9999px !important; }
+
+/* Apply to cards and buttons by default */
+[class*="glass-surface"],
+[class*="card"],
+button:not(.rounded-full),
+input:not([type="radio"]):not([type="checkbox"]):not(.rounded-full),
+select:not(.rounded-full),
+textarea:not(.rounded-full) {
+  border-radius: var(--border-radius);
+}
