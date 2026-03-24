@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { useBars } from '@/context/BarContext';
 
 /**
  * ThumbNavTab - A modern, native-feeling navigation drawer for mobile
- * 
+ *
  * Features:
  * - Slim edge tab attached to right side
  * - Inverted color tab (always visible against any background)
@@ -22,6 +23,7 @@ interface ThumbNavTabProps {
 }
 
 export default function ThumbNavTab({ children }: ThumbNavTabProps) {
+  const { currentUser } = useBars();
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
@@ -128,6 +130,13 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const handlePressEnd = () => {
     setIsPressed(false);
   };
+
+  // Reset navigation state when user logs out
+  useEffect(() => {
+    if (!currentUser && isOpen) {
+      handleClose();
+    }
+  }, [currentUser, isOpen]);
 
   // Close on escape key
   useEffect(() => {

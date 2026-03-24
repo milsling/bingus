@@ -99,6 +99,12 @@ export function BarProvider({ children }: { children: ReactNode }) {
       // Clear all cached data to ensure clean logout state
       queryClient.clear();
       queryClient.setQueryData(['currentUser'], null);
+
+      // Clear sidebar state cookie to prevent stuck navigation
+      document.cookie = 'sidebar_state=; path=/; max-age=0';
+
+      // Reset body overflow in case navigation was open
+      document.body.style.overflow = '';
     },
   });
 

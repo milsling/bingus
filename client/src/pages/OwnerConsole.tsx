@@ -11,11 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { BackgroundUploader } from "@/components/BackgroundUploader";
-import { BackgroundSelector, useBackground } from "@/components/BackgroundSelector";
 import ThemeSettings from "@/components/ThemeSettings";
 import {
-  ArrowLeft, Bot, Crown, Image, Lock, MessageSquare,
+  ArrowLeft, Bot, Crown, MessageSquare,
   Palette, Power, RefreshCw, Settings2, Shield, Trash2,
   Trophy, Wrench, Key, Radio, Swords, PenLine, Plus, Award, Check
 } from "lucide-react";
@@ -48,8 +46,6 @@ function OwnerConsoleContent() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const { selectedBackground } = useBackground();
-  const hasCustomBackground = selectedBackground.image !== null;
   const cardCn = cn("glass-surface-strong border-foreground/15");
   const { settings, updateSettings, setCanCustomize } = useTheme();
 
@@ -356,35 +352,6 @@ function OwnerConsoleContent() {
           <TabsContent value="appearance" className="space-y-4">
             {/* Advanced Theme Settings - Owner Only */}
             <ThemeSettings isOwner={true} />
-
-            <Card className={cardCn}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2"><Image className="h-4 w-4" /> Upload Background</CardTitle>
-                <CardDescription>Add new backgrounds to the site</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <BackgroundUploader />
-              </CardContent>
-            </Card>
-
-            <Card className={cardCn}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2"><Settings2 className="h-4 w-4" /> Site Default Background</CardTitle>
-                <CardDescription>Set the default background for all users</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-4">
-                <BackgroundSelector />
-                <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-                  <Button
-                    onClick={() => saveSiteSettingsMutation.mutate({ defaultBackground: String(selectedBackground?.id || "default") })}
-                    disabled={saveSiteSettingsMutation.isPending}
-                    className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
-                  >
-                    {saveSiteSettingsMutation.isPending ? "Saving..." : "💾 Set as Site Default"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
 
             <Card className={cardCn}>
               <CardHeader className="pb-3">
