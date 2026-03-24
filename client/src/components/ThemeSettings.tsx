@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Palette, Image, Trash2, Download, Globe } from 'lucide-react';
 import ThemePresetSelector from './ThemePresetSelector';
 import AccentColorPicker from './AccentColorPicker';
+import WelcomeMessage from './WelcomeMessage';
 
 // Helper functions to convert between hex and rgba
 function hexFromRgba(rgba: string): string {
@@ -292,6 +293,9 @@ export default function ThemeSettings({ isOwner = false }: ThemeSettingsProps) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Welcome message - shows username and days since last login */}
+      {isOwner && <WelcomeMessage />}
+
       <Card className="glass-surface-strong border-foreground/15">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
