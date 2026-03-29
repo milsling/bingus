@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Compass, Plus, MessageCircle, User } from 'lucide-react';
+import { Home, Compass, Plus, MessageCircle, User, Vault, Disc } from 'lucide-react';
 import { useLocation, Link } from 'wouter';
 import { cn } from '@/lib/utils';
 import { useBars } from '@/context/BarContext';
@@ -15,10 +15,10 @@ export default function BottomNavBar({ onMenuToggle, isMenuOpen }: BottomNavBarP
   const { currentUser } = useBars();
 
   const navItems = [
-    { label: 'Home', icon: Home, href: '/', position: 'left' },
-    { label: 'Explore', icon: Compass, href: '/prompts', position: 'left' },
+    { label: 'Vault', icon: Vault, href: '/vault', position: 'left' },
+    { label: 'Beats', icon: Disc, href: '/beats', position: 'left' },
     { label: 'Menu', icon: Plus, action: onMenuToggle, position: 'center', isMenuButton: true },
-    { label: 'Messages', icon: MessageCircle, href: '/messages', position: 'right' },
+    { label: 'Feed', icon: Home, href: '/', position: 'right' },
     { label: 'Profile', icon: User, href: currentUser ? `/u/${currentUser.username}` : '/auth', position: 'right' },
   ];
 

@@ -12,16 +12,20 @@ import {
   Radio, 
   Swords, 
   Settings2, 
-  User, 
-  MessageCircle, 
-  Users, 
+  User,
+  MessageCircle,
+  Users,
   Bookmark,
   Sparkles,
   Shield,
   LogOut,
   UserCog,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Vault,
+  AudioLines,
+  Disc,
+  DoorOpen
 } from 'lucide-react';
 import { useBars } from '@/context/BarContext';
 // import { useTheme } from '@/contexts/ThemeContext';
@@ -77,26 +81,22 @@ function NavContent() {
 
   const menuSections: MenuSection[] = [
     {
-      title: 'Explore',
-      icon: Compass,
-      items: [
-        { href: '/', label: 'Home', icon: Home, description: 'Your feed' },
-        { href: '/prompts', label: 'Prompts', icon: PenLine, description: 'Get inspired' },
-        { href: '/orphanstudio', label: 'Orphan Studio', icon: NotebookPen, description: 'Create & mix' },
-        { href: '/challenges', label: 'Challenges', icon: Swords, description: 'Compete' },
-      ]
-    },
-    {
       title: 'Create',
       icon: Sparkles,
       items: [
-        { 
-          action: () => {},
-          label: 'Orphie Voice', 
-          icon: Radio,
-          description: 'AI assistant',
-          external: true 
-        },
+        { href: '/vault', label: 'Vault', icon: Vault, description: 'Your bars' },
+        { href: '/song-builder', label: 'Song Builder', icon: AudioLines, description: 'Build tracks' },
+        { href: '/beats', label: 'Beat Library', icon: Disc, description: 'Browse beats' },
+      ]
+    },
+    {
+      title: 'Explore',
+      icon: Compass,
+      items: [
+        { href: '/', label: 'Feed', icon: Home, description: 'Latest bars' },
+        { href: '/orphanage', label: 'Orphanage', icon: DoorOpen, description: 'Adopt bars' },
+        { href: '/challenges', label: 'Challenges', icon: Swords, description: 'Compete' },
+        { href: '/prompts', label: 'Prompts', icon: PenLine, description: 'Get inspired' },
       ]
     },
     {

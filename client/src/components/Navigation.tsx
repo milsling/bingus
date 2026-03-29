@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, DoorOpen, Radio, Sparkles, X, UserCog, ChevronRight, ExternalLink } from "lucide-react";
+import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, DoorOpen, Radio, Sparkles, X, UserCog, ChevronRight, ExternalLink, Vault, Music, AudioLines, Disc } from "lucide-react";
 import AccentLogo from "@/components/AccentLogo";
 import { useBars } from "@/context/BarContext";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -63,8 +63,11 @@ export default function Navigation() {
   }, [currentUser, isOnMessagesPage, setLocation]);
 
   const navLinks = [
+    { href: "/vault", label: "Vault", icon: Vault },
+    { href: "/song-builder", label: "Songs", icon: AudioLines },
+    { href: "/beats", label: "Beats", icon: Disc },
     { href: "/", label: "Feed", icon: Home },
-    { href: "/prompts", label: "Prompts", icon: PenLine },
+    { href: "/orphanage", label: "Orphanage", icon: DoorOpen },
     { href: "/challenges", label: "Challenges", icon: Swords },
     { href: "/orphanstudio", label: "Studio", icon: NotebookPen },
   ];
@@ -286,16 +289,57 @@ export default function Navigation() {
               {/* Explore Section */}
               <div>
                 <div className="flex items-center gap-2 px-1 mb-2">
+                  <Sparkles className="h-3.5 w-3.5 text-primary/60" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">Create</span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-border/30 to-transparent" />
+                </div>
+                <div className="space-y-1">
+                  {[
+                    { href: "/vault", label: "Vault", icon: Vault, description: "Your bars" },
+                    { href: "/song-builder", label: "Song Builder", icon: AudioLines, description: "Build tracks" },
+                    { href: "/beats", label: "Beat Library", icon: Disc, description: "Browse beats" },
+                  ].map((item) => {
+                    const isActive = location === item.href;
+                    return (
+                      <Link key={item.label} href={item.href} className="block" onClick={() => setDesktopMenuOpen(false)}>
+                        <div className={cn(
+                          "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150",
+                          isActive
+                            ? "bg-primary/[0.12] border border-primary/25 shadow-[0_0_20px_rgba(168,85,247,0.08)]"
+                            : "border border-transparent hover:bg-foreground/[0.04] hover:border-border/20"
+                        )}>
+                          <div className={cn(
+                            "shrink-0 h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200",
+                            isActive
+                              ? "bg-primary text-white shadow-[0_4px_12px_rgba(168,85,247,0.3)]"
+                              : "bg-foreground/[0.05] text-muted-foreground group-hover:bg-foreground/[0.08] group-hover:text-foreground"
+                          )}>
+                            <item.icon className="h-4 w-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className={cn("text-sm font-medium leading-tight", isActive ? "text-primary" : "text-foreground")}>{item.label}</div>
+                            <div className="text-[11px] text-muted-foreground/60 leading-tight mt-0.5">{item.description}</div>
+                          </div>
+                          <ChevronRight className={cn("h-3.5 w-3.5 shrink-0 transition-all duration-150", isActive ? "text-primary/60" : "text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5")} />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 px-1 mb-2">
                   <Compass className="h-3.5 w-3.5 text-primary/60" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">Explore</span>
                   <div className="flex-1 h-px bg-gradient-to-r from-border/30 to-transparent" />
                 </div>
                 <div className="space-y-1">
                   {[
-                    { href: "/", label: "Home", icon: Home, description: "Your feed" },
-                    { href: "/prompts", label: "Prompts", icon: PenLine, description: "Get inspired" },
-                    { href: "/orphanstudio", label: "Orphan Studio", icon: NotebookPen, description: "Create & mix" },
+                    { href: "/", label: "Feed", icon: Home, description: "Latest bars" },
+                    { href: "/orphanage", label: "Orphanage", icon: DoorOpen, description: "Adopt bars" },
                     { href: "/challenges", label: "Challenges", icon: Swords, description: "Compete" },
+                    { href: "/prompts", label: "Prompts", icon: PenLine, description: "Get inspired" },
                   ].map((item) => {
                     const isActive = location === item.href;
                     return (

@@ -1,4 +1,4 @@
-import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, customTags, customCategories, profileBadges, userBadges, protectedBars, aiSettings, notebooks, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type CustomTag, type InsertCustomTag, type CustomCategory, type InsertCustomCategory, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType, type ProfileBadge, type InsertProfileBadge, type UserBadge, type InsertUserBadge, type ProtectedBar, type InsertProtectedBar, type AISettings, type Notebook, type InsertNotebook } from "@shared/schema";
+import { users, bars, verificationCodes, passwordResetCodes, likes, comments, commentLikes, dislikes, commentDislikes, follows, notifications, bookmarks, pushSubscriptions, friendships, directMessages, adoptions, barSequence, userAchievements, reports, flaggedPhrases, maintenanceStatus, barUsages, customAchievements, debugLogs, achievementBadgeImages, customTags, customCategories, profileBadges, userBadges, protectedBars, aiSettings, notebooks, beats, beatFavorites, folders, folderBars, barVersions, songs, songSections, ACHIEVEMENTS, type User, type InsertUser, type Bar, type InsertBar, type Like, type Comment, type CommentLike, type InsertComment, type Notification, type Bookmark, type PushSubscription, type Friendship, type DirectMessage, type Adoption, type BarUsage, type UserAchievement, type AchievementId, type Report, type FlaggedPhrase, type MaintenanceStatus, type CustomAchievement, type InsertCustomAchievement, type CustomTag, type InsertCustomTag, type CustomCategory, type InsertCustomCategory, type DebugLog, type InsertDebugLog, type AchievementRuleTree, type AchievementCondition, type AchievementRuleGroup, type AchievementConditionType, type ProfileBadge, type InsertProfileBadge, type UserBadge, type InsertUserBadge, type ProtectedBar, type InsertProtectedBar, type AISettings, type Notebook, type InsertNotebook, type Beat, type InsertBeat, type BeatWithProducer, type Folder, type InsertFolder, type FolderWithCount, type Song, type InsertSong, type SongWithSections, type SongSection, type InsertSongSection, type BarVersion } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gt, count, sql, or, ilike, notInArray, ne, inArray } from "drizzle-orm";
 import { createHash } from "crypto";
@@ -313,6 +313,46 @@ export interface IStorage {
   getUserXpStats(userId: string): Promise<{ xp: number; level: number; xpForNextLevel: number; xpProgress: number }>;
   calculateRetroactiveXp(userId: string): Promise<{ xp: number; level: number }>;
   resetDailyXpLimits(): Promise<void>;
+
+  // Beat methods
+  getBeats(filters?: { search?: string; bpm_min?: number; bpm_max?: number; key?: string; genre?: string; producerId?: string; sort?: string }, page?: number, limit?: number): Promise<{ beats: BeatWithProducer[]; total: number }>;
+  getBeatById(id: string): Promise<BeatWithProducer | undefined>;
+  createBeat(data: InsertBeat): Promise<Beat>;
+  updateBeat(id: string, producerId: string, data: Partial<Beat>): Promise<Beat | undefined>;
+  deleteBeat(id: string, producerId: string): Promise<boolean>;
+  incrementBeatPlays(id: string): Promise<void>;
+  toggleBeatFavorite(userId: string, beatId: string): Promise<boolean>;
+  getUserFavoriteBeats(userId: string): Promise<BeatWithProducer[]>;
+  getUserBeats(userId: string): Promise<Beat[]>;
+  hasUserFavoritedBeat(userId: string, beatId: string): Promise<boolean>;
+
+  // Folder methods (Vault)
+  getUserFolders(userId: string): Promise<FolderWithCount[]>;
+  createFolder(userId: string, name: string, description?: string): Promise<Folder>;
+  updateFolder(id: string, userId: string, data: Partial<Folder>): Promise<Folder | undefined>;
+  deleteFolder(id: string, userId: string): Promise<boolean>;
+  addBarToFolder(folderId: string, barId: string): Promise<void>;
+  removeBarFromFolder(folderId: string, barId: string): Promise<boolean>;
+  getFolderBars(folderId: string): Promise<Array<Bar & { user: User }>>;
+
+  // Bar version methods
+  createBarVersion(barId: string, content: string, versionNumber: number): Promise<BarVersion>;
+  getBarVersions(barId: string): Promise<BarVersion[]>;
+
+  // Song methods
+  getUserSongs(userId: string): Promise<Song[]>;
+  getSongById(id: string): Promise<SongWithSections | undefined>;
+  createSong(userId: string, title?: string): Promise<Song>;
+  updateSong(id: string, userId: string, data: Partial<Song>): Promise<Song | undefined>;
+  deleteSong(id: string, userId: string): Promise<boolean>;
+  addSongSection(songId: string, data: InsertSongSection): Promise<SongSection>;
+  updateSongSection(id: string, data: Partial<SongSection>): Promise<SongSection | undefined>;
+  deleteSongSection(id: string): Promise<boolean>;
+  reorderSongSections(songId: string, orderedIds: string[]): Promise<void>;
+
+  // Vault methods
+  getVaultBars(userId: string, filters?: { search?: string; tags?: string[]; folderId?: string; sort?: string }, page?: number, limit?: number): Promise<{ bars: Array<Bar & { user: User }>; total: number }>;
+  getVaultStats(userId: string): Promise<{ totalBars: number; totalFolders: number; barsThisWeek: number; totalSongs: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2966,6 +3006,380 @@ export class DatabaseStorage implements IStorage {
   async deleteNotebook(id: string, userId: string): Promise<boolean> {
     const result = await db.delete(notebooks).where(and(eq(notebooks.id, id), eq(notebooks.userId, userId)));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // ==========================================
+  // BEATS
+  // ==========================================
+
+  async getBeats(
+    filters?: { search?: string; bpm_min?: number; bpm_max?: number; key?: string; genre?: string; producerId?: string; sort?: string },
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{ beats: BeatWithProducer[]; total: number }> {
+    const conditions = [eq(beats.status, "approved"), eq(beats.isPublic, true)];
+    if (filters?.bpm_min) conditions.push(sql`${beats.bpm} >= ${filters.bpm_min}`);
+    if (filters?.bpm_max) conditions.push(sql`${beats.bpm} <= ${filters.bpm_max}`);
+    if (filters?.key) conditions.push(eq(beats.key, filters.key));
+    if (filters?.genre) conditions.push(eq(beats.genre, filters.genre));
+    if (filters?.producerId) conditions.push(eq(beats.producerId, filters.producerId));
+    if (filters?.search) {
+      conditions.push(
+        or(
+          ilike(beats.title, `%${filters.search}%`),
+          sql`EXISTS (SELECT 1 FROM unnest(${beats.tags}) AS t WHERE t ILIKE ${`%${filters.search}%`})`,
+        )!,
+      );
+    }
+
+    const where = and(...conditions);
+    const orderBy = filters?.sort === "most_played" ? desc(beats.plays) : filters?.sort === "most_favorited" ? desc(beats.favoritesCount) : desc(beats.createdAt);
+
+    const [totalResult] = await db.select({ count: count() }).from(beats).where(where);
+    const offset = (page - 1) * limit;
+
+    const result = await db
+      .select({
+        beat: beats,
+        producer: {
+          id: users.id,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+          producerVerified: users.producerVerified,
+        },
+      })
+      .from(beats)
+      .leftJoin(users, eq(beats.producerId, users.id))
+      .where(where)
+      .orderBy(orderBy)
+      .limit(limit)
+      .offset(offset);
+
+    return {
+      beats: result.map((r) => ({ ...r.beat, producer: r.producer as any })),
+      total: totalResult?.count ?? 0,
+    };
+  }
+
+  async getBeatById(id: string): Promise<BeatWithProducer | undefined> {
+    const [result] = await db
+      .select({
+        beat: beats,
+        producer: {
+          id: users.id,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+          producerVerified: users.producerVerified,
+        },
+      })
+      .from(beats)
+      .leftJoin(users, eq(beats.producerId, users.id))
+      .where(eq(beats.id, id));
+    if (!result) return undefined;
+    return { ...result.beat, producer: result.producer as any };
+  }
+
+  async createBeat(data: InsertBeat): Promise<Beat> {
+    const [beat] = await db.insert(beats).values(data).returning();
+    return beat;
+  }
+
+  async updateBeat(id: string, producerId: string, data: Partial<Beat>): Promise<Beat | undefined> {
+    const [beat] = await db
+      .update(beats)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(beats.id, id), eq(beats.producerId, producerId)))
+      .returning();
+    return beat || undefined;
+  }
+
+  async deleteBeat(id: string, producerId: string): Promise<boolean> {
+    const result = await db.delete(beats).where(and(eq(beats.id, id), eq(beats.producerId, producerId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async incrementBeatPlays(id: string): Promise<void> {
+    await db.update(beats).set({ plays: sql`${beats.plays} + 1` }).where(eq(beats.id, id));
+  }
+
+  async toggleBeatFavorite(userId: string, beatId: string): Promise<boolean> {
+    const existing = await db.select().from(beatFavorites).where(and(eq(beatFavorites.userId, userId), eq(beatFavorites.beatId, beatId)));
+    if (existing.length > 0) {
+      await db.delete(beatFavorites).where(and(eq(beatFavorites.userId, userId), eq(beatFavorites.beatId, beatId)));
+      await db.update(beats).set({ favoritesCount: sql`GREATEST(${beats.favoritesCount} - 1, 0)` }).where(eq(beats.id, beatId));
+      return false;
+    }
+    await db.insert(beatFavorites).values({ userId, beatId });
+    await db.update(beats).set({ favoritesCount: sql`${beats.favoritesCount} + 1` }).where(eq(beats.id, beatId));
+    return true;
+  }
+
+  async getUserFavoriteBeats(userId: string): Promise<BeatWithProducer[]> {
+    const result = await db
+      .select({
+        beat: beats,
+        producer: {
+          id: users.id,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+          producerVerified: users.producerVerified,
+        },
+      })
+      .from(beatFavorites)
+      .innerJoin(beats, eq(beatFavorites.beatId, beats.id))
+      .leftJoin(users, eq(beats.producerId, users.id))
+      .where(eq(beatFavorites.userId, userId))
+      .orderBy(desc(beatFavorites.createdAt));
+    return result.map((r) => ({ ...r.beat, producer: r.producer as any, isFavorited: true }));
+  }
+
+  async getUserBeats(userId: string): Promise<Beat[]> {
+    return db.select().from(beats).where(eq(beats.producerId, userId)).orderBy(desc(beats.createdAt));
+  }
+
+  async hasUserFavoritedBeat(userId: string, beatId: string): Promise<boolean> {
+    const [result] = await db.select().from(beatFavorites).where(and(eq(beatFavorites.userId, userId), eq(beatFavorites.beatId, beatId)));
+    return !!result;
+  }
+
+  // ==========================================
+  // FOLDERS (Vault)
+  // ==========================================
+
+  async getUserFolders(userId: string): Promise<FolderWithCount[]> {
+    const result = await db
+      .select({
+        folder: folders,
+        barCount: sql<number>`(SELECT COUNT(*) FROM folder_bars WHERE folder_bars.folder_id = ${folders.id})`.as("bar_count"),
+      })
+      .from(folders)
+      .where(eq(folders.userId, userId))
+      .orderBy(folders.position);
+    return result.map((r) => ({ ...r.folder, barCount: Number(r.barCount) }));
+  }
+
+  async createFolder(userId: string, name: string, description?: string): Promise<Folder> {
+    const [maxPos] = await db
+      .select({ max: sql<number>`COALESCE(MAX(${folders.position}), -1)` })
+      .from(folders)
+      .where(eq(folders.userId, userId));
+    const [folder] = await db
+      .insert(folders)
+      .values({ userId, name, description, position: (maxPos?.max ?? -1) + 1 })
+      .returning();
+    return folder;
+  }
+
+  async updateFolder(id: string, userId: string, data: Partial<Folder>): Promise<Folder | undefined> {
+    const [folder] = await db
+      .update(folders)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(folders.id, id), eq(folders.userId, userId)))
+      .returning();
+    return folder || undefined;
+  }
+
+  async deleteFolder(id: string, userId: string): Promise<boolean> {
+    const result = await db.delete(folders).where(and(eq(folders.id, id), eq(folders.userId, userId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async addBarToFolder(folderId: string, barId: string): Promise<void> {
+    const [maxPos] = await db
+      .select({ max: sql<number>`COALESCE(MAX(${folderBars.position}), -1)` })
+      .from(folderBars)
+      .where(eq(folderBars.folderId, folderId));
+    await db.insert(folderBars).values({ folderId, barId, position: (maxPos?.max ?? -1) + 1 }).onConflictDoNothing();
+  }
+
+  async removeBarFromFolder(folderId: string, barId: string): Promise<boolean> {
+    const result = await db.delete(folderBars).where(and(eq(folderBars.folderId, folderId), eq(folderBars.barId, barId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getFolderBars(folderId: string): Promise<Array<Bar & { user: User }>> {
+    const result = await db
+      .select({ bar: bars, user: users })
+      .from(folderBars)
+      .innerJoin(bars, eq(folderBars.barId, bars.id))
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(eq(folderBars.folderId, folderId))
+      .orderBy(folderBars.position);
+    return result.map((r) => ({ ...r.bar, user: r.user as User }));
+  }
+
+  // ==========================================
+  // BAR VERSIONS
+  // ==========================================
+
+  async createBarVersion(barId: string, content: string, versionNumber: number): Promise<BarVersion> {
+    const [version] = await db.insert(barVersions).values({ barId, content, versionNumber }).returning();
+    return version;
+  }
+
+  async getBarVersions(barId: string): Promise<BarVersion[]> {
+    return db.select().from(barVersions).where(eq(barVersions.barId, barId)).orderBy(desc(barVersions.versionNumber));
+  }
+
+  // ==========================================
+  // SONGS
+  // ==========================================
+
+  async getUserSongs(userId: string): Promise<Song[]> {
+    return db.select().from(songs).where(eq(songs.userId, userId)).orderBy(desc(songs.updatedAt));
+  }
+
+  async getSongById(id: string): Promise<SongWithSections | undefined> {
+    const [song] = await db.select().from(songs).where(eq(songs.id, id));
+    if (!song) return undefined;
+
+    const sections = await db
+      .select()
+      .from(songSections)
+      .where(eq(songSections.songId, id))
+      .orderBy(songSections.position);
+
+    let beat: BeatWithProducer | null = null;
+    if (song.beatId) {
+      beat = (await this.getBeatById(song.beatId)) ?? null;
+    }
+
+    return { ...song, sections, beat };
+  }
+
+  async createSong(userId: string, title?: string): Promise<Song> {
+    const [song] = await db
+      .insert(songs)
+      .values({ userId, title: title || "Untitled" })
+      .returning();
+    return song;
+  }
+
+  async updateSong(id: string, userId: string, data: Partial<Song>): Promise<Song | undefined> {
+    const [song] = await db
+      .update(songs)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(songs.id, id), eq(songs.userId, userId)))
+      .returning();
+    return song || undefined;
+  }
+
+  async deleteSong(id: string, userId: string): Promise<boolean> {
+    const result = await db.delete(songs).where(and(eq(songs.id, id), eq(songs.userId, userId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async addSongSection(songId: string, data: InsertSongSection): Promise<SongSection> {
+    const [maxPos] = await db
+      .select({ max: sql<number>`COALESCE(MAX(${songSections.position}), -1)` })
+      .from(songSections)
+      .where(eq(songSections.songId, songId));
+    const [section] = await db
+      .insert(songSections)
+      .values({ ...data, songId, position: data.position ?? (maxPos?.max ?? -1) + 1 })
+      .returning();
+    return section;
+  }
+
+  async updateSongSection(id: string, data: Partial<SongSection>): Promise<SongSection | undefined> {
+    const [section] = await db
+      .update(songSections)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(songSections.id, id))
+      .returning();
+    return section || undefined;
+  }
+
+  async deleteSongSection(id: string): Promise<boolean> {
+    const result = await db.delete(songSections).where(eq(songSections.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async reorderSongSections(songId: string, orderedIds: string[]): Promise<void> {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await db
+        .update(songSections)
+        .set({ position: i })
+        .where(and(eq(songSections.id, orderedIds[i]), eq(songSections.songId, songId)));
+    }
+  }
+
+  // ==========================================
+  // VAULT
+  // ==========================================
+
+  async getVaultBars(
+    userId: string,
+    filters?: { search?: string; tags?: string[]; folderId?: string; sort?: string },
+    page: number = 1,
+    limit: number = 50,
+  ): Promise<{ bars: Array<Bar & { user: User }>; total: number }> {
+    const conditions: any[] = [eq(bars.userId, userId), sql`${bars.deletedAt} IS NULL`];
+    if (filters?.search) {
+      conditions.push(ilike(bars.content, `%${filters.search}%`));
+    }
+    if (filters?.tags && filters.tags.length > 0) {
+      conditions.push(sql`${bars.tags} && ARRAY[${sql.join(filters.tags.map(t => sql`${t}`), sql`,`)}]::text[]`);
+    }
+
+    const where = and(...conditions);
+    const orderBy = filters?.sort === "oldest" ? bars.createdAt : desc(bars.createdAt);
+
+    let query;
+    if (filters?.folderId) {
+      const [totalResult] = await db
+        .select({ count: count() })
+        .from(folderBars)
+        .innerJoin(bars, eq(folderBars.barId, bars.id))
+        .where(and(eq(folderBars.folderId, filters.folderId), ...conditions.slice(1)));
+
+      const result = await db
+        .select({ bar: bars, user: users })
+        .from(folderBars)
+        .innerJoin(bars, eq(folderBars.barId, bars.id))
+        .leftJoin(users, eq(bars.userId, users.id))
+        .where(and(eq(folderBars.folderId, filters.folderId), ...conditions.slice(1)))
+        .orderBy(folderBars.position)
+        .limit(limit)
+        .offset((page - 1) * limit);
+
+      return {
+        bars: result.map((r) => ({ ...r.bar, user: r.user as User })),
+        total: totalResult?.count ?? 0,
+      };
+    }
+
+    const [totalResult] = await db.select({ count: count() }).from(bars).where(where);
+    const result = await db
+      .select({ bar: bars, user: users })
+      .from(bars)
+      .leftJoin(users, eq(bars.userId, users.id))
+      .where(where)
+      .orderBy(orderBy)
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    return {
+      bars: result.map((r) => ({ ...r.bar, user: r.user as User })),
+      total: totalResult?.count ?? 0,
+    };
+  }
+
+  async getVaultStats(userId: string): Promise<{ totalBars: number; totalFolders: number; barsThisWeek: number; totalSongs: number }> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const [barsResult] = await db.select({ count: count() }).from(bars).where(and(eq(bars.userId, userId), sql`${bars.deletedAt} IS NULL`));
+    const [foldersResult] = await db.select({ count: count() }).from(folders).where(eq(folders.userId, userId));
+    const [weekResult] = await db.select({ count: count() }).from(bars).where(and(eq(bars.userId, userId), sql`${bars.deletedAt} IS NULL`, gt(bars.createdAt, oneWeekAgo)));
+    const [songsResult] = await db.select({ count: count() }).from(songs).where(eq(songs.userId, userId));
+
+    return {
+      totalBars: barsResult?.count ?? 0,
+      totalFolders: foldersResult?.count ?? 0,
+      barsThisWeek: weekResult?.count ?? 0,
+      totalSongs: songsResult?.count ?? 0,
+    };
   }
 }
 

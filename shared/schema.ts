@@ -29,6 +29,12 @@ export const moderationStatusOptions = [
   "blocked",
 ] as const;
 export const phraseSeverityOptions = ["block", "flag"] as const;
+export const userRoleOptions = ["artist", "producer", "both"] as const;
+export const beatGenreOptions = ["trap", "boom_bap", "drill", "lo_fi", "west_coast", "east_coast", "melodic", "dark", "experimental", "other"] as const;
+export const beatLicenseOptions = ["preview_only", "open_use", "credit_required"] as const;
+export const beatStatusOptions = ["pending", "approved", "rejected"] as const;
+export const songStatusOptions = ["draft", "released"] as const;
+export const sectionTypeOptions = ["intro", "verse", "hook", "bridge", "outro", "ad_lib"] as const;
 
 export const users = pgTable("users", {
   id: varchar("id")
@@ -66,6 +72,11 @@ export const users = pgTable("users", {
   dailyXpComments: integer("daily_xp_comments").notNull().default(0),
   dailyXpBookmarks: integer("daily_xp_bookmarks").notNull().default(0),
   supabaseId: text("supabase_id"),
+  userRole: text("user_role").notNull().default("artist"),
+  isProducer: boolean("is_producer").notNull().default(false),
+  producerVerified: boolean("producer_verified").notNull().default(false),
+  producerVerifiedAt: timestamp("producer_verified_at"),
+  lastLoginAt: timestamp("last_login_at"),
 });
 
 export const verificationCodes = pgTable("verification_codes", {
@@ -1446,3 +1457,229 @@ export const siteSettings = pgTable("site_settings", {
   value: text("value").notNull(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+// ==========================================
+// BEATS, VAULT, SONGS — Phase 1 Redesign
+// ==========================================
+
+// Beats — uploaded audio tracks from producers
+export const beats = pgTable("beats", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  producerId: varchar("producer_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  audioUrl: text("audio_url").notNull(),
+  waveformData: jsonb("waveform_data"), // Array of ~200 normalized peak values (0-1)
+  coverArtUrl: text("cover_art_url"),
+  bpm: integer("bpm"),
+  key: text("key"), // e.g. "C minor", "F# major"
+  genre: text("genre"), // e.g. "trap", "boom_bap", "drill"
+  tags: text("tags").array(),
+  duration: integer("duration"), // seconds
+  description: text("description"),
+  credits: text("credits"),
+  licenseType: text("license_type").notNull().default("preview_only"),
+  status: text("status").notNull().default("approved"),
+  plays: integer("plays").notNull().default(0),
+  favoritesCount: integer("favorites_count").notNull().default(0),
+  isPublic: boolean("is_public").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const beatsRelations = relations(beats, ({ one, many }) => ({
+  producer: one(users, {
+    fields: [beats.producerId],
+    references: [users.id],
+  }),
+  favorites: many(beatFavorites),
+}));
+
+export type Beat = typeof beats.$inferSelect;
+export type InsertBeat = typeof beats.$inferInsert;
+
+export const insertBeatSchema = createInsertSchema(beats).omit({
+  id: true,
+  plays: true,
+  favoritesCount: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Beat favorites — users can favorite beats for quick access
+export const beatFavorites = pgTable(
+  "beat_favorites",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    beatId: varchar("beat_id")
+      .notNull()
+      .references(() => beats.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [unique("beat_favorites_unique").on(table.userId, table.beatId)],
+);
+
+export const beatFavoritesRelations = relations(beatFavorites, ({ one }) => ({
+  user: one(users, { fields: [beatFavorites.userId], references: [users.id] }),
+  beat: one(beats, { fields: [beatFavorites.beatId], references: [beats.id] }),
+}));
+
+// Folders — organize bars in the Vault
+export const folders = pgTable("folders", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const foldersRelations = relations(folders, ({ one, many }) => ({
+  user: one(users, { fields: [folders.userId], references: [users.id] }),
+  folderBars: many(folderBars),
+}));
+
+export type Folder = typeof folders.$inferSelect;
+export type InsertFolder = typeof folders.$inferInsert;
+
+export const insertFolderSchema = createInsertSchema(folders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Folder bars — junction table linking bars to folders
+export const folderBars = pgTable(
+  "folder_bars",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    folderId: varchar("folder_id")
+      .notNull()
+      .references(() => folders.id, { onDelete: "cascade" }),
+    barId: varchar("bar_id")
+      .notNull()
+      .references(() => bars.id, { onDelete: "cascade" }),
+    position: integer("position").notNull().default(0),
+    addedAt: timestamp("added_at").notNull().defaultNow(),
+  },
+  (table) => [unique("folder_bars_unique").on(table.folderId, table.barId)],
+);
+
+export const folderBarsRelations = relations(folderBars, ({ one }) => ({
+  folder: one(folders, { fields: [folderBars.folderId], references: [folders.id] }),
+  bar: one(bars, { fields: [folderBars.barId], references: [bars.id] }),
+}));
+
+// Bar versions — auto-saved edit history
+export const barVersions = pgTable("bar_versions", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  barId: varchar("bar_id")
+    .notNull()
+    .references(() => bars.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  versionNumber: integer("version_number").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const barVersionsRelations = relations(barVersions, ({ one }) => ({
+  bar: one(bars, { fields: [barVersions.barId], references: [bars.id] }),
+}));
+
+export type BarVersion = typeof barVersions.$inferSelect;
+
+// Songs — multi-section compositions built in Song Builder
+export const songs = pgTable("songs", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull().default("Untitled"),
+  beatId: varchar("beat_id").references(() => beats.id, { onDelete: "set null" }),
+  status: text("status").notNull().default("draft"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const songsRelations = relations(songs, ({ one, many }) => ({
+  user: one(users, { fields: [songs.userId], references: [users.id] }),
+  beat: one(beats, { fields: [songs.beatId], references: [beats.id] }),
+  sections: many(songSections),
+}));
+
+export type Song = typeof songs.$inferSelect;
+export type InsertSong = typeof songs.$inferInsert;
+
+export const insertSongSchema = createInsertSchema(songs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Song sections — individual blocks within a song (verse, hook, etc.)
+export const songSections = pgTable("song_sections", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  songId: varchar("song_id")
+    .notNull()
+    .references(() => songs.id, { onDelete: "cascade" }),
+  type: text("type").notNull(), // "intro" | "verse" | "hook" | "bridge" | "outro" | "ad_lib"
+  label: text("label"), // Custom label, e.g., "Verse 1"
+  content: text("content").notNull().default(""),
+  position: integer("position").notNull().default(0),
+  sourceBarIds: text("source_bar_ids").array(), // Bar IDs pulled from vault
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const songSectionsRelations = relations(songSections, ({ one }) => ({
+  song: one(songs, { fields: [songSections.songId], references: [songs.id] }),
+}));
+
+export type SongSection = typeof songSections.$inferSelect;
+export type InsertSongSection = typeof songSections.$inferInsert;
+
+export const insertSongSectionSchema = createInsertSchema(songSections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Composite types for API responses
+export type BeatWithProducer = Beat & {
+  producer: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+    producerVerified: boolean;
+  };
+  isFavorited?: boolean;
+};
+
+export type SongWithSections = Song & {
+  sections: SongSection[];
+  beat?: BeatWithProducer | null;
+};
+
+export type FolderWithCount = Folder & {
+  barCount: number;
+};

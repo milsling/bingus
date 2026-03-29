@@ -30,15 +30,21 @@ import Prompts from "@/pages/Prompts";
 import Challenges from "@/pages/Challenges";
 import Changelog from "@/pages/Changelog";
 import { BarProvider } from "@/context/BarContext";
+import { AudioPlayerProvider } from "@/context/AudioPlayerContext";
+import { AudioPlayer } from "@/components/AudioPlayer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
 import { VersionCheck } from "@/components/VersionCheck";
 import { useBackground } from "@/components/BackgroundSelector";
 import Navigation from "@/components/Navigation";
+import DesktopSidebar from "@/components/DesktopSidebar";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SupabaseAuthProvider } from "@/context/SupabaseAuthContext";
 
 const OrphanStudio = lazy(() => import("@/pages/orphanstudio"));
+const Vault = lazy(() => import("@/pages/Vault"));
+const BeatLibrary = lazy(() => import("@/pages/BeatLibrary"));
+const SongBuilder = lazy(() => import("@/pages/SongBuilder"));
 
 function RouteLoadingFallback() {
   return (
@@ -54,14 +60,42 @@ function RouteLoadingFallback() {
 
 function Router() {
   const [location] = useLocation();
-  
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location]);
-  
+
   return (
     <Switch location={location}>
       <Route path="/" component={Home} />
+      <Route path="/vault">
+        {() => (
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <Vault />
+          </Suspense>
+        )}
+      </Route>
+      <Route path="/beats">
+        {() => (
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <BeatLibrary />
+          </Suspense>
+        )}
+      </Route>
+      <Route path="/song-builder">
+        {() => (
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <SongBuilder />
+          </Suspense>
+        )}
+      </Route>
+      <Route path="/song-builder/:id">
+        {() => (
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <SongBuilder />
+          </Suspense>
+        )}
+      </Route>
       <Route path="/auth" component={Auth} />
       <Route path="/auth/callback" component={AuthCallback} />
       <Route path="/post" component={Post} />
@@ -125,14 +159,18 @@ function App() {
         <ThemeProvider>
           <SupabaseAuthProvider>
             <BarProvider>
-              <TooltipProvider>
-                <VersionCheck />
-                <BackgroundInitializer />
-                <MaintenanceBanner />
-                <Navigation />
-                <Toaster />
-                <Router />
-              </TooltipProvider>
+              <AudioPlayerProvider>
+                <TooltipProvider>
+                  <VersionCheck />
+                  <BackgroundInitializer />
+                  <MaintenanceBanner />
+                  <Navigation />
+                  <DesktopSidebar />
+                  <Toaster />
+                  <Router />
+                  <AudioPlayer />
+                </TooltipProvider>
+              </AudioPlayerProvider>
             </BarProvider>
           </SupabaseAuthProvider>
         </ThemeProvider>

@@ -15,6 +15,9 @@ import communityStatsRoutes from "./routes/community-stats";
 import messageOfTheDayRoutes from "./routes/message-of-the-day";
 import backgroundRoutes from "./routes/backgrounds";
 import billingRoutes from "./routes/billing";
+import beatsRoutes from "./routes/beats";
+import vaultRoutes from "./routes/vault";
+import songsRoutes from "./routes/songs";
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationCode } from "./email";
 import { setupWebSocket, notifyNewMessage } from "./websocket";
 import { setupVoiceWebSocket } from "./voice-proxy";
@@ -158,6 +161,9 @@ export async function registerRoutes(
   app.use("/api", messageOfTheDayRoutes);
   app.use("/api", backgroundRoutes);
   app.use("/api", billingRoutes);
+  app.use("/api", beatsRoutes);
+  app.use("/api", vaultRoutes);
+  app.use("/api", songsRoutes);
 
   // Setup WebSocket servers
   const { wss: messageWss, sessionParser: wsSessionParser } = setupWebSocket(httpServer, sessionParser);
@@ -186,7 +192,6 @@ export async function registerRoutes(
       socket.destroy();
     }
   });
-  app.use(appleNotifications);
   app.use(appleNotifications);
 
   // Version check endpoint - forces clients to refresh when version changes
