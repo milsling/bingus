@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { useBars } from '@/context/BarContext';
+import { useLocation } from 'wouter';
 
 /**
  * ThumbNavTab - A modern, native-feeling navigation drawer for mobile
@@ -24,6 +25,7 @@ interface ThumbNavTabProps {
 
 export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   const { currentUser } = useBars();
+  const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
@@ -94,6 +96,15 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
     touchStartXRef.current = null;
   };
 
+  const setClosed = (withHaptic: boolean) => {
+    setIsOpen(false);
+    dragX.set(0);
+
+    if (withHaptic && 'vibrate' in navigator) {
+      navigator.vibrate(30);
+    }
+  };
+
   const handleOpen = () => {
     setIsOpen(true);
     dragX.set(panelWidth);
@@ -110,12 +121,7 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   };
 
   const handleClose = () => {
-    setIsOpen(false);
-    dragX.set(0);
-
-    if ('vibrate' in navigator) {
-      navigator.vibrate(30);
-    }
+    setClosed(true);
   };
 
   const dismissHint = () => {
@@ -134,9 +140,16 @@ export default function ThumbNavTab({ children }: ThumbNavTabProps) {
   // Reset navigation state when user logs out
   useEffect(() => {
     if (!currentUser && isOpen) {
-      handleClose();
+      setClosed(false);
     }
   }, [currentUser, isOpen]);
+
+  // Always close on route changes so the drawer can't get stranded open.
+  useEffect(() => {
+    if (isOpen) {
+      setClosed(false);
+    }
+  }, [location]);
 
   // Close on escape key
   useEffect(() => {

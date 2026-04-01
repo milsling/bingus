@@ -12,6 +12,7 @@ import {
   Radio, 
   Swords, 
   Settings2, 
+  X,
   User,
   MessageCircle,
   Users,
@@ -79,40 +80,60 @@ function NavContent() {
     await logout();
   };
 
-  const menuSections: MenuSection[] = [
-    {
-      title: 'Create',
-      icon: Sparkles,
-      items: [
-        { href: '/vault', label: 'Vault', icon: Vault, description: 'Your bars' },
-        { href: '/song-builder', label: 'Song Builder', icon: AudioLines, description: 'Build tracks' },
-        { href: '/beats', label: 'Beat Library', icon: Disc, description: 'Browse beats' },
+  const isGuest = !currentUser;
+
+  const menuSections: MenuSection[] = isGuest
+    ? [
+        {
+          title: 'Explore',
+          icon: Compass,
+          items: [
+            { href: '/', label: 'Feed', icon: Home, description: 'Latest bars' },
+            { href: '/prompts', label: 'Prompts', icon: PenLine, description: 'Get inspired' },
+            { href: '/challenges', label: 'Challenges', icon: Swords, description: 'Compete' },
+            { href: '/beats', label: 'Beat Library', icon: Disc, description: 'Browse beats' },
+          ]
+        },
+        {
+          title: 'Account',
+          icon: User,
+          items: [
+            { href: '/auth', label: 'Sign In', icon: User, description: 'Join the community' },
+          ]
+        },
       ]
-    },
-    {
-      title: 'Explore',
-      icon: Compass,
-      items: [
-        { href: '/', label: 'Feed', icon: Home, description: 'Latest bars' },
-        { href: '/orphanage', label: 'Orphanage', icon: DoorOpen, description: 'Adopt bars' },
-        { href: '/challenges', label: 'Challenges', icon: Swords, description: 'Compete' },
-        { href: '/prompts', label: 'Prompts', icon: PenLine, description: 'Get inspired' },
-      ]
-    },
-    {
-      title: 'Account',
-      icon: User,
-      items: currentUser ? [
-        { href: '/profile', label: 'My Bars', icon: User, description: 'Your profile' },
-        { href: '/messages', label: 'Messages', icon: MessageCircle, description: 'Chat' },
-        { href: '/friends', label: 'Friends', icon: Users, description: 'Your crew' },
-        { href: '/saved', label: 'Saved', icon: Bookmark, description: 'Bookmarks' },
-        { href: '/settings', label: 'Settings', icon: Settings2, description: 'Preferences' },
-      ] : [
-        { href: '/auth', label: 'Sign In', icon: User, description: 'Join the community' },
-      ]
-    }
-  ];
+    : [
+        {
+          title: 'Create',
+          icon: Sparkles,
+          items: [
+            { href: '/vault', label: 'Vault', icon: Vault, description: 'Your bars' },
+            { href: '/song-builder', label: 'Song Builder', icon: AudioLines, description: 'Build tracks' },
+            { href: '/beats', label: 'Beat Library', icon: Disc, description: 'Browse beats' },
+          ]
+        },
+        {
+          title: 'Explore',
+          icon: Compass,
+          items: [
+            { href: '/', label: 'Feed', icon: Home, description: 'Latest bars' },
+            { href: '/orphanage', label: 'Orphanage', icon: DoorOpen, description: 'Adopt bars' },
+            { href: '/challenges', label: 'Challenges', icon: Swords, description: 'Compete' },
+            { href: '/prompts', label: 'Prompts', icon: PenLine, description: 'Get inspired' },
+          ]
+        },
+        {
+          title: 'Account',
+          icon: User,
+          items: [
+            { href: '/profile', label: 'My Bars', icon: User, description: 'Your profile' },
+            { href: '/messages', label: 'Messages', icon: MessageCircle, description: 'Chat' },
+            { href: '/friends', label: 'Friends', icon: Users, description: 'Your crew' },
+            { href: '/saved', label: 'Saved', icon: Bookmark, description: 'Bookmarks' },
+            { href: '/settings', label: 'Settings', icon: Settings2, description: 'Preferences' },
+          ]
+        }
+      ];
 
   if (currentUser?.isAdmin || currentUser?.isAdminPlus || currentUser?.isOwner) {
     menuSections.push({
@@ -158,11 +179,20 @@ function NavContent() {
               <p className="text-[10px] text-muted-foreground mt-0.5">Navigate your world</p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={close}
+            className="relative p-2 rounded-xl hover:bg-foreground/[0.06] transition-colors"
+            aria-label="Close navigation menu"
+          >
+            <X className="h-5 w-5 text-foreground/70" />
+          </button>
         </div>
 
         {/* Desktop-like controls */}
         <div className="px-4 pb-3 space-y-3">
-          <SearchBar className="w-full" />
+          {!isGuest && <SearchBar className="w-full" />}
 
           <div className="flex gap-2">
             <Link href={currentUser ? '/settings' : '/auth'} className="block flex-1" onClick={close}>

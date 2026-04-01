@@ -57,6 +57,12 @@ function useDebounce<T>(value: T, delay: number): T {
 export default function BeatLibrary() {
   const queryClient = useQueryClient();
   const { currentUser } = useBars();
+  const canUploadBeats = Boolean(
+    currentUser?.isOwner ||
+    currentUser?.isProducer ||
+    currentUser?.userRole === "producer" ||
+    currentUser?.userRole === "both",
+  );
   // Upload modal
   const [uploadOpen, setUploadOpen] = useState(false);
 
@@ -180,7 +186,7 @@ export default function BeatLibrary() {
             <Music className="h-7 w-7 text-accent" />
             <h1 className="text-2xl font-bold text-foreground">Beat Library</h1>
           </div>
-          {currentUser && (
+          {currentUser && canUploadBeats && (
             <button
               onClick={() => setUploadOpen(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/20 hover:bg-accent/30 text-accent text-sm font-medium border border-accent/30 transition-colors"
@@ -406,7 +412,7 @@ export default function BeatLibrary() {
                 Clear filters
               </button>
             )}
-            {!hasActiveFilters && currentUser && (
+            {!hasActiveFilters && currentUser && canUploadBeats && (
               <button
                 onClick={() => setUploadOpen(true)}
                 className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/15 hover:bg-accent/25 text-accent text-sm font-medium border border-accent/30 transition-colors"
@@ -414,6 +420,11 @@ export default function BeatLibrary() {
                 <Upload size={16} />
                 Upload a beat
               </button>
+            )}
+            {!hasActiveFilters && currentUser && !canUploadBeats && (
+              <p className="mt-4 text-xs text-muted-foreground">
+                Beat uploads are available for producer accounts.
+              </p>
             )}
           </div>
         )}

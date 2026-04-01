@@ -9,6 +9,44 @@ interface BeatUploadModalProps {
   onClose: () => void;
 }
 
+const ALLOWED_AUDIO_MIME_TYPES = new Set([
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/wave",
+  "audio/x-pn-wav",
+  "audio/ogg",
+  "audio/flac",
+  "audio/x-flac",
+]);
+
+const ALLOWED_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "flac"]);
+
+function getExtension(fileName: string): string {
+  const parts = fileName.toLowerCase().split(".");
+  return parts.length > 1 ? parts[parts.length - 1] : "";
+}
+
+function isSupportedAudioFile(file: File): boolean {
+  const ext = getExtension(file.name);
+  const normalizedType = (file.type || "").split(";")[0].trim().toLowerCase();
+  return ALLOWED_AUDIO_EXTENSIONS.has(ext) || ALLOWED_AUDIO_MIME_TYPES.has(normalizedType);
+}
+
+function inferUploadContentType(file: File): string {
+  const normalizedType = (file.type || "").split(";")[0].trim().toLowerCase();
+  if (ALLOWED_AUDIO_MIME_TYPES.has(normalizedType)) {
+    return normalizedType;
+  }
+
+  const ext = getExtension(file.name);
+  if (ext === "wav") return "audio/wav";
+  if (ext === "ogg") return "audio/ogg";
+  if (ext === "flac") return "audio/flac";
+  return "audio/mpeg";
+}
+
 export function BeatUploadModal({ open, onClose }: BeatUploadModalProps) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -16,6 +54,7 @@ export function BeatUploadModal({ open, onClose }: BeatUploadModalProps) {
   const [waveformData, setWaveformData] = useState<number[] | null>(null);
   const [duration, setDuration] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "",
     bpm: "",
@@ -31,6 +70,14 @@ export function BeatUploadModal({ open, onClose }: BeatUploadModalProps) {
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+
+    if (!isSupportedAudioFile(f)) {
+      setFile(null);
+      setFileError("Unsupported audio format. Please upload MP3, WAV, OGG, or FLAC.");
+      return;
+    }
+
+    setFileError(null);
     setFile(f);
     setIsProcessing(true);
 
@@ -54,24 +101,25 @@ export function BeatUploadModal({ open, onClose }: BeatUploadModalProps) {
     mutationFn: async () => {
       if (!file) throw new Error("No file selected");
       if (!form.title.trim()) throw new Error("Title required");
+      const uploadContentType = inferUploadContentType(file);
 
       // Step 1: Get signed upload URL
       const urlRes = await apiRequest("POST", "/api/beats/upload-url", {
         filename: file.name,
-        contentType: file.type || "audio/mpeg",
+        contentType: uploadContentType,
       });
-      const { signedUrl, publicUrl } = urlRes;
+      const { signedUrl, publicUrl } = await urlRes.json() as { signedUrl: string; publicUrl: string };
 
       // Step 2: Upload file to Supabase Storage
       const uploadRes = await fetch(signedUrl, {
         method: "PUT",
-        headers: { "Content-Type": file.type || "audio/mpeg" },
+        headers: { "Content-Type": uploadContentType },
         body: file,
       });
       if (!uploadRes.ok) throw new Error("Upload failed");
 
       // Step 3: Create beat record
-      const beat = await apiRequest("POST", "/api/beats", {
+      const beatRes = await apiRequest("POST", "/api/beats", {
         title: form.title.trim(),
         audioUrl: publicUrl,
         waveformData: waveformData,
@@ -86,7 +134,7 @@ export function BeatUploadModal({ open, onClose }: BeatUploadModalProps) {
         isPublic: form.isPublic,
       });
 
-      return beat;
+      return beatRes.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/beats"] });
@@ -98,6 +146,7 @@ export function BeatUploadModal({ open, onClose }: BeatUploadModalProps) {
 
   const resetForm = () => {
     setFile(null);
+    setFileError(null);
     setWaveformData(null);
     setDuration(0);
     setForm({
@@ -190,10 +239,14 @@ export function BeatUploadModal({ open, onClose }: BeatUploadModalProps) {
           <input
             ref={fileInputRef}
             type="file"
-            accept="audio/*"
+            accept=".mp3,.wav,.ogg,.flac,audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/flac"
             className="hidden"
             onChange={handleFileSelect}
           />
+
+          {fileError && (
+            <p className="text-sm text-red-400">{fileError}</p>
+          )}
 
           {/* Form fields */}
           <div className="space-y-3">

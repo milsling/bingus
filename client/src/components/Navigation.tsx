@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Home, User, Plus, LogIn, Shield, Bookmark, MessageCircle, Users, PenLine, Menu, LogOut, Compass, Swords, NotebookPen, Settings2, DoorOpen, Radio, Sparkles, X, UserCog, ChevronRight, ExternalLink, Vault, Music, AudioLines, Disc } from "lucide-react";
 import AccentLogo from "@/components/AccentLogo";
@@ -13,6 +14,8 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import AIAssistant from "@/components/AIAssistant";
 import { useFabShortcuts, type ShortcutTarget } from "@/hooks/useFabShortcuts";
 import ThumbNavigation from "@/components/ThumbNavigation";
+import BottomNavBar from "@/components/BottomNavBar";
+import BottomSheetMenu from "@/components/BottomSheetMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +33,20 @@ export default function Navigation() {
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [araOpen, setAraOpen] = useState(false);
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const { leftTarget, rightTarget } = useFabShortcuts();
+
+  const { data: siteSettings } = useQuery<Record<string, string>>({
+    queryKey: ["site-settings", "mobile-nav"],
+    queryFn: async () => {
+      const res = await fetch("/api/backgrounds/site-settings", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch site settings");
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
+
+  const mobileNavMode = siteSettings?.mobileNavMode === "bottom_sheet" ? "bottom_sheet" : "thumb";
   
   const isOnMessagesPage = location.startsWith("/messages");
 
@@ -518,7 +534,20 @@ export default function Navigation() {
       
       {/* Mobile navigation */}
       <div className="md:hidden">
-        <ThumbNavigation />
+        {mobileNavMode === "bottom_sheet" ? (
+          <>
+            <BottomNavBar
+              isMenuOpen={isBottomSheetOpen}
+              onMenuToggle={() => setIsBottomSheetOpen((prev) => !prev)}
+            />
+            <BottomSheetMenu
+              isOpen={isBottomSheetOpen}
+              onClose={() => setIsBottomSheetOpen(false)}
+            />
+          </>
+        ) : (
+          <ThumbNavigation />
+        )}
       </div>
     </>
   );

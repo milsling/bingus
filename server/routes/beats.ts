@@ -2,8 +2,76 @@ import { Router } from "express";
 import { storage } from "../storage";
 import { createClient } from "@supabase/supabase-js";
 import { isAuthenticated } from "../auth";
+import { moderateContent } from "../replit_integrations/ai/barAssistant";
 
 const router = Router();
+
+const ALLOWED_AUDIO_MIME_TYPES = new Set([
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/wave",
+  "audio/x-pn-wav",
+  "audio/ogg",
+  "audio/flac",
+  "audio/x-flac",
+]);
+
+const ALLOWED_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "flac"]);
+
+function normalizeContentType(contentType?: string): string {
+  return (contentType || "").split(";")[0].trim().toLowerCase();
+}
+
+function getExtension(filename?: string): string {
+  const parts = (filename || "").toLowerCase().split(".");
+  return parts.length > 1 ? parts[parts.length - 1] : "";
+}
+
+function inferContentTypeFromExtension(ext: string): string {
+  if (ext === "wav") return "audio/wav";
+  if (ext === "ogg") return "audio/ogg";
+  if (ext === "flac") return "audio/flac";
+  return "audio/mpeg";
+}
+
+function isSupportedAudioFile(filename: string, contentType?: string): boolean {
+  const normalized = normalizeContentType(contentType);
+  const ext = getExtension(filename);
+  const mimeAllowed = normalized ? ALLOWED_AUDIO_MIME_TYPES.has(normalized) : false;
+  const extAllowed = ALLOWED_AUDIO_EXTENSIONS.has(ext);
+  return mimeAllowed || extAllowed;
+}
+
+function canUploadBeats(user: any): boolean {
+  return Boolean(
+    user?.isOwner ||
+    user?.isProducer ||
+    user?.userRole === "producer" ||
+    user?.userRole === "both",
+  );
+}
+
+function buildBeatModerationInput(payload: {
+  title?: string;
+  genre?: string;
+  key?: string;
+  tags?: string[];
+  description?: string;
+  credits?: string;
+  audioUrl?: string;
+}): string {
+  return [
+    `Beat title: ${payload.title || ""}`,
+    `Genre: ${payload.genre || ""}`,
+    `Key: ${payload.key || ""}`,
+    `Tags: ${(payload.tags || []).join(", ")}`,
+    `Description: ${payload.description || ""}`,
+    `Credits: ${payload.credits || ""}`,
+    `Audio file: ${payload.audioUrl || ""}`,
+  ].join("\n");
+}
 
 // Initialize Supabase admin client for storage operations
 function getSupabaseAdmin() {
@@ -79,13 +147,19 @@ router.post("/beats/upload-url", isAuthenticated, async (req, res) => {
       return res.status(400).json({ error: "filename and contentType required" });
     }
 
-    const allowedTypes = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/flac", "audio/mp3", "audio/x-wav"];
-    if (!allowedTypes.includes(contentType)) {
+    const user = await storage.getUser(req.user!.id);
+    if (!user) return res.status(401).json({ error: "User not found" });
+
+    if (!canUploadBeats(user)) {
+      return res.status(403).json({ error: "Only producer accounts can upload beats." });
+    }
+
+    if (!isSupportedAudioFile(filename, contentType)) {
       return res.status(400).json({ error: "Unsupported audio format. Use MP3, WAV, OGG, or FLAC." });
     }
 
     const supabase = getSupabaseAdmin();
-    const ext = filename.split(".").pop() || "mp3";
+    const ext = getExtension(filename) || "mp3";
     const path = `${req.user!.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
     const { data, error } = await supabase.storage.from("beats").createSignedUploadUrl(path);
@@ -108,16 +182,39 @@ router.post("/beats", isAuthenticated, async (req, res) => {
     const user = await storage.getUser(req.user!.id);
     if (!user) return res.status(401).json({ error: "User not found" });
 
-    // Allow any user to upload beats (role check is soft — sets isProducer flag)
-    if (user.userRole === "artist" && !user.isProducer) {
-      // Auto-upgrade role to "both" on first beat upload
-      await storage.updateUser(user.id, { userRole: "both", isProducer: true });
+    if (!canUploadBeats(user)) {
+      return res.status(403).json({ error: "Only producer accounts can upload beats." });
     }
 
     const { title, audioUrl, waveformData, coverArtUrl, bpm, key, genre, tags, duration, description, credits, licenseType, isPublic } = req.body;
 
     if (!title || !audioUrl) {
       return res.status(400).json({ error: "title and audioUrl required" });
+    }
+
+    const aiSettings = await storage.getAISettings();
+    if (aiSettings.moderationEnabled) {
+      const moderationInput = buildBeatModerationInput({
+        title,
+        genre,
+        key,
+        tags,
+        description,
+        credits,
+        audioUrl,
+      });
+      const moderation = await moderateContent(
+        moderationInput,
+        aiSettings.moderationStrictness || "balanced",
+      );
+
+      if (!moderation.approved || moderation.flagged) {
+        return res.status(400).json({
+          error: "Beat metadata was not approved by moderation.",
+          aiRejected: true,
+          reasons: moderation.reasons,
+        });
+      }
     }
 
     const beat = await storage.createBeat({

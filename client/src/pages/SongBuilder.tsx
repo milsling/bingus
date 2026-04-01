@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useAudioPlayer } from "@/context/AudioPlayerContext";
 import { useBars } from "@/context/BarContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import { WaveformVisualizer } from "@/components/WaveformVisualizer";
 import { formatTime } from "@/lib/waveform";
 import type { Song, SongSection, SongWithSections, BeatWithProducer } from "@shared/schema";
@@ -73,12 +74,16 @@ function sectionMeta(type: string) {
 function SongListView() {
   const [, navigate] = useLocation();
   const { currentUser: user } = useBars();
+  const { session } = useSupabaseAuth();
   const queryClient = useQueryClient();
 
   const { data: songs = [], isLoading } = useQuery<Song[]>({
     queryKey: ["songs"],
     queryFn: async () => {
-      const res = await fetch("/api/songs", { credentials: "include" });
+      const headers: HeadersInit = session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : {};
+      const res = await fetch("/api/songs", { credentials: "include", headers });
       if (!res.ok) throw new Error("Failed to load songs");
       return res.json();
     },
@@ -89,7 +94,10 @@ function SongListView() {
     mutationFn: async () => {
       const res = await fetch("/api/songs", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         credentials: "include",
         body: JSON.stringify({ title: "Untitled Song" }),
       });
@@ -576,6 +584,7 @@ function SongEditorView({ songId }: { songId: string }) {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   const audioPlayer = useAudioPlayer();
+  const { session } = useSupabaseAuth();
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
@@ -589,8 +598,12 @@ function SongEditorView({ songId }: { songId: string }) {
   } = useQuery<SongWithSections>({
     queryKey: ["song", songId],
     queryFn: async () => {
+      const headers: HeadersInit = session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : {};
       const res = await fetch(`/api/songs/${songId}`, {
         credentials: "include",
+        headers,
       });
       if (!res.ok) throw new Error("Failed to load song");
       return res.json();
@@ -615,7 +628,10 @@ function SongEditorView({ songId }: { songId: string }) {
     mutationFn: async (data: { title?: string; beatId?: string; status?: string }) => {
       const res = await fetch(`/api/songs/${songId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         credentials: "include",
         body: JSON.stringify(data),
       });
@@ -633,6 +649,7 @@ function SongEditorView({ songId }: { songId: string }) {
       const res = await fetch(`/api/songs/${songId}`, {
         method: "DELETE",
         credentials: "include",
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       });
       if (!res.ok) throw new Error("Failed to delete song");
       return res.json();
@@ -650,7 +667,10 @@ function SongEditorView({ songId }: { songId: string }) {
         (song?.sections?.filter((s) => s.type === type).length ?? 0) + 1;
       const res = await fetch(`/api/songs/${songId}/sections`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         credentials: "include",
         body: JSON.stringify({
           type,
@@ -672,6 +692,7 @@ function SongEditorView({ songId }: { songId: string }) {
       const res = await fetch(`/api/songs/${songId}/sections/${sectionId}`, {
         method: "DELETE",
         credentials: "include",
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       });
       if (!res.ok) throw new Error("Failed to delete section");
       return res.json();
@@ -730,7 +751,10 @@ function SongEditorView({ songId }: { songId: string }) {
     // We directly PATCH here to reflect immediately
     fetch(`/api/songs/${songId}/sections/${activeSectionId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      },
       credentials: "include",
       body: JSON.stringify({ content: newContent }),
     }).then(() => {
@@ -995,7 +1019,7 @@ function SongEditorView({ songId }: { songId: string }) {
 // ---------------------------------------------------------------------------
 
 export default function SongBuilder() {
-  const [match, params] = useRoute("/song-builder/:id");
+  const [match, params] = useRoute<{ id: string }>("/song-builder/:id");
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-24 md:pb-4 md:pt-24">

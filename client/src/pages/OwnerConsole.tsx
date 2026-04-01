@@ -12,10 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import ThemeSettings from "@/components/ThemeSettings";
+import { BeatUploadModal } from "@/components/BeatUploadModal";
 import {
   ArrowLeft, Bot, Crown, MessageSquare,
   Palette, Power, RefreshCw, Settings2, Shield, Trash2,
-  Trophy, Wrench, Key, Radio, Swords, PenLine, Plus, Award, Check
+  Trophy, Wrench, Key, Radio, Swords, PenLine, Plus, Award, Check, Upload, Music2, Lock
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -55,6 +56,8 @@ function OwnerConsoleContent() {
   }, [setCanCustomize]);
 
   const [activeTab, setActiveTab] = useState("appearance");
+  const [beatUploadOpen, setBeatUploadOpen] = useState(false);
+  const [mobileNavMode, setMobileNavMode] = useState<"thumb" | "bottom_sheet">("thumb");
 
   // Console state
   const [consoleQuery, setConsoleQuery] = useState("");
@@ -134,9 +137,25 @@ function OwnerConsoleContent() {
     },
   });
 
+  // Site settings query
+  const { data: siteSettings } = useQuery<Record<string, string>>({
+    queryKey: ["backgrounds", "site-settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/backgrounds/site-settings", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch site settings");
+      return res.json();
+    },
+  });
+
+  useEffect(() => {
+    if (!siteSettings) return;
+    const mode = siteSettings.mobileNavMode === "bottom_sheet" ? "bottom_sheet" : "thumb";
+    setMobileNavMode(mode);
+  }, [siteSettings]);
+
   // Site settings mutation
   const saveSiteSettingsMutation = useMutation({
-    mutationFn: async (settings: { defaultBackground?: string; themeSettings?: any }) => {
+    mutationFn: async (settings: { defaultBackground?: string; themeSettings?: any; mobileNavMode?: "thumb" | "bottom_sheet" }) => {
       const res = await fetch("/api/backgrounds/site-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -283,6 +302,7 @@ function OwnerConsoleContent() {
 
   const tabs = [
     { value: "appearance", label: "Appearance", icon: Palette },
+    { value: "beats", label: "Beats", icon: Music2 },
     { value: "motd", label: "MOTD", icon: MessageSquare },
     { value: "prompts", label: "Prompts", icon: PenLine },
     { value: "challenges", label: "Challenges", icon: Swords },
@@ -339,7 +359,7 @@ function OwnerConsoleContent() {
           </div>
 
           {/* Desktop tabs */}
-          <TabsList className="hidden md:grid w-full grid-cols-7 mb-6 rounded-2xl border border-foreground/[0.1] bg-foreground/[0.03] p-1">
+          <TabsList className="hidden md:grid w-full grid-cols-8 mb-6 rounded-2xl border border-foreground/[0.1] bg-foreground/[0.03] p-1">
             {tabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 text-xs rounded-xl data-[state=active]:bg-primary/15">
                 <tab.icon className="h-3.5 w-3.5" />
@@ -347,6 +367,24 @@ function OwnerConsoleContent() {
               </TabsTrigger>
             ))}
           </TabsList>
+
+          {/* Beats tab */}
+          <TabsContent value="beats" className="space-y-4">
+            <Card className={cardCn}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2"><Music2 className="h-4 w-4" /> Beat Upload</CardTitle>
+                <CardDescription>Upload beats into the same Beat Library used across the app.</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  As owner, you can upload beats from here even if your account is not set as producer.
+                </p>
+                <Button onClick={() => setBeatUploadOpen(true)} className="w-full">
+                  <Upload className="h-4 w-4 mr-2" /> Upload Beat
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Appearance tab */}
           <TabsContent value="appearance" className="space-y-4">
@@ -385,6 +423,41 @@ function OwnerConsoleContent() {
                   className="w-full bg-primary hover:bg-primary/90"
                 >
                   {saveSiteSettingsMutation.isPending ? "Saving..." : "🌐 Push Theme to All Users"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className={cardCn}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2"><Settings2 className="h-4 w-4" /> Mobile Navigation Mode</CardTitle>
+                <CardDescription>Choose which mobile menu style is visible site-wide. Desktop keeps its own menu.</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMobileNavMode("thumb")}
+                    className={`rounded-xl border p-3 text-left transition-colors ${mobileNavMode === "thumb" ? "border-primary/50 bg-primary/10" : "border-border/40 hover:border-border/70"}`}
+                  >
+                    <p className="text-sm font-medium">Thumb Nav</p>
+                    <p className="text-xs text-muted-foreground mt-1">Edge pull-tab drawer navigation.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileNavMode("bottom_sheet")}
+                    className={`rounded-xl border p-3 text-left transition-colors ${mobileNavMode === "bottom_sheet" ? "border-primary/50 bg-primary/10" : "border-border/40 hover:border-border/70"}`}
+                  >
+                    <p className="text-sm font-medium">Bottom Sheet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Bottom nav bar + expandable sheet menu.</p>
+                  </button>
+                </div>
+
+                <Button
+                  onClick={() => saveSiteSettingsMutation.mutate({ mobileNavMode })}
+                  disabled={saveSiteSettingsMutation.isPending}
+                  className="w-full"
+                >
+                  {saveSiteSettingsMutation.isPending ? "Saving..." : "Save Mobile Menu Mode"}
                 </Button>
               </CardContent>
             </Card>
@@ -759,6 +832,8 @@ function OwnerConsoleContent() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <BeatUploadModal open={beatUploadOpen} onClose={() => setBeatUploadOpen(false)} />
     </div>
   );
 }

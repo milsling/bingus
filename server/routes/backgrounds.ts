@@ -350,7 +350,7 @@ router.get("/backgrounds/site-settings", async (req, res) => {
 // Save site-wide appearance settings (owner only)
 router.post("/backgrounds/site-settings", isAuthenticated, isOwner, async (req, res) => {
   try {
-    const { defaultBackground, themeSettings } = req.body;
+    const { defaultBackground, themeSettings, mobileNavMode } = req.body;
 
     const upsertSetting = async (key: string, value: string) => {
       await db
@@ -365,6 +365,14 @@ router.post("/backgrounds/site-settings", isAuthenticated, isOwner, async (req, 
 
     if (themeSettings !== undefined) {
       await upsertSetting('themeSettings', JSON.stringify(themeSettings));
+    }
+
+    if (mobileNavMode !== undefined) {
+      const normalizedMode = String(mobileNavMode);
+      if (normalizedMode !== 'thumb' && normalizedMode !== 'bottom_sheet') {
+        return res.status(400).json({ error: "mobileNavMode must be 'thumb' or 'bottom_sheet'" });
+      }
+      await upsertSetting('mobileNavMode', normalizedMode);
     }
 
     res.json({ message: "Site settings saved successfully" });
